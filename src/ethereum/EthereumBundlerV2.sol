@@ -13,6 +13,7 @@ import {EthereumStEthBundler} from "./EthereumStEthBundler.sol";
 import {UrdBundler} from "../UrdBundler.sol";
 import {MorphoBundler} from "../MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
+import {ModuleCallerBundler} from "../ModuleCallerBundler.sol";
 
 /// @title EthereumBundlerV2
 /// @author Morpho Labs
@@ -27,7 +28,8 @@ contract EthereumBundlerV2 is
     EthereumStEthBundler,
     UrdBundler,
     MorphoBundler,
-    ERC20WrapperBundler
+    ERC20WrapperBundler,
+    ModuleCallerBundler
 {
     /* CONSTRUCTOR */
 

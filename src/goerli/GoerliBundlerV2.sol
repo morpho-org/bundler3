@@ -13,6 +13,7 @@ import {StEthBundler} from "../StEthBundler.sol";
 import {UrdBundler} from "../UrdBundler.sol";
 import {MorphoBundler} from "../MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
+import {ModuleCallerBundler} from "../ModuleCallerBundler.sol";
 
 /// @title GoerliBundlerV2
 /// @author Morpho Labs
@@ -27,7 +28,8 @@ contract GoerliBundlerV2 is
     StEthBundler,
     UrdBundler,
     MorphoBundler,
-    ERC20WrapperBundler
+    ERC20WrapperBundler,
+    ModuleCallerBundler
 {
     /* CONSTRUCTOR */
 
