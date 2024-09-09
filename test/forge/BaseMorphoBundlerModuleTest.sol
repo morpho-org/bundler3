@@ -15,9 +15,8 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
 
         bundle.push(abi.encodeCall(ModuleCallerBundler.callModule, (address(mock), hex"")));
 
-
         vm.prank(bundlerAddress);
-        mock.morphoBundlerModuleCall(address(0),hex"");
+        mock.morphoBundlerModuleCall(address(0), hex"");
     }
 
     function testCheckCallerFailure(address correctAddress, address wrongAddress) public {
@@ -26,7 +25,6 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
 
         vm.prank(wrongAddress);
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        mock.morphoBundlerModuleCall(address(0),hex"");
+        mock.morphoBundlerModuleCall(address(0), hex"");
     }
-
 }

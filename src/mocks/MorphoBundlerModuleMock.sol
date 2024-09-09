@@ -6,5 +6,5 @@ import {BaseMorphoBundlerModule} from "../modules/BaseMorphoBundlerModule.sol";
 contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
     constructor(address bundler) BaseMorphoBundlerModule(bundler) {}
 
-    function _morphoBundlerModuleCall(address,bytes calldata) internal override {}
+    function _morphoBundlerModuleCall(address, bytes calldata) internal override {}
 }
