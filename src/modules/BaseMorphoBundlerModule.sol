@@ -4,11 +4,11 @@ pragma solidity >=0.5.0;
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {IMorphoBundlerModule} from "../interfaces/IMorphoBundlerModule.sol";
 
-/// @title MorphoBundlerModule
+/// @title BaseMorphoBundlerModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Morpho Bundler Module abstract contract. Enforces caller verification.
-abstract contract MorphoBundlerModule is IMorphoBundlerModule {
+abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
 
   address public immutable MORPHO_BUNDLER;
 

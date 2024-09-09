@@ -9,7 +9,7 @@ import {IMorphoBundlerModule} from "../../src/interfaces/IMorphoBundlerModule.so
 import "./helpers/LocalTest.sol";
 import {MorphoBundlerModuleMock} from "../../src/mocks/MorphoBundlerModuleMock.sol";
 
-contract MorphoBundlerModuleTest is LocalTest {
+contract BaseMorphoBundlerModuleTest is LocalTest {
     function testCheckCallerSuccess(address bundlerAddress) public {
         MorphoBundlerModuleMock mock = new MorphoBundlerModuleMock(bundlerAddress);
 
