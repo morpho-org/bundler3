@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
-import * as ConstantsLib from "../../src/libraries/ConstantsLib.sol";
+import "../../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
 
