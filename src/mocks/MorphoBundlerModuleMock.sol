@@ -11,7 +11,7 @@ contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
     function _morphoBundlerModuleCall(address, bytes calldata data) internal override {
         if (data.length == 0) {
             return;
-        } {
+        } else {
             IModuleCallerBundler(MORPHO_BUNDLER).onCallback(data);
         }
     }
