@@ -16,15 +16,15 @@ abstract contract ModuleCallerBundler is BaseBundler, IModuleCallerBundler {
     /* EXTERNAL */
 
     /// @inheritdoc IModuleCallerBundler
-    function callModule(address module, bytes calldata data) external payable protected {
+    function callModule(address module, bytes calldata data, uint value) external payable protected {
         address previousModule = currentModule();
         setCurrentModule(module);
-        IMorphoBundlerModule(module).morphoBundlerModuleCall(initiator(), data);
+        IMorphoBundlerModule(module).morphoBundlerModuleCall{value:value}(initiator(), data);
         setCurrentModule(previousModule);
     }
 
     /// @inheritdoc IModuleCallerBundler
-    function onCallback(bytes calldata data) external {
+    function onCallback(bytes calldata data) external payable {
         require(msg.sender == currentModule(), ErrorsLib.UNAUTHORIZED_SENDER);
         _multicall(abi.decode(data, (bytes[])));
     }

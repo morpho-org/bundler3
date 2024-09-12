@@ -13,7 +13,7 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
     function testCheckCallerSuccess(address bundlerAddress) public {
         MorphoBundlerModuleMock mock = new MorphoBundlerModuleMock(bundlerAddress);
 
-        bundle.push(abi.encodeCall(ModuleCallerBundler.callModule, (address(mock), hex"")));
+        bundle.push(abi.encodeCall(ModuleCallerBundler.callModule, (address(mock), hex"",0)));
 
         vm.prank(bundlerAddress);
         mock.morphoBundlerModuleCall(address(0), hex"");

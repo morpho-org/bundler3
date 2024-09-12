@@ -23,19 +23,30 @@ contract ModuleCallerBundlerTest is LocalTest {
     }
 
     function testPassthroughInitiator(address initiator) public {
-        bytes memory moduleData = hex"";
-        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule, (address(module), moduleData)));
+        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule, (address(module), hex"",0)));
 
-        vm.expectCall(address(module),abi.encodeCall(IMorphoBundlerModule.morphoBundlerModuleCall,(initiator,moduleData)));
+        vm.expectCall(address(module),0,abi.encodeCall(IMorphoBundlerModule.morphoBundlerModuleCall,(initiator,hex"")));
 
         vm.prank(initiator);
         bundler.multicall(bundle);
     }
 
-    function testCallbackDecode(address initiator, address token, uint amount) public {
+    function testPassthroughValue(uint128 value) public {
+        address initiator = makeAddr("initiator");
+        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule, (address(module), hex"",value)));
+
+        vm.expectCall(address(module),value,abi.encodeCall(IMorphoBundlerModule.morphoBundlerModuleCall,(initiator,hex"")));
+
+        vm.deal(initiator,value);
+        vm.prank(initiator);
+        bundler.multicall{value:value}(bundle);
+    }
+
+    function testCallbackDecode(address initiator, uint amount) public {
+        address token = makeAddr("token mock");
         callbackBundle.push(abi.encodeCall(PermitBundler.permit,(token,amount,0,0,0,0,true)));
 
-        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule, (address(module), abi.encode(callbackBundle))));
+        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule, (address(module),  abi.encode(callbackBundle),0)));
 
         vm.etch(token,hex"01");
         vm.expectCall(token,abi.encodeCall(IERC20Permit.permit,(initiator,address(bundler),amount,0,0,0,0)));
@@ -47,14 +58,14 @@ contract ModuleCallerBundlerTest is LocalTest {
     function testNestedCallback(address initiator) public {
         IMorphoBundlerModule module2 = new MorphoBundlerModuleMock(address(bundler));
 
-        callbackBundle2.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module2),hex"")));
+        callbackBundle2.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module2),hex"",0)));
 
         // Run 2 toplevel callbacks to check that previousModule is correctly restored in ModuleCallerBundler.callModule.
-        callbackBundle.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module2),abi.encode(callbackBundle2))));
+        callbackBundle.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module2),abi.encode(callbackBundle2),0)));
 
-        callbackBundle.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module2),abi.encode(callbackBundle2))));
+        callbackBundle.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module2),abi.encode(callbackBundle2),0)));
 
-        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module),abi.encode(callbackBundle))));
+        bundle.push(abi.encodeCall(IModuleCallerBundler.callModule,(address(module),abi.encode(callbackBundle),0)));
 
         vm.prank(initiator);
         bundler.multicall(bundle);
