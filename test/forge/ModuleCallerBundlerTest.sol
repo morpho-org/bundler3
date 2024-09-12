@@ -61,7 +61,7 @@ contract ModuleCallerBundlerTest is LocalTest {
 
     }
 
-    function testCurrentModuleSlot() public {
+    function testCurrentModuleSlot() pure public {
         assertEq(CURRENT_MODULE_SLOT, keccak256("Morpho Bundler Current Module Slot"));
     }
 }
