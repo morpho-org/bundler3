@@ -13,7 +13,7 @@ contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
             return;
         } else {
         } {
-            IModularBundler(MORPHO_BUNDLER).onModuleCallback(data);
+            IModularBundler(MORPHO_BUNDLER).multicallFromModule(data);
         }
     }
 }

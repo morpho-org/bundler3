@@ -24,7 +24,7 @@ abstract contract ModularBundler is BaseBundler, IModularBundler {
     }
 
     /// @inheritdoc IModularBundler
-    function onModuleCallback(bytes calldata data) external payable {
+    function multicallFromModule(bytes calldata data) external payable {
         require(msg.sender == currentModule(), ErrorsLib.UNAUTHORIZED_SENDER);
         _multicall(abi.decode(data, (bytes[])));
     }

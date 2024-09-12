@@ -14,5 +14,5 @@ interface IModularBundler {
 
     /// @notice Responds to calls from the current module.
     /// @dev Triggers `_multicall` logic during a callback.
-    function onModuleCallback(bytes calldata data) external payable;
+    function multicallFromModule(bytes calldata data) external payable;
 }
