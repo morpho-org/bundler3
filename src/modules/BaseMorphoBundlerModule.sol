@@ -17,12 +17,12 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
 
     /// @notice Wrapper that receives call from the Morpho Bundler.
     /// @dev Checks that msg.sender is the Morpho Bundler so that initiator value can be trusted.
-    function morphoBundlerModuleCall(address initiator, bytes calldata data) external payable {
+    function onMorphoBundlerCall(address initiator, bytes calldata data) external payable {
         require(msg.sender == MORPHO_BUNDLER, ErrorsLib.UNAUTHORIZED_SENDER);
-        _morphoBundlerModuleCall(initiator, data);
+        _onMorphoBundlerCall(initiator, data);
     }
 
     /// @notice Receives a call from the Morpho Bundler.
     /// @dev Must be implemented by inheriting contracts.
-    function _morphoBundlerModuleCall(address initiator, bytes calldata data) internal virtual;
+    function _onMorphoBundlerCall(address initiator, bytes calldata data) internal virtual;
 }

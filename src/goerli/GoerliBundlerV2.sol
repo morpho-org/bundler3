@@ -13,7 +13,7 @@ import {StEthBundler} from "../StEthBundler.sol";
 import {UrdBundler} from "../UrdBundler.sol";
 import {MorphoBundler} from "../MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
-import {ModuleCallerBundler} from "../ModuleCallerBundler.sol";
+import {ModularBundler} from "../ModularBundler.sol";
 
 /// @title GoerliBundlerV2
 /// @author Morpho Labs
@@ -29,7 +29,7 @@ contract GoerliBundlerV2 is
     UrdBundler,
     MorphoBundler,
     ERC20WrapperBundler,
-    ModuleCallerBundler
+    ModularBundler
 {
     /* CONSTRUCTOR */
 
@@ -38,7 +38,7 @@ contract GoerliBundlerV2 is
     /* INTERNAL */
 
     /// @inheritdoc MorphoBundler
-    function _isSenderAuthorized() internal view override(BaseBundler, MorphoBundler, ModuleCallerBundler) returns (bool) {
+    function _isSenderAuthorized() internal view override(BaseBundler, MorphoBundler, ModularBundler) returns (bool) {
         return MorphoBundler._isSenderAuthorized();
     }
 }

@@ -2,29 +2,29 @@
 pragma solidity 0.8.24;
 
 import {IMorphoBundlerModule} from "./interfaces/IMorphoBundlerModule.sol";
-import {IModuleCallerBundler} from "./interfaces/IModuleCallerBundler.sol";
+import {IModularBundler} from "./interfaces/IModularBundler.sol";
 import {BaseBundler} from "./BaseBundler.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
 
-/// @title ModuleCallerBundler
+/// @title ModularBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing calls to external bundler module contracts
-abstract contract ModuleCallerBundler is BaseBundler, IModuleCallerBundler {
+abstract contract ModularBundler is BaseBundler, IModularBundler {
 
     /* EXTERNAL */
 
-    /// @inheritdoc IModuleCallerBundler
+    /// @inheritdoc IModularBundler
     function callModule(address module, bytes calldata data, uint value) external payable protected {
         address previousModule = currentModule();
         setCurrentModule(module);
-        IMorphoBundlerModule(module).morphoBundlerModuleCall{value:value}(initiator(), data);
+        IMorphoBundlerModule(module).onMorphoBundlerCall{value:value}(initiator(), data);
         setCurrentModule(previousModule);
     }
 
-    /// @inheritdoc IModuleCallerBundler
-    function onCallback(bytes calldata data) external payable {
+    /// @inheritdoc IModularBundler
+    function onModuleCallback(bytes calldata data) external payable {
         require(msg.sender == currentModule(), ErrorsLib.UNAUTHORIZED_SENDER);
         _multicall(abi.decode(data, (bytes[])));
     }

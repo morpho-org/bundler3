@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
-import {ModuleCallerBundler} from "../../src/ModuleCallerBundler.sol";
+import {ModularBundler} from "../../src/ModularBundler.sol";
 import {IMorphoBundlerModule} from "../../src/interfaces/IMorphoBundlerModule.sol";
 
 import "./helpers/LocalTest.sol";
@@ -13,10 +13,10 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
     function testCheckCallerSuccess(address bundlerAddress) public {
         MorphoBundlerModuleMock mock = new MorphoBundlerModuleMock(bundlerAddress);
 
-        bundle.push(abi.encodeCall(ModuleCallerBundler.callModule, (address(mock), hex"",0)));
+        bundle.push(abi.encodeCall(ModularBundler.callModule, (address(mock), hex"",0)));
 
         vm.prank(bundlerAddress);
-        mock.morphoBundlerModuleCall(address(0), hex"");
+        mock.onMorphoBundlerCall(address(0), hex"");
     }
 
     function testCheckCallerFailure(address correctAddress, address wrongAddress) public {
@@ -25,6 +25,6 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
 
         vm.prank(wrongAddress);
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        mock.morphoBundlerModuleCall(address(0), hex"");
+        mock.onMorphoBundlerCall(address(0), hex"");
     }
 }
