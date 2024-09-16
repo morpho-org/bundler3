@@ -10,6 +10,7 @@ import {PermitBundler} from "../../src/PermitBundler.sol";
 
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {CURRENT_MODULE_SLOT} from "../../src/libraries/ConstantsLib.sol";
+import {UNSET_INITIATOR} from "../../src/libraries/ConstantsLib.sol";
 import "./helpers/LocalTest.sol";
 
 contract ModularBundlerTest is LocalTest {
@@ -36,6 +37,7 @@ contract ModularBundlerTest is LocalTest {
     }
 
     function testCallbackDecode(address initiator, uint256 amount) public {
+        vm.assume(initiator != UNSET_INITIATOR);
         address token = makeAddr("token mock");
         callbackBundle.push(abi.encodeCall(PermitBundler.permit, (token, amount, 0, 0, 0, 0, true)));
 
@@ -49,6 +51,7 @@ contract ModularBundlerTest is LocalTest {
     }
 
     function testNestedCallback(address initiator) public {
+        vm.assume(initiator != UNSET_INITIATOR);
         MorphoBundlerModuleMock module2 = new MorphoBundlerModuleMock(address(bundler));
 
         callbackBundle2.pushModuleCall(address(module2), abi.encodeCall(module2.isProtected, ()));
