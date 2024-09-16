@@ -28,12 +28,13 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
     /* EXTERNAL */
 
     /// @notice Re-dispatches all calls to itself.
-    function onMorphoBundlerCall(bytes memory data) external payable {
-        assembly {
-            let success := delegatecall(gas(), address(), add(data, 32), mload(data), 0, 0)
-            returndatacopy(0, 0, returndatasize())
-
-            if iszero(success) { revert(0, returndatasize()) }
+    function onMorphoBundlerCall(bytes calldata data) external payable {
+        (bool success,) = address(this).delegatecall(data);
+        if (!success) {
+            assembly ("memory-safe") {
+                returndatacopy(0, 0, returndatasize())
+                revert(0, returndatasize())
+            }
         }
     }
 
