@@ -9,13 +9,13 @@ event Initiator(address);
 contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
     constructor(address bundler) BaseMorphoBundlerModule(bundler) {}
 
-    function isProtected() external payable protected {}
+    function isProtected() external payable bundlerOnly {}
 
     function emitInitiator() external payable {
         emit Initiator(initiator());
     }
 
-    function callbackBundler(bytes calldata data) external payable protected {
+    function callbackBundler(bytes calldata data) external payable bundlerOnly {
         IModularBundler(MORPHO_BUNDLER).multicallFromModule(data);
     }
 }

@@ -20,7 +20,7 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
 
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
-    modifier protected() {
+    modifier bundlerOnly() {
         require(msg.sender == MORPHO_BUNDLER, ErrorsLib.UNAUTHORIZED_SENDER);
         _;
     }
