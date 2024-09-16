@@ -34,7 +34,6 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
             returndatacopy(0, 0, returndatasize())
 
             if iszero(success) { revert(0, returndatasize()) }
-            return(0, returndatasize())
         }
     }
 

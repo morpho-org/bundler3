@@ -11,6 +11,10 @@ contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
 
     function isProtected() external payable bundlerOnly {}
 
+    function doRevert(string memory reason) external payable {
+        revert(reason);
+    }
+
     function emitInitiator() external payable {
         emit Initiator(initiator());
     }

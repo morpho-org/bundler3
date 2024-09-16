@@ -45,4 +45,10 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         otherBundler.multicall(bundle);
     }
+
+    function testBubbleRevert(string memory revertReason) public {
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.doRevert, (revertReason)));
+        vm.expectRevert(bytes(revertReason));
+        bundler.multicall(bundle);
+    }
 }
