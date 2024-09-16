@@ -5,26 +5,44 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import {ModularBundler} from "../../src/ModularBundler.sol";
 import {IMorphoBundlerModule} from "../../src/interfaces/IMorphoBundlerModule.sol";
+import {UNSET_INITIATOR} from "../../src/libraries/ConstantsLib.sol";
 
 import "./helpers/LocalTest.sol";
-import {MorphoBundlerModuleMock} from "../../src/mocks/MorphoBundlerModuleMock.sol";
+import {MorphoBundlerModuleMock, Initiator} from "../../src/mocks/MorphoBundlerModuleMock.sol";
 
 contract BaseMorphoBundlerModuleTest is LocalTest {
-    function testCheckCallerSuccess(address bundlerAddress) public {
-        MorphoBundlerModuleMock mock = new MorphoBundlerModuleMock(bundlerAddress);
+    using BundleTestLib for bytes[];
 
-        bundle.push(abi.encodeCall(ModularBundler.callModule, (address(mock), hex"",0)));
+    MorphoBundlerModuleMock module;
 
-        vm.prank(bundlerAddress);
-        mock.onMorphoBundlerCall(address(0), hex"");
+    function setUp() public override {
+        super.setUp();
+        module = new MorphoBundlerModuleMock(address(bundler));
     }
 
-    function testCheckCallerFailure(address correctAddress, address wrongAddress) public {
-        vm.assume(correctAddress != wrongAddress);
-        MorphoBundlerModuleMock mock = new MorphoBundlerModuleMock(correctAddress);
+    function testGetInitiator(address initiator) public {
+        vm.assume(initiator != UNSET_INITIATOR);
 
-        vm.prank(wrongAddress);
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.emitInitiator, ()));
+
+        vm.expectEmit(true, true, false, true, address(module));
+        emit Initiator(initiator);
+
+        vm.prank(initiator);
+        bundler.multicall(bundle);
+    }
+
+    function testProtectedSuccess() public {
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.isProtected, ()));
+
+        bundler.multicall(bundle);
+    }
+
+    function testProtectedFailure() public {
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.isProtected, ()));
+
+        BaseBundler otherBundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        mock.onMorphoBundlerCall(address(0), hex"");
+        otherBundler.multicall(bundle);
     }
 }

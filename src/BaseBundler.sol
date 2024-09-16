@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {IMulticall} from "./interfaces/IMulticall.sol";
+import {IInitiatorStore} from "./interfaces/IInitiatorStore.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UNSET_INITIATOR} from "./libraries/ConstantsLib.sol";
@@ -15,7 +16,7 @@ import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.s
 /// @dev Every bundler inheriting from this contract must have their external functions payable as they will be
 /// delegate called by the `multicall` function (which is payable, and thus might pass a non-null ETH value). It is
 /// recommended not to rely on `msg.value` as the same value can be reused for multiple calls.
-abstract contract BaseBundler is IMulticall {
+abstract contract BaseBundler is IMulticall, IInitiatorStore {
     using SafeTransferLib for ERC20;
 
     /* STORAGE */
@@ -37,8 +38,7 @@ abstract contract BaseBundler is IMulticall {
 
     /* PUBLIC */
 
-    /// @notice Returns the address of the initiator of the multicall transaction.
-    /// @dev Specialized getter to prevent using `_initiator` directly.
+    /// @inheritdoc IInitiatorStore
     function initiator() public view returns (address) {
         return _initiator;
     }

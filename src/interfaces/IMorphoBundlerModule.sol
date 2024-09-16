@@ -7,5 +7,5 @@ pragma solidity >=0.5.0;
 /// @notice Interface of Morpho Bundler module.
 interface IMorphoBundlerModule {
     /// @notice Receives a call from the Morpho Bundler.
-    function onMorphoBundlerCall(address initiator, bytes calldata data) external payable;
+    function onMorphoBundlerCall(bytes calldata data) external payable;
 }

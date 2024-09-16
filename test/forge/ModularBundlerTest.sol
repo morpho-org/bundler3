@@ -13,8 +13,9 @@ import {CURRENT_MODULE_SLOT} from "../../src/libraries/ConstantsLib.sol";
 import "./helpers/LocalTest.sol";
 
 contract ModularBundlerTest is LocalTest {
+    using BundleTestLib for bytes[];
 
-    IMorphoBundlerModule module;
+    MorphoBundlerModuleMock module;
     bytes[] callbackBundle2;
 
     function setUp() public override {
@@ -22,57 +23,52 @@ contract ModularBundlerTest is LocalTest {
         module = new MorphoBundlerModuleMock(address(bundler));
     }
 
-    function testPassthroughInitiator(address initiator) public {
-        bundle.push(abi.encodeCall(IModularBundler.callModule, (address(module), hex"",0)));
-
-        vm.expectCall(address(module),0,abi.encodeCall(IMorphoBundlerModule.onMorphoBundlerCall,(initiator,hex"")));
-
-        vm.prank(initiator);
-        bundler.multicall(bundle);
-    }
-
     function testPassthroughValue(uint128 value) public {
         address initiator = makeAddr("initiator");
-        bundle.push(abi.encodeCall(IModularBundler.callModule, (address(module), hex"",value)));
 
-        vm.expectCall(address(module),value,abi.encodeCall(IMorphoBundlerModule.onMorphoBundlerCall,(initiator,hex"")));
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.isProtected, ()), value);
 
-        vm.deal(initiator,value);
+        vm.expectCall(address(module), value, bytes.concat(IMorphoBundlerModule.onMorphoBundlerCall.selector));
+
+        vm.deal(initiator, value);
         vm.prank(initiator);
-        bundler.multicall{value:value}(bundle);
+        bundler.multicall{value: value}(bundle);
     }
 
-    function testCallbackDecode(address initiator, uint amount) public {
+    function testCallbackDecode(address initiator, uint256 amount) public {
         address token = makeAddr("token mock");
-        callbackBundle.push(abi.encodeCall(PermitBundler.permit,(token,amount,0,0,0,0,true)));
+        callbackBundle.push(abi.encodeCall(PermitBundler.permit, (token, amount, 0, 0, 0, 0, true)));
 
-        bundle.push(abi.encodeCall(IModularBundler.callModule, (address(module),  abi.encode(callbackBundle),0)));
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.callbackBundler, abi.encode(callbackBundle)));
 
-        vm.etch(token,hex"01");
-        vm.expectCall(token,abi.encodeCall(IERC20Permit.permit,(initiator,address(bundler),amount,0,0,0,0)));
+        vm.etch(token, hex"01");
+        vm.expectCall(token, abi.encodeCall(IERC20Permit.permit, (initiator, address(bundler), amount, 0, 0, 0, 0)));
 
         vm.prank(initiator);
         bundler.multicall(bundle);
     }
 
     function testNestedCallback(address initiator) public {
-        IMorphoBundlerModule module2 = new MorphoBundlerModuleMock(address(bundler));
+        MorphoBundlerModuleMock module2 = new MorphoBundlerModuleMock(address(bundler));
 
-        callbackBundle2.push(abi.encodeCall(IModularBundler.callModule,(address(module2),hex"",0)));
+        callbackBundle2.pushModuleCall(address(module2), abi.encodeCall(module2.isProtected, ()));
 
         // Run 2 toplevel callbacks to check that previousModule is correctly restored in ModularBundler.callModule.
-        callbackBundle.push(abi.encodeCall(IModularBundler.callModule,(address(module2),abi.encode(callbackBundle2),0)));
+        callbackBundle.pushModuleCall(
+            address(module2), abi.encodeCall(module2.callbackBundler, abi.encode(callbackBundle2))
+        );
 
-        callbackBundle.push(abi.encodeCall(IModularBundler.callModule,(address(module2),abi.encode(callbackBundle2),0)));
+        callbackBundle.pushModuleCall(
+            address(module2), abi.encodeCall(module2.callbackBundler, abi.encode(callbackBundle2))
+        );
 
-        bundle.push(abi.encodeCall(IModularBundler.callModule,(address(module),abi.encode(callbackBundle),0)));
+        bundle.pushModuleCall(address(module), abi.encodeCall(module.callbackBundler, abi.encode(callbackBundle)));
 
         vm.prank(initiator);
         bundler.multicall(bundle);
-
     }
 
-    function testCurrentModuleSlot() pure public {
+    function testCurrentModuleSlot() public {
         assertEq(CURRENT_MODULE_SLOT, keccak256("Morpho Bundler Current Module Slot"));
     }
 }

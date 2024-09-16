@@ -4,16 +4,18 @@ pragma solidity ^0.8.0;
 import {BaseMorphoBundlerModule} from "../modules/BaseMorphoBundlerModule.sol";
 import {IModularBundler} from "../interfaces/IModularBundler.sol";
 
-contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
+event Initiator(address);
 
+contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
     constructor(address bundler) BaseMorphoBundlerModule(bundler) {}
 
-    function _onMorphoBundlerCall(address, bytes calldata data) internal override {
-        if (data.length == 0) {
-            return;
-        } else {
-        } {
-            IModularBundler(MORPHO_BUNDLER).multicallFromModule(data);
-        }
+    function isProtected() external payable protected {}
+
+    function emitInitiator() external payable {
+        emit Initiator(initiator());
+    }
+
+    function callbackBundler(bytes calldata data) external payable protected {
+        IModularBundler(MORPHO_BUNDLER).multicallFromModule(data);
     }
 }

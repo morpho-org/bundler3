@@ -12,14 +12,13 @@ import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing calls to external bundler module contracts
 abstract contract ModularBundler is BaseBundler, IModularBundler {
-
     /* EXTERNAL */
 
     /// @inheritdoc IModularBundler
-    function callModule(address module, bytes calldata data, uint value) external payable protected {
+    function callModule(address module, bytes calldata data, uint256 value) external payable protected {
         address previousModule = currentModule();
         setCurrentModule(module);
-        IMorphoBundlerModule(module).onMorphoBundlerCall{value:value}(initiator(), data);
+        IMorphoBundlerModule(module).onMorphoBundlerCall{value: value}(data);
         setCurrentModule(previousModule);
     }
 
@@ -41,7 +40,7 @@ abstract contract ModularBundler is BaseBundler, IModularBundler {
     /// @notice Set the bundler module that is about to be called.
     function setCurrentModule(address module) internal {
         assembly ("memory-safe") {
-            tstore(CURRENT_MODULE_SLOT,module)
+            tstore(CURRENT_MODULE_SLOT, module)
         }
     }
 
