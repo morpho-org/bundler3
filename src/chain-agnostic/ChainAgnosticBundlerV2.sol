@@ -34,7 +34,7 @@ contract ChainAgnosticBundlerV2 is
     /* INTERNAL */
 
     /// @inheritdoc MorphoBundler
-    function _isSenderAuthorized() internal view override(BaseBundler,  MorphoBundler, ModularBundler) returns (bool) {
+    function _isSenderAuthorized() internal view override(BaseBundler, MorphoBundler, ModularBundler) returns (bool) {
         return MorphoBundler._isSenderAuthorized() || ModularBundler._isSenderAuthorized();
     }
 }
