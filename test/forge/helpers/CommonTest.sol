@@ -24,6 +24,7 @@ import {
     ORACLE_PRICE_SCALE
 } from "../../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 
+import {IModularBundler} from "../../../src/interfaces/IModularBundler.sol";
 import {IrmMock} from "../../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH} from "../../../lib/solmate/src/tokens/WETH.sol";
@@ -36,8 +37,6 @@ import {UrdBundler} from "../../../src/UrdBundler.sol";
 import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
-
-import {BundleTestLib} from "../libraries/BundleTestLib.sol";
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../lib/forge-std/src/console2.sol";
@@ -278,5 +277,13 @@ abstract contract CommonTest is Test {
     ) internal pure returns (bytes memory) {
         return
             abi.encodeCall(MorphoBundler.reallocateTo, (publicAllocator, vault, value, withdrawals, supplyMarketParams));
+    }
+
+    function _moduleCall(address module, bytes memory data) internal pure returns (bytes memory) {
+        return abi.encodeCall(IModularBundler.callModule, (address(module), data, 0));
+    }
+
+    function _moduleCall(address module, bytes memory data, uint256 value) internal pure returns (bytes memory) {
+        return abi.encodeCall(IModularBundler.callModule, (address(module), data, value));
     }
 }

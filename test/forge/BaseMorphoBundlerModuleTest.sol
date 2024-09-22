@@ -11,8 +11,6 @@ import "./helpers/LocalTest.sol";
 import {MorphoBundlerModuleMock, Initiator} from "../../src/mocks/MorphoBundlerModuleMock.sol";
 
 contract BaseMorphoBundlerModuleTest is LocalTest {
-    using BundleTestLib for bytes[];
-
     MorphoBundlerModuleMock module;
 
     function setUp() public override {
@@ -23,7 +21,7 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
     function testGetInitiator(address initiator) public {
         vm.assume(initiator != UNSET_INITIATOR);
 
-        bundle.pushModuleCall(address(module), abi.encodeCall(module.emitInitiator, ()));
+        bundle.push(_moduleCall(address(module), abi.encodeCall(module.emitInitiator, ())));
 
         vm.expectEmit(true, true, false, true, address(module));
         emit Initiator(initiator);
@@ -33,13 +31,13 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
     }
 
     function testProtectedSuccess() public {
-        bundle.pushModuleCall(address(module), abi.encodeCall(module.isProtected, ()));
+        bundle.push(_moduleCall(address(module), abi.encodeCall(module.isProtected, ())));
 
         bundler.multicall(bundle);
     }
 
     function testProtectedFailure() public {
-        bundle.pushModuleCall(address(module), abi.encodeCall(module.isProtected, ()));
+        bundle.push(_moduleCall(address(module), abi.encodeCall(module.isProtected, ())));
 
         BaseBundler otherBundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
@@ -47,7 +45,7 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
     }
 
     function testBubbleRevert(string memory revertReason) public {
-        bundle.pushModuleCall(address(module), abi.encodeCall(module.doRevert, (revertReason)));
+        bundle.push(_moduleCall(address(module), abi.encodeCall(module.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));
         bundler.multicall(bundle);
     }
