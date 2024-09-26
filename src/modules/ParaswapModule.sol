@@ -1,0 +1,153 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity ^0.8.24;
+
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
+import {IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {BaseMorphoBundlerModule} from "./BaseMorphoBundlerModule.sol";
+import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+
+interface HasMorpho {
+    function MORPHO() external returns (IMorpho);
+}
+
+/// @title ParaswapModule
+/// @author Morpho Labs
+/// @custom:contact security@morpho.org
+/// @notice Module for trading with Paraswap.
+contract ParaswapModule is BaseMorphoBundlerModule {
+    using SafeTransferLib for ERC20;
+    using MorphoBalancesLib for IMorpho;
+
+    /* IMMUTABLES */
+
+    IAugustusRegistry public immutable AUGUSTUS_REGISTRY;
+    IMorpho public immutable MORPHO;
+
+    /* CONSTRUCTOR */
+
+    constructor(address morphoBundler, address augustusRegistry) BaseMorphoBundlerModule(morphoBundler) {
+        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
+        MORPHO = HasMorpho(morphoBundler).MORPHO();
+    }
+
+    /* MODIFIERS */
+
+    modifier inAugustusRegistry(address augustus) {
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY);
+        _;
+    }
+
+    /* SWAP ACTIONS */
+
+    /// @notice Sells a fixed amount of `sellToken` against `buyToken` that are sent to `receiver`.
+    /// @dev Sells the minimum of `sellAmount` and the balance of this contract.
+    /// @dev Slippage is checked with `minBuyAmount`. `minBuyAmount` is adjusted if `sellAmount` is adjusted.
+    /// @dev Remember to add 4 to the swap data offset to account for the function signature.
+    /// @param augustus The address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param swapData The swap data to call `augustus` with. Contains routing information.
+    /// @param sellToken The token to sell.
+    /// @param buyToken The token to buy.
+    /// @param sellAmount The amount of `sellToken` to sell. Can be adjusted.
+    /// @param minBuyAmount If the trade yields less than `minBuyAmount`, the trade reverts. Can be adjusted.
+    /// @param sellAmountOffset If `sellAmount` is adjusted, the new `sellAmount` will be written to `swapData` at this
+    /// byte offset.
+    /// @param receiver The address to which bought assets will be sent, as well as any leftover `sellToken`.
+    function sell(
+        address augustus,
+        bytes memory swapData,
+        address sellToken,
+        address buyToken,
+        uint256 sellAmount,
+        uint256 minBuyAmount,
+        uint256 sellAmountOffset,
+        address receiver
+    ) external bundlerOnly inAugustusRegistry(augustus) {
+        uint256 buyBalanceBefore = ERC20(buyToken).balanceOf(address(this));
+        uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
+
+        if (sellBalanceBefore < sellAmount) {
+            updateInPlace(swapData, sellAmountOffset, sellBalanceBefore);
+            minBuyAmount = minBuyAmount * sellBalanceBefore / sellAmount;
+        }
+
+        trade(augustus, swapData, sellToken);
+
+        uint256 boughtAmount = ERC20(buyToken).balanceOf(address(this)) - buyBalanceBefore;
+        require(boughtAmount >= minBuyAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+
+        skim(sellToken, receiver);
+        skim(buyToken, receiver);
+    }
+
+    /// @notice Buys a fixed amount of `buyToken` for `receiver` by selling `sellToken`.
+    /// @dev Using the `marketParams` parameter, it is possible to adjust `buyAmount` from a fixed amount to the entire
+    /// initiator's debt in a Morpho market.
+    /// @dev Remember to add 4 to the swap data offset to account for the function signature.
+    /// @dev Slippage is checked with `maxSellAmount`. `maxSellAmount` is adjusted if `buyAmount` is adjusted.
+    /// @param augustus The address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param swapData The swap data to call `augustus` with. Contains routing information.
+    /// @param sellToken The token to sell.
+    /// @param buyToken The token to buy.
+    /// @param maxSellAmount If the trade costs more than `maxSellAmount`, the trade reverts. Can be adjusted.
+    /// @param buyAmount The amount of `buyToken` to buy. Can be adjusted.
+    /// @param buyAmountOffset If `buyAmount` is adjusted, the new `buyAmount` will be written to `swapData` at this
+    /// byte offset.
+    /// @param marketParams If `marketParams.loanToken` is nonzero, adjusts `buyAmount` to the initiator's debt in this
+    /// market.
+    /// @param receiver The address to which bought assets will be sent, as well as any leftover `sellToken`.
+    function buy(
+        address augustus,
+        bytes memory swapData,
+        address sellToken,
+        address buyToken,
+        uint256 maxSellAmount,
+        uint256 buyAmount,
+        uint256 buyAmountOffset,
+        MarketParams memory marketParams,
+        address receiver
+    ) public bundlerOnly inAugustusRegistry(augustus) {
+        uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
+
+        if (marketParams.loanToken != address(0)) {
+            require(marketParams.loanToken == buyToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
+            uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
+            updateInPlace(swapData, buyAmountOffset, borrowAssets);
+            maxSellAmount = maxSellAmount * borrowAssets / buyAmount;
+        }
+
+        trade(augustus, swapData, sellToken);
+        uint256 skimmed = skim(sellToken, receiver);
+
+        uint256 soldAmount = sellBalanceBefore - skimmed;
+        require(soldAmount <= maxSellAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+
+        skim(buyToken, receiver);
+    }
+
+    /* INTERNAL FUNCTIONS */
+
+    /// @notice Execute the trade specified by `swapData` with `augustus`.
+    function trade(address augustus, bytes memory swapData, address sellToken) internal {
+        ERC20(sellToken).safeApprove(augustus, type(uint256).max);
+        (bool success, bytes memory returnData) = address(augustus).call(swapData);
+        if (!success) _revert(returnData);
+        ERC20(sellToken).safeApprove(augustus, 0);
+    }
+
+    /// @notice Update memory bytes `data` by replacing the 32 bytes starting at `offset` with `newValue`.
+    function updateInPlace(bytes memory data, uint256 offset, uint256 newValue) internal pure {
+        require(offset <= data.length - 32, ErrorsLib.INVALID_OFFSET);
+        assembly ("memory-safe") {
+            let memoryOffset := add(32, add(data, offset))
+            mstore(memoryOffset, newValue)
+        }
+    }
+
+    /// @notice Send remaining balance of `token` to `dest`.
+    function skim(address token, address dest) internal returns (uint256 skimmed) {
+        skimmed = ERC20(token).balanceOf(address(this));
+        if (skimmed > 0) ERC20(token).transfer(dest, skimmed);
+    }
+}

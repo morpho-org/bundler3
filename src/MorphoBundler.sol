@@ -9,6 +9,9 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
+import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 
 /// @title MorphoBundler
 /// @author Morpho Labs
@@ -16,6 +19,9 @@ import {BaseBundler} from "./BaseBundler.sol";
 /// @notice Bundler contract managing interactions with Morpho.
 abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     using SafeTransferLib for ERC20;
+    using MorphoBalancesLib for IMorpho;
+    using MorphoLib for IMorpho;
+    using MarketParamsLib for MarketParams;
 
     /* IMMUTABLES */
 
@@ -253,6 +259,26 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         MarketParams calldata supplyMarketParams
     ) external payable protected {
         IPublicAllocator(publicAllocator).reallocateTo{value: value}(vault, withdrawals, supplyMarketParams);
+    }
+
+    /// @notice Copy entire debt of `srcMarketParams` to `destMarketParams`.
+    /// @dev Initiator must have previously authorized the bundler to act on their behalf on Morpho.
+    /// @param srcMarketParams The Morpho market with the debt position to copy.
+    /// @param destMarketParams The Morpho market to borrow from.
+    /// @param slippageAmount The maximum amount of borrow shares to mint in exchange the copied debt.
+    /// @param debtor The address of the owner of the debt position to copy.
+    /// @param receiver The address that will receive the borrowed assets.
+    function morphoCopyDebt(
+        MarketParams memory srcMarketParams,
+        MarketParams memory destMarketParams,
+        uint256 slippageAmount,
+        address debtor,
+        address receiver
+    ) external payable protected {
+        uint256 debt = MORPHO.expectedBorrowAssets(srcMarketParams, debtor);
+        (, uint256 borrowedShares) = MORPHO.borrow(destMarketParams, debt, 0, initiator(), receiver);
+
+        require(borrowedShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
     }
 
     /* INTERNAL */

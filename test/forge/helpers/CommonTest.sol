@@ -28,6 +28,7 @@ import {IModularBundler} from "../../../src/interfaces/IModularBundler.sol";
 import {IrmMock} from "../../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH} from "../../../lib/solmate/src/tokens/WETH.sol";
+import {ParaswapModule} from "../../../src/modules/ParaswapModule.sol";
 
 import {BaseBundler} from "../../../src/BaseBundler.sol";
 import {PermitBundler} from "../../../src/PermitBundler.sol";
@@ -205,12 +206,21 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
+        address onBehalf,
+        bytes memory data
+    ) internal pure returns (bytes memory) {
+        return
+            abi.encodeCall(MorphoBundler.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data));
+    }
+
+    function _morphoSupply(
+        MarketParams memory marketParams,
+        uint256 assets,
+        uint256 shares,
+        uint256 slippageAmount,
         address onBehalf
     ) internal view returns (bytes memory) {
-        return abi.encodeCall(
-            MorphoBundler.morphoSupply,
-            (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-        );
+        return _morphoSupply(marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle));
     }
 
     function _morphoBorrow(
@@ -238,12 +248,29 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
+        address onBehalf,
+        bytes memory data
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(MorphoBundler.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data));
+    }
+
+    function _morphoRepay(
+        MarketParams memory marketParams,
+        uint256 assets,
+        uint256 shares,
+        uint256 slippageAmount,
         address onBehalf
     ) internal view returns (bytes memory) {
-        return abi.encodeCall(
-            MorphoBundler.morphoRepay,
-            (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-        );
+        return _morphoRepay(marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle));
+    }
+
+    function _morphoSupplyCollateral(
+        MarketParams memory marketParams,
+        uint256 assets,
+        address onBehalf,
+        bytes memory data
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(MorphoBundler.morphoSupplyCollateral, (marketParams, assets, onBehalf, data));
     }
 
     function _morphoSupplyCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf)
@@ -251,9 +278,7 @@ abstract contract CommonTest is Test {
         view
         returns (bytes memory)
     {
-        return abi.encodeCall(
-            MorphoBundler.morphoSupplyCollateral, (marketParams, assets, onBehalf, abi.encode(callbackBundle))
-        );
+        return _morphoSupplyCollateral(marketParams, assets, onBehalf, abi.encode(callbackBundle));
     }
 
     function _morphoWithdrawCollateral(MarketParams memory marketParams, uint256 assets, address receiver)
@@ -262,6 +287,18 @@ abstract contract CommonTest is Test {
         returns (bytes memory)
     {
         return abi.encodeCall(MorphoBundler.morphoWithdrawCollateral, (marketParams, assets, receiver));
+    }
+
+    function _morphoCopyDebt(
+        MarketParams memory srcMarketParams,
+        MarketParams memory destMarketParams,
+        uint256 slippageAmount,
+        address debtor,
+        address receiver
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(
+            MorphoBundler.morphoCopyDebt, (srcMarketParams, destMarketParams, slippageAmount, debtor, receiver)
+        );
     }
 
     function _morphoFlashLoan(address asset, uint256 amount) internal view returns (bytes memory) {
@@ -279,11 +316,58 @@ abstract contract CommonTest is Test {
             abi.encodeCall(MorphoBundler.reallocateTo, (publicAllocator, vault, value, withdrawals, supplyMarketParams));
     }
 
+    /* MODULAR ACTIONS */
+
     function _moduleCall(address module, bytes memory data) internal pure returns (bytes memory) {
         return abi.encodeCall(IModularBundler.callModule, (address(module), data, 0));
     }
 
     function _moduleCall(address module, bytes memory data, uint256 value) internal pure returns (bytes memory) {
         return abi.encodeCall(IModularBundler.callModule, (address(module), data, value));
+    }
+
+    /* PARASWAP MODULE ACTIONS */
+
+    function _paraswapSell(
+        address augustus,
+        bytes memory swapData,
+        address sellToken,
+        address buyToken,
+        uint256 sellAmount,
+        uint256 minBuyAmount,
+        uint256 sellAmountOffset,
+        address receiver
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(
+            ParaswapModule.sell,
+            (augustus, swapData, sellToken, buyToken, sellAmount, minBuyAmount, sellAmountOffset, receiver)
+        );
+    }
+
+    function _paraswapBuy(
+        address augustus,
+        bytes memory swapData,
+        address sellToken,
+        address buyToken,
+        uint256 maxSellAmount,
+        uint256 buyAmount,
+        uint256 buyAmountOffset,
+        MarketParams memory _marketParams,
+        address receiver
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(
+            ParaswapModule.buy,
+            (
+                augustus,
+                swapData,
+                sellToken,
+                buyToken,
+                maxSellAmount,
+                buyAmount,
+                buyAmountOffset,
+                _marketParams,
+                receiver
+            )
+        );
     }
 }

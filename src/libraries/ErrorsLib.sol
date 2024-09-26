@@ -51,4 +51,13 @@ library ErrorsLib {
 
     /// @dev Thrown when redeeming CompoundV2 cTokens returns an error code.
     string internal constant REDEEM_ERROR = "redeem error";
+
+    /// @dev Thrown when contract used to trade is not in the paraswap registry.
+    string internal constant AUGUSTUS_NOT_IN_REGISTRY = "augustus not in registry";
+
+    /// @dev Thrown when the selected market does not have the correct loan token.
+    string internal constant INCORRECT_LOAN_TOKEN = "incorrect loan token";
+
+    /// @dev Thrown when a data offset is invalid.
+    string internal constant INVALID_OFFSET = "invalid offset";
 }

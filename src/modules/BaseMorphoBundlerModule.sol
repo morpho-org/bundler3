@@ -45,4 +45,15 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
     function initiator() internal view returns (address) {
         return IInitiatorStore(MORPHO_BUNDLER).initiator();
     }
+
+    /// @dev Bubbles up the revert reason / custom error encoded in `returnData`.
+    /// @dev Throws with a generic error if there was no return data.
+    function _revert(bytes memory returnData) internal pure {
+        uint256 length = returnData.length;
+        require(length > 0, ErrorsLib.CALL_FAILED);
+
+        assembly ("memory-safe") {
+            revert(add(32, returnData), length)
+        }
+    }
 }

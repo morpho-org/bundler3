@@ -28,15 +28,33 @@ abstract contract LocalTest is CommonTest {
         marketParams = MarketParams(address(loanToken), address(collateralToken), address(oracle), address(irm), LLTV);
         id = marketParams.id();
 
-        vm.startPrank(OWNER);
-        morpho.enableLltv(LLTV);
-        morpho.createMarket(marketParams);
-        vm.stopPrank();
-
         loanToken.approve(address(morpho), type(uint256).max);
         collateralToken.approve(address(morpho), type(uint256).max);
 
-        vm.prank(SUPPLIER);
+        vm.startPrank(OWNER);
+        morpho.enableLltv(LLTV);
+        morpho.createMarket(marketParams);
+
+        vm.startPrank(SUPPLIER);
         loanToken.approve(address(morpho), type(uint256).max);
+        collateralToken.approve(address(morpho), type(uint256).max);
+        vm.stopPrank();
+    }
+
+    function _supplyCollateral(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        ERC20Mock(_marketParams.collateralToken).setBalance(onBehalf, amount);
+        vm.prank(onBehalf);
+        morpho.supplyCollateral(_marketParams, amount, onBehalf, hex"");
+    }
+
+    function _supply(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        ERC20Mock(_marketParams.loanToken).setBalance(onBehalf, amount);
+        vm.prank(onBehalf);
+        morpho.supply(_marketParams, amount, 0, onBehalf, hex"");
+    }
+
+    function _borrow(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        vm.prank(onBehalf);
+        morpho.borrow(_marketParams, amount, 0, onBehalf, onBehalf);
     }
 }
