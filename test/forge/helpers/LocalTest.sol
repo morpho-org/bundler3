@@ -23,7 +23,9 @@ abstract contract LocalTest is CommonTest {
         super.setUp();
 
         loanToken = new ERC20Mock("loan", "B");
+        vm.label(address(loanToken), "loanToken");
         collateralToken = new ERC20Mock("collateral", "C");
+        vm.label(address(collateralToken), "collateralToken");
 
         marketParams = MarketParams(address(loanToken), address(collateralToken), address(oracle), address(irm), LLTV);
         id = marketParams.id();
