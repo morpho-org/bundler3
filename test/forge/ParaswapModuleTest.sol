@@ -288,6 +288,7 @@ contract ParaswapModuleTest is LocalTest {
     }
 
     function testSkimSell(uint256 extra, address receiver) public {
+        assumeNotZeroAddress(receiver);
         vm.assume(loanToken.balanceOf(receiver) == 0);
         vm.assume(collateralToken.balanceOf(receiver) == 0);
         extra = bound(extra, 0, WAD);
@@ -302,6 +303,7 @@ contract ParaswapModuleTest is LocalTest {
     }
 
     function testSkimBuy(uint256 extra, address receiver) public {
+        assumeNotZeroAddress(receiver);
         vm.assume(loanToken.balanceOf(receiver) == 0);
         vm.assume(collateralToken.balanceOf(receiver) == 0);
         extra = bound(extra, 0, WAD);
