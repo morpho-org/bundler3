@@ -79,8 +79,8 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         uint256 boughtAmount = ERC20(buyToken).balanceOf(address(this)) - buyBalanceBefore;
         require(boughtAmount >= minBuyAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
 
-        skim(sellToken, receiver);
         skim(buyToken, receiver);
+        skim(sellToken, receiver);
     }
 
     /// @notice Buys a fixed amount of `buyToken` for `receiver` by selling `sellToken`.
@@ -120,12 +120,13 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         }
 
         trade(augustus, augustusCalldata, sellToken);
-        uint256 skimmed = skim(sellToken, receiver);
-
-        uint256 soldAmount = sellBalanceBefore - skimmed;
-        require(soldAmount <= maxSellAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
 
         skim(buyToken, receiver);
+        uint256 sellBalanceSkimmed = skim(sellToken, receiver);
+
+        uint256 soldAmount = sellBalanceBefore - sellBalanceSkimmed;
+        require(soldAmount <= maxSellAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+
     }
 
     /* INTERNAL FUNCTIONS */
