@@ -10,8 +10,6 @@ import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.s
 
 import {BaseBundler} from "./BaseBundler.sol";
 import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
-import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
-import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 
 /// @title MorphoBundler
 /// @author Morpho Labs
@@ -20,8 +18,6 @@ import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.
 abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
-    using MorphoLib for IMorpho;
-    using MarketParamsLib for MarketParams;
 
     /* IMMUTABLES */
 

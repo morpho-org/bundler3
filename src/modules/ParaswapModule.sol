@@ -43,20 +43,19 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sells a fixed amount of `sellToken` against `buyToken` that are sent to `receiver`.
+    /// @notice Sells a fixed amount of `sellToken` against `buyToken`, which are then sent to `receiver`.
     /// @dev Sells the minimum of `sellAmount` and the balance of this contract.
     /// @dev Slippage is checked with `minBuyAmount`. `minBuyAmount` is adjusted if `sellAmount` is adjusted.
-    /// @dev Remember to add 4 to the swap data offset to account for the function signature.
-    /// @param augustus The address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param augustusCalldata The swap data to call `augustus` with. Contains routing information.
-    /// @param sellToken The token to sell.
-    /// @param buyToken The token to buy.
-    /// @param sellAmount The amount of `sellToken` to sell. Can be adjusted.
+    /// @dev Remember to add 4 to the `augustusCalldata` offset to account for the function signature.
+    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
+    /// @param sellToken Token to sell.
+    /// @param buyToken Token to buy.
+    /// @param sellAmount Amount of `sellToken` to sell. Can be adjusted.
     /// @param minBuyAmount If the trade yields less than `minBuyAmount`, the trade reverts. Can be adjusted.
-    /// @param sellAmountOffset If `sellAmount` is adjusted, the new `sellAmount` will be written to `augustusCalldata`
-    /// at this
-    /// byte offset.
-    /// @param receiver The address to which bought assets will be sent, as well as any leftover `sellToken`.
+    /// @param sellAmountOffset Byte offset of `augustusCalldata` at which to overwrite `sellAmount`, if `sellAmount` is
+    /// adjusted.
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function sell(
         address augustus,
         bytes memory augustusCalldata,
@@ -87,20 +86,19 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @notice Buys a fixed amount of `buyToken` for `receiver` by selling `sellToken`.
     /// @dev Using the `marketParams` parameter, it is possible to adjust `buyAmount` from a fixed amount to the entire
     /// initiator's debt in a Morpho market.
-    /// @dev Remember to add 4 to the swap data offset to account for the function signature.
+    /// @dev Remember to add 4 to the `augustusCalldata` offset to account for the function signature.
     /// @dev Slippage is checked with `maxSellAmount`. `maxSellAmount` is adjusted if `buyAmount` is adjusted.
-    /// @param augustus The address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param augustusCalldata The swap data to call `augustus` with. Contains routing information.
-    /// @param sellToken The token to sell.
-    /// @param buyToken The token to buy.
+    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
+    /// @param sellToken Token to sell.
+    /// @param buyToken Token to buy.
     /// @param maxSellAmount If the trade costs more than `maxSellAmount`, the trade reverts. Can be adjusted.
-    /// @param buyAmount The amount of `buyToken` to buy. Can be adjusted.
-    /// @param buyAmountOffset If `buyAmount` is adjusted, the new `buyAmount` will be written to `augustusCalldata` at
-    /// this
-    /// byte offset.
+    /// @param buyAmount Amount of `buyToken` to buy. Can be adjusted.
+    /// @param buyAmountOffset Byte offset of `augustusCalldata` at which to overwrite `buyAmount`, if `buyAmount` is
+    /// adjusted.
     /// @param marketParams If `marketParams.loanToken` is nonzero, adjusts `buyAmount` to the initiator's debt in this
     /// market.
-    /// @param receiver The address to which bought assets will be sent, as well as any leftover `sellToken`.
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function buy(
         address augustus,
         bytes memory augustusCalldata,
