@@ -173,7 +173,7 @@ contract ParaswapModuleTest is LocalTest {
         paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, 0, 0, marketParams, address(0));
     }
 
-    function testUpdateInPlaceLengthCheck(uint length, uint offset) public {
+    function testupdateBytesAtOffsetLengthCheck(uint length, uint offset) public {
         length = bound(length,32,1024);
         offset = bound(offset, length-32+1,type(uint).max);
         vm.expectRevert(bytes(ErrorsLib.INVALID_OFFSET));
@@ -196,7 +196,7 @@ contract ParaswapModuleTest is LocalTest {
 
     }
 
-    function testUpdateInPlaceSell(address _augustus, uint128 balance, uint256 offset) public {
+    function testupdateBytesAtOffsetSell(address _augustus, uint128 balance, uint256 offset) public {
         _callable(_augustus);
         augustusRegistry.setValid(_augustus, true);
         uint256 callDataLength = 1024;
@@ -227,7 +227,7 @@ contract ParaswapModuleTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testUpdateInPlaceBuy(address _augustus, uint256 debt, uint256 offset) public {
+    function testupdateBytesAtOffsetBuy(address _augustus, uint256 debt, uint256 offset) public {
         debt = bound(debt, 1, type(uint104).max);
         _callable(_augustus);
         augustusRegistry.setValid(_augustus, true);

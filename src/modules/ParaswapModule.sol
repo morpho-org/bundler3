@@ -70,7 +70,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
 
         if (sellBalanceBefore < sellAmount) {
-            updateInPlace(augustusCalldata, sellAmountOffset, sellBalanceBefore);
+            updateBytesAtOffset(augustusCalldata, sellAmountOffset, sellBalanceBefore);
             minBuyAmount = minBuyAmount.mulDivUp(sellBalanceBefore, sellAmount);
         }
 
@@ -115,7 +115,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         if (marketParams.loanToken != address(0)) {
             require(marketParams.loanToken == buyToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
             uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
-            updateInPlace(augustusCalldata, buyAmountOffset, borrowAssets);
+            updateBytesAtOffset(augustusCalldata, buyAmountOffset, borrowAssets);
             maxSellAmount = maxSellAmount * borrowAssets / buyAmount;
         }
 
@@ -140,7 +140,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     }
 
     /// @notice Update memory bytes `data` by replacing the 32 bytes starting at `offset` with `newValue`.
-    function updateInPlace(bytes memory data, uint256 offset, uint256 newValue) internal pure {
+    function updateBytesAtOffset(bytes memory data, uint256 offset, uint256 newValue) internal pure {
         require(offset <= data.length - 32, ErrorsLib.INVALID_OFFSET);
         assembly ("memory-safe") {
             let memoryOffset := add(32, add(data, offset))
