@@ -333,14 +333,23 @@ abstract contract CommonTest is Test {
         bytes memory augustusCalldata,
         address sellToken,
         address buyToken,
-        uint256 sellAmount,
         uint256 minBuyAmount,
+        bool sellEntireBalance,
         uint256 sellAmountOffset,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
             ParaswapModule.sell,
-            (augustus, augustusCalldata, sellToken, buyToken, sellAmount, minBuyAmount, sellAmountOffset, receiver)
+            (
+                augustus,
+                augustusCalldata,
+                sellToken,
+                buyToken,
+                minBuyAmount,
+                sellEntireBalance,
+                sellAmountOffset,
+                receiver
+            )
         );
     }
 
@@ -350,24 +359,13 @@ abstract contract CommonTest is Test {
         address sellToken,
         address buyToken,
         uint256 maxSellAmount,
-        uint256 buyAmount,
-        uint256 buyAmountOffset,
         MarketParams memory _marketParams,
+        uint256 buyAmountOffset,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
             ParaswapModule.buy,
-            (
-                augustus,
-                augustusCalldata,
-                sellToken,
-                buyToken,
-                maxSellAmount,
-                buyAmount,
-                buyAmountOffset,
-                _marketParams,
-                receiver
-            )
+            (augustus, augustusCalldata, sellToken, buyToken, maxSellAmount, _marketParams, buyAmountOffset, receiver)
         );
     }
 }
