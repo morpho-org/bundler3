@@ -18,7 +18,7 @@ contract BaseBundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testInitiatorSlot() public {
+    function testInitiatorSlot() public view {
         assertEq(ConstantsLib.INITIATOR_SLOT, keccak256("Morpho Bundler Initiator Slot"));
     }
 }
