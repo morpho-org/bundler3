@@ -110,13 +110,13 @@ abstract contract CommonTest is Test {
     }
 
     function _supplyCollateral(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
-        deal(_marketParams.collateralToken, onBehalf, amount);
+        deal(_marketParams.collateralToken, onBehalf, amount, true);
         vm.prank(onBehalf);
         morpho.supplyCollateral(_marketParams, amount, onBehalf, hex"");
     }
 
     function _supply(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
-        deal(_marketParams.loanToken, onBehalf, amount);
+        deal(_marketParams.loanToken, onBehalf, amount, true);
         vm.prank(onBehalf);
         morpho.supply(_marketParams, amount, 0, onBehalf, hex"");
     }
