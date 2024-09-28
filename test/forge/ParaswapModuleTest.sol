@@ -340,14 +340,6 @@ contract ParaswapModuleTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testX() public {
-        testSellSlippageCheckWithAdjustment(
-            91963739657892556963730456531714190049907408351194895,
-            24454938018736622817597843437438855705529675740,
-            98347530794108903447367692402
-        );
-    }
-
     function testBuySlippageCheckWithAdjustment(uint256 buyAmount, uint256 adjust, uint256 percent) public {
         percent = bound(percent, 1, 1000);
         buyAmount = bound(buyAmount, 1, type(uint64).max);
