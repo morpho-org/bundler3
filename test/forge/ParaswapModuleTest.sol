@@ -263,6 +263,7 @@ contract ParaswapModuleTest is LocalTest {
     }
 
     function testIncorrectLoanToken(address argToken, address marketToken) public {
+vm.assume(marketToken != address(0));
         vm.assume(argToken != marketToken);
 
         marketParams.loanToken = marketToken;
