@@ -49,6 +49,7 @@ contract MigrationForkTest is ForkTest {
 
     function _assertBorrowerPosition(uint256 collateralSupplied, uint256 borrowed, address user, address bundler)
         internal
+        view
     {
         assertEq(morpho.expectedSupplyAssets(marketParams, user), 0, "supply != 0");
         assertEq(morpho.collateral(marketParams.id(), user), collateralSupplied, "wrong collateral supply amount");
@@ -56,14 +57,14 @@ contract MigrationForkTest is ForkTest {
         assertFalse(morpho.isAuthorized(user, bundler), "authorization not revoked");
     }
 
-    function _assertSupplierPosition(uint256 supplied, address user, address bundler) internal {
+    function _assertSupplierPosition(uint256 supplied, address user, address bundler) internal view {
         assertEq(morpho.expectedSupplyAssets(marketParams, user), supplied, "wrong supply amount");
         assertEq(morpho.collateral(marketParams.id(), user), 0, "collateral supplied != 0");
         assertEq(morpho.expectedBorrowAssets(marketParams, user), 0, "borrow != 0");
         assertFalse(morpho.isAuthorized(user, bundler), "authorization not revoked");
     }
 
-    function _assertVaultSupplierPosition(uint256 supplied, address user, address bundler) internal {
+    function _assertVaultSupplierPosition(uint256 supplied, address user, address bundler) internal view {
         uint256 shares = suppliersVault.balanceOf(user);
         assertEq(suppliersVault.convertToAssets(shares), supplied, "wrong supply amount");
         assertFalse(morpho.isAuthorized(user, bundler), "authorization not revoked");
