@@ -103,7 +103,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundler.multicall(bundle);
     }
 
-    function _testSupply(uint256 amount, address onBehalf) internal {
+    function _testSupply(uint256 amount, address onBehalf) internal view {
         assertEq(collateralToken.balanceOf(USER), 0, "collateral.balanceOf(USER)");
         assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
 
@@ -170,7 +170,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         _testSupply(amount, onBehalf);
     }
 
-    function _testSupplyCollateral(uint256 amount, address onBehalf) internal {
+    function _testSupplyCollateral(uint256 amount, address onBehalf) internal view {
         assertEq(collateralToken.balanceOf(USER), 0, "collateral.balanceOf(USER)");
         assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
 
@@ -262,7 +262,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         MorphoBundler(address(bundler)).morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
     }
 
-    function _testSupplyCollateralBorrow(address user, uint256 amount, uint256 collateralAmount) internal {
+    function _testSupplyCollateralBorrow(address user, uint256 amount, uint256 collateralAmount) internal view {
         assertEq(collateralToken.balanceOf(RECEIVER), 0, "collateral.balanceOf(RECEIVER)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
 
@@ -336,7 +336,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         MorphoBundler(address(bundler)).morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER);
     }
 
-    function _testRepayWithdrawCollateral(address user, uint256 collateralAmount) internal {
+    function _testRepayWithdrawCollateral(address user, uint256 collateralAmount) internal view {
         assertEq(collateralToken.balanceOf(RECEIVER), collateralAmount, "collateral.balanceOf(RECEIVER)");
         assertEq(loanToken.balanceOf(RECEIVER), 0, "loan.balanceOf(RECEIVER)");
 
