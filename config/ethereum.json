@@ -1,6 +1,9 @@
 {
     "chainId": 1,
-    "forkBlockNumber": 18500000,
+    "forkBlockNumbers": {
+        "default": 18500000,
+        "paraswap": 20841975
+    },
     "markets": [
         {
             "loanToken": "WETH",
@@ -27,5 +30,7 @@
     "cDAIv2": "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
     "cETHv2": "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5",
     "cUSDCv2": "0x39AA39c021dfbaE8faC545936693aC917d5E7563",
-    "cWETHv3": "0xA17581A9E3356d9A858b789D68B4d866e593aE94"
+    "cWETHv3": "0xA17581A9E3356d9A858b789D68B4d866e593aE94",
+    "AugustusV6_2": "0x6A000F20005980200259B80c5102003040001068",
+    "AugustusRegistry": "0xa68bEA62Dc4034A689AA0F58A76681433caCa663"
 }

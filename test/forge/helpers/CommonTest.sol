@@ -39,6 +39,8 @@ import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
 
+import {AugustusRegistryMock} from "../../../src/mocks/AugustusRegistryMock.sol";
+
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../lib/forge-std/src/console2.sol";
 
@@ -64,15 +66,23 @@ abstract contract CommonTest is Test {
     OracleMock internal oracle;
 
     BaseBundler internal bundler;
+    ParaswapModule paraswapModule;
+
+    AugustusRegistryMock augustusRegistryMock;
 
     bytes[] internal bundle;
     bytes[] internal callbackBundle;
+
+    MarketParams internal emptyMarketParams;
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
         vm.label(address(morpho), "Morpho");
 
+        augustusRegistryMock = new AugustusRegistryMock();
+
         bundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
+        paraswapModule = new ParaswapModule(address(bundler), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
@@ -99,6 +109,23 @@ abstract contract CommonTest is Test {
         return (privateKey, user);
     }
 
+    function _supplyCollateral(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        deal(_marketParams.collateralToken, onBehalf, amount);
+        vm.prank(onBehalf);
+        morpho.supplyCollateral(_marketParams, amount, onBehalf, hex"");
+    }
+
+    function _supply(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        deal(_marketParams.loanToken, onBehalf, amount);
+        vm.prank(onBehalf);
+        morpho.supply(_marketParams, amount, 0, onBehalf, hex"");
+    }
+
+    function _borrow(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        vm.prank(onBehalf);
+        morpho.borrow(_marketParams, amount, 0, onBehalf, onBehalf);
+    }
+
     /* TRANSFER */
 
     function _nativeTransfer(address recipient, uint256 amount) internal pure returns (bytes memory) {
@@ -113,6 +140,14 @@ abstract contract CommonTest is Test {
 
     function _erc20TransferFrom(address asset, uint256 amount) internal pure returns (bytes memory) {
         return abi.encodeCall(TransferBundler.erc20TransferFrom, (asset, amount));
+    }
+
+    function _erc20TransferFromWithReceiver(address asset, address receiver, uint256 amount)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodeCall(TransferBundler.erc20TransferFromWithReceiver, (asset, receiver, amount));
     }
 
     /* ERC20 WRAPPER ACTIONS */

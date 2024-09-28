@@ -96,7 +96,8 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param sellToken Token to sell.
     /// @param buyToken Token to buy.
     /// @param maxSellAmount If the trade costs more than `maxSellAmount`, the trade reverts. Can be adjusted. The
-    /// maximum sell amount parameters inside `augustusCalldata` will not be adjusted.
+    /// maximum sell amount parameters inside `augustusCalldata` will not be adjusted, so the Augustus contract may
+    /// still pull the original amount.
     /// @param buyAmountOffset Byte offset of `augustusCalldata` where the buy amount is stored.
     /// @param marketParams If `marketParams.loanToken` is nonzero, adjusts buy amount to the initiator's debt in this
     /// market.

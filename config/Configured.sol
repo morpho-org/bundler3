@@ -35,6 +35,8 @@ abstract contract Configured is StdChains {
     address internal C_ETH_V2;
     address internal C_USDC_V2;
     address internal C_WETH_V3;
+    address internal AUGUSTUS_V6_2;
+    address internal AUGUSTUS_REGISTRY;
 
     ConfigMarket[] internal configMarkets;
 
@@ -70,6 +72,8 @@ abstract contract Configured is StdChains {
         WST_ETH = CONFIG.getAddress("wstETH");
         CB_ETH = CONFIG.getAddress("cbETH");
         S_DAI = CONFIG.getAddress("sDai");
+        AUGUSTUS_V6_2 = CONFIG.getAddress("AugustusV6_2");
+        AUGUSTUS_REGISTRY = CONFIG.getAddress("AugustusRegistry");
 
         allAssets = [DAI, USDC, USDT, LINK, WBTC, WETH, ST_ETH, WST_ETH, CB_ETH, S_DAI];
 

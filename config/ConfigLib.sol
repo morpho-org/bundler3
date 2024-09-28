@@ -24,7 +24,7 @@ library ConfigLib {
     using stdJson for string;
 
     string internal constant CHAIN_ID_PATH = "$.chainId";
-    string internal constant FORK_BLOCK_NUMBER_PATH = "$.forkBlockNumber";
+    string internal constant FORK_BLOCK_NUMBERS_PATH = "$.forkBlockNumbers";
     string internal constant MARKETS_PATH = "$.markets";
     string internal constant WRAPPED_NATIVE_PATH = "$.wrappedNative";
     string internal constant LSD_NATIVES_PATH = "$.lsdNatives";
@@ -49,8 +49,8 @@ library ConfigLib {
         return config.json.readUint(CHAIN_ID_PATH);
     }
 
-    function getForkBlockNumber(Config storage config) internal view returns (uint256) {
-        return config.json.readUint(FORK_BLOCK_NUMBER_PATH);
+    function getForkBlockNumber(Config storage config, string memory key) internal view returns (uint256) {
+        return config.json.readUint(string.concat(FORK_BLOCK_NUMBERS_PATH, ".", key));
     }
 
     function getWrappedNative(Config storage config) internal view returns (address) {

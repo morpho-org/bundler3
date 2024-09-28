@@ -7,18 +7,6 @@ import "./helpers/LocalTest.sol";
 import {IAugustusRegistry} from "../../src/interfaces/IAugustusRegistry.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-contract AugustusRegistryMock is IAugustusRegistry {
-    mapping(address => bool) valids;
-
-    function setValid(address account, bool isValid) external {
-        valids[account] = isValid;
-    }
-
-    function isValidAugustus(address account) external view returns (bool) {
-        return valids[account];
-    }
-}
-
 contract AugustusMock {
     function mockBuy(address srcToken, address destToken, uint256 toAmount) external {
         uint256 fromAmount = toAmount;
@@ -41,8 +29,6 @@ contract ParaswapModuleTest is LocalTest {
     using MorphoLib for IMorpho;
     using MathLib for uint256;
 
-    ParaswapModule paraswapModule;
-    AugustusRegistryMock augustusRegistry;
     AugustusMock augustus;
 
     ERC20Mock collateralToken2;
@@ -52,8 +38,6 @@ contract ParaswapModuleTest is LocalTest {
     ERC20Mock loanToken2;
     MarketParams internal marketParamsLoan2;
     Id internal idLoan2;
-
-    MarketParams internal emptyMarketParams;
 
     // If ratio too close to 100%:
     // - debt accruals between bundle creation and tx may trigger a revert
@@ -66,10 +50,8 @@ contract ParaswapModuleTest is LocalTest {
 
     function setUp() public virtual override {
         super.setUp();
-        augustusRegistry = new AugustusRegistryMock();
         augustus = new AugustusMock();
-        augustusRegistry.setValid(address(augustus), true);
-        paraswapModule = new ParaswapModule(address(bundler), address(augustusRegistry));
+        augustusRegistryMock.setValid(address(augustus), true);
 
         // New loan token
 
@@ -165,7 +147,7 @@ contract ParaswapModuleTest is LocalTest {
     }
 
     function testAugustusInRegistrySellCheck(address _augustus) public {
-        augustusRegistry.setValid(_augustus, false);
+        augustusRegistryMock.setValid(_augustus, false);
 
         vm.prank(address(bundler));
 
@@ -174,7 +156,7 @@ contract ParaswapModuleTest is LocalTest {
     }
 
     function testAugustusInRegistryBuyCheck(address _augustus) public {
-        augustusRegistry.setValid(_augustus, false);
+        augustusRegistryMock.setValid(_augustus, false);
 
         vm.prank(address(bundler));
 
@@ -229,7 +211,7 @@ contract ParaswapModuleTest is LocalTest {
 
     function testWriteBytesAtOffsetSell(address _augustus, uint256 balance, uint256 offset) public {
         _callable(_augustus);
-        augustusRegistry.setValid(_augustus, true);
+        augustusRegistryMock.setValid(_augustus, true);
         uint256 callDataLength = 1024;
 
         balance = bound(balance, 1, type(uint120).max);
@@ -255,7 +237,7 @@ contract ParaswapModuleTest is LocalTest {
     function testwriteBytesAtOffsetBuy(address _augustus, uint256 debt, uint256 offset) public {
         debt = bound(debt, 1, type(uint104).max);
         _callable(_augustus);
-        augustusRegistry.setValid(_augustus, true);
+        augustusRegistryMock.setValid(_augustus, true);
         uint256 callDataLength = 1024;
 
         _supplyCollateral(marketParams, debt * 2, address(this));

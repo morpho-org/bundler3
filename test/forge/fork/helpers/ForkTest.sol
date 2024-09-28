@@ -43,6 +43,8 @@ abstract contract ForkTest is CommonTest, Configured {
             bundler = new ChainAgnosticBundlerV2(address(morpho), address(WETH));
         }
 
+        paraswapModule = new ParaswapModule(address(bundler), address(AUGUSTUS_REGISTRY));
+
         for (uint256 i; i < configMarkets.length; ++i) {
             ConfigMarket memory configMarket = configMarkets[i];
 
@@ -68,11 +70,15 @@ abstract contract ForkTest is CommonTest, Configured {
 
     function _fork() internal virtual {
         string memory rpcUrl = vm.rpcUrl(network);
-        uint256 forkBlockNumber = CONFIG.getForkBlockNumber();
+        uint256 forkBlockNumber = CONFIG.getForkBlockNumber(_forkBlockNumberKey());
 
         forkId = forkBlockNumber == 0 ? vm.createSelectFork(rpcUrl) : vm.createSelectFork(rpcUrl, forkBlockNumber);
 
         vm.chainId(CONFIG.getChainId());
+    }
+
+    function _forkBlockNumberKey() internal virtual returns (string memory) {
+        return "default";
     }
 
     function _label() internal virtual {

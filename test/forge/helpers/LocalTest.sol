@@ -42,21 +42,4 @@ abstract contract LocalTest is CommonTest {
         collateralToken.approve(address(morpho), type(uint256).max);
         vm.stopPrank();
     }
-
-    function _supplyCollateral(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
-        ERC20Mock(_marketParams.collateralToken).setBalance(onBehalf, amount);
-        vm.prank(onBehalf);
-        morpho.supplyCollateral(_marketParams, amount, onBehalf, hex"");
-    }
-
-    function _supply(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
-        ERC20Mock(_marketParams.loanToken).setBalance(onBehalf, amount);
-        vm.prank(onBehalf);
-        morpho.supply(_marketParams, amount, 0, onBehalf, hex"");
-    }
-
-    function _borrow(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
-        vm.prank(onBehalf);
-        morpho.borrow(_marketParams, amount, 0, onBehalf, onBehalf);
-    }
 }
