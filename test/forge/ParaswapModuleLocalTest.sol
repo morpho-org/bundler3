@@ -160,9 +160,8 @@ contract ParaswapModuleTest is LocalTest {
 
         vm.prank(address(bundler));
 
-        MarketParams memory marketParams;
         vm.expectRevert(bytes(ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY));
-        paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, marketParams, 0, address(0));
+        paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, emptyMarketParams, 0, address(0));
     }
 
     function testBytesAtOffsetLengthCheckSell(uint256 length, uint256 offset) public {

@@ -52,7 +52,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
     /// @param sellToken Token to sell.
     /// @param buyToken Token to buy.
-    /// @param minBuyAmount If the trade yields less than `minBuyAmount`, the trade reverts. Can be adjusted. The
+    /// @param minBuyAmount If the swap yields less than `minBuyAmount`, the swap reverts. Can be adjusted. The
     /// minimum buy amount parameters inside `augustusCalldata` will not be adjusted.
     /// @param sellAmountOffset Byte offset of `augustusCalldata` where the sell amount is stored.
     /// @param sellEntireBalance If true, adjusts sell amount to the current balance of this contract.
@@ -77,7 +77,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
             minBuyAmount = minBuyAmount.mulDivUp(sellBalanceBefore, sellAmount);
         }
 
-        trade(augustus, augustusCalldata, sellToken);
+        swap(augustus, augustusCalldata, sellToken);
 
         uint256 boughtAmount = ERC20(buyToken).balanceOf(address(this)) - buyBalanceBefore;
         require(boughtAmount >= minBuyAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
@@ -95,7 +95,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
     /// @param sellToken Token to sell.
     /// @param buyToken Token to buy.
-    /// @param maxSellAmount If the trade costs more than `maxSellAmount`, the trade reverts. Can be adjusted. The
+    /// @param maxSellAmount If the swap costs more than `maxSellAmount`, the swap reverts. Can be adjusted. The
     /// maximum sell amount parameters inside `augustusCalldata` will not be adjusted, so the Augustus contract may
     /// still pull the original amount.
     /// @param buyAmountOffset Byte offset of `augustusCalldata` where the buy amount is stored.
@@ -122,7 +122,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
             maxSellAmount = maxSellAmount.mulDivDown(borrowAssets, buyAmount);
         }
 
-        trade(augustus, augustusCalldata, sellToken);
+        swap(augustus, augustusCalldata, sellToken);
 
         skim(buyToken, receiver);
         uint256 sellBalanceSkimmed = skim(sellToken, receiver);
@@ -133,8 +133,8 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /* INTERNAL FUNCTIONS */
 
-    /// @notice Execute the trade specified by `augustusCalldata` with `augustus`.
-    function trade(address augustus, bytes memory augustusCalldata, address sellToken) internal {
+    /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
+    function swap(address augustus, bytes memory augustusCalldata, address sellToken) internal {
         ERC20(sellToken).safeApprove(augustus, type(uint256).max);
         (bool success, bytes memory returnData) = address(augustus).call(augustusCalldata);
         if (!success) _revert(returnData);
