@@ -43,19 +43,17 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sells a fixed amount of `sellToken` against `buyToken`, which are then sent to `receiver`.
-    /// @dev Depending on `sellEntireBalance`, sells either the amount specified at offset `sellAmountOffset` in
-    /// `augustusCalldata`, or the current balance of this contract.
-    /// @dev Slippage is checked with `minBuyAmount`. `minBuyAmount` is adjusted if the sell amount is adjusted.
-    /// @dev Remember to add 4 to the `augustusCalldata` offset to account for the function signature.
+    /// @notice Sell an exact amount. Reverts unless at least `minBuyAmount` tokens are received.
+    /// @dev If the exact sell amount is adjusted, then `minBuyAmount` is adjusted but the slippage check parameters
+    /// inside `augustusCalldata` are not adjusted.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
     /// @param sellToken Token to sell.
     /// @param buyToken Token to buy.
-    /// @param minBuyAmount If the swap yields less than `minBuyAmount`, the swap reverts. Can be adjusted. The
-    /// minimum buy amount parameters inside `augustusCalldata` will not be adjusted.
-    /// @param sellAmountOffset Byte offset of `augustusCalldata` where the sell amount is stored.
+    /// @param minBuyAmount If the swap yields strictly less than `minBuyAmount`, the swap reverts. Can change if
+    /// `sellEntireBalance` is true.
     /// @param sellEntireBalance If true, adjusts sell amount to the current balance of this contract.
+    /// @param sellAmountOffset Byte offset of `augustusCalldata` where the exact sell amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function sell(
         address augustus,
@@ -86,21 +84,19 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         skim(sellToken, receiver);
     }
 
-    /// @notice Buys a fixed amount of `buyToken` for `receiver` by selling `sellToken`.
-    /// @dev Depending on `marketParams`, buys either the amount specified at offset `buyAmountOffset` in
-    /// `augustusCalldata`, or the current debt of the initiator on `marketParams`.
-    /// @dev Slippage is checked with `maxSellAmount`. `maxSellAmount` is adjusted if the buy amount is adjusted.
-    /// @dev Remember to add 4 to the `augustusCalldata` offset to account for the function signature.
+    /// @notice Buy an exact amount. Reverts unless at most `maxSellAmount` tokens are sold.
+    /// @dev If the exact buy amount is adjusted, then `maxSellAmount` is adjusted. But when called, the `augustus`
+    /// contract may still try to transfer the max sell amount value encoded in `augustusCalldata` no matter the new
+    /// `maxSellAmount` value.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
     /// @param sellToken Token to sell.
     /// @param buyToken Token to buy.
-    /// @param maxSellAmount If the swap costs more than `maxSellAmount`, the swap reverts. Can be adjusted. The
-    /// maximum sell amount parameters inside `augustusCalldata` will not be adjusted, so the Augustus contract may
-    /// still pull the original amount.
-    /// @param buyAmountOffset Byte offset of `augustusCalldata` where the buy amount is stored.
-    /// @param marketParams If `marketParams.loanToken` is nonzero, adjusts buy amount to the initiator's debt in this
-    /// market.
+    /// @param maxSellAmount If the swap costs strctly more than `maxSellAmount`, the swap reverts. Can change if
+    /// `marketParams.loanToken` is not zero.
+    /// @param marketParams If `marketParams.loanToken` is not zero and equal to `buyToken`, adjusts buy amount to the
+    /// initiator's debt in this market.
+    /// @param buyAmountOffset Byte offset of `augustusCalldata` where the exact buy amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function buy(
         address augustus,
