@@ -60,4 +60,6 @@ library ErrorsLib {
 
     /// @dev Thrown when a data offset is invalid.
     string internal constant INVALID_OFFSET = "invalid offset";
+
+    string internal constant NULL_VARIABLE_NAME = "null variable name";
 }

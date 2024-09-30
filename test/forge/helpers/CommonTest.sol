@@ -16,6 +16,7 @@ import {SharesMathLib} from "../../../lib/morpho-blue/src/libraries/SharesMathLi
 import {MathLib, WAD} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {SafeTransferLib, ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IERC20} from "../../../lib/forge-std/src/interfaces/IERC20.sol";
 import {MorphoLib} from "../../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MorphoBalancesLib} from "../../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {
@@ -23,6 +24,7 @@ import {
     MAX_LIQUIDATION_INCENTIVE_FACTOR,
     ORACLE_PRICE_SCALE
 } from "../../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+import {NamedOffset} from "../../../src/interfaces/NamedOffset.sol";
 
 import {IModularBundler} from "../../../src/interfaces/IModularBundler.sol";
 import {IrmMock} from "../../../lib/morpho-blue/src/mocks/IrmMock.sol";
@@ -38,6 +40,7 @@ import {UrdBundler} from "../../../src/UrdBundler.sol";
 import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
+import {VariablesBundler} from "../../../src/VariablesBundler.sol";
 
 import {AugustusRegistryMock} from "../../../src/mocks/AugustusRegistryMock.sol";
 
@@ -72,8 +75,6 @@ abstract contract CommonTest is Test {
 
     bytes[] internal bundle;
     bytes[] internal callbackBundle;
-
-    MarketParams internal emptyMarketParams;
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
@@ -324,18 +325,6 @@ abstract contract CommonTest is Test {
         return abi.encodeCall(MorphoBundler.morphoWithdrawCollateral, (marketParams, assets, receiver));
     }
 
-    function _morphoCopyDebt(
-        MarketParams memory srcMarketParams,
-        MarketParams memory destMarketParams,
-        uint256 slippageAmount,
-        address debtor,
-        address receiver
-    ) internal pure returns (bytes memory) {
-        return abi.encodeCall(
-            MorphoBundler.morphoCopyDebt, (srcMarketParams, destMarketParams, slippageAmount, debtor, receiver)
-        );
-    }
-
     function _morphoFlashLoan(address asset, uint256 amount) internal view returns (bytes memory) {
         return abi.encodeCall(MorphoBundler.morphoFlashLoan, (asset, amount, abi.encode(callbackBundle)));
     }
@@ -369,7 +358,7 @@ abstract contract CommonTest is Test {
         address sellToken,
         address buyToken,
         uint256 minBuyAmount,
-        bool sellEntireBalance,
+        bytes32 sellAmountVariable,
         uint256 sellAmountOffset,
         address receiver
     ) internal pure returns (bytes memory) {
@@ -381,7 +370,7 @@ abstract contract CommonTest is Test {
                 sellToken,
                 buyToken,
                 minBuyAmount,
-                sellEntireBalance,
+                sellAmountVariable,
                 sellAmountOffset,
                 receiver
             )
@@ -394,13 +383,51 @@ abstract contract CommonTest is Test {
         address sellToken,
         address buyToken,
         uint256 maxSellAmount,
-        MarketParams memory _marketParams,
+        bytes32 buyAmountVariable,
         uint256 buyAmountOffset,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
             ParaswapModule.buy,
-            (augustus, augustusCalldata, sellToken, buyToken, maxSellAmount, _marketParams, buyAmountOffset, receiver)
+            (
+                augustus,
+                augustusCalldata,
+                sellToken,
+                buyToken,
+                maxSellAmount,
+                buyAmountVariable,
+                buyAmountOffset,
+                receiver
+            )
         );
+    }
+
+    /* VARIABLES ACTIONS */
+
+    function _setVariable(bytes32 name, bytes32 data) internal pure returns (bytes memory) {
+        return abi.encodeCall(VariablesBundler.setVariable, (name, data));
+    }
+
+    // TODO remove?
+    function _setVariablesWithCall(address target, bytes memory data, NamedOffset[] memory namedIndices)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodeCall(VariablesBundler.setVariablesWithCall, (target, data, namedIndices));
+    }
+
+    function _setVariableWithCall(address target, bytes memory data, bytes32 name, uint256 offset)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        NamedOffset[] memory namedOffsets = new NamedOffset[](1);
+        namedOffsets[0] = NamedOffset(name, offset);
+        return _setVariablesWithCall(target, data, namedOffsets);
+    }
+
+    function _setVariableToBalanceOf(bytes32 name, address asset, address owner) internal pure returns (bytes memory) {
+        return _setVariableWithCall(asset, abi.encodeCall(IERC20.balanceOf, (owner)), name, 0);
     }
 }

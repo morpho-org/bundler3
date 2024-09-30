@@ -8,6 +8,7 @@ import {BaseMorphoBundlerModule} from "./BaseMorphoBundlerModule.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {VariablesBundler} from "../VariablesBundler.sol";
 
 interface HasMorpho {
     function MORPHO() external returns (IMorpho);
@@ -52,7 +53,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param buyToken Token to buy.
     /// @param minBuyAmount If the swap yields strictly less than `minBuyAmount`, the swap reverts. Can change if
     /// `sellEntireBalance` is true.
-    /// @param sellEntireBalance If true, adjusts sell amount to the current balance of this contract.
+    /// @param sellAmountVariable TODO
     /// @param sellAmountOffset Byte offset of `augustusCalldata` where the exact sell amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function sell(
@@ -61,18 +62,18 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         address sellToken,
         address buyToken,
         uint256 minBuyAmount,
-        bool sellEntireBalance,
+        bytes32 sellAmountVariable,
         uint256 sellAmountOffset,
         address receiver
     ) external bundlerOnly inAugustusRegistry(augustus) {
         uint256 buyBalanceBefore = ERC20(buyToken).balanceOf(address(this));
         uint256 sellAmount = readBytesAtOffset(augustusCalldata, sellAmountOffset);
 
-        if (sellEntireBalance) {
-            uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
+        if (sellAmountVariable != "") {
+            uint256 newSellAmount = uint256(VariablesBundler(MORPHO_BUNDLER).getVariable(sellAmountVariable));
 
-            writeBytesAtOffset(augustusCalldata, sellAmountOffset, sellBalanceBefore);
-            minBuyAmount = minBuyAmount.mulDivUp(sellBalanceBefore, sellAmount);
+            writeBytesAtOffset(augustusCalldata, sellAmountOffset, newSellAmount);
+            minBuyAmount = minBuyAmount.mulDivUp(newSellAmount, sellAmount);
         }
 
         swap(augustus, augustusCalldata, sellToken);
@@ -94,7 +95,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param buyToken Token to buy.
     /// @param maxSellAmount If the swap costs strctly more than `maxSellAmount`, the swap reverts. Can change if
     /// `marketParams.loanToken` is not zero.
-    /// @param marketParams If `marketParams.loanToken` is not zero and equal to `buyToken`, adjusts buy amount to the
+    /// @param buyAmountVariable TODO
     /// initiator's debt in this market.
     /// @param buyAmountOffset Byte offset of `augustusCalldata` where the exact buy amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
@@ -104,18 +105,17 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         address sellToken,
         address buyToken,
         uint256 maxSellAmount,
-        MarketParams memory marketParams,
+        bytes32 buyAmountVariable,
         uint256 buyAmountOffset,
         address receiver
     ) public bundlerOnly inAugustusRegistry(augustus) {
         uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
 
         uint256 buyAmount = readBytesAtOffset(augustusCalldata, buyAmountOffset);
-        if (marketParams.loanToken != address(0)) {
-            require(marketParams.loanToken == buyToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
-            uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
-            writeBytesAtOffset(augustusCalldata, buyAmountOffset, borrowAssets);
-            maxSellAmount = maxSellAmount.mulDivDown(borrowAssets, buyAmount);
+        if (buyAmountVariable != "") {
+            uint256 newBuyAmount = uint256(VariablesBundler(MORPHO_BUNDLER).getVariable(buyAmountVariable));
+            writeBytesAtOffset(augustusCalldata, buyAmountOffset, newBuyAmount);
+            maxSellAmount = maxSellAmount.mulDivDown(newBuyAmount, buyAmount);
         }
 
         swap(augustus, augustusCalldata, sellToken);

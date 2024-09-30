@@ -10,12 +10,19 @@ import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.s
 
 import {BaseBundler} from "./BaseBundler.sol";
 import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {VariablesBundler} from "./VariablesBundler.sol";
+import {
+    SUPPLY_CALLBACK_VARIABLE,
+    SUPPLY_COLLATERAL_CALLBACK_VARIABLE,
+    REPAY_CALLBACK_VARIABLE,
+    FLASHLOAN_CALLBACK_VARIABLE
+} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 
 /// @title MorphoBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Morpho.
-abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
+abstract contract MorphoBundler is VariablesBundler, IMorphoBundler {
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
 
@@ -34,22 +41,26 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
 
     /* CALLBACKS */
 
-    function onMorphoSupply(uint256, bytes calldata data) external {
+    function onMorphoSupply(uint256 assets, bytes calldata data) external {
+        _setVariable(SUPPLY_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
-    function onMorphoSupplyCollateral(uint256, bytes calldata data) external {
+    function onMorphoSupplyCollateral(uint256 assets, bytes calldata data) external {
+        _setVariable(SUPPLY_COLLATERAL_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
-    function onMorphoRepay(uint256, bytes calldata data) external {
+    function onMorphoRepay(uint256 assets, bytes calldata data) external {
+        _setVariable(REPAY_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
-    function onMorphoFlashLoan(uint256, bytes calldata data) external {
+    function onMorphoFlashLoan(uint256 assets, bytes calldata data) external {
+        _setVariable(FLASHLOAN_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
@@ -140,8 +151,8 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /// given for full compatibility and precision.
     /// @dev Initiator must have previously authorized the bundler to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to borrow assets from.
-    /// @param assets The amount of assets to borrow.
-    /// @param shares The amount of shares to mint.
+    /// @param assets The amount of assets to borrow or uint(variableName) to read from a transient variable.
+    /// @param shares The amount of shares to mint or uint("use variable") to read from a transient variable.
     /// @param slippageAmount The maximum amount of borrow shares to mint in exchange for `assets` when it is used.
     /// The minimum amount of assets to borrow in exchange for `shares` otherwise.
     /// @param receiver The address that will receive the borrowed assets.
@@ -152,6 +163,10 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 slippageAmount,
         address receiver
     ) external payable protected {
+        if (assets != 0 && bytes32(shares) == "use variable") {
+            shares = 0;
+            assets = uint256(_getVariable(bytes32(assets)));
+        }
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
@@ -255,26 +270,6 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         MarketParams calldata supplyMarketParams
     ) external payable protected {
         IPublicAllocator(publicAllocator).reallocateTo{value: value}(vault, withdrawals, supplyMarketParams);
-    }
-
-    /// @notice Copy entire debt of `srcMarketParams` to `destMarketParams`.
-    /// @dev Initiator must have previously authorized the bundler to act on their behalf on Morpho.
-    /// @param srcMarketParams The Morpho market with the debt position to copy.
-    /// @param destMarketParams The Morpho market to borrow from.
-    /// @param slippageAmount The maximum amount of borrow shares to mint in exchange the copied debt.
-    /// @param debtor The address of the owner of the debt position to copy.
-    /// @param receiver The address that will receive the borrowed assets.
-    function morphoCopyDebt(
-        MarketParams memory srcMarketParams,
-        MarketParams memory destMarketParams,
-        uint256 slippageAmount,
-        address debtor,
-        address receiver
-    ) external payable protected {
-        uint256 debt = MORPHO.expectedBorrowAssets(srcMarketParams, debtor);
-        (, uint256 borrowedShares) = MORPHO.borrow(destMarketParams, debt, 0, initiator(), receiver);
-
-        require(borrowedShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
     }
 
     /* INTERNAL */
