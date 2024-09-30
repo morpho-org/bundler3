@@ -257,26 +257,6 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         IPublicAllocator(publicAllocator).reallocateTo{value: value}(vault, withdrawals, supplyMarketParams);
     }
 
-    /// @notice Copy entire debt of `srcMarketParams` to `destMarketParams`.
-    /// @dev Initiator must have previously authorized the bundler to act on their behalf on Morpho.
-    /// @param srcMarketParams The Morpho market with the debt position to copy.
-    /// @param destMarketParams The Morpho market to borrow from.
-    /// @param slippageAmount The maximum amount of borrow shares to mint in exchange the copied debt.
-    /// @param debtor The address of the owner of the debt position to copy.
-    /// @param receiver The address that will receive the borrowed assets.
-    function morphoCopyDebt(
-        MarketParams memory srcMarketParams,
-        MarketParams memory destMarketParams,
-        uint256 slippageAmount,
-        address debtor,
-        address receiver
-    ) external payable protected {
-        uint256 debt = MORPHO.expectedBorrowAssets(srcMarketParams, debtor);
-        (, uint256 borrowedShares) = MORPHO.borrow(destMarketParams, debt, 0, initiator(), receiver);
-
-        require(borrowedShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
-    }
-
     /* INTERNAL */
 
     /// @dev Triggers `_multicall` logic during a callback.
