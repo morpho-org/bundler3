@@ -671,8 +671,8 @@ contract ParaswapModuleTest is LocalTest {
         MarketParams memory sourceParams,
         MarketParams memory destParams
     ) internal {
-        uint256 borrowShares = morpho.borrowShares(marketParams.id(), user);
-        uint256 collateralToSwap = morpho.collateral(marketParams.id(), user);
+        uint256 borrowShares = morpho.borrowShares(sourceParams.id(), user);
+        uint256 collateralToSwap = morpho.collateral(sourceParams.id(), user);
 
         callbackBundle.push(_erc20Transfer(sourceParams.collateralToken, address(paraswapModule), collateralToSwap));
         callbackBundle.push(
