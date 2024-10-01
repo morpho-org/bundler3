@@ -9,3 +9,11 @@ address constant UNSET_INITIATOR = address(1);
 bytes32 constant CURRENT_MODULE_SLOT = 0x4a208b9e5a8db61bf46ae647a7eb221065bc0d8fcb9958db28b558743ea1472d;
 
 bytes32 constant TRANSIENT_VARIABLES_PREFIX = "morpho-bundler-variables";
+
+bytes32 constant SUPPLY_CALLBACK_VARIABLE = "onMorphoSupply";
+
+bytes32 constant SUPPLY_COLLATERAL_CALLBACK_VARIABLE = "onMorphoSupplyCollateral";
+
+bytes32 constant REPAY_CALLBACK_VARIABLE = "onMorphoRepay";
+
+bytes32 constant FLASHLOAN_CALLBACK_VARIABLE = "onMorphoFlashloan";

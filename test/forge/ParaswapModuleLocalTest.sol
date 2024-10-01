@@ -12,7 +12,7 @@ import {
     SUPPLY_COLLATERAL_CALLBACK_VARIABLE,
     REPAY_CALLBACK_VARIABLE,
     FLASHLOAN_CALLBACK_VARIABLE
-} from "../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+} from "../../src/libraries/ConstantsLib.sol";
 
 contract AugustusMock {
     function mockBuy(address srcToken, address destToken, uint256 toAmount) external {
