@@ -658,7 +658,8 @@ contract ParaswapModuleTest is LocalTest {
         assertEq(morpho.expectedBorrowAssets(marketParamsCollateral2, USER), expectedDebt);
     }
 
-    // Method: repay, withdraw collateral, sell all collateral, supply collateral, borrow more than necessary from destMarket, repay
+    // Method: repay, withdraw collateral, sell all collateral, supply collateral, borrow more than necessary from
+    // destMarket, repay
     // all shares on sourceMarket, repay remainnig balance on destMarket
     function _createFullCollateralSwapBundle(
         address user,
@@ -685,7 +686,7 @@ contract ParaswapModuleTest is LocalTest {
             )
         );
 
-        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user,hex""));
+        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoBorrow(destParams, overestimatedDebtToRepay, 0, type(uint256).max, address(bundler)));
 
         bundle.push(_morphoRepay(sourceParams, 0, borrowShares, type(uint256).max, user));

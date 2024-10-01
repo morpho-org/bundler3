@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.24;
 
-// import {IMorphoBundlerModule} from "./interfaces/IMorphoBundlerModule.sol";
-// import {IModularBundler} from "./interfaces/IModularBundler.sol";
 import {BaseBundler} from "./BaseBundler.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import "./interfaces/NamedOffset.sol";
 import {TRANSIENT_VARIABLES_PREFIX} from "./libraries/ConstantsLib.sol";
-// import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
 
 /// @title VariablesBundler
 /// @author Morpho Labs

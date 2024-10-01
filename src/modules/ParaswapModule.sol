@@ -53,7 +53,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param buyToken Token to buy.
     /// @param minBuyAmount If the swap yields strictly less than `minBuyAmount`, the swap reverts. Can change if
     /// `sellEntireBalance` is true.
-    /// @param sellAmountVariable TODO
+    /// @param sellAmountVariable Transient variable to read the exact sell amount from.
     /// @param sellAmountOffset Byte offset of `augustusCalldata` where the exact sell amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function sell(
@@ -95,8 +95,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     /// @param buyToken Token to buy.
     /// @param maxSellAmount If the swap costs strctly more than `maxSellAmount`, the swap reverts. Can change if
     /// `marketParams.loanToken` is not zero.
-    /// @param buyAmountVariable TODO
-    /// initiator's debt in this market.
+    /// @param buyAmountVariable Transient variable to read the exact buy amount from.
     /// @param buyAmountOffset Byte offset of `augustusCalldata` where the exact buy amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
     function buy(

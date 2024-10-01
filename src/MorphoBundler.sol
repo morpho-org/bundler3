@@ -151,8 +151,8 @@ abstract contract MorphoBundler is VariablesBundler, IMorphoBundler {
     /// given for full compatibility and precision.
     /// @dev Initiator must have previously authorized the bundler to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to borrow assets from.
-    /// @param assets The amount of assets to borrow or uint(variableName) to read from a transient variable.
-    /// @param shares The amount of shares to mint or uint("use variable") to read from a transient variable.
+    /// @param assets The amount of assets to borrow.
+    /// @param shares The amount of shares to mint.
     /// @param slippageAmount The maximum amount of borrow shares to mint in exchange for `assets` when it is used.
     /// The minimum amount of assets to borrow in exchange for `shares` otherwise.
     /// @param receiver The address that will receive the borrowed assets.
@@ -163,10 +163,6 @@ abstract contract MorphoBundler is VariablesBundler, IMorphoBundler {
         uint256 slippageAmount,
         address receiver
     ) external payable protected {
-        if (assets != 0 && bytes32(shares) == "use variable") {
-            shares = 0;
-            assets = uint256(_getVariable(bytes32(assets)));
-        }
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
