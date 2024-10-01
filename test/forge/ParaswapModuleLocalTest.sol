@@ -23,7 +23,7 @@ contract AugustusMock {
     }
 }
 
-contract ParaswapModuleTest is LocalTest {
+contract ParaswapModuleLocalTest is LocalTest {
     using MarketParamsLib for MarketParams;
     using MorphoBalancesLib for IMorpho;
     using MorphoLib for IMorpho;
@@ -552,7 +552,7 @@ contract ParaswapModuleTest is LocalTest {
 
         _supply(marketParams, supplyAmount, USER);
 
-        _createFullSupplySwapBundle(USER, marketParams, marketParamsLoan2, address(loanToken2));
+        _createFullSupplySwapBundle(USER, marketParams, marketParamsLoan2);
 
         skip(2 days);
 
@@ -567,10 +567,9 @@ contract ParaswapModuleTest is LocalTest {
     function _createFullSupplySwapBundle(
         address user,
         MarketParams memory sourceParams,
-        MarketParams memory destParams,
-        address buyToken
+        MarketParams memory destParams
     ) internal {
-        _createFullWithdrawAndSwapBundle(user, sourceParams, buyToken, address(bundler));
+        _createFullWithdrawAndSwapBundle(user, sourceParams, destParams.loanToken, address(bundler));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, 0, user, hex""));
     }
 
