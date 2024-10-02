@@ -66,9 +66,9 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         address receiver
     ) external bundlerOnly inAugustusRegistry(augustus) {
         uint256 buyBalanceBefore = ERC20(buyToken).balanceOf(address(this));
-        uint256 sellAmount = readBytesAtOffset(augustusCalldata, sellAmountOffset);
 
         if (sellEntireBalance) {
+            uint256 sellAmount = readBytesAtOffset(augustusCalldata, sellAmountOffset);
             uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
 
             writeBytesAtOffset(augustusCalldata, sellAmountOffset, sellBalanceBefore);
@@ -110,8 +110,8 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     ) public bundlerOnly inAugustusRegistry(augustus) {
         uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
 
-        uint256 buyAmount = readBytesAtOffset(augustusCalldata, buyAmountOffset);
         if (marketParams.loanToken != address(0)) {
+            uint256 buyAmount = readBytesAtOffset(augustusCalldata, buyAmountOffset);
             require(marketParams.loanToken == buyToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
             uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
             writeBytesAtOffset(augustusCalldata, buyAmountOffset, borrowAssets);
