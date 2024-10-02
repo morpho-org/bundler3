@@ -111,8 +111,8 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
 
         if (marketParams.loanToken != address(0)) {
-            uint256 buyAmount = readBytesAtOffset(augustusCalldata, buyAmountOffset);
             require(marketParams.loanToken == buyToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
+            uint256 buyAmount = readBytesAtOffset(augustusCalldata, buyAmountOffset);
             uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
             writeBytesAtOffset(augustusCalldata, buyAmountOffset, borrowAssets);
             maxSellAmount = maxSellAmount.mulDivDown(borrowAssets, buyAmount);
