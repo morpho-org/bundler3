@@ -11,7 +11,7 @@ fs_permissions = [
 libs = ["lib"]
 via-ir = true
 optimizer_runs = 999999
-
+ignored_error_codes = ["transient-storage"]
 
 [profile.default.fuzz]
 runs = 16
