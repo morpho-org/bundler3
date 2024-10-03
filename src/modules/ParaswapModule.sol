@@ -43,98 +43,98 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sell an exact amount. Reverts unless at least `minBuyAmount` tokens are received.
-    /// @dev If the exact sell amount is adjusted, then `minBuyAmount` is adjusted but the slippage check parameters
+    /// @notice Sell an exact amount. Reverts unless at least `minDestAmount` tokens are received.
+    /// @dev If the exact sell amount is adjusted, then `minDestAmount` is adjusted but the slippage check parameters
     /// inside `augustusCalldata` are not adjusted.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
-    /// @param sellToken Token to sell.
-    /// @param buyToken Token to buy.
-    /// @param minBuyAmount If the swap yields strictly less than `minBuyAmount`, the swap reverts. Can change if
+    /// @param srcToken Token to sell.
+    /// @param destToken Token to buy.
+    /// @param minDestAmount If the swap yields strictly less than `minDestAmount`, the swap reverts. Can change if
     /// `sellEntireBalance` is true.
     /// @param sellEntireBalance If true, adjusts sell amount to the current balance of this contract.
-    /// @param sellAmountOffset Byte offset of `augustusCalldata` where the exact sell amount is stored.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
+    /// @param srcAmountOffset Byte offset of `augustusCalldata` where the exact sell amount is stored.
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
     function sell(
         address augustus,
         bytes memory augustusCalldata,
-        address sellToken,
-        address buyToken,
-        uint256 minBuyAmount,
+        address srcToken,
+        address destToken,
+        uint256 minDestAmount,
         bool sellEntireBalance,
-        uint256 sellAmountOffset,
+        uint256 srcAmountOffset,
         address receiver
     ) external bundlerOnly inAugustusRegistry(augustus) {
-        uint256 buyBalanceBefore = ERC20(buyToken).balanceOf(address(this));
+        uint256 destBalanceBefore = ERC20(destToken).balanceOf(address(this));
 
         if (sellEntireBalance) {
-            uint256 sellAmount = readBytesAtOffset(augustusCalldata, sellAmountOffset);
-            uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
+            uint256 srcAmount = readBytesAtOffset(augustusCalldata, srcAmountOffset);
+            uint256 sellBalanceBefore = ERC20(srcToken).balanceOf(address(this));
 
-            writeBytesAtOffset(augustusCalldata, sellAmountOffset, sellBalanceBefore);
-            minBuyAmount = minBuyAmount.mulDivUp(sellBalanceBefore, sellAmount);
+            writeBytesAtOffset(augustusCalldata, srcAmountOffset, sellBalanceBefore);
+            minDestAmount = minDestAmount.mulDivUp(sellBalanceBefore, srcAmount);
         }
 
-        swap(augustus, augustusCalldata, sellToken);
+        swap(augustus, augustusCalldata, srcToken);
 
-        uint256 boughtAmount = ERC20(buyToken).balanceOf(address(this)) - buyBalanceBefore;
-        require(boughtAmount >= minBuyAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        uint256 destAmount = ERC20(destToken).balanceOf(address(this)) - destBalanceBefore;
+        require(destAmount >= minDestAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
 
-        skim(buyToken, receiver);
-        skim(sellToken, receiver);
+        skim(destToken, receiver);
+        skim(srcToken, receiver);
     }
 
-    /// @notice Buy an exact amount. Reverts unless at most `maxSellAmount` tokens are sold.
-    /// @dev If the exact buy amount is adjusted, then `maxSellAmount` is adjusted. But when called, the `augustus`
+    /// @notice Buy an exact amount. Reverts unless at most `maxSrcAmount` tokens are sold.
+    /// @dev If the exact buy amount is adjusted, then `maxSrcAmount` is adjusted. But when called, the `augustus`
     /// contract may still try to transfer the max sell amount value encoded in `augustusCalldata` no matter the new
-    /// `maxSellAmount` value.
+    /// `maxSrcAmount` value.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
-    /// @param sellToken Token to sell.
-    /// @param buyToken Token to buy.
-    /// @param maxSellAmount If the swap costs strctly more than `maxSellAmount`, the swap reverts. Can change if
+    /// @param srcToken Token to sell.
+    /// @param destToken Token to buy.
+    /// @param maxSrcAmount If the swap costs strctly more than `maxSrcAmount`, the swap reverts. Can change if
     /// `marketParams.loanToken` is not zero.
-    /// @param marketParams If `marketParams.loanToken` is not zero and equal to `buyToken`, adjusts buy amount to the
+    /// @param marketParams If `marketParams.loanToken` is not zero and equal to `destToken`, adjusts buy amount to the
     /// initiator's debt in this market.
-    /// @param buyAmountOffset Byte offset of `augustusCalldata` where the exact buy amount is stored.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `sellToken`.
+    /// @param destAmountOffset Byte offset of `augustusCalldata` where the exact buy amount is stored.
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
     function buy(
         address augustus,
         bytes memory augustusCalldata,
-        address sellToken,
-        address buyToken,
-        uint256 maxSellAmount,
+        address srcToken,
+        address destToken,
+        uint256 maxSrcAmount,
         MarketParams memory marketParams,
-        uint256 buyAmountOffset,
+        uint256 destAmountOffset,
         address receiver
     ) public bundlerOnly inAugustusRegistry(augustus) {
-        uint256 sellBalanceBefore = ERC20(sellToken).balanceOf(address(this));
+        uint256 srcBalanceBefore = ERC20(srcToken).balanceOf(address(this));
 
         if (marketParams.loanToken != address(0)) {
-            require(marketParams.loanToken == buyToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
-            uint256 buyAmount = readBytesAtOffset(augustusCalldata, buyAmountOffset);
+            require(marketParams.loanToken == destToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
+            uint256 destAmount = readBytesAtOffset(augustusCalldata, destAmountOffset);
             uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
-            writeBytesAtOffset(augustusCalldata, buyAmountOffset, borrowAssets);
-            maxSellAmount = maxSellAmount.mulDivDown(borrowAssets, buyAmount);
+            writeBytesAtOffset(augustusCalldata, destAmountOffset, borrowAssets);
+            maxSrcAmount = maxSrcAmount.mulDivDown(borrowAssets, destAmount);
         }
 
-        swap(augustus, augustusCalldata, sellToken);
+        swap(augustus, augustusCalldata, srcToken);
 
-        skim(buyToken, receiver);
-        uint256 sellBalanceSkimmed = skim(sellToken, receiver);
+        skim(destToken, receiver);
+        uint256 srcBalanceAfter = skim(srcToken, receiver);
 
-        uint256 soldAmount = sellBalanceBefore - sellBalanceSkimmed;
-        require(soldAmount <= maxSellAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        uint256 srcAmount = srcBalanceBefore - srcBalanceAfter;
+        require(srcAmount <= maxSrcAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
     }
 
     /* INTERNAL FUNCTIONS */
 
     /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
-    function swap(address augustus, bytes memory augustusCalldata, address sellToken) internal {
-        ERC20(sellToken).safeApprove(augustus, type(uint256).max);
+    function swap(address augustus, bytes memory augustusCalldata, address srcToken) internal {
+        ERC20(srcToken).safeApprove(augustus, type(uint256).max);
         (bool success, bytes memory returnData) = address(augustus).call(augustusCalldata);
         if (!success) _revert(returnData);
-        ERC20(sellToken).safeApprove(augustus, 0);
+        ERC20(srcToken).safeApprove(augustus, 0);
     }
 
     /// @notice Read 32 bytes at offset `offset` of memory bytes `data`.
