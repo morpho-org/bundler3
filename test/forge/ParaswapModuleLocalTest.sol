@@ -145,6 +145,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.assume(account != address(morpho));
         vm.assume(account != address(paraswapModule));
         vm.assume(account != address(augustus));
+        vm.assume(account != address(this));
     }
 
     function testAugustusInRegistrySellCheck(address _augustus) public {
@@ -322,7 +323,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testBuySlippageCheckWithAdjustment(uint256 destAmount, uint256 adjust, uint256 percent) public {
+     function testBuySlippageCheckWithAdjustment(uint256 destAmount, uint256 adjust, uint256 percent) public {
         percent = bound(percent, 1, 1000);
         destAmount = bound(destAmount, 1, type(uint64).max);
         adjust = bound(adjust, 1, destAmount);
