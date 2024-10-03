@@ -144,6 +144,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         assumeNotZeroAddress(account);
         vm.assume(account != address(morpho));
         vm.assume(account != address(paraswapModule));
+        vm.assume(account != address(augustus));
     }
 
     function testAugustusInRegistrySellCheck(address _augustus) public {
