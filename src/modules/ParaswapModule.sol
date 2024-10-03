@@ -45,19 +45,19 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /// @notice Sell an exact amount. Reverts unless at least `minDestAmount` tokens are received.
     /// @dev If the exact sell amount is adjusted, then `minDestAmount` is adjusted but the slippage check parameters
-    /// inside `augustusCalldata` are not adjusted.
+    /// inside `callData` are not adjusted.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
+    /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
     /// @param minDestAmount If the swap yields strictly less than `minDestAmount`, the swap reverts. Can change if
     /// `sellEntireBalance` is true.
     /// @param sellEntireBalance If true, adjusts sell amount to the current balance of this contract.
-    /// @param srcAmountOffset Byte offset of `augustusCalldata` where the exact sell amount is stored.
+    /// @param srcAmountOffset Byte offset of `callData` where the exact sell amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
     function sell(
         address augustus,
-        bytes memory augustusCalldata,
+        bytes memory callData,
         address srcToken,
         address destToken,
         uint256 minDestAmount,
@@ -68,14 +68,14 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         uint256 destBalanceBefore = ERC20(destToken).balanceOf(address(this));
 
         if (sellEntireBalance) {
-            uint256 srcAmount = readBytesAtOffset(augustusCalldata, srcAmountOffset);
+            uint256 srcAmount = readBytesAtOffset(callData, srcAmountOffset);
             uint256 sellBalanceBefore = ERC20(srcToken).balanceOf(address(this));
 
-            writeBytesAtOffset(augustusCalldata, srcAmountOffset, sellBalanceBefore);
+            writeBytesAtOffset(callData, srcAmountOffset, sellBalanceBefore);
             minDestAmount = minDestAmount.mulDivUp(sellBalanceBefore, srcAmount);
         }
 
-        swap(augustus, augustusCalldata, srcToken);
+        swap(augustus, callData, srcToken);
 
         uint256 destAmount = ERC20(destToken).balanceOf(address(this)) - destBalanceBefore;
         require(destAmount >= minDestAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
@@ -86,21 +86,21 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /// @notice Buy an exact amount. Reverts unless at most `maxSrcAmount` tokens are sold.
     /// @dev If the exact buy amount is adjusted, then `maxSrcAmount` is adjusted. But when called, the `augustus`
-    /// contract may still try to transfer the max sell amount value encoded in `augustusCalldata` no matter the new
+    /// contract may still try to transfer the max sell amount value encoded in `callData` no matter the new
     /// `maxSrcAmount` value.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param augustusCalldata Swap data to call `augustus` with. Contains routing information.
+    /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
     /// @param maxSrcAmount If the swap costs strctly more than `maxSrcAmount`, the swap reverts. Can change if
     /// `marketParams.loanToken` is not zero.
     /// @param marketParams If `marketParams.loanToken` is not zero and equal to `destToken`, adjusts buy amount to the
     /// initiator's debt in this market.
-    /// @param destAmountOffset Byte offset of `augustusCalldata` where the exact buy amount is stored.
+    /// @param destAmountOffset Byte offset of `callData` where the exact buy amount is stored.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
     function buy(
         address augustus,
-        bytes memory augustusCalldata,
+        bytes memory callData,
         address srcToken,
         address destToken,
         uint256 maxSrcAmount,
@@ -112,13 +112,13 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
         if (marketParams.loanToken != address(0)) {
             require(marketParams.loanToken == destToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
-            uint256 destAmount = readBytesAtOffset(augustusCalldata, destAmountOffset);
+            uint256 destAmount = readBytesAtOffset(callData, destAmountOffset);
             uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
-            writeBytesAtOffset(augustusCalldata, destAmountOffset, borrowAssets);
+            writeBytesAtOffset(callData, destAmountOffset, borrowAssets);
             maxSrcAmount = maxSrcAmount.mulDivDown(borrowAssets, destAmount);
         }
 
-        swap(augustus, augustusCalldata, srcToken);
+        swap(augustus, callData, srcToken);
 
         skim(destToken, receiver);
         uint256 srcBalanceAfter = skim(srcToken, receiver);
@@ -129,10 +129,10 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
     /* INTERNAL FUNCTIONS */
 
-    /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
-    function swap(address augustus, bytes memory augustusCalldata, address srcToken) internal {
+    /// @notice Execute the swap specified by `callData` with `augustus`.
+    function swap(address augustus, bytes memory callData, address srcToken) internal {
         ERC20(srcToken).safeApprove(augustus, type(uint256).max);
-        (bool success, bytes memory returnData) = address(augustus).call(augustusCalldata);
+        (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) _revert(returnData);
         ERC20(srcToken).safeApprove(augustus, 0);
     }
