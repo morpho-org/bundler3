@@ -392,17 +392,17 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         percent = bound(percent, 1, 1000);
         destAmount = bound(destAmount, 1, type(uint64).max);
-        uint256 actualdestAmount = destAmount.mulDivUp(percent, 100);
+        uint256 actualDestAmount = destAmount.mulDivUp(percent, 100);
 
         _supplyCollateral(marketParams, type(uint104).max, address(this));
         _supply(marketParams, type(uint104).max, address(this));
-        _borrow(marketParams, actualdestAmount, address(this));
-        collateralToken.setBalance(address(paraswapModule), actualdestAmount);
+        _borrow(marketParams, actualDestAmount, address(this));
+        collateralToken.setBalance(address(paraswapModule), actualDestAmount);
 
         bundle.push(_buy(address(collateralToken), address(loanToken), destAmount, destAmount, marketParams, receiver));
         bundler.multicall(bundle);
         assertEq(collateralToken.balanceOf(receiver), 0, "receiver collateral");
-        assertEq(loanToken.balanceOf(receiver), actualdestAmount, "receiver loan token");
+        assertEq(loanToken.balanceOf(receiver), actualDestAmount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "module loan token");
     }
