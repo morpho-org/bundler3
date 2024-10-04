@@ -2,7 +2,7 @@
     "chainId": 1,
     "forkBlockNumbers": {
         "default": 18500000,
-        "paraswap": 20841975
+        "paraswap": 20842056
     },
     "markets": [
         {
