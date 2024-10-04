@@ -206,14 +206,15 @@ contract ParaswapModuleLocalTest is LocalTest {
         );
     }
 
-    function testUpdateAmountsSell(
+    function _updateAmountsSell(
         address _augustus,
         uint256 initialExact,
         uint256 initialLimit,
         uint256 initialQuoted,
         uint256 adjustedExact,
-        uint256 offset
-    ) public {
+        uint256 offset,
+        bool adjustQuoted
+    ) internal {
         _callable(_augustus);
         augustusRegistryMock.setValid(_augustus, true);
 
@@ -224,27 +225,26 @@ contract ParaswapModuleLocalTest is LocalTest {
         initialQuoted = bound(initialQuoted, 0, type(uint64).max);
         adjustedExact = bound(adjustedExact, 0, type(uint64).max);
         uint256 adjustedLimit = initialLimit.mulDivUp(adjustedExact, initialExact);
-
-        bytes memory initialData = _swapCalldata(offset, initialExact, initialLimit, initialQuoted);
-        bytes memory adjustedData =
-            _swapCalldata(offset, adjustedExact, adjustedLimit, initialQuoted.mulDivUp(adjustedExact, initialExact));
+        uint256 adjustedQuoted = adjustQuoted ? initialQuoted.mulDivUp(adjustedExact, initialExact) : initialQuoted;
+        uint256 quotedOffset = adjustQuoted ? offset + 64 : 0;
 
         collateralToken.setBalance(address(paraswapModule), adjustedExact);
 
         if (adjustedLimit > 0) {
             vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
         }
-        vm.expectCall(address(_augustus), adjustedData);
+        vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
+        // adjustedData);
         bundle.push(
             _moduleCall(
                 address(paraswapModule),
                 _paraswapSell(
                     _augustus,
-                    initialData,
+                    _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
                     address(collateralToken),
                     address(loanToken),
                     true,
-                    Offsets(offset, offset + 32, offset + 64),
+                    Offsets(offset, offset + 32, quotedOffset),
                     address(1)
                 )
             )
@@ -252,7 +252,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testUpdateAmountsBuy(
+    function testUpdateAmountsSellWithQuoteUpdate(
         address _augustus,
         uint256 initialExact,
         uint256 initialLimit,
@@ -260,6 +260,29 @@ contract ParaswapModuleLocalTest is LocalTest {
         uint256 adjustedExact,
         uint256 offset
     ) public {
+        _updateAmountsSell(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+    }
+
+    function testUpdateAmountsSellNoQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsSell(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
+    }
+
+    function _updateAmountsBuy(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset,
+        bool adjustQuoted
+    ) internal {
         _callable(_augustus);
         augustusRegistryMock.setValid(_augustus, true);
 
@@ -270,32 +293,52 @@ contract ParaswapModuleLocalTest is LocalTest {
         initialQuoted = bound(initialQuoted, 0, type(uint64).max);
         adjustedExact = bound(adjustedExact, 1, type(uint64).max);
         uint256 adjustedLimit = initialLimit.mulDivDown(adjustedExact, initialExact);
-
-        bytes memory initialData = _swapCalldata(offset, initialExact, initialLimit, initialQuoted);
-        bytes memory adjustedData =
-            _swapCalldata(offset, adjustedExact, adjustedLimit, initialQuoted.mulDivDown(adjustedExact, initialExact));
+        uint256 adjustedQuoted = adjustQuoted ? initialQuoted.mulDivDown(adjustedExact, initialExact) : initialQuoted;
+        uint256 quotedOffset = adjustQuoted ? offset + 64 : 0;
 
         _supplyCollateral(marketParams, type(uint104).max, address(this));
         _supply(marketParams, type(uint104).max, address(this));
         _borrow(marketParams, adjustedExact, address(this));
 
         vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
-        vm.expectCall(address(_augustus), adjustedData);
+        vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         bundle.push(
             _moduleCall(
                 address(paraswapModule),
                 _paraswapBuy(
                     _augustus,
-                    initialData,
+                    _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
                     address(collateralToken),
                     address(loanToken),
                     marketParams,
-                    Offsets(offset, offset + 32, offset + 64),
+                    Offsets(offset, offset + 32, quotedOffset),
                     address(1)
                 )
             )
         );
         bundler.multicall(bundle);
+    }
+
+    function testUpdateAmountsBuyWithQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+    }
+
+    function testUpdateAmountsBuyNoQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
     }
 
     function testIncorrectLoanToken(address argToken, address marketToken) public {
@@ -1008,6 +1051,4 @@ contract ParaswapModuleLocalTest is LocalTest {
         callbackBundle.push(_morphoWithdrawCollateral(marketParams, collateral, address(bundler)));
         bundle.push(_morphoFlashLoan(marketParams.collateralToken, collateral));
     }
-
-    function testLimitNotUpdatedIfZero() public {}
 }
