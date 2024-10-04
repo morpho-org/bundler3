@@ -20,7 +20,7 @@ contract ParaswapModuleForkTest is ForkTest {
         hex"987e7d8e000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000006b175474e89094c44da98b954eedeac495271d0f00000000000000000000000000000000000000000000000000000000004c4b4000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000f6e72db5454dd049d0788e411b06cfaf16853042000000000000000000000000f6e72db5454dd049d0788e411b06cfaf168530421fb0b8897eef47fc855b41a9149a21e2000000000000000000000000013e0708000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000000";
     uint256 srcAmount = 5000000;
     uint256 srcAmountOffset = 68;
-    uint256 sellexpectedDestAmount = 5e18;
+    uint256 sellExpectedDestAmount = 5e18;
 
     function testSellNoAdjustment(uint256 privateKey, uint256 extra) public onlyEthereum {
         extra = bound(extra, 0, type(uint128).max);
@@ -38,7 +38,7 @@ contract ParaswapModuleForkTest is ForkTest {
                     sellCalldata,
                     USDC,
                     DAI,
-                    sellexpectedDestAmount,
+                    sellExpectedDestAmount,
                     false,
                     srcAmountOffset,
                     address(user)
@@ -52,7 +52,7 @@ contract ParaswapModuleForkTest is ForkTest {
         vm.stopPrank();
 
         assertEq(ERC20(USDC).balanceOf(address(user)), extra, "extra");
-        assertEq(ERC20(DAI).balanceOf(address(user)), sellexpectedDestAmount, "bought");
+        assertEq(ERC20(DAI).balanceOf(address(user)), sellExpectedDestAmount, "bought");
     }
 
     function testSellWithAdjustment(uint256 privateKey, uint256 percent) public onlyEthereum {
@@ -68,7 +68,7 @@ contract ParaswapModuleForkTest is ForkTest {
             _moduleCall(
                 address(paraswapModule),
                 _paraswapSell(
-                    AUGUSTUS_V6_2, sellCalldata, USDC, DAI, sellexpectedDestAmount, true, srcAmountOffset, address(user)
+                    AUGUSTUS_V6_2, sellCalldata, USDC, DAI, sellExpectedDestAmount, true, srcAmountOffset, address(user)
                 )
             )
         );
@@ -79,7 +79,7 @@ contract ParaswapModuleForkTest is ForkTest {
         vm.stopPrank();
 
         assertEq(ERC20(USDC).balanceOf(address(user)), 0, "sold");
-        assertEq(ERC20(DAI).balanceOf(address(user)), sellexpectedDestAmount * percent / 100, "bought");
+        assertEq(ERC20(DAI).balanceOf(address(user)), sellExpectedDestAmount * percent / 100, "bought");
     }
 
     // swapExactAmountOut
