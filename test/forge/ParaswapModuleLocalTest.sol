@@ -210,65 +210,6 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testWriteBytesAtOffsetSell(address _augustus, uint256 balance, uint256 offset) public {
-        _callable(_augustus);
-        augustusRegistryMock.setValid(_augustus, true);
-        uint256 callDataLength = 1024;
-
-        balance = bound(balance, 1, type(uint120).max);
-        offset = bound(offset, 0, callDataLength - 32);
-        collateralToken.setBalance(address(paraswapModule), balance);
-
-        bytes memory callData =
-            bytes.concat(new bytes(offset), bytes32(uint256(balance)), new bytes(callDataLength - 32 - offset));
-
-        vm.expectCall(address(_augustus), callData);
-
-        bundle.push(
-            _moduleCall(
-                address(paraswapModule),
-                _paraswapSell(
-                    _augustus, callData, address(collateralToken), address(loanToken), 0, true, offset, address(1)
-                )
-            )
-        );
-        bundler.multicall(bundle);
-    }
-
-    function testwriteBytesAtOffsetBuy(address _augustus, uint256 debt, uint256 offset) public {
-        debt = bound(debt, 1, type(uint104).max);
-        _callable(_augustus);
-        augustusRegistryMock.setValid(_augustus, true);
-        uint256 callDataLength = 1024;
-
-        _supplyCollateral(marketParams, debt * 2, address(this));
-        _supply(marketParams, debt * 2, address(this));
-        _borrow(marketParams, debt, address(this));
-
-        offset = bound(offset, 0, callDataLength - 32);
-        bytes memory callData =
-            bytes.concat(new bytes(offset), bytes32(uint256(debt)), new bytes(callDataLength - 32 - offset));
-
-        vm.expectCall(address(_augustus), callData);
-
-        bundle.push(
-            _moduleCall(
-                address(paraswapModule),
-                _paraswapBuy(
-                    _augustus,
-                    callData,
-                    address(collateralToken),
-                    address(loanToken),
-                    1,
-                    marketParams,
-                    offset,
-                    address(1)
-                )
-            )
-        );
-        bundler.multicall(bundle);
-    }
-
     function testIncorrectLoanToken(address argToken, address marketToken) public {
         vm.assume(marketToken != address(0));
         vm.assume(argToken != marketToken);
@@ -289,7 +230,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), srcAmount);
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
         bundle.push(_sell(address(collateralToken), address(loanToken), srcAmount, minDestAmount, false, address(this)));
         bundler.multicall(bundle);
     }
@@ -301,7 +242,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), destAmount); // price is 1
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
+        vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
         bundle.push(
             _buy(
                 address(collateralToken), address(loanToken), maxSrcAmount, destAmount, emptyMarketParams, address(this)
@@ -318,7 +259,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), srcAmount.mulDivUp(percent, 100));
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
         bundle.push(_sell(address(collateralToken), address(loanToken), srcAmount, minDestAmount, true, address(this)));
         bundler.multicall(bundle);
     }
@@ -335,7 +276,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         _borrow(marketParams, debt, address(this));
         collateralToken.setBalance(address(paraswapModule), type(uint128).max);
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
+        vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
         bundle.push(
             _buy(address(collateralToken), address(loanToken), maxSrcAmount, destAmount, marketParams, address(this))
         );

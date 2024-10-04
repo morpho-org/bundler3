@@ -8,6 +8,8 @@ import {BaseMorphoBundlerModule} from "./BaseMorphoBundlerModule.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {BytesLib} from "../libraries/BytesLib.sol";
+import {EventsLib} from "../libraries/EventsLib.sol";
 
 interface HasMorpho {
     function MORPHO() external returns (IMorpho);
@@ -21,6 +23,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
     using MathLib for uint256;
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
+    using BytesLib for bytes;
 
     /* IMMUTABLES */
 
@@ -65,23 +68,14 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         uint256 srcAmountOffset,
         address receiver
     ) external bundlerOnly inAugustusRegistry(augustus) {
-        uint256 destBalanceBefore = ERC20(destToken).balanceOf(address(this));
-
         if (sellEntireBalance) {
-            uint256 srcAmount = readBytesAtOffset(callData, srcAmountOffset);
-            uint256 sellBalanceBefore = ERC20(srcToken).balanceOf(address(this));
-
-            writeBytesAtOffset(callData, srcAmountOffset, sellBalanceBefore);
-            minDestAmount = minDestAmount.mulDivUp(sellBalanceBefore, srcAmount);
+            uint256 srcAmount = callData.get(srcAmountOffset);
+            uint256 newSrcAmount = ERC20(srcToken).balanceOf(address(this));
+            callData.set(srcAmountOffset, newSrcAmount);
+            minDestAmount = minDestAmount.mulDivUp(newSrcAmount, srcAmount);
         }
 
-        swap(augustus, callData, srcToken);
-
-        uint256 destAmount = ERC20(destToken).balanceOf(address(this)) - destBalanceBefore;
-        require(destAmount >= minDestAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
-
-        skim(destToken, receiver);
-        skim(srcToken, receiver);
+        swapAndSkim(augustus, callData, srcToken, destToken, callData.get(srcAmountOffset), minDestAmount,receiver);
     }
 
     /// @notice Buy an exact amount. Reverts unless at most `maxSrcAmount` tokens are sold.
@@ -107,56 +101,43 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         MarketParams memory marketParams,
         uint256 destAmountOffset,
         address receiver
-    ) public bundlerOnly inAugustusRegistry(augustus) {
-        uint256 srcBalanceBefore = ERC20(srcToken).balanceOf(address(this));
-
+    ) external bundlerOnly inAugustusRegistry(augustus) {
         if (marketParams.loanToken != address(0)) {
             require(marketParams.loanToken == destToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
-            uint256 destAmount = readBytesAtOffset(callData, destAmountOffset);
-            uint256 borrowAssets = MORPHO.expectedBorrowAssets(marketParams, initiator());
-            writeBytesAtOffset(callData, destAmountOffset, borrowAssets);
-            maxSrcAmount = maxSrcAmount.mulDivDown(borrowAssets, destAmount);
+            uint256 destAmount = callData.get(destAmountOffset);
+            uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, initiator());
+            callData.set(destAmountOffset, newDestAmount);
+            maxSrcAmount = maxSrcAmount.mulDivDown(newDestAmount, destAmount);
         }
 
-        swap(augustus, callData, srcToken);
-
-        skim(destToken, receiver);
-        uint256 srcBalanceAfter = skim(srcToken, receiver);
-
-        uint256 srcAmount = srcBalanceBefore - srcBalanceAfter;
-        require(srcAmount <= maxSrcAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        swapAndSkim(augustus, callData, srcToken,destToken,maxSrcAmount,callData.get(destAmountOffset),receiver);
     }
 
     /* INTERNAL FUNCTIONS */
 
-    /// @notice Execute the swap specified by `callData` with `augustus`.
-    function swap(address augustus, bytes memory callData, address srcToken) internal {
+    /// @notice Execute the swap specified by `callData` with `augustus` and check spent/bought amounts.
+    function swapAndSkim(address augustus, bytes memory callData, address srcToken, address destToken, uint maxSrcAmount, uint minDestAmount, address receiver) internal {
+        uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
+        uint256 destInitial = ERC20(destToken).balanceOf(address(this));
+
         ERC20(srcToken).safeApprove(augustus, type(uint256).max);
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) _revert(returnData);
         ERC20(srcToken).safeApprove(augustus, 0);
-    }
 
-    /// @notice Read 32 bytes at offset `offset` of memory bytes `data`.
-    function readBytesAtOffset(bytes memory data, uint256 offset) internal pure returns (uint256 currentValue) {
-        require(offset <= data.length - 32, ErrorsLib.INVALID_OFFSET);
-        assembly {
-            currentValue := mload(add(32, add(data, offset)))
-        }
-    }
+        uint256 srcFinal = ERC20(srcToken).balanceOf(address(this));
+        uint destFinal = ERC20(destToken).balanceOf(address(this));
 
-    /// @notice Write `newValue` at offset `offset` of memory bytes `data`.
-    function writeBytesAtOffset(bytes memory data, uint256 offset, uint256 newValue) internal pure {
-        require(offset <= data.length - 32, ErrorsLib.INVALID_OFFSET);
-        assembly ("memory-safe") {
-            let memoryOffset := add(32, add(data, offset))
-            mstore(memoryOffset, newValue)
-        }
-    }
+        uint srcAmount = srcInitial - srcFinal;
+        uint destAmount = destFinal - destInitial;
 
-    /// @notice Send remaining balance of `token` to `dest`.
-    function skim(address token, address dest) internal returns (uint256 skimmed) {
-        skimmed = ERC20(token).balanceOf(address(this));
-        if (skimmed > 0) ERC20(token).transfer(dest, skimmed);
+        require(srcAmount <= maxSrcAmount, ErrorsLib.SELL_AMOUNT_TOO_HIGH);
+        require(destAmount >= minDestAmount, ErrorsLib.BUY_AMOUNT_TOO_LOW);
+
+        emit EventsLib.MorphoBundlerParaswapModuleSwap(srcToken, destToken, receiver, srcAmount, destAmount);
+
+        if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
+        if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);
+
     }
 }
