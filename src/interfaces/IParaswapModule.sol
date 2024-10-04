@@ -25,7 +25,7 @@ interface IParaswapModule {
         address srcToken,
         address destToken,
         uint256 maxSrcAmount,
-        MarketParams memory marketParams,
+        MarketParams calldata marketParams,
         uint256 destAmountOffset,
         address receiver
     ) external;
