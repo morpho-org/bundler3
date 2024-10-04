@@ -362,8 +362,7 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.sell,
-            (augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
+            IParaswapModule.sell, (augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
         );
     }
 
