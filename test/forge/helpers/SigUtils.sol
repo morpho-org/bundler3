@@ -15,7 +15,7 @@ import {
 } from "../../../src/migration/interfaces/ICompoundV3.sol";
 
 import {PermitHash} from "../../../lib/permit2/src/libraries/PermitHash.sol";
-import {ECDSA} from "../../../lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "../../../lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol";
 import {AUTHORIZATION_TYPEHASH} from "../../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 
 bytes32 constant PERMIT_TYPEHASH =
@@ -42,7 +42,7 @@ struct DaiPermit {
 
 library SigUtils {
     function toTypedDataHash(bytes32 domainSeparator, Permit memory permit) internal pure returns (bytes32) {
-        return ECDSA.toTypedDataHash(
+        return MessageHashUtils.toTypedDataHash(
             domainSeparator,
             keccak256(
                 abi.encode(PERMIT_TYPEHASH, permit.owner, permit.spender, permit.value, permit.nonce, permit.deadline)
@@ -55,7 +55,7 @@ library SigUtils {
         pure
         returns (bytes32)
     {
-        return ECDSA.toTypedDataHash(
+        return MessageHashUtils.toTypedDataHash(
             domainSeparator,
             keccak256(
                 abi.encode(
@@ -75,7 +75,7 @@ library SigUtils {
         pure
         returns (bytes32)
     {
-        return ECDSA.toTypedDataHash(domainSeparator, PermitHash.hash(permitSingle));
+        return MessageHashUtils.toTypedDataHash(domainSeparator, PermitHash.hash(permitSingle));
     }
 
     function toTypedDataHash(bytes32 domainSeparator, IAllowanceTransfer.PermitBatch memory permitBatch)
@@ -83,7 +83,7 @@ library SigUtils {
         pure
         returns (bytes32)
     {
-        return ECDSA.toTypedDataHash(domainSeparator, PermitHash.hash(permitBatch));
+        return MessageHashUtils.toTypedDataHash(domainSeparator, PermitHash.hash(permitBatch));
     }
 
     function toTypedDataHash(bytes32 domainSeparator, AaveV3OptimizerAuthorization memory authorization)
@@ -91,7 +91,7 @@ library SigUtils {
         pure
         returns (bytes32)
     {
-        return ECDSA.toTypedDataHash(
+        return MessageHashUtils.toTypedDataHash(
             domainSeparator,
             keccak256(
                 abi.encode(
@@ -107,7 +107,7 @@ library SigUtils {
     }
 
     function toTypedDataHash(bytes32 domainSeparator, DaiPermit memory permit) internal pure returns (bytes32) {
-        return ECDSA.toTypedDataHash(
+        return MessageHashUtils.toTypedDataHash(
             domainSeparator,
             keccak256(
                 abi.encode(
@@ -122,7 +122,7 @@ library SigUtils {
         view
         returns (bytes32)
     {
-        return ECDSA.toTypedDataHash(
+        return MessageHashUtils.toTypedDataHash(
             keccak256(
                 abi.encode(
                     COMPOUND_V3_DOMAIN_TYPEHASH,
