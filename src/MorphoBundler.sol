@@ -42,25 +42,25 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /* CALLBACKS */
 
     function onMorphoSupply(uint256 assets, bytes calldata data) external {
-        VariablesLib.set(SUPPLY_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(SUPPLY_CALLBACK_VARIABLE, assets);
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
     function onMorphoSupplyCollateral(uint256 assets, bytes calldata data) external {
-        VariablesLib.set(SUPPLY_COLLATERAL_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(SUPPLY_COLLATERAL_CALLBACK_VARIABLE, assets);
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata data) external {
-        VariablesLib.set(REPAY_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(REPAY_CALLBACK_VARIABLE, assets);
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
     function onMorphoFlashLoan(uint256 assets, bytes calldata data) external {
-        VariablesLib.set(FLASHLOAN_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(FLASHLOAN_CALLBACK_VARIABLE, assets);
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }

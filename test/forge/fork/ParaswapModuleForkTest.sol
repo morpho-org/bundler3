@@ -140,7 +140,7 @@ contract ParaswapModuleForkTest is ForkTest {
 
         bundle.push(_erc20TransferFromWithReceiver(USDC, address(paraswapModule), type(uint256).max));
 
-        bundle.push(_setVariable("new buy amount", bytes32(newDestAmount)));
+        bundle.push(_setVariable("new buy amount", newDestAmount));
 
         bundle.push(
             _moduleCall(

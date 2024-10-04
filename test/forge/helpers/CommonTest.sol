@@ -386,7 +386,7 @@ abstract contract CommonTest is Test {
 
     /* VARIABLES ACTIONS */
 
-    function _setVariable(bytes32 name, bytes32 data) internal pure returns (bytes memory) {
+    function _setVariable(bytes32 name, uint256 data) internal pure returns (bytes memory) {
         return abi.encodeCall(VariablesBundler.setVariable, (name, data));
     }
 

@@ -22,7 +22,7 @@ abstract contract VariablesBundler is BaseBundler {
         if (!success) _revert(returnData);
 
         for (uint256 i = 0; i < namedOffsets.length; i++) {
-            VariablesLib.set(namedOffsets[i].name, bytes32(returnData.get(namedOffsets[i].offset)));
+            VariablesLib.set(namedOffsets[i].name, returnData.get(namedOffsets[i].offset));
         }
     }
 
@@ -34,7 +34,7 @@ abstract contract VariablesBundler is BaseBundler {
             _revert(returnData);
         } catch (bytes memory returnData) {
             for (uint256 i = 0; i < namedOffsets.length; i++) {
-                VariablesLib.set(namedOffsets[i].name, bytes32(returnData.get(namedOffsets[i].offset)));
+                VariablesLib.set(namedOffsets[i].name, returnData.get(namedOffsets[i].offset));
             }
         }
     }
@@ -50,11 +50,11 @@ abstract contract VariablesBundler is BaseBundler {
         }
     }
 
-    function setVariable(bytes32 name, bytes32 data) external protected {
+    function setVariable(bytes32 name, uint256 data) external protected {
         VariablesLib.set(name, data);
     }
 
-    function getVariable(bytes32 name) external view returns (bytes32) {
+    function getVariable(bytes32 name) external view returns (uint256) {
         return VariablesLib.get(name);
     }
 }

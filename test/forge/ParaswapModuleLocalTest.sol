@@ -270,7 +270,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         collateralToken.setBalance(address(paraswapModule), type(uint128).max);
 
         vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
-        bundle.push(_setVariable("new buy amount", bytes32(debt)));
+        bundle.push(_setVariable("new buy amount", debt));
         bundle.push(
             _buy(
                 address(collateralToken), address(loanToken), maxSrcAmount, destAmount, "new buy amount", address(this)
@@ -317,7 +317,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         uint256 actualSrcAmount = srcAmount.mulDivUp(percent, 100);
 
         collateralToken.setBalance(address(paraswapModule), actualSrcAmount);
-        bundle.push(_setVariable("new sell amount", bytes32(actualSrcAmount)));
+        bundle.push(_setVariable("new sell amount", actualSrcAmount));
         bundle.push(
             _sell(address(collateralToken), address(loanToken), srcAmount, srcAmount, "new sell amount", receiver)
         );
@@ -337,7 +337,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), actualDestAmount);
 
-        bundle.push(_setVariable("new buy amount", bytes32(actualDestAmount)));
+        bundle.push(_setVariable("new buy amount", actualDestAmount));
         bundle.push(
             _buy(address(collateralToken), address(loanToken), destAmount, destAmount, "new buy amount", receiver)
         );
