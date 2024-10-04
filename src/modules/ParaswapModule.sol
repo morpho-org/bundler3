@@ -75,7 +75,7 @@ contract ParaswapModule is BaseMorphoBundlerModule {
             minDestAmount = minDestAmount.mulDivUp(newSrcAmount, srcAmount);
         }
 
-        swapAndSkim(augustus, callData, srcToken, destToken, callData.get(srcAmountOffset), minDestAmount,receiver);
+        swapAndSkim(augustus, callData, srcToken, destToken, callData.get(srcAmountOffset), minDestAmount, receiver);
     }
 
     /// @notice Buy an exact amount. Reverts unless at most `maxSrcAmount` tokens are sold.
@@ -110,13 +110,21 @@ contract ParaswapModule is BaseMorphoBundlerModule {
             maxSrcAmount = maxSrcAmount.mulDivDown(newDestAmount, destAmount);
         }
 
-        swapAndSkim(augustus, callData, srcToken,destToken,maxSrcAmount,callData.get(destAmountOffset),receiver);
+        swapAndSkim(augustus, callData, srcToken, destToken, maxSrcAmount, callData.get(destAmountOffset), receiver);
     }
 
     /* INTERNAL FUNCTIONS */
 
     /// @notice Execute the swap specified by `callData` with `augustus` and check spent/bought amounts.
-    function swapAndSkim(address augustus, bytes memory callData, address srcToken, address destToken, uint maxSrcAmount, uint minDestAmount, address receiver) internal {
+    function swapAndSkim(
+        address augustus,
+        bytes memory callData,
+        address srcToken,
+        address destToken,
+        uint256 maxSrcAmount,
+        uint256 minDestAmount,
+        address receiver
+    ) internal {
         uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = ERC20(destToken).balanceOf(address(this));
 
@@ -126,10 +134,10 @@ contract ParaswapModule is BaseMorphoBundlerModule {
         ERC20(srcToken).safeApprove(augustus, 0);
 
         uint256 srcFinal = ERC20(srcToken).balanceOf(address(this));
-        uint destFinal = ERC20(destToken).balanceOf(address(this));
+        uint256 destFinal = ERC20(destToken).balanceOf(address(this));
 
-        uint srcAmount = srcInitial - srcFinal;
-        uint destAmount = destFinal - destInitial;
+        uint256 srcAmount = srcInitial - srcFinal;
+        uint256 destAmount = destFinal - destInitial;
 
         require(srcAmount <= maxSrcAmount, ErrorsLib.SELL_AMOUNT_TOO_HIGH);
         require(destAmount >= minDestAmount, ErrorsLib.BUY_AMOUNT_TOO_LOW);
@@ -138,6 +146,5 @@ contract ParaswapModule is BaseMorphoBundlerModule {
 
         if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
         if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);
-
     }
 }

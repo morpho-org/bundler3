@@ -264,7 +264,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-     function testBuySlippageCheckWithAdjustment(uint256 destAmount, uint256 adjust, uint256 percent) public {
+    function testBuySlippageCheckWithAdjustment(uint256 destAmount, uint256 adjust, uint256 percent) public {
         percent = bound(percent, 1, 1000);
         destAmount = bound(destAmount, 1, type(uint64).max);
         adjust = bound(adjust, 1, destAmount);
