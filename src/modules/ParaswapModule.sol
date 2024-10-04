@@ -53,7 +53,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
     /// @param sellEntireBalance If true, adjusts amounts to sell the current balance of this contract.
-    /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`boundAmount`)
+    /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`limitAmount`)
     /// and quoted buy amount (`quotedAmount`).
     /// @dev The quoted buy amount will change only if its offset is not zero.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
@@ -77,7 +77,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
             srcToken,
             destToken,
             callData.get(offsets.exactAmount),
-            callData.get(offsets.boundAmount),
+            callData.get(offsets.limitAmount),
             receiver
         );
     }
@@ -91,7 +91,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
     /// @param marketParams If `marketParams.loanToken == destToken`, adjusts amounts to sell the current balance of
     /// this contract.
     /// @dev Revert if `marketParams.loanToken != destToken` and is nonzero.
-    /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`boundAmount`)
+    /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @dev The quoted sell amount will change only if its offset is not zero.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
@@ -115,7 +115,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
             callData,
             srcToken,
             destToken,
-            callData.get(offsets.boundAmount),
+            callData.get(offsets.limitAmount),
             callData.get(offsets.exactAmount),
             receiver
         );
@@ -157,7 +157,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
     }
 
     /// @notice Set exact amount in `callData` to `exactAmount`.
-    /// @notice Proportionally scale bound amount in `callData`.
+    /// @notice Proportionally scale limit amount in `callData`.
     /// @notice If `offsets.quotedAmount` is not zero, proportionally scale quoted amount in `callData`.
     function updateAmounts(bytes memory callData, Offsets calldata offsets, uint256 exactAmount, Math.Rounding rounding)
         internal
@@ -166,8 +166,8 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
         uint256 oldExactAmount = callData.get(offsets.exactAmount);
         callData.set(offsets.exactAmount, exactAmount);
 
-        uint256 boundAmount = callData.get(offsets.boundAmount).mulDiv(exactAmount, oldExactAmount, rounding);
-        callData.set(offsets.boundAmount, boundAmount);
+        uint256 limitAmount = callData.get(offsets.limitAmount).mulDiv(exactAmount, oldExactAmount, rounding);
+        callData.set(offsets.limitAmount, limitAmount);
 
         if (offsets.quotedAmount > 0) {
             uint256 quotedAmount = callData.get(offsets.quotedAmount).mulDiv(exactAmount, oldExactAmount, rounding);
