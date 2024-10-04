@@ -61,5 +61,12 @@ library ErrorsLib {
     /// @dev Thrown when a data offset is invalid.
     string internal constant INVALID_OFFSET = "invalid offset";
 
+    /// @dev Thrown when attempting to use a variable with the name `""`.
     string internal constant NULL_VARIABLE_NAME = "null variable name";
+
+    /// @dev Thrown when a swap has spent too many source tokens.
+    string internal constant SELL_AMOUNT_TOO_HIGH = "sell amount too high";
+
+    /// @dev Thrown when a swap has bought too few destination tokens.
+    string internal constant BUY_AMOUNT_TOO_LOW = "buy amount too low";
 }

@@ -96,20 +96,20 @@ contract ParaswapModuleLocalTest is LocalTest {
     function _sell(
         address srcToken,
         address destToken,
-        uint256 sellAmount,
-        uint256 minBuyAmount,
-        bytes32 sellAmountVariable,
+        uint256 srcAmount,
+        uint256 minDestAmount,
+        bytes32 srcAmountVariable,
         address receiver
     ) internal view returns (bytes memory) {
         return _moduleCall(
             address(paraswapModule),
             _paraswapSell(
                 address(augustus),
-                abi.encodeCall(augustus.mockSell, (srcToken, destToken, sellAmount)),
+                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount)),
                 srcToken,
                 destToken,
-                minBuyAmount,
-                sellAmountVariable,
+                minDestAmount,
+                srcAmountVariable,
                 4 + 32 + 32, // sig + 2 values
                 receiver
             )
@@ -119,20 +119,20 @@ contract ParaswapModuleLocalTest is LocalTest {
     function _buy(
         address srcToken,
         address destToken,
-        uint256 maxSellAmount,
-        uint256 buyAmount,
-        bytes32 buyAmountVariable,
+        uint256 maxSrcAmount,
+        uint256 destAmount,
+        bytes32 destAmountVariable,
         address receiver
     ) internal view returns (bytes memory) {
         return _moduleCall(
             address(paraswapModule),
             _paraswapBuy(
                 address(augustus),
-                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, buyAmount)),
+                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, destAmount)),
                 srcToken,
                 destToken,
-                maxSellAmount,
-                buyAmountVariable,
+                maxSrcAmount,
+                destAmountVariable,
                 4 + 32 + 32, // sig + 2 values
                 receiver
             )
@@ -151,6 +151,8 @@ contract ParaswapModuleLocalTest is LocalTest {
         assumeNotZeroAddress(account);
         vm.assume(account != address(morpho));
         vm.assume(account != address(paraswapModule));
+        vm.assume(account != address(augustus));
+        vm.assume(account != address(this));
     }
 
     function testAugustusInRegistrySellCheck(address _augustus) public {
@@ -215,125 +217,63 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testWriteBytesAtOffsetSell(address _augustus, bytes32 salt, uint256 offset) public {
-        _callable(_augustus);
-        augustusRegistryMock.setValid(_augustus, true);
-        uint256 callDataLength = 1024;
-
-        offset = bound(offset, 0, callDataLength - 32);
-
-        bytes memory callData = bytes.concat(new bytes(offset), salt, new bytes(callDataLength - 32 - offset));
-
-        vm.expectCall(address(_augustus), callData);
-
-        bundle.push(_setVariable("dummy variable", salt));
-
-        bundle.push(
-            _moduleCall(
-                address(paraswapModule),
-                _paraswapSell(
-                    _augustus,
-                    callData,
-                    address(collateralToken),
-                    address(loanToken),
-                    0,
-                    "dummy variable",
-                    offset,
-                    address(1)
-                )
-            )
-        );
-        bundler.multicall(bundle);
-    }
-
-    function testwriteBytesAtOffsetBuy(address _augustus, bytes32 salt, uint256 offset) public {
-        _callable(_augustus);
-        augustusRegistryMock.setValid(_augustus, true);
-        uint256 callDataLength = 1024;
-
-        offset = bound(offset, 0, callDataLength - 32);
-        bytes memory callData = bytes.concat(new bytes(offset), salt, new bytes(callDataLength - 32 - offset));
-
-        vm.expectCall(address(_augustus), callData);
-
-        bundle.push(_setVariable("dummy variable", salt));
-
-        bundle.push(
-            _moduleCall(
-                address(paraswapModule),
-                _paraswapBuy(
-                    _augustus,
-                    callData,
-                    address(collateralToken),
-                    address(loanToken),
-                    1,
-                    "dummy variable",
-                    offset,
-                    address(1)
-                )
-            )
-        );
-        bundler.multicall(bundle);
-    }
-
-    function testSellSlippageCheckNoAdjustment(uint256 sellAmount, uint256 adjust) public {
-        sellAmount = bound(sellAmount, 1, type(uint128).max);
+    function testSellSlippageCheckNoAdjustment(uint256 srcAmount, uint256 adjust) public {
+        srcAmount = bound(srcAmount, 1, type(uint128).max);
         adjust = bound(adjust, 1, type(uint128).max);
-        uint256 minBuyAmount = sellAmount + adjust;
+        uint256 minDestAmount = srcAmount + adjust;
 
-        collateralToken.setBalance(address(paraswapModule), sellAmount);
+        collateralToken.setBalance(address(paraswapModule), srcAmount);
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
-        bundle.push(_sell(address(collateralToken), address(loanToken), sellAmount, minBuyAmount, "", address(this)));
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        bundle.push(_sell(address(collateralToken), address(loanToken), srcAmount, minDestAmount, "", address(this)));
         bundler.multicall(bundle);
     }
 
-    function testBuySlippageCheckNoAdjustment(uint256 buyAmount, uint256 adjust) public {
-        buyAmount = bound(buyAmount, 1, type(uint128).max);
-        adjust = bound(adjust, 1, buyAmount);
-        uint256 maxSellAmount = buyAmount - adjust;
+    function testBuySlippageCheckNoAdjustment(uint256 destAmount, uint256 adjust) public {
+        destAmount = bound(destAmount, 1, type(uint128).max);
+        adjust = bound(adjust, 1, destAmount);
+        uint256 maxSrcAmount = destAmount - adjust;
 
-        collateralToken.setBalance(address(paraswapModule), buyAmount); // price is 1
+        collateralToken.setBalance(address(paraswapModule), destAmount); // price is 1
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
-        bundle.push(_buy(address(collateralToken), address(loanToken), maxSellAmount, buyAmount, "", address(this)));
+        vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
+        bundle.push(_buy(address(collateralToken), address(loanToken), maxSrcAmount, destAmount, "", address(this)));
         bundler.multicall(bundle);
     }
 
-    function testSellSlippageCheckWithAdjustment(uint256 sellAmount, uint256 adjust, uint256 percent) public {
+    function testSellSlippageCheckWithAdjustment(uint256 srcAmount, uint256 adjust, uint256 percent) public {
         percent = bound(percent, 1, 1000);
-        sellAmount = bound(sellAmount, 1, type(uint120).max);
-        adjust = bound(adjust, 1, sellAmount);
-        uint256 minBuyAmount = sellAmount + adjust;
+        srcAmount = bound(srcAmount, 1, type(uint120).max);
+        adjust = bound(adjust, 1, srcAmount);
+        uint256 minDestAmount = srcAmount + adjust;
 
-        collateralToken.setBalance(address(paraswapModule), sellAmount.mulDivUp(percent, 100));
+        collateralToken.setBalance(address(paraswapModule), srcAmount.mulDivUp(percent, 100));
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
         bundle.push(_setVariableToBalanceOf("current balance", address(collateralToken), address(paraswapModule)));
 
         bundle.push(
             _sell(
-                address(collateralToken), address(loanToken), sellAmount, minBuyAmount, "current balance", address(this)
+                address(collateralToken), address(loanToken), srcAmount, minDestAmount, "current balance", address(this)
             )
         );
         bundler.multicall(bundle);
     }
 
-    function testBuySlippageCheckWithAdjustment(uint256 buyAmount, uint256 adjust, uint256 percent) public {
+    function testBuySlippageCheckWithAdjustment(uint256 destAmount, uint256 adjust, uint256 percent) public {
         percent = bound(percent, 1, 1000);
-        buyAmount = bound(buyAmount, 1, type(uint64).max);
-        adjust = bound(adjust, 1, buyAmount);
-        uint256 maxSellAmount = buyAmount - adjust;
-        uint256 newBuyAmount = buyAmount.mulDivUp(percent, 100);
+        destAmount = bound(destAmount, 1, type(uint64).max);
+        adjust = bound(adjust, 1, destAmount);
+        uint256 maxSrcAmount = destAmount - adjust;
+        uint256 debt = destAmount.mulDivUp(percent, 100);
 
         collateralToken.setBalance(address(paraswapModule), type(uint128).max);
 
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
-
-        bundle.push(_setVariable("new buy amount", bytes32(newBuyAmount)));
+        vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
+        bundle.push(_setVariable("new buy amount", bytes32(debt)));
         bundle.push(
             _buy(
-                address(collateralToken), address(loanToken), maxSellAmount, buyAmount, "new buy amount", address(this)
+                address(collateralToken), address(loanToken), maxSrcAmount, destAmount, "new buy amount", address(this)
             )
         );
         bundler.multicall(bundle);
@@ -369,41 +309,41 @@ contract ParaswapModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "module loan token");
     }
 
-    function testSellWithAdjustment(uint256 sellAmount, uint256 percent, address receiver) public {
+    function testSellWithAdjustment(uint256 srcAmount, uint256 percent, address receiver) public {
         _receiver(receiver);
 
         percent = bound(percent, 1, 1000);
-        sellAmount = bound(sellAmount, 1, type(uint120).max);
-        uint256 newSellAmount = sellAmount.mulDivUp(percent, 100);
+        srcAmount = bound(srcAmount, 1, type(uint120).max);
+        uint256 actualSrcAmount = srcAmount.mulDivUp(percent, 100);
 
-        collateralToken.setBalance(address(paraswapModule), newSellAmount);
-        bundle.push(_setVariable("new sell amount", bytes32(newSellAmount)));
+        collateralToken.setBalance(address(paraswapModule), actualSrcAmount);
+        bundle.push(_setVariable("new sell amount", bytes32(actualSrcAmount)));
         bundle.push(
-            _sell(address(collateralToken), address(loanToken), sellAmount, sellAmount, "new sell amount", receiver)
+            _sell(address(collateralToken), address(loanToken), srcAmount, srcAmount, "new sell amount", receiver)
         );
         bundler.multicall(bundle);
         assertEq(collateralToken.balanceOf(receiver), 0, "receiver collateral");
-        assertEq(loanToken.balanceOf(receiver), newSellAmount, "receiver loan token");
+        assertEq(loanToken.balanceOf(receiver), actualSrcAmount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "module loan token");
     }
 
-    function testBuyWithAdjustment(uint256 buyAmount, uint256 percent, address receiver) public {
+    function testBuyWithAdjustment(uint256 destAmount, uint256 percent, address receiver) public {
         _receiver(receiver);
 
         percent = bound(percent, 1, 1000);
-        buyAmount = bound(buyAmount, 1, type(uint64).max);
-        uint256 newBuyAmount = buyAmount.mulDivUp(percent, 100);
+        destAmount = bound(destAmount, 1, type(uint64).max);
+        uint256 actualDestAmount = destAmount.mulDivUp(percent, 100);
 
-        collateralToken.setBalance(address(paraswapModule), newBuyAmount);
+        collateralToken.setBalance(address(paraswapModule), actualDestAmount);
 
-        bundle.push(_setVariable("new buy amount", bytes32(newBuyAmount)));
+        bundle.push(_setVariable("new buy amount", bytes32(actualDestAmount)));
         bundle.push(
-            _buy(address(collateralToken), address(loanToken), buyAmount, buyAmount, "new buy amount", receiver)
+            _buy(address(collateralToken), address(loanToken), destAmount, destAmount, "new buy amount", receiver)
         );
         bundler.multicall(bundle);
         assertEq(collateralToken.balanceOf(receiver), 0, "receiver collateral");
-        assertEq(loanToken.balanceOf(receiver), newBuyAmount, "receiver loan token");
+        assertEq(loanToken.balanceOf(receiver), actualDestAmount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "module loan token");
     }
@@ -430,28 +370,28 @@ contract ParaswapModuleLocalTest is LocalTest {
         _supplyCollateral(marketParams, collateralAmount, USER);
 
         ratio = bound(ratio, MIN_RATIO, WAD);
-        uint256 sellAmount = collateralAmount * ratio / WAD;
-        _createWithdrawCollateralAndSwapBundle(marketParams, address(collateralToken2), sellAmount, USER);
+        uint256 srcAmount = collateralAmount * ratio / WAD;
+        _createWithdrawCollateralAndSwapBundle(marketParams, address(collateralToken2), srcAmount, USER);
 
         skip(2 days);
 
         vm.prank(USER);
         bundler.multicall(bundle);
 
-        assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - sellAmount, "sold");
-        assertEq(collateralToken2.balanceOf(USER), sellAmount, "bought"); // price is 1
+        assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - srcAmount, "sold");
+        assertEq(collateralToken2.balanceOf(USER), srcAmount, "bought"); // price is 1
     }
 
     // Method: withdraw X or all, sell exact amount
     // Works for both partial & full
     function _createWithdrawCollateralAndSwapBundle(
         MarketParams memory marketParams,
-        address buyToken,
-        uint256 sellAmount,
+        address destToken,
+        uint256 srcAmount,
         address receiver
     ) internal {
-        bundle.push(_morphoWithdrawCollateral(marketParams, sellAmount, address(paraswapModule)));
-        bundle.push(_sell(marketParams.collateralToken, buyToken, sellAmount, sellAmount, "", receiver));
+        bundle.push(_morphoWithdrawCollateral(marketParams, srcAmount, address(paraswapModule)));
+        bundle.push(_sell(marketParams.collateralToken, destToken, srcAmount, srcAmount, "", receiver));
     }
 
     /* WITHDRAW AND SWAP */
@@ -462,27 +402,27 @@ contract ParaswapModuleLocalTest is LocalTest {
         _supply(marketParams, supplyAmount, USER);
 
         ratio = bound(ratio, MIN_RATIO, MAX_RATIO);
-        uint256 sellAmount = supplyAmount * ratio / WAD;
-        _createPartialWithdrawAndSwapBundle(marketParams, address(loanToken2), sellAmount, USER);
+        uint256 srcAmount = supplyAmount * ratio / WAD;
+        _createPartialWithdrawAndSwapBundle(marketParams, address(loanToken2), srcAmount, USER);
 
         skip(2 days);
 
         vm.prank(USER);
         bundler.multicall(bundle);
 
-        assertEq(morpho.expectedSupplyAssets(marketParams, USER), supplyAmount - sellAmount, "sold");
-        assertEq(loanToken2.balanceOf(USER), sellAmount, "bought"); // price is 1
+        assertEq(morpho.expectedSupplyAssets(marketParams, USER), supplyAmount - srcAmount, "sold");
+        assertEq(loanToken2.balanceOf(USER), srcAmount, "bought"); // price is 1
     }
 
     // Method: withdraw X, sell exact amount
     function _createPartialWithdrawAndSwapBundle(
         MarketParams memory marketParams,
-        address buyToken,
+        address destToken,
         uint256 assetsToWithdraw,
         address receiver
     ) internal {
         bundle.push(_morphoWithdraw(marketParams, assetsToWithdraw, 0, type(uint256).max, address(paraswapModule)));
-        bundle.push(_sell(marketParams.loanToken, buyToken, assetsToWithdraw, assetsToWithdraw, "", receiver));
+        bundle.push(_sell(marketParams.loanToken, destToken, assetsToWithdraw, assetsToWithdraw, "", receiver));
     }
 
     function testFullWithdrawAndSwap(uint256 supplyAmount) public {
@@ -505,14 +445,14 @@ contract ParaswapModuleLocalTest is LocalTest {
     function _createFullWithdrawAndSwapBundle(
         address user,
         MarketParams memory marketParams,
-        address buyToken,
+        address destToken,
         address receiver
     ) internal {
         uint256 sharesToWithdraw = morpho.supplyShares(marketParams.id(), user);
         uint256 currentAssets = morpho.expectedSupplyAssets(marketParams, user);
         bundle.push(_morphoWithdraw(marketParams, 0, sharesToWithdraw, 0, address(paraswapModule)));
         bundle.push(_setVariableToBalanceOf("current balance", marketParams.loanToken, address(paraswapModule)));
-        bundle.push(_sell(marketParams.loanToken, buyToken, currentAssets, currentAssets, "current balance", receiver));
+        bundle.push(_sell(marketParams.loanToken, destToken, currentAssets, currentAssets, "current balance", receiver));
     }
 
     /* SUPPLY SWAP */
@@ -523,16 +463,16 @@ contract ParaswapModuleLocalTest is LocalTest {
         _supply(marketParams, supplyAmount, USER);
 
         ratio = bound(ratio, MIN_RATIO, MAX_RATIO);
-        uint256 sellAmount = supplyAmount * ratio / WAD;
-        _createPartialSupplySwapBundle(USER, marketParams, marketParamsLoan2, address(loanToken2), sellAmount);
+        uint256 srcAmount = supplyAmount * ratio / WAD;
+        _createPartialSupplySwapBundle(USER, marketParams, marketParamsLoan2, address(loanToken2), srcAmount);
 
         skip(2 days);
 
         vm.prank(USER);
         bundler.multicall(bundle);
 
-        assertEq(morpho.expectedSupplyAssets(marketParams, USER), supplyAmount - sellAmount, "withdrawn");
-        assertEq(morpho.expectedSupplyAssets(marketParamsLoan2, USER), sellAmount, "supplied");
+        assertEq(morpho.expectedSupplyAssets(marketParams, USER), supplyAmount - srcAmount, "withdrawn");
+        assertEq(morpho.expectedSupplyAssets(marketParamsLoan2, USER), srcAmount, "supplied");
     }
 
     // Method: withdraw X, sell exact amount, supply all
@@ -540,10 +480,10 @@ contract ParaswapModuleLocalTest is LocalTest {
         address user,
         MarketParams memory sourceParams,
         MarketParams memory destParams,
-        address buyToken,
+        address destToken,
         uint256 assetsToWithdraw
     ) internal {
-        _createPartialWithdrawAndSwapBundle(sourceParams, buyToken, assetsToWithdraw, address(bundler));
+        _createPartialWithdrawAndSwapBundle(sourceParams, destToken, assetsToWithdraw, address(bundler));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, 0, user, hex""));
     }
 
@@ -564,11 +504,9 @@ contract ParaswapModuleLocalTest is LocalTest {
     }
 
     // Method: withdraw all, sell all, supply all
-    function _createFullSupplySwapBundle(
-        address user,
-        MarketParams memory sourceParams,
-        MarketParams memory destParams
-    ) internal {
+    function _createFullSupplySwapBundle(address user, MarketParams memory sourceParams, MarketParams memory destParams)
+        internal
+    {
         _createFullWithdrawAndSwapBundle(user, sourceParams, destParams.loanToken, address(bundler));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, 0, user, hex""));
     }

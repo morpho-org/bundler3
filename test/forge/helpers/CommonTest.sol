@@ -354,51 +354,33 @@ abstract contract CommonTest is Test {
 
     function _paraswapSell(
         address augustus,
-        bytes memory augustusCalldata,
-        address sellToken,
-        address buyToken,
-        uint256 minBuyAmount,
-        bytes32 sellAmountVariable,
-        uint256 sellAmountOffset,
+        bytes memory callData,
+        address srcToken,
+        address destToken,
+        uint256 minDestAmount,
+        bytes32 srcAmountVariable,
+        uint256 srcAmountOffset,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
             ParaswapModule.sell,
-            (
-                augustus,
-                augustusCalldata,
-                sellToken,
-                buyToken,
-                minBuyAmount,
-                sellAmountVariable,
-                sellAmountOffset,
-                receiver
-            )
+            (augustus, callData, srcToken, destToken, minDestAmount, srcAmountVariable, srcAmountOffset, receiver)
         );
     }
 
     function _paraswapBuy(
         address augustus,
-        bytes memory augustusCalldata,
-        address sellToken,
-        address buyToken,
-        uint256 maxSellAmount,
-        bytes32 buyAmountVariable,
-        uint256 buyAmountOffset,
+        bytes memory callData,
+        address srcToken,
+        address destToken,
+        uint256 maxSrcAmount,
+        bytes32 destAmountVariable,
+        uint256 destAmountOffset,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
             ParaswapModule.buy,
-            (
-                augustus,
-                augustusCalldata,
-                sellToken,
-                buyToken,
-                maxSellAmount,
-                buyAmountVariable,
-                buyAmountOffset,
-                receiver
-            )
+            (augustus, callData, srcToken, destToken, maxSrcAmount, destAmountVariable, destAmountOffset, receiver)
         );
     }
 
