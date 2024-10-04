@@ -9,6 +9,7 @@ import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLi
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 import {BytesLib} from "../libraries/BytesLib.sol";
+import "../interfaces/IParaswapModule.sol";
 import {EventsLib} from "../libraries/EventsLib.sol";
 
 interface HasMorpho {
@@ -19,7 +20,7 @@ interface HasMorpho {
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is BaseMorphoBundlerModule {
+contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
     using MathLib for uint256;
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
