@@ -6,20 +6,42 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {IAugustusRegistry} from "../../src/interfaces/IAugustusRegistry.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {EventsLib} from "../../src/libraries/EventsLib.sol";
 
 contract AugustusMock {
+    uint256 public toGive = type(uint256).max;
+    uint256 public toTake = type(uint256).max;
+
+    function setToGive(uint256 amount) external {
+        toGive = amount;
+    }
+
+    function setToTake(uint256 amount) external {
+        toTake = amount;
+    }
+
     function mockBuy(address srcToken, address destToken, uint256, uint256 toAmount) external {
-        uint256 fromAmount = toAmount;
+        if (toGive != type(uint256).max) toAmount = toGive;
+        uint256 fromAmount = toTake != type(uint256).max ? toTake : toAmount;
+
         ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
         ERC20Mock(destToken).setBalance(address(this), toAmount);
         ERC20(destToken).transfer(msg.sender, toAmount);
+
+        toGive = type(uint256).max;
+        toTake = type(uint256).max;
     }
 
     function mockSell(address srcToken, address destToken, uint256 fromAmount, uint256) external {
-        uint256 toAmount = fromAmount;
+        if (toTake != type(uint256).max) fromAmount = toTake;
+        uint256 toAmount = toGive != type(uint256).max ? toGive : fromAmount;
+
         ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
         ERC20Mock(destToken).setBalance(address(this), toAmount);
         ERC20(destToken).transfer(msg.sender, toAmount);
+
+        toGive = type(uint256).max;
+        toTake = type(uint256).max;
     }
 }
 
@@ -247,6 +269,76 @@ contract ParaswapModuleLocalTest is LocalTest {
             Offsets(0, 0, 0),
             address(0)
         );
+    }
+
+    function testBuyExactAmountCheck(uint256 amount, uint256 subAmount) public {
+        amount = bound(amount, 1, type(uint64).max);
+        subAmount = bound(subAmount, 0, amount - 1);
+
+        collateralToken.setBalance(address(paraswapModule), amount);
+
+        augustus.setToGive(subAmount);
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        bundle.push(
+            _buy(address(collateralToken), address(loanToken), amount, amount, emptyMarketParams, address(this))
+        );
+        bundler.multicall(bundle);
+    }
+
+    function testSellExactAmountCheck(uint256 amount, uint256 supAmount) public {
+        amount = bound(amount, 1, type(uint64).max);
+        supAmount = bound(supAmount, amount + 1, type(uint120).max);
+
+        collateralToken.setBalance(address(paraswapModule), supAmount);
+
+        augustus.setToTake(supAmount);
+        vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
+        bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSwapEventSell(bytes32 salt, uint256 srcAmount, uint256 destAmount, address receiver) public {
+        _receiver(receiver);
+        srcAmount = bound(srcAmount, 0, type(uint128).max);
+        destAmount = bound(destAmount, 0, type(uint128).max);
+
+        augustus.setToTake(srcAmount);
+        augustus.setToGive(destAmount);
+
+        ERC20Mock srcToken = new ERC20Mock{salt: salt}("src", "SRC");
+        ERC20Mock destToken = new ERC20Mock{salt: salt}("dest", "DEST");
+
+        srcToken.setBalance(address(paraswapModule), srcAmount);
+
+        vm.expectEmit(true, true, true, true, address(paraswapModule));
+        emit EventsLib.MorphoBundlerParaswapModuleSwap(
+            address(srcToken), address(destToken), receiver, srcAmount, destAmount
+        );
+
+        bundle.push(_sell(address(srcToken), address(destToken), srcAmount, destAmount, false, receiver));
+        bundler.multicall(bundle);
+    }
+
+    function testSwapEventBuy(bytes32 salt, uint256 srcAmount, uint256 destAmount, address receiver) public {
+        _receiver(receiver);
+        srcAmount = bound(srcAmount, 0, type(uint128).max);
+        destAmount = bound(destAmount, 0, type(uint128).max);
+
+        augustus.setToTake(srcAmount);
+        augustus.setToGive(destAmount);
+
+        ERC20Mock srcToken = new ERC20Mock{salt: salt}("src", "SRC");
+        ERC20Mock destToken = new ERC20Mock{salt: salt}("dest", "DEST");
+
+        srcToken.setBalance(address(paraswapModule), srcAmount);
+
+        vm.expectEmit(true, true, true, true, address(paraswapModule));
+        emit EventsLib.MorphoBundlerParaswapModuleSwap(
+            address(srcToken), address(destToken), receiver, srcAmount, destAmount
+        );
+
+        bundle.push(_buy(address(srcToken), address(destToken), srcAmount, destAmount, emptyMarketParams, receiver));
+        bundler.multicall(bundle);
     }
 
     function testSellSlippageCheckNoAdjustment(uint256 srcAmount, uint256 adjust) public {
