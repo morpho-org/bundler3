@@ -2,15 +2,16 @@
 pragma solidity 0.8.24;
 
 import {BaseBundler} from "./BaseBundler.sol";
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import "./interfaces/NamedOffset.sol";
-import {TRANSIENT_VARIABLES_PREFIX} from "./libraries/ConstantsLib.sol";
+import {BytesLib} from "./libraries/BytesLib.sol";
+import {VariablesLib} from "./libraries/VariablesLib.sol";
 
 /// @title VariablesBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract to store and read variables to and from transient storage
 abstract contract VariablesBundler is BaseBundler {
+    using BytesLib for bytes;
     /* EXTERNAL */
 
     function setVariablesWithCall(address target, bytes calldata data, NamedOffset[] calldata namedOffsets)
@@ -21,7 +22,7 @@ abstract contract VariablesBundler is BaseBundler {
         if (!success) _revert(returnData);
 
         for (uint256 i = 0; i < namedOffsets.length; i++) {
-            _setVariable(namedOffsets[i].name, readBytesAtOffset(returnData, namedOffsets[i].offset));
+            VariablesLib.set(namedOffsets[i].name, bytes32(returnData.get(namedOffsets[i].offset)));
         }
     }
 
@@ -33,7 +34,7 @@ abstract contract VariablesBundler is BaseBundler {
             _revert(returnData);
         } catch (bytes memory returnData) {
             for (uint256 i = 0; i < namedOffsets.length; i++) {
-                _setVariable(namedOffsets[i].name, readBytesAtOffset(returnData, namedOffsets[i].offset));
+                VariablesLib.set(namedOffsets[i].name, bytes32(returnData.get(namedOffsets[i].offset)));
             }
         }
     }
@@ -50,38 +51,10 @@ abstract contract VariablesBundler is BaseBundler {
     }
 
     function setVariable(bytes32 name, bytes32 data) external protected {
-        _setVariable(name, data);
+        VariablesLib.set(name, data);
     }
 
     function getVariable(bytes32 name) external view returns (bytes32) {
-        return _getVariable(name);
-    }
-
-    /* INTERNAL */
-
-    function _setVariable(bytes32 name, bytes32 value) internal {
-        require(name != "", ErrorsLib.NULL_VARIABLE_NAME);
-        bytes32 slot = getVariableTransientSlot(name);
-        assembly ("memory-safe") {
-            tstore(slot, value)
-        }
-    }
-
-    function _getVariable(bytes32 name) internal view returns (bytes32 value) {
-        bytes32 slot = getVariableTransientSlot(name);
-        assembly ("memory-safe") {
-            value := tload(slot)
-        }
-    }
-
-    function readBytesAtOffset(bytes memory data, uint256 offset) internal pure returns (bytes32 currentValue) {
-        require(offset <= data.length - 32, ErrorsLib.INVALID_OFFSET);
-        assembly {
-            currentValue := mload(add(32, add(data, offset)))
-        }
-    }
-
-    function getVariableTransientSlot(bytes32 name) internal pure returns (bytes32 slot) {
-        slot = keccak256(abi.encode(TRANSIENT_VARIABLES_PREFIX, name));
+        return VariablesLib.get(name);
     }
 }

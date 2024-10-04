@@ -10,7 +10,7 @@ import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.s
 
 import {BaseBundler} from "./BaseBundler.sol";
 import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
-import {VariablesBundler} from "./VariablesBundler.sol";
+import {VariablesLib} from "./libraries/VariablesLib.sol";
 import {
     SUPPLY_CALLBACK_VARIABLE,
     SUPPLY_COLLATERAL_CALLBACK_VARIABLE,
@@ -22,7 +22,7 @@ import {
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Morpho.
-abstract contract MorphoBundler is VariablesBundler, IMorphoBundler {
+abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
 
@@ -42,25 +42,25 @@ abstract contract MorphoBundler is VariablesBundler, IMorphoBundler {
     /* CALLBACKS */
 
     function onMorphoSupply(uint256 assets, bytes calldata data) external {
-        _setVariable(SUPPLY_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(SUPPLY_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
     function onMorphoSupplyCollateral(uint256 assets, bytes calldata data) external {
-        _setVariable(SUPPLY_COLLATERAL_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(SUPPLY_COLLATERAL_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata data) external {
-        _setVariable(REPAY_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(REPAY_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }
 
     function onMorphoFlashLoan(uint256 assets, bytes calldata data) external {
-        _setVariable(FLASHLOAN_CALLBACK_VARIABLE, bytes32(assets));
+        VariablesLib.set(FLASHLOAN_CALLBACK_VARIABLE, bytes32(assets));
         // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _callback(data);
     }

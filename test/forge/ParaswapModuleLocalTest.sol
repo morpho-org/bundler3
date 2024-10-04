@@ -740,10 +740,6 @@ contract ParaswapModuleLocalTest is LocalTest {
 
     /* REPAY WITH COLLATERAL */
 
-    function testX() public {
-        testPartialRepayWithCollateral(2495578189, 4666);
-    }
-
     function testPartialRepayWithCollateral(uint256 borrowAmount, uint256 ratio) public {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
