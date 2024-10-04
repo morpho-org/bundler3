@@ -72,7 +72,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
     ) external bundlerOnly inAugustusRegistry(augustus) {
         if (srcAmountVariable != "") {
             uint256 srcAmount = callData.get(srcAmountOffset);
-            uint256 newSrcAmount = uint256(VariablesBundler(MORPHO_BUNDLER).getVariable(srcAmountVariable));
+            uint256 newSrcAmount = VariablesBundler(MORPHO_BUNDLER).getVariable(srcAmountVariable);
             callData.set(srcAmountOffset, newSrcAmount);
             minDestAmount = minDestAmount.mulDivUp(newSrcAmount, srcAmount);
         }
@@ -105,7 +105,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
     ) external bundlerOnly inAugustusRegistry(augustus) {
         if (destAmountVariable != "") {
             uint256 destAmount = callData.get(destAmountOffset);
-            uint256 newDestAmount = uint256(VariablesBundler(MORPHO_BUNDLER).getVariable(destAmountVariable));
+            uint256 newDestAmount = VariablesBundler(MORPHO_BUNDLER).getVariable(destAmountVariable);
             callData.set(destAmountOffset, newDestAmount);
             maxSrcAmount = maxSrcAmount.mulDivDown(newDestAmount, destAmount);
         }
