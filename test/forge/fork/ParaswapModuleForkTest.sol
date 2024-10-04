@@ -130,7 +130,7 @@ contract ParaswapModuleForkTest is ForkTest {
         // So adjusting up does not let the user actually sell more.
         // If adjusting below -90% the price will change too much.
         percent = bound(percent, 10, 100);
-        uint256 newDestAmount = destAmount * percent / 100;
+        uint256 debt = destAmount * percent / 100;
         uint256 initialBalance = 1_000_000_000e6;
 
         privateKey = boundPrivateKey(privateKey);
@@ -140,7 +140,7 @@ contract ParaswapModuleForkTest is ForkTest {
 
         bundle.push(_erc20TransferFromWithReceiver(USDC, address(paraswapModule), type(uint256).max));
 
-        bundle.push(_setVariable("new buy amount", newDestAmount));
+        bundle.push(_setVariable("new buy amount", debt));
 
         bundle.push(
             _moduleCall(
@@ -165,6 +165,6 @@ contract ParaswapModuleForkTest is ForkTest {
 
         uint256 sold = initialBalance - ERC20(USDC).balanceOf(address(user));
         assertApproxEqRel(sold, expectedSrcAmount * percent / 100, 10 * WAD / 100, "sold");
-        assertEq(ERC20(WBTC).balanceOf(address(user)), newDestAmount, "bought");
+        assertEq(ERC20(WBTC).balanceOf(address(user)), debt, "bought");
     }
 }
