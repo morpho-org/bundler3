@@ -365,7 +365,6 @@ contract ParaswapModuleLocalTest is LocalTest {
         _supplyCollateral(marketParams, type(uint104).max, address(this));
         _supply(marketParams, type(uint104).max, address(this));
         _borrow(marketParams, actualDestAmount, address(this));
-        console.log("LOAN HERE", loanToken.balanceOf(address(this)));
         collateralToken.setBalance(address(paraswapModule), actualDestAmount);
 
         bundle.push(_buy(address(collateralToken), address(loanToken), destAmount, destAmount, marketParams, receiver));
