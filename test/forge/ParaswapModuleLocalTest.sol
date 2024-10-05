@@ -20,7 +20,7 @@ contract AugustusMock {
         toTake = amount;
     }
 
-    function mockBuy(address srcToken, address destToken, uint256 toAmount) external {
+    function mockBuy(address srcToken, address destToken, uint256, uint256 toAmount) external {
         if (toGive != type(uint256).max) toAmount = toGive;
         uint256 fromAmount = toTake != type(uint256).max ? toTake : toAmount;
 
@@ -32,7 +32,7 @@ contract AugustusMock {
         toTake = type(uint256).max;
     }
 
-    function mockSell(address srcToken, address destToken, uint256 fromAmount) external {
+    function mockSell(address srcToken, address destToken, uint256 fromAmount, uint256) external {
         if (toTake != type(uint256).max) fromAmount = toTake;
         uint256 toAmount = toGive != type(uint256).max ? toGive : fromAmount;
 
@@ -120,12 +120,11 @@ contract ParaswapModuleLocalTest is LocalTest {
             address(paraswapModule),
             _paraswapSell(
                 address(augustus),
-                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount)),
+                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
                 srcToken,
                 destToken,
-                minDestAmount,
                 sellEntireBalance,
-                4 + 32 + 32, // sig + 2 values
+                Offsets(4 + 32 + 32, 4 + 32 + 32 + 32, 0),
                 receiver
             )
         );
@@ -143,12 +142,11 @@ contract ParaswapModuleLocalTest is LocalTest {
             address(paraswapModule),
             _paraswapBuy(
                 address(augustus),
-                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, destAmount)),
+                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
                 srcToken,
                 destToken,
-                maxSrcAmount,
                 marketParams,
-                4 + 32 + 32, // sig + 2 values
+                Offsets(4 + 32 + 32 + 32, 4 + 32 + 32, 0),
                 receiver
             )
         );
@@ -176,7 +174,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.prank(address(bundler));
 
         vm.expectRevert(bytes(ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY));
-        paraswapModule.sell(_augustus, hex"", address(0), address(0), 0, true, 0, address(0));
+        paraswapModule.sell(_augustus, hex"", address(0), address(0), true, Offsets(0, 0, 0), address(0));
     }
 
     function testAugustusInRegistryBuyCheck(address _augustus) public {
@@ -185,24 +183,68 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.prank(address(bundler));
 
         vm.expectRevert(bytes(ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY));
-        paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, emptyMarketParams, 0, address(0));
+        paraswapModule.buy(_augustus, hex"", address(0), address(0), emptyMarketParams, Offsets(0, 0, 0), address(0));
     }
 
-    function testBytesAtOffsetLengthCheckSell(uint256 length, uint256 offset) public {
-        length = bound(length, 32, 1024);
-        offset = bound(offset, length - 32 + 1, type(uint256).max);
-        vm.expectRevert(bytes(ErrorsLib.INVALID_OFFSET));
+    uint256 _bytesLength = 1024;
+
+    function _boundOffset(uint256 offset) internal view returns (uint256) {
+        return bound(offset, 0, _bytesLength - 32 * 3);
+    }
+
+    function _swapCalldata(uint256 offset, uint256 exactAmount, uint256 limitAmount, uint256 quotedAmount)
+        internal
+        view
+        returns (bytes memory)
+    {
+        return bytes.concat(
+            new bytes(offset),
+            bytes32(exactAmount),
+            bytes32(limitAmount),
+            bytes32(quotedAmount),
+            new bytes(_bytesLength - 32 * 3 - offset)
+        );
+    }
+
+    function _updateAmountsSell(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset,
+        bool adjustQuoted
+    ) internal {
+        _callable(_augustus);
+        augustusRegistryMock.setValid(_augustus, true);
+
+        offset = _boundOffset(offset);
+
+        initialExact = bound(initialExact, 1, type(uint64).max);
+        initialLimit = bound(initialLimit, 0, type(uint64).max);
+        initialQuoted = bound(initialQuoted, 0, type(uint64).max);
+        adjustedExact = bound(adjustedExact, 0, type(uint64).max);
+        uint256 adjustedLimit = initialLimit.mulDivUp(adjustedExact, initialExact);
+        uint256 adjustedQuoted = adjustQuoted ? initialQuoted.mulDivUp(adjustedExact, initialExact) : initialQuoted;
+        uint256 quotedOffset = adjustQuoted ? offset + 64 : 0;
+
+        collateralToken.setBalance(address(paraswapModule), adjustedExact);
+
+        if (adjustedLimit > 0) {
+            vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        }
+        vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
+        // adjustedData);
         bundle.push(
             _moduleCall(
                 address(paraswapModule),
                 _paraswapSell(
-                    address(augustus),
-                    new bytes(length),
+                    _augustus,
+                    _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
                     address(collateralToken),
                     address(loanToken),
-                    type(uint256).max,
                     true,
-                    offset,
+                    Offsets(offset, offset + 32, quotedOffset),
                     address(1)
                 )
             )
@@ -210,26 +252,93 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testBytesAtOffsetLengthCheckBuy(uint256 length, uint256 offset) public {
-        length = bound(length, 32, 1024);
-        offset = bound(offset, length - 32 + 1, type(uint256).max);
-        vm.expectRevert(bytes(ErrorsLib.INVALID_OFFSET));
+    function testUpdateAmountsSellWithQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsSell(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+    }
+
+    function testUpdateAmountsSellNoQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsSell(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
+    }
+
+    function _updateAmountsBuy(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset,
+        bool adjustQuoted
+    ) internal {
+        _callable(_augustus);
+        augustusRegistryMock.setValid(_augustus, true);
+
+        offset = _boundOffset(offset);
+
+        initialExact = bound(initialExact, 1, type(uint64).max);
+        initialLimit = bound(initialLimit, 0, type(uint64).max);
+        initialQuoted = bound(initialQuoted, 0, type(uint64).max);
+        adjustedExact = bound(adjustedExact, 1, type(uint64).max);
+        uint256 adjustedLimit = initialLimit.mulDivDown(adjustedExact, initialExact);
+        uint256 adjustedQuoted = adjustQuoted ? initialQuoted.mulDivDown(adjustedExact, initialExact) : initialQuoted;
+        uint256 quotedOffset = adjustQuoted ? offset + 64 : 0;
+
+        _supplyCollateral(marketParams, type(uint104).max, address(this));
+        _supply(marketParams, type(uint104).max, address(this));
+        _borrow(marketParams, adjustedExact, address(this));
+
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         bundle.push(
             _moduleCall(
                 address(paraswapModule),
                 _paraswapBuy(
-                    address(augustus),
-                    new bytes(length),
+                    _augustus,
+                    _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
                     address(collateralToken),
                     address(loanToken),
-                    type(uint256).max,
                     marketParams,
-                    offset,
+                    Offsets(offset, offset + 32, quotedOffset),
                     address(1)
                 )
             )
         );
         bundler.multicall(bundle);
+    }
+
+    function testUpdateAmountsBuyWithQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+    }
+
+    function testUpdateAmountsBuyNoQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
     }
 
     function testIncorrectLoanToken(address argToken, address marketToken) public {
@@ -241,7 +350,13 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.expectRevert(bytes(ErrorsLib.INCORRECT_LOAN_TOKEN));
         vm.prank(address(bundler));
         paraswapModule.buy(
-            address(augustus), new bytes(32), address(collateralToken), argToken, 0, marketParams, 0, address(0)
+            address(augustus),
+            new bytes(32),
+            address(collateralToken),
+            argToken,
+            marketParams,
+            Offsets(0, 0, 0),
+            address(0)
         );
     }
 
