@@ -3,6 +3,17 @@ pragma solidity >=0.5.0;
 
 import {MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
+/// @notice The offsets are:
+///  - exactAmount, the offset in augustus calldata of the exact amount to sell / buy.
+///  - limitAmount, the offset in augustus calldata of the minimum amount to buy / maximum amount to sell
+///  - quotedAmount, the offset in augustus calldata of the initially quoted buy amount / initially quoted sell amount.
+/// Set to 0 if the quoted amount is not present in augustus calldata so that it is not used.
+struct Offsets {
+    uint256 exactAmount;
+    uint256 limitAmount;
+    uint256 quotedAmount;
+}
+
 /// @title IParaswapModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
@@ -13,9 +24,8 @@ interface IParaswapModule {
         bytes memory callData,
         address srcToken,
         address destToken,
-        uint256 minDestAmount,
         bytes32 srcAmountVariable,
-        uint256 srcAmountOffset,
+        Offsets calldata offsets,
         address receiver
     ) external;
 
@@ -24,9 +34,8 @@ interface IParaswapModule {
         bytes memory callData,
         address srcToken,
         address destToken,
-        uint256 maxSrcAmount,
         bytes32 destAmountVariable,
-        uint256 destAmountOffset,
+        Offsets calldata offsets,
         address receiver
     ) external;
 }

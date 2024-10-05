@@ -6,6 +6,7 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {IAugustusRegistry} from "../../src/interfaces/IAugustusRegistry.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {EventsLib} from "../../src/libraries/EventsLib.sol";
 
 import {
     SUPPLY_CALLBACK_VARIABLE,
@@ -15,18 +16,39 @@ import {
 } from "../../src/libraries/ConstantsLib.sol";
 
 contract AugustusMock {
-    function mockBuy(address srcToken, address destToken, uint256 toAmount) external {
-        uint256 fromAmount = toAmount;
-        ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
-        ERC20Mock(destToken).setBalance(address(this), toAmount);
-        ERC20(destToken).transfer(msg.sender, toAmount);
+    uint256 public toGive = type(uint256).max;
+    uint256 public toTake = type(uint256).max;
+
+    function setToGive(uint256 amount) external {
+        toGive = amount;
     }
 
-    function mockSell(address srcToken, address destToken, uint256 fromAmount) external {
-        uint256 toAmount = fromAmount;
+    function setToTake(uint256 amount) external {
+        toTake = amount;
+    }
+
+    function mockBuy(address srcToken, address destToken, uint256, uint256 toAmount) external {
+        if (toGive != type(uint256).max) toAmount = toGive;
+        uint256 fromAmount = toTake != type(uint256).max ? toTake : toAmount;
+
         ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
         ERC20Mock(destToken).setBalance(address(this), toAmount);
         ERC20(destToken).transfer(msg.sender, toAmount);
+
+        toGive = type(uint256).max;
+        toTake = type(uint256).max;
+    }
+
+    function mockSell(address srcToken, address destToken, uint256 fromAmount, uint256) external {
+        if (toTake != type(uint256).max) fromAmount = toTake;
+        uint256 toAmount = toGive != type(uint256).max ? toGive : fromAmount;
+
+        ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
+        ERC20Mock(destToken).setBalance(address(this), toAmount);
+        ERC20(destToken).transfer(msg.sender, toAmount);
+
+        toGive = type(uint256).max;
+        toTake = type(uint256).max;
     }
 }
 
@@ -105,12 +127,11 @@ contract ParaswapModuleLocalTest is LocalTest {
             address(paraswapModule),
             _paraswapSell(
                 address(augustus),
-                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount)),
+                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
                 srcToken,
                 destToken,
-                minDestAmount,
                 srcAmountVariable,
-                4 + 32 + 32, // sig + 2 values
+                Offsets(4 + 32 + 32, 4 + 32 + 32 + 32, 0),
                 receiver
             )
         );
@@ -128,12 +149,11 @@ contract ParaswapModuleLocalTest is LocalTest {
             address(paraswapModule),
             _paraswapBuy(
                 address(augustus),
-                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, destAmount)),
+                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
                 srcToken,
                 destToken,
-                maxSrcAmount,
                 destAmountVariable,
-                4 + 32 + 32, // sig + 2 values
+                Offsets(4 + 32 + 32 + 32, 4 + 32 + 32, 0),
                 receiver
             )
         );
@@ -161,7 +181,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.prank(address(bundler));
 
         vm.expectRevert(bytes(ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY));
-        paraswapModule.sell(_augustus, hex"", address(0), address(0), 0, "", 0, address(0));
+        paraswapModule.sell(_augustus, hex"", address(0), address(0), "", Offsets(0, 0, 0), address(0));
     }
 
     function testAugustusInRegistryBuyCheck(address _augustus) public {
@@ -170,24 +190,70 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.prank(address(bundler));
 
         vm.expectRevert(bytes(ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY));
-        paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, "", 0, address(0));
+        paraswapModule.buy(_augustus, hex"", address(0), address(0), "", Offsets(0, 0, 0), address(0));
     }
 
-    function testBytesAtOffsetLengthCheckSell(uint256 length, uint256 offset) public {
-        length = bound(length, 32, 1024);
-        offset = bound(offset, length - 32 + 1, type(uint256).max);
-        vm.expectRevert(bytes(ErrorsLib.INVALID_OFFSET));
+    uint256 _bytesLength = 1024;
+
+    function _boundOffset(uint256 offset) internal view returns (uint256) {
+        return bound(offset, 0, _bytesLength - 32 * 3);
+    }
+
+    function _swapCalldata(uint256 offset, uint256 exactAmount, uint256 limitAmount, uint256 quotedAmount)
+        internal
+        view
+        returns (bytes memory)
+    {
+        return bytes.concat(
+            new bytes(offset),
+            bytes32(exactAmount),
+            bytes32(limitAmount),
+            bytes32(quotedAmount),
+            new bytes(_bytesLength - 32 * 3 - offset)
+        );
+    }
+
+    function _updateAmountsSell(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset,
+        bool adjustQuoted
+    ) internal {
+        _callable(_augustus);
+        augustusRegistryMock.setValid(_augustus, true);
+
+        offset = _boundOffset(offset);
+
+        initialExact = bound(initialExact, 1, type(uint64).max);
+        initialLimit = bound(initialLimit, 0, type(uint64).max);
+        initialQuoted = bound(initialQuoted, 0, type(uint64).max);
+        adjustedExact = bound(adjustedExact, 0, type(uint64).max);
+        uint256 adjustedLimit = initialLimit.mulDivUp(adjustedExact, initialExact);
+        uint256 adjustedQuoted = adjustQuoted ? initialQuoted.mulDivUp(adjustedExact, initialExact) : initialQuoted;
+        uint256 quotedOffset = adjustQuoted ? offset + 64 : 0;
+
+        collateralToken.setBalance(address(paraswapModule), adjustedExact);
+
+        if (adjustedLimit > 0) {
+            vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        }
+        vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
+
+        bundle.push(_setVariable("new sell amount", adjustedExact));
+        // adjustedData);
         bundle.push(
             _moduleCall(
                 address(paraswapModule),
                 _paraswapSell(
-                    address(augustus),
-                    new bytes(length),
+                    _augustus,
+                    _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
                     address(collateralToken),
                     address(loanToken),
-                    type(uint256).max,
-                    "dummy variable",
-                    offset,
+                    "new sell amount",
+                    Offsets(offset, offset + 32, quotedOffset),
                     address(1)
                 )
             )
@@ -195,25 +261,158 @@ contract ParaswapModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testBytesAtOffsetLengthCheckBuy(uint256 length, uint256 offset) public {
-        length = bound(length, 32, 1024);
-        offset = bound(offset, length - 32 + 1, type(uint256).max);
-        vm.expectRevert(bytes(ErrorsLib.INVALID_OFFSET));
+    function testUpdateAmountsSellWithQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsSell(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+    }
+
+    function testUpdateAmountsSellNoQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsSell(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
+    }
+
+    function _updateAmountsBuy(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset,
+        bool adjustQuoted
+    ) internal {
+        _callable(_augustus);
+        augustusRegistryMock.setValid(_augustus, true);
+
+        offset = _boundOffset(offset);
+
+        initialExact = bound(initialExact, 1, type(uint64).max);
+        initialLimit = bound(initialLimit, 0, type(uint64).max);
+        initialQuoted = bound(initialQuoted, 0, type(uint64).max);
+        adjustedExact = bound(adjustedExact, 1, type(uint64).max);
+        uint256 adjustedLimit = initialLimit.mulDivDown(adjustedExact, initialExact);
+        uint256 adjustedQuoted = adjustQuoted ? initialQuoted.mulDivDown(adjustedExact, initialExact) : initialQuoted;
+        uint256 quotedOffset = adjustQuoted ? offset + 64 : 0;
+
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
+
+        bundle.push(_setVariable("new buy amount", adjustedExact));
         bundle.push(
             _moduleCall(
                 address(paraswapModule),
                 _paraswapBuy(
-                    address(augustus),
-                    new bytes(length),
+                    _augustus,
+                    _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
                     address(collateralToken),
                     address(loanToken),
-                    type(uint256).max,
-                    "dummy variable",
-                    offset,
+                    "new buy amount",
+                    Offsets(offset, offset + 32, quotedOffset),
                     address(1)
                 )
             )
         );
+        bundler.multicall(bundle);
+    }
+
+    function testUpdateAmountsBuyWithQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+    }
+
+    function testUpdateAmountsBuyNoQuoteUpdate(
+        address _augustus,
+        uint256 initialExact,
+        uint256 initialLimit,
+        uint256 initialQuoted,
+        uint256 adjustedExact,
+        uint256 offset
+    ) public {
+        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
+    }
+
+    function testBuyExactAmountCheck(uint256 amount, uint256 subAmount) public {
+        amount = bound(amount, 1, type(uint64).max);
+        subAmount = bound(subAmount, 0, amount - 1);
+
+        collateralToken.setBalance(address(paraswapModule), amount);
+
+        augustus.setToGive(subAmount);
+        vm.expectRevert(bytes(ErrorsLib.BUY_AMOUNT_TOO_LOW));
+        bundle.push(_buy(address(collateralToken), address(loanToken), amount, amount, "", address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSellExactAmountCheck(uint256 amount, uint256 supAmount) public {
+        amount = bound(amount, 1, type(uint64).max);
+        supAmount = bound(supAmount, amount + 1, type(uint120).max);
+
+        collateralToken.setBalance(address(paraswapModule), supAmount);
+
+        augustus.setToTake(supAmount);
+        vm.expectRevert(bytes(ErrorsLib.SELL_AMOUNT_TOO_HIGH));
+        bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, "", address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSwapEventSell(bytes32 salt, uint256 srcAmount, uint256 destAmount, address receiver) public {
+        _receiver(receiver);
+        srcAmount = bound(srcAmount, 0, type(uint128).max);
+        destAmount = bound(destAmount, 0, type(uint128).max);
+
+        augustus.setToTake(srcAmount);
+        augustus.setToGive(destAmount);
+
+        ERC20Mock srcToken = new ERC20Mock{salt: salt}("src", "SRC");
+        ERC20Mock destToken = new ERC20Mock{salt: salt}("dest", "DEST");
+
+        srcToken.setBalance(address(paraswapModule), srcAmount);
+
+        vm.expectEmit(true, true, true, true, address(paraswapModule));
+        emit EventsLib.MorphoBundlerParaswapModuleSwap(
+            address(srcToken), address(destToken), receiver, srcAmount, destAmount
+        );
+
+        bundle.push(_sell(address(srcToken), address(destToken), srcAmount, destAmount, "", receiver));
+        bundler.multicall(bundle);
+    }
+
+    function testSwapEventBuy(bytes32 salt, uint256 srcAmount, uint256 destAmount, address receiver) public {
+        _receiver(receiver);
+        srcAmount = bound(srcAmount, 0, type(uint128).max);
+        destAmount = bound(destAmount, 0, type(uint128).max);
+
+        augustus.setToTake(srcAmount);
+        augustus.setToGive(destAmount);
+
+        ERC20Mock srcToken = new ERC20Mock{salt: salt}("src", "SRC");
+        ERC20Mock destToken = new ERC20Mock{salt: salt}("dest", "DEST");
+
+        srcToken.setBalance(address(paraswapModule), srcAmount);
+
+        vm.expectEmit(true, true, true, true, address(paraswapModule));
+        emit EventsLib.MorphoBundlerParaswapModuleSwap(
+            address(srcToken), address(destToken), receiver, srcAmount, destAmount
+        );
+
+        bundle.push(_buy(address(srcToken), address(destToken), srcAmount, destAmount, "", receiver));
         bundler.multicall(bundle);
     }
 

@@ -30,6 +30,7 @@ import {IModularBundler} from "../../../src/interfaces/IModularBundler.sol";
 import {IrmMock} from "../../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH} from "../../../lib/solmate/src/tokens/WETH.sol";
+import {IParaswapModule, Offsets} from "../../../src/interfaces/IParaswapModule.sol";
 import {ParaswapModule} from "../../../src/modules/ParaswapModule.sol";
 
 import {BaseBundler} from "../../../src/BaseBundler.sol";
@@ -69,7 +70,7 @@ abstract contract CommonTest is Test {
     OracleMock internal oracle;
 
     BaseBundler internal bundler;
-    ParaswapModule paraswapModule;
+    IParaswapModule paraswapModule;
 
     AugustusRegistryMock augustusRegistryMock;
 
@@ -357,14 +358,12 @@ abstract contract CommonTest is Test {
         bytes memory callData,
         address srcToken,
         address destToken,
-        uint256 minDestAmount,
         bytes32 srcAmountVariable,
-        uint256 srcAmountOffset,
+        Offsets memory offsets,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            ParaswapModule.sell,
-            (augustus, callData, srcToken, destToken, minDestAmount, srcAmountVariable, srcAmountOffset, receiver)
+            IParaswapModule.sell, (augustus, callData, srcToken, destToken, srcAmountVariable, offsets, receiver)
         );
     }
 
@@ -373,14 +372,12 @@ abstract contract CommonTest is Test {
         bytes memory callData,
         address srcToken,
         address destToken,
-        uint256 maxSrcAmount,
         bytes32 destAmountVariable,
-        uint256 destAmountOffset,
+        Offsets memory offsets,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            ParaswapModule.buy,
-            (augustus, callData, srcToken, destToken, maxSrcAmount, destAmountVariable, destAmountOffset, receiver)
+            IParaswapModule.buy, (augustus, callData, srcToken, destToken, destAmountVariable, offsets, receiver)
         );
     }
 
