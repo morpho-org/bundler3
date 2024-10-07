@@ -23,6 +23,8 @@ jobs:
 
       - name: Build contracts & package with hardhat
         uses: ./.github/actions/build-hardhat
+        env:
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
 
       - name: Run hardhat tests
         run: yarn test:hardhat
