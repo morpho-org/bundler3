@@ -4,7 +4,7 @@ pragma solidity >=0.5.0;
 /// @title IMorphoBundlerModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Interface of Morpho Bundler module.
+/// @notice Minimal interface of Morpho Bundler modules.
 interface IMorphoBundlerModule {
     /// @notice Receives a call from the Morpho Bundler.
     function onMorphoBundlerCall(bytes calldata data) external payable;
