@@ -41,3 +41,5 @@ jobs:
 
       - name: Run Hardhat tests
         run: yarn test:hardhat
+        env:
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
