@@ -13,7 +13,7 @@ contract BaseBundlerEnshrinedLocalTest is BaseBundler, LocalTest {
     }
 
     function testMulticallShouldSetTheRightInitiator(address caller) public {
-        vm.assume(caller != address(1));
+        vm.assume(caller != address(0));
 
         bundle.push(abi.encodeCall(this.checkInitiator, (caller)));
 

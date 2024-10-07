@@ -2,6 +2,7 @@
 names = true
 sizes = true
 src = "src"
+evm_version = "cancun"
 test = "test/forge"
 fs_permissions = [
     { access = "read", path = "./out/"},
@@ -10,9 +11,7 @@ fs_permissions = [
 libs = ["lib"]
 via-ir = true
 optimizer_runs = 999999
-evm_version = "cancun"
 ignored_error_codes = ["transient-storage"]
-
 
 [profile.default.fuzz]
 runs = 16
