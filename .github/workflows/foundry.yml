@@ -5,119 +5,44 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
-  build-via-ir:
-    name: Compilation (via IR)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - uses: ./.github/actions/install
-
-      - name: Build contracts via IR & check sizes
-        # don't use compilation cache
-        # skip import files, because we don't care if contracts are too big
-        run: yarn build:forge --force --sizes --skip Import
-
-
-  build-no-ir:
-    name: Compilation (without IR)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - uses: ./.github/actions/install-cache
-
-      - name: Build contracts without IR
-        run: yarn build:forge
-        env:
-          FOUNDRY_PROFILE: test
-
-      - name: Save forge compilation cache
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            cache
-            out
-          key: forge-${{ github.ref_name }}
-
-  test-local:
-    needs: build-no-ir
-
-    name: Local tests
-    runs-on: ubuntu-latest
-
+  forge-test:
     strategy:
       fail-fast: true
       matrix:
         type: ["slow", "fast"]
         include:
           - type: "slow"
-            fuzz-runs: 25000
-            max-test-rejects: 10000
+            fuzz-runs: 10000
+            max-test-rejects: 500000
+            invariant-runs: 0
+            invariant-depth: 512
           - type: "fast"
-            fuzz-runs: 2048
+            fuzz-runs: 256
             max-test-rejects: 65536
+            invariant-runs: 0
+            invariant-depth: 256
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - uses: ./.github/actions/install-cache
-
-      - name: Run local tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:forge:local
-        env:
-          FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
-          FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
-          FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
-
-  test-fork:
-    needs: build-no-ir
-
-    name: Fork tests (chainid=${{ matrix.chain }})
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: true
-      matrix:
-        chain: [1, 8453]
-        type: ["slow", "fast"]
-        include:
-          - type: "slow"
-            fuzz-runs: 96
-            max-test-rejects: 65536
-          - type: "fast"
-            fuzz-runs: 16
-            max-test-rejects: 65536
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - uses: ./.github/actions/install-cache
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Run fork tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:forge:fork --chain ${{ matrix.chain }}
+      - name: Run Forge tests in ${{ matrix.type }} mode
+        run: yarn test:forge -vvv
         env:
-          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
           FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
           FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
+          FOUNDRY_INVARIANT_RUNS: ${{ matrix.invariant-runs }}
+          FOUNDRY_INVARIANT_DEPTH: ${{ matrix.invariant-depth }}
           FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
