@@ -9,7 +9,6 @@ fs_permissions = [
 ]
 libs = ["lib"]
 via-ir = true
-evm_version = "cancun"
 optimizer_runs = 999999
 evm_version = "cancun"
 ignored_error_codes = ["transient-storage"]
