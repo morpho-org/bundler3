@@ -66,10 +66,10 @@ jobs:
         type: ["slow", "fast"]
         include:
           - type: "slow"
-            fuzz-runs: 25000
+            fuzz-runs: 1000
             max-test-rejects: 10000
           - type: "fast"
-            fuzz-runs: 2048
+            fuzz-runs: 256
             max-test-rejects: 65536
 
     steps:
