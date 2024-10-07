@@ -29,7 +29,7 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
 
     /// @notice Re-dispatches all calls to itself.
     /// @dev If the inheriting module has a single entrypoint it can override this function to save a self-call.
-    function onMorphoBundlerCall(bytes calldata data) external payable virtual bundlerOnly {
+    function onMorphoBundlerCall(bytes calldata data) external payable virtual {
         (bool success,) = address(this).delegatecall(data);
         if (!success) {
             assembly ("memory-safe") {
