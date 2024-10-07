@@ -5,7 +5,7 @@ import {IMulticall} from "./interfaces/IMulticall.sol";
 import {IInitiatorStore} from "./interfaces/IInitiatorStore.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {UNSET_INITIATOR} from "./libraries/ConstantsLib.sol";
+import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 /// @title BaseBundler
@@ -19,18 +19,21 @@ import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.s
 abstract contract BaseBundler is IMulticall, IInitiatorStore {
     using SafeTransferLib for ERC20;
 
-    /* STORAGE */
+    /* STORAGE FUNCTIONS */
 
-    /// @notice Keeps track of the bundler's latest bundle initiator.
-    /// @dev Also prevents interacting with the bundler outside of an initiated execution context.
-    address private _initiator = UNSET_INITIATOR;
+    /// @notice Set the initiator value in transient storage.
+    function setInitiator(address _initiator) internal {
+        assembly ("memory-safe") {
+            tstore(INITIATOR_SLOT, _initiator)
+        }
+    }
 
     /* MODIFIERS */
 
     /// @dev Prevents a function to be called outside an initiated `multicall` context and protects a function from
     /// being called by an unauthorized sender inside an initiated multicall context.
     modifier protected() {
-        require(_initiator != UNSET_INITIATOR, ErrorsLib.UNINITIATED);
+        require(initiator() != address(0), ErrorsLib.UNINITIATED);
         require(_isSenderAuthorized(), ErrorsLib.UNAUTHORIZED_SENDER);
 
         _;
@@ -38,9 +41,11 @@ abstract contract BaseBundler is IMulticall, IInitiatorStore {
 
     /* PUBLIC */
 
-    /// @inheritdoc IInitiatorStore
-    function initiator() public view returns (address) {
-        return _initiator;
+    /// @notice Returns the address of the initiator of the multicall transaction.
+    function initiator() public view returns (address _initiator) {
+        assembly ("memory-safe") {
+            _initiator := tload(INITIATOR_SLOT)
+        }
     }
 
     /* EXTERNAL */
@@ -49,13 +54,13 @@ abstract contract BaseBundler is IMulticall, IInitiatorStore {
     /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
     /// @dev All functions delegatecalled must be `payable` if `msg.value` is non-zero.
     function multicall(bytes[] memory data) external payable {
-        require(_initiator == UNSET_INITIATOR, ErrorsLib.ALREADY_INITIATED);
+        require(initiator() == address(0), ErrorsLib.ALREADY_INITIATED);
 
-        _initiator = msg.sender;
+        setInitiator(msg.sender);
 
         _multicall(data);
 
-        _initiator = UNSET_INITIATOR;
+        setInitiator(address(0));
     }
 
     /* INTERNAL */
@@ -85,7 +90,7 @@ abstract contract BaseBundler is IMulticall, IInitiatorStore {
     /// @dev Returns whether the sender of the call is authorized.
     /// @dev Assumes to be inside a properly initiated `multicall` context.
     function _isSenderAuthorized() internal view virtual returns (bool) {
-        return msg.sender == _initiator;
+        return msg.sender == initiator();
     }
 
     /// @dev Gives the max approval to `spender` to spend the given `asset` if not already approved.

@@ -5,7 +5,6 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import {ModularBundler} from "../../src/ModularBundler.sol";
 import {IMorphoBundlerModule} from "../../src/interfaces/IMorphoBundlerModule.sol";
-import {UNSET_INITIATOR} from "../../src/libraries/ConstantsLib.sol";
 
 import "./helpers/LocalTest.sol";
 import {MorphoBundlerModuleMock, Initiator} from "../../src/mocks/MorphoBundlerModuleMock.sol";
@@ -19,7 +18,7 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
     }
 
     function testGetInitiator(address initiator) public {
-        vm.assume(initiator != UNSET_INITIATOR);
+        vm.assume(initiator != address(0));
 
         bundle.push(_moduleCall(address(module), abi.encodeCall(module.emitInitiator, ())));
 

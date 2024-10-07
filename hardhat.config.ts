@@ -12,6 +12,7 @@ import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-network-helpers";
 import 'hardhat-ignore-warnings';
 import "@typechain/hardhat";
+import "hardhat-ignore-warnings";
 
 dotenv.config();
 

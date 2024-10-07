@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import "../../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
 
@@ -15,5 +16,9 @@ contract BaseBundlerLocalTest is LocalTest {
 
         vm.expectRevert(bytes(ErrorsLib.ALREADY_INITIATED));
         bundler.multicall(bundle);
+    }
+
+    function testInitiatorSlot() public pure {
+        assertEq(ConstantsLib.INITIATOR_SLOT, keccak256("Morpho Bundler Initiator Slot"));
     }
 }
