@@ -16,21 +16,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate a token
-        id: generate-token
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
 
       - name: Build contracts & package with hardhat
         uses: ./.github/actions/build-hardhat
+        env:
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
 
       - name: Run hardhat tests
         run: yarn test:hardhat

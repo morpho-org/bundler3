@@ -10,6 +10,7 @@ import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-network-helpers";
+import 'hardhat-ignore-warnings';
 import "@typechain/hardhat";
 
 dotenv.config();
@@ -35,6 +36,17 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
+        version: "0.8.27",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+          viaIR: true,
+          evmVersion: "cancun"
+        },
+      },
+      {
         version: "0.8.24",
         settings: {
           optimizer: {
@@ -42,6 +54,7 @@ const config: HardhatUserConfig = {
             runs: 999999,
           },
           viaIR: true,
+          evmVersion: "cancun"
         },
       },      {
         version: "0.8.21",
@@ -51,6 +64,7 @@ const config: HardhatUserConfig = {
             runs: 80000,
           },
           viaIR: true,
+          evmVersion: "paris"
         },
       },
       {
@@ -61,6 +75,7 @@ const config: HardhatUserConfig = {
             runs: 80000,
           },
           viaIR: true,
+          evmVersion: "paris"
         },
       },
     ],
@@ -77,6 +92,11 @@ const config: HardhatUserConfig = {
     defaultVerbosity: 1,
     gasCost: true,
   },
+  warnings: {
+    '*': {
+      'transient-storage': 'off'
+    }
+  }
 };
 
 export default config;
