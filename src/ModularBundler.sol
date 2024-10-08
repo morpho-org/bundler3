@@ -28,7 +28,6 @@ abstract contract ModularBundler is BaseBundler, IModularBundler {
         _multicall(abi.decode(data, (bytes[])));
     }
 
-
     /* PUBLIC */
 
     /// @inheritdoc IModularBundler

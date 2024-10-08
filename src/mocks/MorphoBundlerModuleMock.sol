@@ -5,6 +5,7 @@ import {BaseMorphoBundlerModule} from "../modules/BaseMorphoBundlerModule.sol";
 import {IModularBundler} from "../interfaces/IModularBundler.sol";
 
 event Initiator(address);
+
 event CurrentModule(address);
 
 contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
@@ -28,6 +29,5 @@ contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
         emit CurrentModule(IModularBundler(MORPHO_BUNDLER).currentModule());
     }
 
-    function emitCurrentModule() external payable {
-    }
+    function emitCurrentModule() external payable {}
 }
