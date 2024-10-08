@@ -39,6 +39,6 @@ contract GoerliBundlerV2 is
 
     /// @inheritdoc MorphoBundler
     function _isSenderAuthorized() internal view override(BaseBundler, MorphoBundler, ModularBundler) returns (bool) {
-        return MorphoBundler._isSenderAuthorized();
+        return MorphoBundler._isSenderAuthorized() || ModularBundler._isSenderAuthorized();
     }
 }

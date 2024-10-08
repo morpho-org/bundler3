@@ -18,7 +18,7 @@ abstract contract ModularBundler is BaseBundler, IModularBundler {
     function callModule(address module, bytes calldata data, uint256 value) external payable protected {
         address previousModule = currentModule();
         setCurrentModule(module);
-        IMorphoBundlerModule(module).onMorphoBundlerCall{value: value}(data);
+        IMorphoBundlerModule(module).onMorphoBundlerCallModule{value: value}(data);
         setCurrentModule(previousModule);
     }
 
@@ -28,14 +28,17 @@ abstract contract ModularBundler is BaseBundler, IModularBundler {
         _multicall(abi.decode(data, (bytes[])));
     }
 
-    /* INTERNAL */
 
-    /// @notice Returns the bundler module currently being called.
+    /* PUBLIC */
+
+    /// @inheritdoc IModularBundler
     function currentModule() public view returns (address module) {
         assembly ("memory-safe") {
             module := tload(CURRENT_MODULE_SLOT)
         }
     }
+
+    /* INTERNAL */
 
     /// @notice Set the bundler module that is about to be called.
     function setCurrentModule(address module) internal {

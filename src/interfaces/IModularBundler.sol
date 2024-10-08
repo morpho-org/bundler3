@@ -13,5 +13,12 @@ interface IModularBundler {
 
     /// @notice Responds to calls from the current module.
     /// @dev Triggers `_multicall` logic during a callback.
+    /// @dev Only the current module can call this function.
     function multicallFromModule(bytes calldata data) external payable;
+
+    /// @notice Returns the current module.
+    /// @notice A module takes the 'current' status when called.
+    /// @notice A module gives back the 'current' status to the previously current module when it returns from a call.
+    /// @notice The initial current module is address(0).
+    function currentModule() external view returns (address module);
 }

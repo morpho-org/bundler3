@@ -37,6 +37,7 @@ import {UrdBundler} from "../../../src/UrdBundler.sol";
 import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
+import {Poser} from "./Poser.sol";
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../lib/forge-std/src/console2.sol";
@@ -67,9 +68,13 @@ abstract contract CommonTest is Test {
     bytes[] internal bundle;
     bytes[] internal callbackBundle;
 
+    Poser poser;
+
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
         vm.label(address(morpho), "Morpho");
+
+        poser = new Poser();
 
         bundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
 
@@ -96,6 +101,12 @@ abstract contract CommonTest is Test {
         vm.label(user, "User");
 
         return (privateKey, user);
+    }
+
+    function _usePoser(address target, bytes memory callData) internal {
+        vm.mockFunction(target, address(poser), callData);
+        (bool success,) = target.call(callData);
+        require(success, "Poser call failed");
     }
 
     /* TRANSFER */

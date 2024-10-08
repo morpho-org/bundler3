@@ -21,12 +21,12 @@ contract ModularBundlerTest is LocalTest {
         module = new MorphoBundlerModuleMock(address(bundler));
     }
 
-    function testPassthroughValue(uint128 value) public {
-        address initiator = makeAddr("initiator");
+    function testPassthroughValue(address initiator, uint128 value) public {
+        vm.assume(initiator != address(0));
 
         bundle.push(_moduleCall(address(module), abi.encodeCall(module.isProtected, ()), value));
 
-        vm.expectCall(address(module), value, bytes.concat(IMorphoBundlerModule.onMorphoBundlerCall.selector));
+        vm.expectCall(address(module), value, bytes.concat(IMorphoBundlerModule.onMorphoBundlerCallModule.selector));
 
         vm.deal(initiator, value);
         vm.prank(initiator);
@@ -47,25 +47,46 @@ contract ModularBundlerTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testNestedCallback(address initiator) public {
+    function testNestedCallbackAndCurrentModuleValue(address initiator) public {
         vm.assume(initiator != address(0));
         MorphoBundlerModuleMock module2 = new MorphoBundlerModuleMock(address(bundler));
+        MorphoBundlerModuleMock module3 = new MorphoBundlerModuleMock(address(bundler));
 
         callbackBundle2.push(_moduleCall(address(module2), abi.encodeCall(module2.isProtected, ())));
 
-        // Run 2 toplevel callbacks to check that previousModule is correctly restored in ModularBundler.callModule.
+
         callbackBundle.push(
-            _moduleCall(address(module2), abi.encodeCall(module2.callbackBundler, abi.encode(callbackBundle2)))
+            _moduleCall(address(module2), abi.encodeCall(module.callbackBundler, abi.encode(callbackBundle2)))
         );
 
         callbackBundle.push(
-            _moduleCall(address(module2), abi.encodeCall(module2.callbackBundler, abi.encode(callbackBundle2)))
+            _moduleCall(address(module3), abi.encodeCall(module.callbackBundler, abi.encode(callbackBundle2)))
         );
 
         bundle.push(_moduleCall(address(module), abi.encodeCall(module.callbackBundler, abi.encode(callbackBundle))));
 
+
         vm.prank(initiator);
+
+        vm.recordLogs();
         bundler.multicall(bundle);
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+
+        assertEq(entries.length, 8);
+
+        for (uint i = 0; i < entries.length;i++)  {
+            assertEq(entries[i].topics[0], keccak256("CurrentModule(address)"));
+        }
+
+        assertEq(entries[0].data,abi.encode(module));
+        assertEq(entries[1].data,abi.encode(module2));
+        assertEq(entries[2].data,abi.encode(module2));
+        assertEq(entries[3].data,abi.encode(module2));
+        assertEq(entries[4].data,abi.encode(module3));
+        assertEq(entries[5].data,abi.encode(module2));
+        assertEq(entries[6].data,abi.encode(module3));
+        assertEq(entries[7].data,abi.encode(module));
+
     }
 
     function testCurrentModuleSlot() public pure {

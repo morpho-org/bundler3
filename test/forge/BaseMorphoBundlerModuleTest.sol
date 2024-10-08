@@ -29,20 +29,6 @@ contract BaseMorphoBundlerModuleTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testProtectedSuccess() public {
-        bundle.push(_moduleCall(address(module), abi.encodeCall(module.isProtected, ())));
-
-        bundler.multicall(bundle);
-    }
-
-    function testProtectedFailure() public {
-        bundle.push(_moduleCall(address(module), abi.encodeCall(module.isProtected, ())));
-
-        BaseBundler otherBundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
-        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        otherBundler.multicall(bundle);
-    }
-
     function testBubbleRevert(string memory revertReason) public {
         bundle.push(_moduleCall(address(module), abi.encodeCall(module.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));

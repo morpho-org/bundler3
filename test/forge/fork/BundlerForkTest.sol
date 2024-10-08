@@ -5,6 +5,8 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {EthereumBundlerV2} from "../../../src/ethereum/EthereumBundlerV2.sol";
 import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
+import {BaseMorphoBundlerModuleTest} from "../BaseMorphoBundlerModuleTest.sol";
+import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -67,4 +69,45 @@ contract EthereumBundlerForkTest is ForkTest {
             assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
         }
     }
+
+    function testProtectedFailure(address initiator, address _module, address caller) public {
+        vm.assume(initiator != address(0));
+        vm.assume(caller != initiator);
+        vm.assume(caller != _module);
+        vm.assume(caller != address(morpho));
+
+        _usePoser(address(bundler), abi.encodeCall(Poser.setCurrentModule,(_module)));
+        _usePoser(address(bundler), abi.encodeCall(Poser.setInitiator,(initiator)));
+
+        deal(DAI,address(morpho),1);
+
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        vm.prank(caller);
+        MorphoBundler(address(bundler)).morphoFlashLoan(DAI,1,abi.encode(new bytes[](0)));
+    }
+
+    function testProtectedSuccessAsModule(address initiator, address _module) public {
+        vm.assume(initiator != address(0));
+        vm.assume(initiator != _module);
+
+        _usePoser(address(bundler), abi.encodeCall(Poser.setInitiator,(initiator)));
+        _usePoser(address(bundler), abi.encodeCall(Poser.setCurrentModule,(_module)));
+
+        deal(DAI,address(morpho),1);
+
+        vm.prank(_module);
+        MorphoBundler(address(bundler)).morphoFlashLoan(DAI,1,abi.encode(new bytes[](0)));
+    }
+
+    function testProtectedSuccessAsMorpho(address initiator) public {
+        vm.assume(initiator != address(0));
+        vm.assume(initiator != address(morpho));
+
+        _usePoser(address(bundler),abi.encodeCall(Poser.setInitiator,(initiator)));
+
+        deal(DAI,address(morpho),1);
+        vm.prank(address(morpho));
+        MorphoBundler(address(bundler)).morphoFlashLoan(DAI,1,abi.encode(new bytes[](0)));
+    }
+
 }
