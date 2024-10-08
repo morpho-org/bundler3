@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IMulticall} from "./interfaces/IMulticall.sol";
-import {IInitiatorStore} from "./interfaces/IInitiatorStore.sol";
+import {IBaseBundler} from "./interfaces/IBaseBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
@@ -16,7 +15,7 @@ import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.s
 /// @dev Every bundler inheriting from this contract must have their external functions payable as they will be
 /// delegate called by the `multicall` function (which is payable, and thus might pass a non-null ETH value). It is
 /// recommended not to rely on `msg.value` as the same value can be reused for multiple calls.
-abstract contract BaseBundler is IMulticall, IInitiatorStore {
+abstract contract BaseBundler is IBaseBundler {
     using SafeTransferLib for ERC20;
 
     /* STORAGE FUNCTIONS */

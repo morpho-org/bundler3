@@ -3,7 +3,7 @@ pragma solidity >=0.5.0;
 
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {IMorphoBundlerModule} from "../interfaces/IMorphoBundlerModule.sol";
-import {IInitiatorStore} from "../interfaces/IInitiatorStore.sol";
+import {IBaseBundler} from "../interfaces/IBaseBundler.sol";
 
 /// @title BaseMorphoBundlerModule
 /// @author Morpho Labs
@@ -43,6 +43,6 @@ abstract contract BaseMorphoBundlerModule is IMorphoBundlerModule {
 
     /// @notice Returns the current initiator stored in the bundler.
     function initiator() internal view returns (address) {
-        return IInitiatorStore(MORPHO_BUNDLER).initiator();
+        return IBaseBundler(MORPHO_BUNDLER).initiator();
     }
 }
