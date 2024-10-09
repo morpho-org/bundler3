@@ -47,16 +47,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sell an exact amount. Reverts unless at least `minDestAmount` tokens are received.
-    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param callData Swap data to call `augustus` with. Contains routing information.
-    /// @param srcToken Token to sell.
-    /// @param destToken Token to buy.
-    /// @param sellEntireBalance If true, adjusts amounts to sell the current balance of this contract.
-    /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`limitAmount`)
-    /// and quoted buy amount (`quotedAmount`).
-    /// @dev The quoted buy amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    /// @inheritdoc IParaswapModule
     function sell(
         address augustus,
         bytes memory callData,
@@ -82,19 +73,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
         );
     }
 
-    /// @notice Buy an exact amount. Reverts unless at most `maxSrcAmount` tokens are sold.
-    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param callData Swap data to call `augustus` with. Contains routing information.
-    /// @dev `callData` can change if `marketParams.loanToken == destToken`.
-    /// @param srcToken Token to sell.
-    /// @param destToken Token to buy.
-    /// @param marketParams If `marketParams.loanToken == destToken`, adjusts amounts to sell the current balance of
-    /// this contract.
-    /// @dev Revert if `marketParams.loanToken != destToken` and is nonzero.
-    /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
-    /// and quoted sell amount (`quotedAmount`).
-    /// @dev The quoted sell amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    /// @inheritdoc IParaswapModule
     function buy(
         address augustus,
         bytes memory callData,
