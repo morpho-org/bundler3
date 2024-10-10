@@ -6,6 +6,8 @@ import {IBaseBundler} from "./interfaces/IBaseBundler.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
+import {IMorphoBundlerModule} from "./interfaces/IMorphoBundlerModule.sol";
 
 /// @title BaseBundler
 /// @author Morpho Labs
@@ -62,6 +64,29 @@ abstract contract BaseBundler is IBaseBundler {
         setInitiator(address(0));
     }
 
+    /// @inheritdoc IBaseBundler
+    function callModule(address module, bytes calldata data, uint256 value) external payable protected {
+        address previousModule = currentModule();
+        setCurrentModule(module);
+        IMorphoBundlerModule(module).onMorphoBundlerCallModule{value: value}(data);
+        setCurrentModule(previousModule);
+    }
+
+    /// @inheritdoc IBaseBundler
+    function multicallFromModule(bytes calldata data) external payable {
+        require(msg.sender == currentModule(), ErrorsLib.UNAUTHORIZED_SENDER);
+        _multicall(abi.decode(data, (bytes[])));
+    }
+
+    /* PUBLIC */
+
+    /// @inheritdoc IBaseBundler
+    function currentModule() public view returns (address module) {
+        assembly ("memory-safe") {
+            module := tload(CURRENT_MODULE_SLOT)
+        }
+    }
+
     /* INTERNAL */
 
     /// @dev Executes a series of delegate calls to the contract itself.
@@ -86,10 +111,17 @@ abstract contract BaseBundler is IBaseBundler {
         }
     }
 
+    /// @notice Set the bundler module that is about to be called.
+    function setCurrentModule(address module) internal {
+        assembly ("memory-safe") {
+            tstore(CURRENT_MODULE_SLOT, module)
+        }
+    }
+
     /// @dev Returns whether the sender of the call is authorized.
     /// @dev Assumes to be inside a properly initiated `multicall` context.
     function _isSenderAuthorized() internal view virtual returns (bool) {
-        return msg.sender == initiator();
+        return msg.sender == initiator() || msg.sender == currentModule();
     }
 
     /// @dev Gives the max approval to `spender` to spend the given `asset` if not already approved.

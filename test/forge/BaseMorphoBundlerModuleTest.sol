@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
-import {ModularBundler} from "../../src/ModularBundler.sol";
 import {IMorphoBundlerModule} from "../../src/interfaces/IMorphoBundlerModule.sol";
 
 import "./helpers/LocalTest.sol";

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {BaseMorphoBundlerModule} from "../modules/BaseMorphoBundlerModule.sol";
-import {IModularBundler} from "../interfaces/IModularBundler.sol";
+import {IBaseBundler} from "../interfaces/IBaseBundler.sol";
 
 event Initiator(address);
 
@@ -12,7 +12,7 @@ contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
     constructor(address bundler) BaseMorphoBundlerModule(bundler) {}
 
     function isProtected() external payable bundlerOnly {
-        emit CurrentModule(IModularBundler(MORPHO_BUNDLER).currentModule());
+        emit CurrentModule(IBaseBundler(MORPHO_BUNDLER).currentModule());
     }
 
     function doRevert(string memory reason) external payable {
@@ -24,9 +24,9 @@ contract MorphoBundlerModuleMock is BaseMorphoBundlerModule {
     }
 
     function callbackBundler(bytes calldata data) external payable bundlerOnly {
-        emit CurrentModule(IModularBundler(MORPHO_BUNDLER).currentModule());
-        IModularBundler(MORPHO_BUNDLER).multicallFromModule(data);
-        emit CurrentModule(IModularBundler(MORPHO_BUNDLER).currentModule());
+        emit CurrentModule(IBaseBundler(MORPHO_BUNDLER).currentModule());
+        IBaseBundler(MORPHO_BUNDLER).multicallFromModule(data);
+        emit CurrentModule(IBaseBundler(MORPHO_BUNDLER).currentModule());
     }
 
     function emitCurrentModule() external payable {}

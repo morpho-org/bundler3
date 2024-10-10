@@ -13,7 +13,6 @@ import {EthereumStEthBundler} from "./EthereumStEthBundler.sol";
 import {UrdBundler} from "../UrdBundler.sol";
 import {MorphoBundler} from "../MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
-import {ModularBundler} from "../ModularBundler.sol";
 
 /// @title EthereumBundlerV2
 /// @author Morpho Labs
@@ -28,8 +27,7 @@ contract EthereumBundlerV2 is
     EthereumStEthBundler,
     UrdBundler,
     MorphoBundler,
-    ERC20WrapperBundler,
-    ModularBundler
+    ERC20WrapperBundler
 {
     /* CONSTRUCTOR */
 
@@ -38,7 +36,7 @@ contract EthereumBundlerV2 is
     /* INTERNAL */
 
     /// @inheritdoc MorphoBundler
-    function _isSenderAuthorized() internal view override(BaseBundler, MorphoBundler, ModularBundler) returns (bool) {
-        return MorphoBundler._isSenderAuthorized() || ModularBundler._isSenderAuthorized();
+    function _isSenderAuthorized() internal view override(BaseBundler, MorphoBundler) returns (bool) {
+        return MorphoBundler._isSenderAuthorized() || BaseBundler._isSenderAuthorized();
     }
 }
