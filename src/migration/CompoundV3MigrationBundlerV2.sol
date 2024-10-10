@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {ICompoundV3} from "./interfaces/ICompoundV3.sol";
 
@@ -27,7 +27,7 @@ contract CompoundV3MigrationBundlerV2 is MigrationBundler {
     /// @param amount The amount of `asset` to repay. Capped at the maximum repayable debt
     /// (mininimum of the bundler's balance and the initiator's debt).
     function compoundV3Repay(address instance, uint256 amount) external payable protected {
-        address _initiator = initiator();
+        address _initiator = initiator;
         address asset = ICompoundV3(instance).baseToken();
 
         amount = Math.min(amount, ERC20(asset).balanceOf(address(this)));
@@ -49,7 +49,7 @@ contract CompoundV3MigrationBundlerV2 is MigrationBundler {
     /// @param asset The address of the token to withdraw.
     /// @param amount The amount of `asset` to withdraw. Pass `type(uint256).max` to withdraw all.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount) external payable protected {
-        address _initiator = initiator();
+        address _initiator = initiator;
         uint256 balance = asset == ICompoundV3(instance).baseToken()
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
@@ -82,7 +82,7 @@ contract CompoundV3MigrationBundlerV2 is MigrationBundler {
         bytes32 s,
         bool skipRevert
     ) external payable protected {
-        try ICompoundV3(instance).allowBySig(initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
+        try ICompoundV3(instance).allowBySig(initiator, address(this), isAllowed, nonce, expiry, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) _revert(returnData);
         }

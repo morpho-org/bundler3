@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
@@ -55,7 +55,7 @@ abstract contract TransferBundler is BaseBundler {
     /// @param asset The address of the ERC20 token to transfer.
     /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
     function erc20TransferFrom(address asset, uint256 amount) external payable protected {
-        address _initiator = initiator();
+        address _initiator = initiator;
         amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);

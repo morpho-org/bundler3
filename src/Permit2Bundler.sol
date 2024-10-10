@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
@@ -30,7 +30,7 @@ abstract contract Permit2Bundler is BaseBundler {
         payable
         protected
     {
-        try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
+        try Permit2Lib.PERMIT2.permit(initiator, permitSingle, signature) {}
         catch (bytes memory returnData) {
             if (!skipRevert) _revert(returnData);
         }
@@ -40,7 +40,7 @@ abstract contract Permit2Bundler is BaseBundler {
     /// @param asset The address of the ERC20 token to transfer.
     /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
     function transferFrom2(address asset, uint256 amount) external payable protected {
-        address _initiator = initiator();
+        address _initiator = initiator;
         amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);

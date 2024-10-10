@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
@@ -36,7 +36,7 @@ abstract contract ERC20WrapperBundler is BaseBundler {
 
         _approveMaxTo(address(underlying), wrapper);
 
-        require(ERC20Wrapper(wrapper).depositFor(initiator(), amount), ErrorsLib.DEPOSIT_FAILED);
+        require(ERC20Wrapper(wrapper).depositFor(initiator, amount), ErrorsLib.DEPOSIT_FAILED);
     }
 
     /// @notice Burns a number of wrapped tokens and withdraws the corresponding number of underlying tokens.

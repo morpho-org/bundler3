@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {ICEth} from "./interfaces/ICEth.sol";
 import {ICToken} from "./interfaces/ICToken.sol";
@@ -40,7 +40,7 @@ contract CompoundV2MigrationBundlerV2 is WNativeBundler, MigrationBundler {
     /// @param amount The amount of `cToken` to repay. Capped at the maximum repayable debt
     /// (mininimum of the bundler's balance and the initiator's debt).
     function compoundV2Repay(address cToken, uint256 amount) external payable protected {
-        address _initiator = initiator();
+        address _initiator = initiator;
 
         if (cToken == C_ETH) {
             amount = Math.min(amount, address(this).balance);

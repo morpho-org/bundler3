@@ -5,7 +5,7 @@ import "./helpers/LocalTest.sol";
 
 contract BaseBundlerEnshrinedLocalTest is BaseBundler, LocalTest {
     function checkInitiator(address expectedInitiator) public payable protected {
-        require(initiator() == expectedInitiator, "unexpected initiator");
+        require(initiator == expectedInitiator, "unexpected initiator");
     }
 
     function revertWith(string memory data) public payable protected {

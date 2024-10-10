@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
@@ -85,7 +85,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UNEXPECTED_OWNER);
+        require(owner == address(this) || owner == initiator, ErrorsLib.UNEXPECTED_OWNER);
         require(assets != 0, ErrorsLib.ZERO_AMOUNT);
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
@@ -109,7 +109,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UNEXPECTED_OWNER);
+        require(owner == address(this) || owner == initiator, ErrorsLib.UNEXPECTED_OWNER);
 
         uint256 initialShares = shares;
         shares = Math.min(shares, IERC4626(vault).balanceOf(owner));

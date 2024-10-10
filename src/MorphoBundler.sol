@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IMorphoBundler} from "./interfaces/IMorphoBundler.sol";
 import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
@@ -151,7 +151,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         address receiver
     ) external payable protected {
         (uint256 borrowedAssets, uint256 borrowedShares) =
-            MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
+            MORPHO.borrow(marketParams, assets, shares, initiator, receiver);
 
         if (assets > 0) require(borrowedShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
         else require(borrowedAssets >= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
@@ -210,7 +210,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         address receiver
     ) external payable protected {
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
-            MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
+            MORPHO.withdraw(marketParams, assets, shares, initiator, receiver);
 
         if (assets > 0) require(withdrawnShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
         else require(withdrawnAssets >= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
@@ -226,7 +226,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         payable
         protected
     {
-        MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
+        MORPHO.withdrawCollateral(marketParams, assets, initiator, receiver);
     }
 
     /// @notice Triggers a flash loan on Morpho.

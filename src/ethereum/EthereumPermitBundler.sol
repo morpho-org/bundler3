@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 
@@ -26,7 +26,7 @@ abstract contract EthereumPermitBundler is PermitBundler {
         payable
         protected
     {
-        try IDaiPermit(MainnetLib.DAI).permit(initiator(), address(this), nonce, expiry, allowed, v, r, s) {}
+        try IDaiPermit(MainnetLib.DAI).permit(initiator, address(this), nonce, expiry, allowed, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) _revert(returnData);
         }

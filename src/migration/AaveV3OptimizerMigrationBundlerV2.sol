@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IAaveV3Optimizer, Signature} from "./interfaces/IAaveV3Optimizer.sol";
 
@@ -43,7 +43,7 @@ contract AaveV3OptimizerMigrationBundlerV2 is MigrationBundler {
 
         _approveMaxTo(underlying, address(AAVE_V3_OPTIMIZER));
 
-        AAVE_V3_OPTIMIZER.repay(underlying, amount, initiator());
+        AAVE_V3_OPTIMIZER.repay(underlying, amount, initiator);
     }
 
     /// @notice Withdraws `amount` of `underlying` on the AaveV3 Optimizer, on behalf of the initiator`.
@@ -58,7 +58,7 @@ contract AaveV3OptimizerMigrationBundlerV2 is MigrationBundler {
         payable
         protected
     {
-        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), address(this), maxIterations);
+        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator, address(this), maxIterations);
     }
 
     /// @notice Withdraws `amount` of `underlying` used as collateral on the AaveV3 Optimizer, on behalf of the
@@ -68,7 +68,7 @@ contract AaveV3OptimizerMigrationBundlerV2 is MigrationBundler {
     /// @param underlying The address of the underlying asset to withdraw.
     /// @param amount The amount of `underlying` to withdraw. Pass `type(uint256).max` to withdraw all.
     function aaveV3OptimizerWithdrawCollateral(address underlying, uint256 amount) external payable protected {
-        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), address(this));
+        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator, address(this));
     }
 
     /// @notice Approves the bundler to act on behalf of the initiator on the AaveV3 Optimizer, given a signed EIP-712
@@ -85,7 +85,7 @@ contract AaveV3OptimizerMigrationBundlerV2 is MigrationBundler {
         Signature calldata signature,
         bool skipRevert
     ) external payable protected {
-        try AAVE_V3_OPTIMIZER.approveManagerWithSig(initiator(), address(this), isApproved, nonce, deadline, signature)
+        try AAVE_V3_OPTIMIZER.approveManagerWithSig(initiator, address(this), isApproved, nonce, deadline, signature)
         {} catch (bytes memory returnData) {
             if (!skipRevert) _revert(returnData);
         }

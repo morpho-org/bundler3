@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IAaveV2} from "./interfaces/IAaveV2.sol";
 
@@ -47,7 +47,7 @@ contract AaveV2MigrationBundlerV2 is MigrationBundler, StEthBundler {
 
         _approveMaxTo(asset, address(AAVE_V2_POOL));
 
-        AAVE_V2_POOL.repay(asset, amount, interestRateMode, initiator());
+        AAVE_V2_POOL.repay(asset, amount, interestRateMode, initiator);
     }
 
     /// @notice Withdraws `amount` of `asset` on AaveV2, on behalf of the initiator.
