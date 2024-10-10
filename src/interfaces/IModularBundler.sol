@@ -6,8 +6,6 @@ pragma solidity >=0.5.0;
 /// @custom:contact security@morpho.org
 /// @notice Interface of Morpho Module Caller bundler.
 interface IModularBundler {
-    /// @notice Receives a call from the Morpho Bundler.
-
     /// @notice Calls `module`, passing along `data` and `value` native tokens to `module`.
     function callModule(address module, bytes calldata data, uint256 value) external payable;
 
