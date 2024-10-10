@@ -76,8 +76,8 @@ contract EthereumBundlerForkTest is ForkTest {
         vm.assume(caller != _module);
         vm.assume(caller != address(morpho));
 
-        _usePoser(address(bundler), abi.encodeCall(Poser.setCurrentModule, (_module)));
-        _usePoser(address(bundler), abi.encodeCall(Poser.setInitiator, (initiator)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (_module)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         deal(DAI, address(morpho), 1);
 
@@ -90,8 +90,8 @@ contract EthereumBundlerForkTest is ForkTest {
         vm.assume(initiator != address(0));
         vm.assume(initiator != _module);
 
-        _usePoser(address(bundler), abi.encodeCall(Poser.setInitiator, (initiator)));
-        _usePoser(address(bundler), abi.encodeCall(Poser.setCurrentModule, (_module)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (_module)));
 
         deal(DAI, address(morpho), 1);
 
@@ -103,7 +103,7 @@ contract EthereumBundlerForkTest is ForkTest {
         vm.assume(initiator != address(0));
         vm.assume(initiator != address(morpho));
 
-        _usePoser(address(bundler), abi.encodeCall(Poser.setInitiator, (initiator)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         deal(DAI, address(morpho), 1);
         vm.prank(address(morpho));

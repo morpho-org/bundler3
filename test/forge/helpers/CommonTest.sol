@@ -37,7 +37,7 @@ import {UrdBundler} from "../../../src/UrdBundler.sol";
 import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
-import {Poser} from "./Poser.sol";
+import {FunctionMocker} from "./FunctionMocker.sol";
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../lib/forge-std/src/console2.sol";
@@ -68,13 +68,13 @@ abstract contract CommonTest is Test {
     bytes[] internal bundle;
     bytes[] internal callbackBundle;
 
-    Poser poser;
+    FunctionMocker functionMocker;
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
         vm.label(address(morpho), "Morpho");
 
-        poser = new Poser();
+        functionMocker = new FunctionMocker();
 
         bundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
 
@@ -103,10 +103,10 @@ abstract contract CommonTest is Test {
         return (privateKey, user);
     }
 
-    function _usePoser(address target, bytes memory callData) internal {
-        vm.mockFunction(target, address(poser), callData);
+    function _delegatePrank(address target, bytes memory callData) internal {
+        vm.mockFunction(target, address(functionMocker), callData);
         (bool success,) = target.call(callData);
-        require(success, "Poser call failed");
+        require(success, "Function mocker call failed");
     }
 
     /* TRANSFER */
