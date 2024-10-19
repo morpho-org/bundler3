@@ -15,6 +15,7 @@ contract BaseBundlerLocalTest is LocalTest {
     bytes[] callbackBundle2;
 
     function setUp() public override {
+        super.setUp();
         module = new MorphoBundlerModuleMock(address(bundler));
     }
 
