@@ -3,7 +3,6 @@ pragma solidity ^0.8.27;
 
 import {BaseBundler} from "../BaseBundler.sol";
 import {PermitBundler} from "../PermitBundler.sol";
-import {Permit2Bundler} from "../Permit2Bundler.sol";
 import {ERC4626Bundler} from "../ERC4626Bundler.sol";
 import {WNativeBundler} from "../WNativeBundler.sol";
 import {UrdBundler} from "../UrdBundler.sol";
@@ -17,7 +16,6 @@ import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
 /// @notice Future chain agnostic bundlers may be added in the future.
 contract ChainAgnosticBundler1 is
     PermitBundler,
-    Permit2Bundler,
     ERC4626Bundler,
     WNativeBundler,
     UrdBundler,
