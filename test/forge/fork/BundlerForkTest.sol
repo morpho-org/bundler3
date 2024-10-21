@@ -3,11 +3,9 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {EthereumBundlerV2} from "../../../src/ethereum/EthereumBundlerV2.sol";
-import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
-import {BaseMorphoBundlerModuleTest} from "../BaseMorphoBundlerModuleTest.sol";
 import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
 
+import {MorphoBundler} from "../../../src/MorphoBundler.sol";
 import "./helpers/ForkTest.sol";
 
 contract EthereumBundlerForkTest is ForkTest {
@@ -44,7 +42,7 @@ contract EthereumBundlerForkTest is ForkTest {
         ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
         ERC20(marketParams.collateralToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         assertEq(ERC20(marketParams.collateralToken).balanceOf(user), 0, "collateral.balanceOf(user)");
@@ -70,43 +68,27 @@ contract EthereumBundlerForkTest is ForkTest {
         }
     }
 
-    function testProtectedFailure(address initiator, address _module, address caller) public {
+    function testProtectedFailure(address initiator, address _bundler, address caller) public {
         vm.assume(initiator != address(0));
         vm.assume(caller != initiator);
-        vm.assume(caller != _module);
-        vm.assume(caller != address(morpho));
+        vm.assume(caller != _bundler);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (_module)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-
-        deal(DAI, address(morpho), 1);
+        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (_bundler)));
+        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         vm.prank(caller);
-        MorphoBundler(address(bundler)).morphoFlashLoan(DAI, 1, abi.encode(new bytes[](0)));
+        hub.multicallFromBundler(new Call[](0));
     }
 
-    function testProtectedSuccessAsModule(address initiator, address _module) public {
+    function testProtectedSuccessAsBundler(address initiator, address _bundler) public {
         vm.assume(initiator != address(0));
-        vm.assume(initiator != _module);
+        vm.assume(initiator != _bundler);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (_module)));
+        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (_bundler)));
 
-        deal(DAI, address(morpho), 1);
-
-        vm.prank(_module);
-        MorphoBundler(address(bundler)).morphoFlashLoan(DAI, 1, abi.encode(new bytes[](0)));
-    }
-
-    function testProtectedSuccessAsMorpho(address initiator) public {
-        vm.assume(initiator != address(0));
-        vm.assume(initiator != address(morpho));
-
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-
-        deal(DAI, address(morpho), 1);
-        vm.prank(address(morpho));
-        MorphoBundler(address(bundler)).morphoFlashLoan(DAI, 1, abi.encode(new bytes[](0)));
+        vm.prank(_bundler);
+        hub.multicallFromBundler(new Call[](0));
     }
 }

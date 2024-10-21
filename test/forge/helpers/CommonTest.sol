@@ -30,13 +30,14 @@ import {WETH} from "../../../lib/solmate/src/tokens/WETH.sol";
 
 import {BaseBundler} from "../../../src/BaseBundler.sol";
 import {PermitBundler} from "../../../src/PermitBundler.sol";
-import {TransferBundler} from "../../../src/TransferBundler.sol";
 import {ERC4626Bundler} from "../../../src/ERC4626Bundler.sol";
 import {UrdBundler} from "../../../src/UrdBundler.sol";
 import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
-import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
+import {ChainAgnosticBundler1} from "../../../src/chain-agnostic/ChainAgnosticBundler1.sol";
+import {Hub} from "../../../src/Hub.sol";
+import {Call} from "../../../src/interfaces/Call.sol";
 
 import "../../../lib/forge-std/src/Test.sol";
 import "../../../lib/forge-std/src/console2.sol";
@@ -62,10 +63,13 @@ abstract contract CommonTest is Test {
     IrmMock internal irm;
     OracleMock internal oracle;
 
+    Hub internal hub;
+    ChainAgnosticBundler1 internal chainAgnosticBundler1;
+    // The 'current' bundler.
     BaseBundler internal bundler;
 
-    bytes[] internal bundle;
-    bytes[] internal callbackBundle;
+    Call[] internal bundle;
+    Call[] internal callbackBundle;
 
     FunctionMocker functionMocker;
 
@@ -75,7 +79,9 @@ abstract contract CommonTest is Test {
 
         functionMocker = new FunctionMocker();
 
-        bundler = new ChainAgnosticBundlerV2(address(morpho), address(new WETH()));
+        hub = new Hub();
+        chainAgnosticBundler1 = new ChainAgnosticBundler1(address(hub), address(morpho), address(new WETH()));
+        bundler = chainAgnosticBundler1;
 
         irm = new IrmMock();
 
@@ -108,71 +114,85 @@ abstract contract CommonTest is Test {
         require(success, "Function mocker call failed");
     }
 
+    /* GENERIC BUNDLER CALL */
+    function _call(BaseBundler _bundler, bytes memory data) internal pure returns (Call memory) {
+        return _call(_bundler, data, 0);
+    }
+
+    function _call(BaseBundler _bundler, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        return Call({to: address(_bundler), data: data, value: value});
+    }
+
     /* TRANSFER */
 
-    function _nativeTransfer(address recipient, uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(TransferBundler.nativeTransfer, (recipient, amount));
+    function _nativeTransfer(address recipient, uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(bundler.nativeTransfer, (recipient, amount)), amount);
+    }
+
+    function _nativeTransferNoFunding(address recipient, uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(bundler.nativeTransfer, (recipient, amount)), 0);
     }
 
     /* ERC20 ACTIONS */
 
-    function _erc20Transfer(address asset, address recipient, uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(TransferBundler.erc20Transfer, (asset, recipient, amount));
+    function _erc20Transfer(address asset, address recipient, uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(bundler.erc20Transfer, (asset, recipient, amount)));
     }
 
-    function _erc20TransferFrom(address asset, uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(TransferBundler.erc20TransferFrom, (asset, amount));
+    function _erc20TransferFrom(address asset, uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(bundler.erc20TransferFrom, (asset, amount, address(bundler))));
     }
 
     /* ERC20 WRAPPER ACTIONS */
 
-    function _erc20WrapperDepositFor(address asset, uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(ERC20WrapperBundler.erc20WrapperDepositFor, (asset, amount));
+    function _erc20WrapperDepositFor(address asset, uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(ERC20WrapperBundler.erc20WrapperDepositFor, (asset, amount)));
     }
 
     function _erc20WrapperWithdrawTo(address asset, address account, uint256 amount)
         internal
-        pure
-        returns (bytes memory)
+        view
+        returns (Call memory)
     {
-        return abi.encodeCall(ERC20WrapperBundler.erc20WrapperWithdrawTo, (asset, account, amount));
+        return _call(bundler, abi.encodeCall(ERC20WrapperBundler.erc20WrapperWithdrawTo, (asset, account, amount)));
     }
 
     /* ERC4626 ACTIONS */
 
     function _erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver)
         internal
-        pure
-        returns (bytes memory)
+        view
+        returns (Call memory)
     {
-        return abi.encodeCall(ERC4626Bundler.erc4626Mint, (vault, shares, maxAssets, receiver));
+        return _call(bundler, abi.encodeCall(ERC4626Bundler.erc4626Mint, (vault, shares, maxAssets, receiver)));
     }
 
     function _erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver)
         internal
-        pure
-        returns (bytes memory)
+        view
+        returns (Call memory)
     {
-        return abi.encodeCall(ERC4626Bundler.erc4626Deposit, (vault, assets, minShares, receiver));
+        return _call(bundler, abi.encodeCall(ERC4626Bundler.erc4626Deposit, (vault, assets, minShares, receiver)));
     }
 
     function _erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
         internal
-        pure
-        returns (bytes memory)
+        view
+        returns (Call memory)
     {
-        return abi.encodeCall(ERC4626Bundler.erc4626Withdraw, (vault, assets, maxShares, receiver, owner));
+        return
+            _call(bundler, abi.encodeCall(ERC4626Bundler.erc4626Withdraw, (vault, assets, maxShares, receiver, owner)));
     }
 
     function _erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
         internal
-        pure
-        returns (bytes memory)
+        view
+        returns (Call memory)
     {
-        return abi.encodeCall(ERC4626Bundler.erc4626Redeem, (vault, shares, minAssets, receiver, owner));
+        return _call(bundler, abi.encodeCall(ERC4626Bundler.erc4626Redeem, (vault, shares, minAssets, receiver, owner)));
     }
 
-    /* URD ACTIONS */
+    // /* URD ACTIONS */
 
     function _urdClaim(
         address distributor,
@@ -181,8 +201,10 @@ abstract contract CommonTest is Test {
         uint256 amount,
         bytes32[] memory proof,
         bool skipRevert
-    ) internal pure returns (bytes memory) {
-        return abi.encodeCall(UrdBundler.urdClaim, (distributor, account, reward, amount, proof, skipRevert));
+    ) internal view returns (Call memory) {
+        return _call(
+            bundler, abi.encodeCall(UrdBundler.urdClaim, (distributor, account, reward, amount, proof, skipRevert))
+        );
     }
 
     /* MORPHO ACTIONS */
@@ -190,7 +212,7 @@ abstract contract CommonTest is Test {
     function _morphoSetAuthorizationWithSig(uint256 privateKey, bool isAuthorized, uint256 nonce, bool skipRevert)
         internal
         view
-        returns (bytes memory)
+        returns (Call memory)
     {
         address user = vm.addr(privateKey);
 
@@ -207,7 +229,9 @@ abstract contract CommonTest is Test {
         MorphoBlueSignature memory signature;
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
-        return abi.encodeCall(MorphoBundler.morphoSetAuthorizationWithSig, (authorization, signature, skipRevert));
+        return _call(
+            bundler, abi.encodeCall(MorphoBundler.morphoSetAuthorizationWithSig, (authorization, signature, skipRevert))
+        );
     }
 
     function _morphoSupply(
@@ -216,10 +240,13 @@ abstract contract CommonTest is Test {
         uint256 shares,
         uint256 slippageAmount,
         address onBehalf
-    ) internal view returns (bytes memory) {
-        return abi.encodeCall(
-            MorphoBundler.morphoSupply,
-            (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
+    ) internal view returns (Call memory) {
+        return _call(
+            bundler,
+            abi.encodeCall(
+                MorphoBundler.morphoSupply,
+                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
+            )
         );
     }
 
@@ -229,8 +256,11 @@ abstract contract CommonTest is Test {
         uint256 shares,
         uint256 slippageAmount,
         address receiver
-    ) internal pure returns (bytes memory) {
-        return abi.encodeCall(MorphoBundler.morphoBorrow, (marketParams, assets, shares, slippageAmount, receiver));
+    ) internal view returns (Call memory) {
+        return _call(
+            bundler,
+            abi.encodeCall(MorphoBundler.morphoBorrow, (marketParams, assets, shares, slippageAmount, receiver))
+        );
     }
 
     function _morphoWithdraw(
@@ -239,8 +269,11 @@ abstract contract CommonTest is Test {
         uint256 shares,
         uint256 slippageAmount,
         address receiver
-    ) internal pure returns (bytes memory) {
-        return abi.encodeCall(MorphoBundler.morphoWithdraw, (marketParams, assets, shares, slippageAmount, receiver));
+    ) internal view returns (Call memory) {
+        return _call(
+            bundler,
+            abi.encodeCall(MorphoBundler.morphoWithdraw, (marketParams, assets, shares, slippageAmount, receiver))
+        );
     }
 
     function _morphoRepay(
@@ -249,33 +282,40 @@ abstract contract CommonTest is Test {
         uint256 shares,
         uint256 slippageAmount,
         address onBehalf
-    ) internal view returns (bytes memory) {
-        return abi.encodeCall(
-            MorphoBundler.morphoRepay,
-            (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
+    ) internal view returns (Call memory) {
+        return _call(
+            bundler,
+            abi.encodeCall(
+                MorphoBundler.morphoRepay,
+                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
+            )
         );
     }
 
     function _morphoSupplyCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf)
         internal
         view
-        returns (bytes memory)
+        returns (Call memory)
     {
-        return abi.encodeCall(
-            MorphoBundler.morphoSupplyCollateral, (marketParams, assets, onBehalf, abi.encode(callbackBundle))
+        return _call(
+            bundler,
+            abi.encodeCall(
+                MorphoBundler.morphoSupplyCollateral, (marketParams, assets, onBehalf, abi.encode(callbackBundle))
+            )
         );
     }
 
     function _morphoWithdrawCollateral(MarketParams memory marketParams, uint256 assets, address receiver)
         internal
-        pure
-        returns (bytes memory)
+        view
+        returns (Call memory)
     {
-        return abi.encodeCall(MorphoBundler.morphoWithdrawCollateral, (marketParams, assets, receiver));
+        return _call(bundler, abi.encodeCall(MorphoBundler.morphoWithdrawCollateral, (marketParams, assets, receiver)));
     }
 
-    function _morphoFlashLoan(address asset, uint256 amount) internal view returns (bytes memory) {
-        return abi.encodeCall(MorphoBundler.morphoFlashLoan, (asset, amount, abi.encode(callbackBundle)));
+    function _morphoFlashLoan(address asset, uint256 amount) internal view returns (Call memory) {
+        return
+            _call(bundler, abi.encodeCall(MorphoBundler.morphoFlashLoan, (asset, amount, abi.encode(callbackBundle))));
     }
 
     function _reallocateTo(
@@ -284,16 +324,11 @@ abstract contract CommonTest is Test {
         uint256 value,
         Withdrawal[] memory withdrawals,
         MarketParams memory supplyMarketParams
-    ) internal pure returns (bytes memory) {
-        return
-            abi.encodeCall(MorphoBundler.reallocateTo, (publicAllocator, vault, value, withdrawals, supplyMarketParams));
-    }
-
-    function _moduleCall(address module, bytes memory data) internal pure returns (bytes memory) {
-        return abi.encodeCall(BaseBundler.callModule, (address(module), data, 0));
-    }
-
-    function _moduleCall(address module, bytes memory data, uint256 value) internal pure returns (bytes memory) {
-        return abi.encodeCall(BaseBundler.callModule, (address(module), data, value));
+    ) internal view returns (Call memory) {
+        return _call(
+            bundler,
+            abi.encodeCall(MorphoBundler.reallocateTo, (publicAllocator, vault, value, withdrawals, supplyMarketParams)),
+            value
+        );
     }
 }

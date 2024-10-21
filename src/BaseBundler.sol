@@ -1,102 +1,96 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
-
-import {IBaseBundler} from "./interfaces/IBaseBundler.sol";
+pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
-import {IMorphoBundlerModule} from "./interfaces/IMorphoBundlerModule.sol";
+import {IHub} from "./interfaces/IHub.sol";
+import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 
 /// @title BaseBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Enables calling multiple functions in a single call to the same contract (self).
-/// @dev Every bundler must inherit from this contract.
-/// @dev Every bundler inheriting from this contract must have their external functions payable as they will be
-/// delegate called by the `multicall` function (which is payable, and thus might pass a non-null ETH value). It is
-/// recommended not to rely on `msg.value` as the same value can be reused for multiple calls.
-abstract contract BaseBundler is IBaseBundler {
+/// @notice Morpho Bundler Bundler abstract contract.
+abstract contract BaseBundler {
     using SafeTransferLib for ERC20;
 
-    /* STORAGE FUNCTIONS */
+    address public immutable HUB;
 
-    /// @notice Set the initiator value in transient storage.
-    function setInitiator(address _initiator) internal {
-        assembly ("memory-safe") {
-            tstore(INITIATOR_SLOT, _initiator)
-        }
+    constructor(address hub) {
+        require(hub != address(0), ErrorsLib.ZERO_ADDRESS);
+        HUB = hub;
     }
 
     /* MODIFIERS */
 
-    /// @dev Prevents a function to be called outside an initiated `multicall` context and protects a function from
-    /// being called by an unauthorized sender inside an initiated multicall context.
-    modifier protected() {
-        require(initiator() != address(0), ErrorsLib.UNINITIATED);
-        require(_isSenderAuthorized(), ErrorsLib.UNAUTHORIZED_SENDER);
-
+    /// @dev Prevents a function from being called outside of a bundle context.
+    /// @dev Ensures the value of initiator() is correct.
+    modifier hubOnly() {
+        require(msg.sender == HUB, ErrorsLib.UNAUTHORIZED_SENDER);
         _;
-    }
-
-    /* PUBLIC */
-
-    /// @notice Returns the address of the initiator of the multicall transaction.
-    function initiator() public view returns (address _initiator) {
-        assembly ("memory-safe") {
-            _initiator := tload(INITIATOR_SLOT)
-        }
     }
 
     /* EXTERNAL */
 
-    /// @notice Executes a series of delegate calls to the contract itself.
-    /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
-    /// @dev All functions delegatecalled must be `payable` if `msg.value` is non-zero.
-    function multicall(bytes[] memory data) external payable {
-        require(initiator() == address(0), ErrorsLib.ALREADY_INITIATED);
+    /// @notice Transfers the minimum between the given `amount` and the bundler's balance of native asset from the
+    /// bundler to `recipient`.
+    /// @dev If the minimum happens to be zero, the transfer is silently skipped.
+    /// @param recipient The address that will receive the native tokens.
+    /// @param amount The amount of native tokens to transfer. Capped at the bundler's balance.
+    function nativeTransfer(address recipient, uint256 amount) external payable hubOnly {
+        require(recipient != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(recipient != address(this), ErrorsLib.BUNDLER_ADDRESS);
 
-        setInitiator(msg.sender);
+        amount = Math.min(amount, address(this).balance);
 
-        _multicall(data);
+        if (amount == 0) return;
 
-        setInitiator(address(0));
+        SafeTransferLib.safeTransferETH(recipient, amount);
     }
 
-    /// @inheritdoc IBaseBundler
-    function callModule(address module, bytes calldata data, uint256 value) external payable protected {
-        address previousModule = currentModule();
-        setCurrentModule(module);
-        IMorphoBundlerModule(module).onMorphoBundlerCallModule{value: value}(data);
-        setCurrentModule(previousModule);
+    /// @notice Transfers the minimum between the given `amount` and the bundler's balance of `asset` from the bundler
+    /// to `recipient`.
+    /// @dev If the minimum happens to be zero, the transfer is silently skipped.
+    /// @param asset The address of the ERC20 token to transfer.
+    /// @param recipient The address that will receive the tokens.
+    /// @param amount The amount of `asset` to transfer. Capped at the bundler's balance.
+    function erc20Transfer(address asset, address recipient, uint256 amount) external hubOnly {
+        require(recipient != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(recipient != address(this), ErrorsLib.BUNDLER_ADDRESS);
+
+        amount = Math.min(amount, ERC20(asset).balanceOf(address(this)));
+
+        if (amount == 0) return;
+
+        ERC20(asset).safeTransfer(recipient, amount);
     }
 
-    /// @inheritdoc IBaseBundler
-    function multicallFromModule(bytes calldata data) external payable {
-        require(msg.sender == currentModule(), ErrorsLib.UNAUTHORIZED_SENDER);
-        _multicall(abi.decode(data, (bytes[])));
-    }
+    /// @notice Transfers the given `amount` of `asset` from sender to this contract via ERC20 transferFrom.
+    /// @notice User must have given sufficient allowance to the Bundler to spend their tokens.
+    /// @dev All bundlers get this function by default to ease inter-bundler interactions.
+    /// @param asset The address of the ERC20 token to transfer.
+    /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
+    /// @param receiver The address that will receive the assets.
+    function erc20TransferFrom(address asset, uint256 amount, address receiver) external virtual hubOnly {
+        address _initiator = initiator();
+        amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
 
-    /* PUBLIC */
+        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
-    /// @inheritdoc IBaseBundler
-    function currentModule() public view returns (address module) {
-        assembly ("memory-safe") {
-            module := tload(CURRENT_MODULE_SLOT)
-        }
+        ERC20(asset).safeTransferFrom(_initiator, receiver, amount);
     }
 
     /* INTERNAL */
 
-    /// @dev Executes a series of delegate calls to the contract itself.
-    /// @dev All functions delegatecalled must be `payable` if `msg.value` is non-zero.
-    function _multicall(bytes[] memory data) internal {
-        for (uint256 i; i < data.length; ++i) {
-            (bool success, bytes memory returnData) = address(this).delegatecall(data[i]);
+    /// @notice Returns the current initiator stored in the bundler.
+    function initiator() internal view returns (address) {
+        return IHub(HUB).initiator();
+    }
 
-            // No need to check that `address(this)` has code in case of success.
-            if (!success) _revert(returnData);
+    /// @dev Gives the max approval to `spender` to spend the given `asset` if not already approved.
+    /// @dev Assumes that `type(uint256).max` is large enough to never have to increase the allowance again.
+    function _approveMaxTo(address asset, address spender) internal {
+        if (ERC20(asset).allowance(address(this), spender) == 0) {
+            ERC20(asset).safeApprove(spender, type(uint256).max);
         }
     }
 
@@ -108,27 +102,6 @@ abstract contract BaseBundler is IBaseBundler {
 
         assembly ("memory-safe") {
             revert(add(32, returnData), length)
-        }
-    }
-
-    /// @notice Set the bundler module that is about to be called.
-    function setCurrentModule(address module) internal {
-        assembly ("memory-safe") {
-            tstore(CURRENT_MODULE_SLOT, module)
-        }
-    }
-
-    /// @dev Returns whether the sender of the call is authorized.
-    /// @dev Assumes to be inside a properly initiated `multicall` context.
-    function _isSenderAuthorized() internal view virtual returns (bool) {
-        return msg.sender == initiator() || msg.sender == currentModule();
-    }
-
-    /// @dev Gives the max approval to `spender` to spend the given `asset` if not already approved.
-    /// @dev Assumes that `type(uint256).max` is large enough to never have to increase the allowance again.
-    function _approveMaxTo(address asset, address spender) internal {
-        if (ERC20(asset).allowance(address(this), spender) == 0) {
-            ERC20(asset).safeApprove(spender, type(uint256).max);
         }
     }
 }

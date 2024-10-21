@@ -23,8 +23,7 @@ abstract contract EthereumPermitBundler is PermitBundler {
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
     function permitDai(uint256 nonce, uint256 expiry, bool allowed, uint8 v, bytes32 r, bytes32 s, bool skipRevert)
         external
-        payable
-        protected
+        hubOnly
     {
         try IDaiPermit(MainnetLib.DAI).permit(initiator(), address(this), nonce, expiry, allowed, v, r, s) {}
         catch (bytes memory returnData) {

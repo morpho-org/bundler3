@@ -5,13 +5,11 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
 
-import "../../../src/ethereum/EthereumStEthBundler.sol";
+import "../../../src/ethereum/EthereumBundler1.sol";
 
 import "./helpers/ForkTest.sol";
 
 bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972bb68a68f500cd2dd3a16bbf3686483; // keccak256("lido.Lido.beaconBalance");
-
-contract EthereumStEthBundlerMock is TransferBundler, Permit2Bundler, EthereumStEthBundler {}
 
 contract EthereumStEthBundlerForkTest is ForkTest {
     using SafeTransferLib for ERC20;
@@ -21,15 +19,16 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         super.setUp();
 
-        bundler = new EthereumStEthBundlerMock();
+        EthereumBundler1 ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
+        bundler = ethereumBundler1;
     }
 
     function testStakeEthZeroAmount() public onlyEthereum {
-        bundle.push(abi.encodeCall(StEthBundler.stakeEth, (0, 0, address(0))));
+        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (0, 0, address(0)))));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testStakeEth(uint256 amount) public onlyEthereum {
@@ -37,13 +36,13 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0))));
+        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0)))));
         bundle.push(_erc20Transfer(ST_ETH, RECEIVER, type(uint256).max));
 
         deal(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall{value: amount}(bundle);
+        hub.multicall{value: amount}(bundle);
 
         assertEq(USER.balance, 0, "USER.balance");
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
@@ -58,13 +57,13 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0))));
+        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0)))));
         bundle.push(_erc20Transfer(ST_ETH, USER, type(uint256).max));
 
         deal(USER, amount / 2);
 
         vm.prank(USER);
-        bundler.multicall{value: amount / 2}(bundle);
+        hub.multicall{value: amount / 2}(bundle);
 
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(USER), amount / 2, 3, "amount");
         assertApproxEqAbs(IStEth(ST_ETH).sharesOf(USER), shares / 2, 2, "shares");
@@ -75,7 +74,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0))));
+        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0)))));
 
         vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
 
@@ -83,15 +82,15 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         vm.prank(USER);
         vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
-        bundler.multicall{value: amount}(bundle);
+        hub.multicall{value: amount}(bundle);
     }
 
     function testWrapZeroAmount() public onlyEthereum {
-        bundle.push(abi.encodeCall(StEthBundler.wrapStEth, (0)));
+        bundle.push(_wrapStEth(0));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testWrapStEth(uint256 privateKey, uint256 amount) public onlyEthereum {
@@ -113,7 +112,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         vm.startPrank(user);
         ERC20(ST_ETH).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         assertEq(ERC20(WST_ETH).balanceOf(address(bundler)), 0, "wstEth.balanceOf(bundler)");
@@ -130,7 +129,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testUnwrapWstEth(uint256 privateKey, uint256 amount) public onlyEthereum {
@@ -148,7 +147,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         vm.startPrank(user);
         ERC20(WST_ETH).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         uint256 expectedUnwrappedAmount = IWstEth(WST_ETH).getStETHByWstETH(amount);

@@ -45,7 +45,7 @@ abstract contract StEthBundler is BaseBundler {
     /// @param minShares The minimum amount of shares to mint in exchange for `amount`. This parameter is
     /// proportionally scaled down in case there is fewer ETH than `amount` on the bundler.
     /// @param referral The address of the referral regarding the Lido Rewards-Share Program.
-    function stakeEth(uint256 amount, uint256 minShares, address referral) external payable protected {
+    function stakeEth(uint256 amount, uint256 minShares, address referral) external payable hubOnly {
         uint256 initialAmount = amount;
         amount = Math.min(amount, address(this).balance);
 
@@ -59,7 +59,7 @@ abstract contract StEthBundler is BaseBundler {
     /// @notice wstETH tokens are received by the bundler and should be used afterwards.
     /// @dev Initiator must have previously transferred their stETH tokens to the bundler.
     /// @param amount The amount of stEth to wrap. Capped at the bundler's stETH balance.
-    function wrapStEth(uint256 amount) external payable protected {
+    function wrapStEth(uint256 amount) external hubOnly {
         amount = Math.min(amount, ERC20(ST_ETH).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
@@ -71,7 +71,7 @@ abstract contract StEthBundler is BaseBundler {
     /// @notice stETH tokens are received by the bundler and should be used afterwards.
     /// @dev Initiator must have previously transferred their wstETH tokens to the bundler.
     /// @param amount The amount of wstEth to unwrap. Capped at the bundler's wstETH balance.
-    function unwrapStEth(uint256 amount) external payable protected {
+    function unwrapStEth(uint256 amount) external hubOnly {
         amount = Math.min(amount, ERC20(WST_ETH).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);

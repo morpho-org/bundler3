@@ -10,8 +10,6 @@ import {Permit2Lib} from "../../../../lib/permit2/src/libraries/Permit2Lib.sol";
 import {Permit2Bundler} from "../../../../src/Permit2Bundler.sol";
 import {WNativeBundler} from "../../../../src/WNativeBundler.sol";
 import {StEthBundler} from "../../../../src/StEthBundler.sol";
-import {EthereumBundlerV2} from "../../../../src/ethereum/EthereumBundlerV2.sol";
-import {ChainAgnosticBundlerV2} from "../../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
 
 import "../../../../config/Configured.sol";
 import "../../helpers/CommonTest.sol";
@@ -37,11 +35,8 @@ abstract contract ForkTest is CommonTest, Configured {
 
         super.setUp();
 
-        if (block.chainid == 1) {
-            bundler = new EthereumBundlerV2(address(morpho));
-        } else if (block.chainid == 8453) {
-            bundler = new ChainAgnosticBundlerV2(address(morpho), address(WETH));
-        }
+        chainAgnosticBundler1 = new ChainAgnosticBundler1(address(hub), address(morpho), address(WETH));
+        bundler = chainAgnosticBundler1;
 
         for (uint256 i; i < configMarkets.length; ++i) {
             ConfigMarket memory configMarket = configMarkets[i];
@@ -137,7 +132,7 @@ abstract contract ForkTest is CommonTest, Configured {
     function _approve2(uint256 privateKey, address asset, uint256 amount, uint256 nonce, bool skipRevert)
         internal
         view
-        returns (bytes memory)
+        returns (Call memory)
     {
         IAllowanceTransfer.PermitSingle memory permitSingle = IAllowanceTransfer.PermitSingle({
             details: IAllowanceTransfer.PermitDetails({
@@ -154,30 +149,32 @@ abstract contract ForkTest is CommonTest, Configured {
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return abi.encodeCall(Permit2Bundler.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert));
+        return _call(
+            bundler, abi.encodeCall(Permit2Bundler.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
+        );
     }
 
-    function _transferFrom2(address asset, uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(Permit2Bundler.transferFrom2, (asset, amount));
+    function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, amount, address(bundler))));
     }
 
     /* wstETH ACTIONS */
 
-    function _wrapStEth(uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(StEthBundler.wrapStEth, (amount));
+    function _wrapStEth(uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(StEthBundler.wrapStEth, (amount)));
     }
 
-    function _unwrapStEth(uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(StEthBundler.unwrapStEth, (amount));
+    function _unwrapStEth(uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(StEthBundler.unwrapStEth, (amount)));
     }
 
     /* WRAPPED NATIVE ACTIONS */
 
-    function _wrapNative(uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(WNativeBundler.wrapNative, (amount));
+    function _wrapNative(uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(WNativeBundler.wrapNative, (amount)), amount);
     }
 
-    function _unwrapNative(uint256 amount) internal pure returns (bytes memory) {
-        return abi.encodeCall(WNativeBundler.unwrapNative, (amount));
+    function _unwrapNative(uint256 amount) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(WNativeBundler.unwrapNative, (amount)));
     }
 }

@@ -28,7 +28,7 @@ abstract contract UrdBundler is BaseBundler {
         uint256 amount,
         bytes32[] calldata proof,
         bool skipRevert
-    ) external payable protected {
+    ) external hubOnly {
         require(account != address(0), ErrorsLib.ZERO_ADDRESS);
         require(account != address(this), ErrorsLib.BUNDLER_ADDRESS);
 

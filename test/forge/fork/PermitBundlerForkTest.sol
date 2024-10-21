@@ -9,6 +9,7 @@ import "../../../src/ethereum/EthereumPermitBundler.sol";
 import {IERC20Permit} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ERC20Permit} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../../../src/mocks/ERC20PermitMock.sol";
+import {EthereumBundler1} from "../../../src/ethereum/EthereumBundler1.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -17,11 +18,14 @@ bytes32 constant DAI_DOMAIN_SEPARATOR = 0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f
 
 contract PermitBundlerForkTest is ForkTest {
     ERC20PermitMock internal permitToken;
+    EthereumBundler1 ethereumBundler1;
 
     function setUp() public override {
         super.setUp();
 
         permitToken = new ERC20PermitMock("Permit Token", "PT");
+        ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
+        bundler = ethereumBundler1;
     }
 
     function testPermitDai(uint256 privateKey, uint256 expiry) public onlyEthereum {
@@ -34,14 +38,14 @@ contract PermitBundlerForkTest is ForkTest {
         bundle.push(_permitDai(privateKey, expiry, true, true));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(ERC20(DAI).allowance(user, address(bundler)), type(uint256).max, "allowance(user, bundler)");
     }
 
-    function testPermitDaiUninitiated() public onlyEthereum {
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
-        EthereumPermitBundler(address(bundler)).permitDai(0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
+    function testPermitDaiUnauthorized() public onlyEthereum {
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        EthereumBundler1(address(bundler)).permitDai(0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
     }
 
     function testPermitDaiRevert(uint256 privateKey, uint256 expiry) public onlyEthereum {
@@ -55,13 +59,13 @@ contract PermitBundlerForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert("Dai/invalid-nonce");
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function _permitDai(uint256 privateKey, uint256 expiry, bool allowed, bool skipRevert)
         internal
         view
-        returns (bytes memory)
+        returns (Call memory)
     {
         address user = vm.addr(privateKey);
         uint256 nonce = IDaiPermit(DAI).nonces(user);
@@ -71,7 +75,9 @@ contract PermitBundlerForkTest is ForkTest {
         bytes32 digest = SigUtils.toTypedDataHash(DAI_DOMAIN_SEPARATOR, permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return abi.encodeCall(EthereumPermitBundler.permitDai, (nonce, expiry, allowed, v, r, s, skipRevert));
+        return _call(
+            bundler, abi.encodeCall(EthereumPermitBundler.permitDai, (nonce, expiry, allowed, v, r, s, skipRevert))
+        );
     }
 
     function testPermit(uint256 amount, uint256 privateKey, uint256 deadline) public {
@@ -85,15 +91,15 @@ contract PermitBundlerForkTest is ForkTest {
         bundle.push(_permit(permitToken, privateKey, amount, deadline, true));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(permitToken.allowance(user, address(bundler)), amount, "allowance(user, bundler)");
     }
 
-    function testPermitUninitiated(uint256 amount) public {
+    function testPermitUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         PermitBundler(address(bundler)).permit(address(USDC), amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 
@@ -109,7 +115,7 @@ contract PermitBundlerForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectPartialRevert(ERC20Permit.ERC2612InvalidSigner.selector);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testTransferFrom(uint256 amount, uint256 privateKey, uint256 deadline) public {
@@ -125,7 +131,7 @@ contract PermitBundlerForkTest is ForkTest {
         permitToken.setBalance(user, amount);
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(permitToken.balanceOf(address(bundler)), amount, "balanceOf(bundler)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
@@ -134,7 +140,7 @@ contract PermitBundlerForkTest is ForkTest {
     function _permit(IERC20Permit token, uint256 privateKey, uint256 amount, uint256 deadline, bool skipRevert)
         internal
         view
-        returns (bytes memory)
+        returns (Call memory)
     {
         address user = vm.addr(privateKey);
 
@@ -143,6 +149,8 @@ contract PermitBundlerForkTest is ForkTest {
         bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return abi.encodeCall(PermitBundler.permit, (address(token), amount, deadline, v, r, s, skipRevert));
+        return _call(
+            bundler, abi.encodeCall(PermitBundler.permit, (address(token), amount, deadline, v, r, s, skipRevert))
+        );
     }
 }

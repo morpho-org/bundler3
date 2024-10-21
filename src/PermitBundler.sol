@@ -21,8 +21,7 @@ abstract contract PermitBundler is BaseBundler {
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
     function permit(address asset, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s, bool skipRevert)
         external
-        payable
-        protected
+        hubOnly
     {
         try IERC20Permit(asset).permit(initiator(), address(this), amount, deadline, v, r, s) {}
         catch (bytes memory returnData) {

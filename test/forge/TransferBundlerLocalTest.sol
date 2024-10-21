@@ -13,7 +13,7 @@ contract TransferBundlerLocalTest is LocalTest {
 
         loanToken.setBalance(address(bundler), amount);
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(bundler)), 0, "loan.balanceOf(bundler)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
@@ -25,7 +25,7 @@ contract TransferBundlerLocalTest is LocalTest {
         bundle.push(_erc20Transfer(address(loanToken), address(0), amount));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testTranferBundlerAddress(uint256 amount) public {
@@ -34,7 +34,7 @@ contract TransferBundlerLocalTest is LocalTest {
         bundle.push(_erc20Transfer(address(loanToken), address(bundler), amount));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testNativeTransfer(uint256 amount) public {
@@ -42,9 +42,9 @@ contract TransferBundlerLocalTest is LocalTest {
 
         bundle.push(_nativeTransfer(RECEIVER, amount));
 
-        deal(address(bundler), amount);
+        deal(address(hub), amount);
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(address(bundler).balance, 0, "bundler.balance");
         assertEq(RECEIVER.balance, amount, "RECEIVER.balance");
@@ -53,19 +53,19 @@ contract TransferBundlerLocalTest is LocalTest {
     function testNativeTransferZeroAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_nativeTransfer(address(0), amount));
+        bundle.push(_nativeTransferNoFunding(address(0), amount));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testNativeTransferBundlerAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_nativeTransfer(address(bundler), amount));
+        bundle.push(_nativeTransferNoFunding(address(bundler), amount));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testTransferFrom(uint256 amount) public {
@@ -77,18 +77,18 @@ contract TransferBundlerLocalTest is LocalTest {
 
         vm.startPrank(USER);
         loanToken.approve(address(bundler), type(uint256).max);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         assertEq(loanToken.balanceOf(address(bundler)), amount, "loan.balanceOf(bundler)");
         assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
     }
 
-    function testTransferFromUninitiated(uint256 amount) public {
+    function testTransferFromUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
-        TransferBundler(address(bundler)).erc20TransferFrom(address(loanToken), amount);
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        bundler.erc20TransferFrom(address(loanToken), amount, RECEIVER);
     }
 
     function testTranferFromZeroAddress(uint256 amount) public {
@@ -98,7 +98,7 @@ contract TransferBundlerLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert();
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testTranferFromZeroAmount() public {
@@ -106,6 +106,6 @@ contract TransferBundlerLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 }

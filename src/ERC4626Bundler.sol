@@ -25,11 +25,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     /// @param shares The amount of shares to mint.
     /// @param maxAssets The maximum amount of assets to deposit in exchange for `shares`.
     /// @param receiver The address to which shares will be minted.
-    function erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver)
-        external
-        payable
-        protected
-    {
+    function erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver) external hubOnly {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the vault's shares.
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
         require(shares != 0, ErrorsLib.ZERO_SHARES);
@@ -48,11 +44,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     /// @param minShares The minimum amount of shares to mint in exchange for `assets`. This parameter is proportionally
     /// scaled down in case there are fewer assets than `assets` on the bundler.
     /// @param receiver The address to which shares will be minted.
-    function erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver)
-        external
-        payable
-        protected
-    {
+    function erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver) external hubOnly {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the vault's shares.
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
 
@@ -80,8 +72,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     /// Otherwise, they must have previously transferred their vault shares to the bundler.
     function erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
         external
-        payable
-        protected
+        hubOnly
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
@@ -104,8 +95,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     /// Otherwise, they must have previously transferred their vault shares to the bundler.
     function erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
         external
-        payable
-        protected
+        hubOnly
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
