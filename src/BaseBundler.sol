@@ -98,6 +98,37 @@ abstract contract BaseBundler {
         }
     }
 
+    /// @notice Approves the given `amount` of `asset` from the initiator to be spent by `permitSingle.spender` via
+    /// Permit2 with the given `deadline` & EIP-712 `signature`.
+    /// @param permitSingle The `PermitSingle` struct.
+    /// @param signature The signature, serialized.
+    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
+    function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
+        external
+        hubOnly
+    {
+        try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
+        catch (bytes memory returnData) {
+            if (!skipRevert) _revert(returnData);
+        }
+    }
+
+    /// @notice With a single signature, approve multiple amounts of assets of the initiator to be spent by multiple
+    /// accounts via Permit2 with multiple deadlines.
+    /// @param permitBatch The `PermitBatch` struct.
+    /// @param signature The signature, serialized.
+    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
+    function approve2Batch(
+        IAllowanceTransfer.PermitBatch calldata permitBatch,
+        bytes calldata signature,
+        bool skipRevert
+    ) {
+        try Permit2Lib.PERMIT2.permit(initiator(), permitBatch, signature) {}
+        catch (bytes memory returnData) {
+            if (!skipRevert) _revert(returnData);
+        }
+    }
+
     /// @notice Transfers the given `amount` of `asset` from the initiator to the bundler via Permit2.
     /// @param asset The address of the ERC20 token to transfer.
     /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
