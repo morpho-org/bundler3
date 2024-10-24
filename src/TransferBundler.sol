@@ -5,7 +5,6 @@ import {BaseBundler} from "./BaseBundler.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import "forge-std/console.sol";
 
 /// @title TransferBundler
 /// @author Morpho Labs
@@ -23,7 +22,6 @@ abstract contract TransferBundler is BaseBundler {
     /// @param receiver The address that will receive the assets.
     /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
     function erc20TransferFrom(address asset, address receiver, uint256 amount) external hubOnly {
-        console.log("ok");
         address _initiator = initiator();
         amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
 
