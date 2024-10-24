@@ -12,7 +12,8 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 /// @title Permit2Bundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Bundler contract that does permit2-related actions.
+/// @notice Bundler contract managing interactions with Uniswap's Permit2.
+
 abstract contract Permit2Bundler is BaseBundler {
     using SafeCast160 for uint256;
 
