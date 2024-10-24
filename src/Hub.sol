@@ -82,7 +82,7 @@ contract Hub is IHub {
         }
     }
 
-    /// @notice Set the bundler bundler that is about to be called.
+    /// @notice Set the bundler that is about to be called.
     function setCurrentBundler(address bundler) internal {
         assembly ("memory-safe") {
             tstore(CURRENT_BUNDLER_SLOT, bundler)

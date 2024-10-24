@@ -9,7 +9,7 @@ import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 /// @title BaseBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Morpho Bundler Bundler abstract contract.
+/// @notice Common contract to all Morpho Bundlers.
 abstract contract BaseBundler {
     using SafeTransferLib for ERC20;
 
