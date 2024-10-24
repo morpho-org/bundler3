@@ -5,9 +5,6 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IHub} from "./interfaces/IHub.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
-import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
-import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
-import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 
 /// @title BaseBundler
 /// @author Morpho Labs
@@ -15,7 +12,6 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 /// @notice Morpho Bundler Bundler abstract contract.
 abstract contract BaseBundler {
     using SafeTransferLib for ERC20;
-    using SafeCast160 for uint256;
 
     address public immutable HUB;
 
@@ -36,79 +32,34 @@ abstract contract BaseBundler {
     /* ACTIONS */
 
     /// @notice Transfers the minimum between the given `amount` and the bundler's balance of native asset from the
-    /// bundler to `recipient`.
+    /// bundler to `receiver`.
     /// @dev If the minimum happens to be zero, the transfer is silently skipped.
-    /// @param recipient The address that will receive the native tokens.
+    /// @dev The receiver must not be the bundler or the zero address.
+    /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Capped at the bundler's balance.
-    function nativeTransfer(address recipient, uint256 amount) external payable hubOnly {
-        require(recipient != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(recipient != address(this), ErrorsLib.BUNDLER_ADDRESS);
+    function nativeTransfer(address receiver, uint256 amount) external payable hubOnly {
+        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(receiver != address(this), ErrorsLib.BUNDLER_ADDRESS);
 
         amount = Math.min(amount, address(this).balance);
 
-        if (amount == 0) return;
-
-        SafeTransferLib.safeTransferETH(recipient, amount);
+        _nativeTransfer(receiver, amount);
     }
 
     /// @notice Transfers the minimum between the given `amount` and the bundler's balance of `asset` from the bundler
-    /// to `recipient`.
-    /// @dev If the minimum happens to be zero, the transfer is silently skipped.
+    /// to `receiver`.
+    /// @dev If the minimum happens to be zero the transfer is silently skipped.
+    /// @dev The receiver must not be the bundler or the zero address.
     /// @param asset The address of the ERC20 token to transfer.
-    /// @param recipient The address that will receive the tokens.
+    /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of `asset` to transfer. Capped at the bundler's balance.
-    function erc20Transfer(address asset, address recipient, uint256 amount) external hubOnly {
-        require(recipient != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(recipient != address(this), ErrorsLib.BUNDLER_ADDRESS);
+    function erc20Transfer(address asset, address receiver, uint256 amount) external hubOnly {
+        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(receiver != address(this), ErrorsLib.BUNDLER_ADDRESS);
 
         amount = Math.min(amount, ERC20(asset).balanceOf(address(this)));
 
-        if (amount == 0) return;
-
-        ERC20(asset).safeTransfer(recipient, amount);
-    }
-
-    /// @notice Transfers the given `amount` of `asset` from sender to this contract via ERC20 transferFrom.
-    /// @notice User must have given sufficient allowance to the Bundler to spend their tokens.
-    /// @dev All bundlers get this function by default to ease inter-bundler interactions.
-    /// @param asset The address of the ERC20 token to transfer.
-    /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
-    /// @param receiver The address that will receive the assets.
-    function erc20TransferFrom(address asset, uint256 amount, address receiver) external virtual hubOnly {
-        address _initiator = initiator();
-        amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
-
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
-
-        ERC20(asset).safeTransferFrom(_initiator, receiver, amount);
-    }
-
-    /// @notice Approves the given `amount` of `asset` from the initiator to be spent by `permitSingle.spender` via
-    /// Permit2 with the given `deadline` & EIP-712 `signature`.
-    /// @param permitSingle The `PermitSingle` struct.
-    /// @param signature The signature, serialized.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
-        external
-        hubOnly
-    {
-        try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) _revert(returnData);
-        }
-    }
-
-    /// @notice Transfers the given `amount` of `asset` from the initiator to the bundler via Permit2.
-    /// @param asset The address of the ERC20 token to transfer.
-    /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
-    /// @param receiver The address that will receive the assets.
-    function transferFrom2(address asset, uint256 amount, address receiver) external hubOnly {
-        address _initiator = initiator();
-        amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
-
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
-
-        Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), asset);
+        _erc20Transfer(asset, receiver, amount);
     }
 
     /* INTERNAL */
@@ -134,6 +85,27 @@ abstract contract BaseBundler {
 
         assembly ("memory-safe") {
             revert(add(32, returnData), length)
+        }
+    }
+
+    /// @notice Transfer an `amount` of `asset` to `receiver`.
+    /// @dev Skips if receiver is address(this) or the amount is 0.
+    /// @param asset The address of the ERC20 token to transfer.
+    /// @param receiver The address that will receive the tokens.
+    /// @param amount The amount of `asset` to transfer.
+    function _erc20Transfer(address asset, address receiver, uint256 amount) internal {
+        if (receiver != address(this) && amount > 0) {
+            ERC20(asset).safeTransfer(receiver, amount);
+        }
+    }
+
+    /// @notice Transfer an `amount` of native tokens to `receiver`.
+    /// @dev Skips if receiver is address(this) or the amount is 0.
+    /// @param receiver The address that will receive the tokens.
+    /// @param amount The amount of `asset` to transfer.
+    function _nativeTransfer(address receiver, uint256 amount) internal {
+        if (receiver != address(this) && amount > 0) {
+            SafeTransferLib.safeTransferETH(receiver, amount);
         }
     }
 }

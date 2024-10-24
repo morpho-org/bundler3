@@ -6,7 +6,7 @@ import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
 import {Call} from "./interfaces/Call.sol";
@@ -17,8 +17,6 @@ import {IHub} from "./interfaces/IHub.sol";
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Morpho.
 abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
-    using SafeTransferLib for ERC20;
-
     /* IMMUTABLES */
 
     /// @notice The Morpho contract address.

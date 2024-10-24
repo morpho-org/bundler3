@@ -5,7 +5,6 @@ import {IHub} from "./interfaces/IHub.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";
 

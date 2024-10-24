@@ -42,24 +42,30 @@ abstract contract WNativeBundler is BaseBundler {
     /// @notice Wraps the given `amount` of the native token to wNative.
     /// @notice Wrapped native tokens are received by the bundler and should be used afterwards.
     /// @dev Initiator must have previously transferred their native tokens to the bundler.
+    /// @dev Assumes that native token wrapper wraps at 1:1.
     /// @param amount The amount of native token to wrap. Capped at the bundler's native token balance.
-    function wrapNative(uint256 amount) external payable hubOnly {
+    /// @param receiver The account receiving the wrapped native tokens.
+    function wrapNative(uint256 amount, address receiver) external payable hubOnly {
         amount = Math.min(amount, address(this).balance);
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         IWNative(WRAPPED_NATIVE).deposit{value: amount}();
+        _erc20Transfer(WRAPPED_NATIVE, receiver, amount);
     }
 
     /// @notice Unwraps the given `amount` of wNative to the native token.
     /// @notice Unwrapped native tokens are received by the bundler and should be used afterwards.
     /// @dev Initiator must have previously transferred their wrapped native tokens to the bundler.
+    /// @dev Assumes that native token wrapper unwraps at 1:1.
     /// @param amount The amount of wrapped native token to unwrap. Capped at the bundler's wNative balance.
-    function unwrapNative(uint256 amount) external hubOnly {
+    /// @param receiver The account receiving the native tokens.
+    function unwrapNative(uint256 amount, address receiver) external hubOnly {
         amount = Math.min(amount, ERC20(WRAPPED_NATIVE).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         IWNative(WRAPPED_NATIVE).withdraw(amount);
+        _nativeTransfer(receiver, amount);
     }
 }

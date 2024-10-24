@@ -36,6 +36,7 @@ import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {ChainAgnosticBundler1} from "../../../src/chain-agnostic/ChainAgnosticBundler1.sol";
+import {TransferBundler} from "../../../src/TransferBundler.sol";
 import {Hub} from "../../../src/Hub.sol";
 import {Call} from "../../../src/interfaces/Call.sol";
 
@@ -140,21 +141,25 @@ abstract contract CommonTest is Test {
     }
 
     function _erc20TransferFrom(address asset, uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(bundler.erc20TransferFrom, (asset, amount, address(bundler))));
+        return _call(bundler, abi.encodeCall(TransferBundler.erc20TransferFrom, (asset, address(bundler), amount)));
     }
 
     /* ERC20 WRAPPER ACTIONS */
 
-    function _erc20WrapperDepositFor(address asset, uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(ERC20WrapperBundler.erc20WrapperDepositFor, (asset, amount)));
-    }
-
-    function _erc20WrapperWithdrawTo(address asset, address account, uint256 amount)
+    function _erc20WrapperDepositFor(address asset, address receiver, uint256 amount)
         internal
         view
         returns (Call memory)
     {
-        return _call(bundler, abi.encodeCall(ERC20WrapperBundler.erc20WrapperWithdrawTo, (asset, account, amount)));
+        return _call(bundler, abi.encodeCall(ERC20WrapperBundler.erc20WrapperDepositFor, (asset, receiver, amount)));
+    }
+
+    function _erc20WrapperWithdrawTo(address asset, address receiver, uint256 amount)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(bundler, abi.encodeCall(ERC20WrapperBundler.erc20WrapperWithdrawTo, (asset, receiver, amount)));
     }
 
     /* ERC4626 ACTIONS */

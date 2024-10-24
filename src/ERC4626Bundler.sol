@@ -5,7 +5,7 @@ import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4
 
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
 
@@ -14,8 +14,6 @@ import {BaseBundler} from "./BaseBundler.sol";
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with ERC4626 compliant tokens.
 abstract contract ERC4626Bundler is BaseBundler {
-    using SafeTransferLib for ERC20;
-
     /* ACTIONS */
 
     /// @notice Mints the given amount of `shares` on the given ERC4626 `vault`, on behalf of `receiver`.

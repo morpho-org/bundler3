@@ -38,7 +38,7 @@ contract Permit2BundlerForkTest is ForkTest {
         bytes memory signature;
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        bundler.approve2(permitSingle, signature, false);
+        Permit2Bundler(address(bundler)).approve2(permitSingle, signature, false);
     }
 
     function testApprove2InvalidNonce(uint256 seed, uint256 privateKey, uint256 deadline, uint256 amount) public {
@@ -66,6 +66,6 @@ contract Permit2BundlerForkTest is ForkTest {
 
     function testTransferFrom2Unauthorized() public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        bundler.transferFrom2(address(0), 0, address(0));
+        Permit2Bundler(address(bundler)).transferFrom2(address(0), 0, address(0));
     }
 }

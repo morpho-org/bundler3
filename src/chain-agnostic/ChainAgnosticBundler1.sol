@@ -8,6 +8,8 @@ import {WNativeBundler} from "../WNativeBundler.sol";
 import {UrdBundler} from "../UrdBundler.sol";
 import {MorphoBundler} from "../MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
+import {TransferBundler} from "../TransferBundler.sol";
+import {Permit2Bundler} from "../Permit2Bundler.sol";
 
 /// @title Bundler1
 /// @author Morpho Labs
@@ -20,7 +22,9 @@ contract ChainAgnosticBundler1 is
     WNativeBundler,
     UrdBundler,
     MorphoBundler,
-    ERC20WrapperBundler
+    ERC20WrapperBundler,
+    TransferBundler,
+    Permit2Bundler
 {
     /* CONSTRUCTOR */
 

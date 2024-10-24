@@ -13,8 +13,8 @@ contract WNativeBundlerForkTest is ForkTest {
         ERC20(WETH).approve(address(bundler), type(uint256).max);
     }
 
-    function testWrapZeroAmount() public {
-        bundle.push(_wrapNative(0));
+    function testWrapZeroAmount(address receiver) public {
+        bundle.push(_wrapNative(0, receiver));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
@@ -24,8 +24,7 @@ contract WNativeBundlerForkTest is ForkTest {
     function testWrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_wrapNative(amount));
-        bundle.push(_erc20Transfer(WETH, RECEIVER, type(uint256).max));
+        bundle.push(_wrapNative(amount, RECEIVER));
 
         deal(USER, amount);
 
@@ -41,8 +40,8 @@ contract WNativeBundlerForkTest is ForkTest {
         assertEq(RECEIVER.balance, 0, "Receiver's native token balance");
     }
 
-    function testUnwrapZeroAmount() public {
-        bundle.push(_unwrapNative(0));
+    function testUnwrapZeroAmount(address receiver) public {
+        bundle.push(_unwrapNative(0, receiver));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
@@ -53,8 +52,7 @@ contract WNativeBundlerForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20TransferFrom(WETH, amount));
-        bundle.push(_unwrapNative(amount));
-        bundle.push(_nativeTransferNoFunding(RECEIVER, type(uint256).max));
+        bundle.push(_unwrapNative(amount, RECEIVER));
 
         deal(WETH, USER, amount);
 

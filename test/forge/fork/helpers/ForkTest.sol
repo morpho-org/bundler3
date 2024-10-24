@@ -6,6 +6,7 @@ import {IWstEth} from "../../../../src/interfaces/IWstEth.sol";
 import {IAllowanceTransfer} from "../../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
 import {Permit2Lib} from "../../../../lib/permit2/src/libraries/Permit2Lib.sol";
+import {Permit2Bundler} from "../../../../src/Permit2Bundler.sol";
 
 import {WNativeBundler} from "../../../../src/WNativeBundler.sol";
 import {StEthBundler} from "../../../../src/StEthBundler.sol";
@@ -148,30 +149,32 @@ abstract contract ForkTest is CommonTest, Configured {
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return _call(bundler, abi.encodeCall(bundler.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert)));
+        return _call(
+            bundler, abi.encodeCall(Permit2Bundler.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
+        );
     }
 
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(bundler.transferFrom2, (asset, amount, address(bundler))));
+        return _call(bundler, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, amount, address(bundler))));
     }
 
     /* wstETH ACTIONS */
 
-    function _wrapStEth(uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(StEthBundler.wrapStEth, (amount)));
+    function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(StEthBundler.wrapStEth, (amount, receiver)));
     }
 
-    function _unwrapStEth(uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(StEthBundler.unwrapStEth, (amount)));
+    function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(StEthBundler.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */
 
-    function _wrapNative(uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(WNativeBundler.wrapNative, (amount)), amount);
+    function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(WNativeBundler.wrapNative, (amount, receiver)), amount);
     }
 
-    function _unwrapNative(uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(WNativeBundler.unwrapNative, (amount)));
+    function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
+        return _call(bundler, abi.encodeCall(WNativeBundler.unwrapNative, (amount, receiver)));
     }
 }
