@@ -8,13 +8,13 @@ import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+
 import {BaseBundler} from "./BaseBundler.sol";
 
 /// @title Permit2Bundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Uniswap's Permit2.
-
 abstract contract Permit2Bundler is BaseBundler {
     using SafeCast160 for uint256;
 

@@ -12,7 +12,6 @@ import {BaseBundler} from "../BaseBundler.sol";
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract specific to Ethereum n°1.
-/// @notice Future Ethereum-specific bundlers may be added in the future.
 contract EthereumBundler1 is EthereumPermitBundler, StEthBundler {
     /* CONSTRUCTOR */
 

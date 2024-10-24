@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.27;
 
-import {BaseBundler} from "./BaseBundler.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+
+import {BaseBundler} from "./BaseBundler.sol";
 
 /// @title TransferBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Bundler contract that does transfers from the initiator.
+/// @notice Enables transfer of ERC20 tokens from the initiator to arbitrary addresses.
 abstract contract TransferBundler is BaseBundler {
     using SafeTransferLib for ERC20;
 
