@@ -9,8 +9,6 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
-// TODO: needed?
-import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {Call} from "./interfaces/Call.sol";
 import {IHub} from "./interfaces/IHub.sol";
 
@@ -19,8 +17,6 @@ import {IHub} from "./interfaces/IHub.sol";
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Morpho.
 abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
-    // TODO: needed?
-    using MorphoBalancesLib for IMorpho;
     /* IMMUTABLES */
 
     /// @notice The Morpho contract address.
