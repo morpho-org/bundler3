@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.27;
 
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
-import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
-import {IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {BaseBundler} from "../BaseBundler.sol";
-import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
-import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
-import {BytesLib} from "../libraries/BytesLib.sol";
-import "../interfaces/IParaswapModule.sol";
-import {EventsLib} from "../libraries/EventsLib.sol";
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
+import {IMorpho, MarketParams} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {BaseBundler} from "./BaseBundler.sol";
+import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
+import {BytesLib} from "./libraries/BytesLib.sol";
+import "./interfaces/IParaswapBundler.sol";
+import {EventsLib} from "./libraries/EventsLib.sol";
 
-/// @title ParaswapModule
+/// @title ParaswapBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Module for trading with Paraswap.
-contract ParaswapModule is BaseBundler, IParaswapModule {
+/// @notice Bundler for trading with Paraswap.
+contract ParaswapBundler is BaseBundler, IParaswapBundler {
     using Math for uint256;
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
@@ -43,7 +43,7 @@ contract ParaswapModule is BaseBundler, IParaswapModule {
 
     /* SWAP ACTIONS */
 
-    /// @inheritdoc IParaswapModule
+    /// @inheritdoc IParaswapBundler
     function sell(
         address augustus,
         bytes memory callData,
@@ -69,7 +69,7 @@ contract ParaswapModule is BaseBundler, IParaswapModule {
         );
     }
 
-    /// @inheritdoc IParaswapModule
+    /// @inheritdoc IParaswapBundler
     function buy(
         address augustus,
         bytes memory callData,
@@ -125,7 +125,7 @@ contract ParaswapModule is BaseBundler, IParaswapModule {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SELL_AMOUNT_TOO_HIGH);
         require(destAmount >= minDestAmount, ErrorsLib.BUY_AMOUNT_TOO_LOW);
 
-        emit EventsLib.MorphoBundlerParaswapModuleSwap(srcToken, destToken, receiver, srcAmount, destAmount);
+        emit EventsLib.MorphoBundlerParaswapBundlerSwap(srcToken, destToken, receiver, srcAmount, destAmount);
 
         if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
         if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);

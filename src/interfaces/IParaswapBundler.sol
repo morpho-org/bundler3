@@ -14,11 +14,11 @@ struct Offsets {
     uint256 quotedAmount;
 }
 
-/// @title IParaswapModule
+/// @title IParaswapBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Interface of Paraswap Module
-interface IParaswapModule {
+/// @notice Interface of Paraswap Bundler
+interface IParaswapBundler {
     /// @notice Sell an exact amount. Reverts unless at least `minDestAmount` tokens are received.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.

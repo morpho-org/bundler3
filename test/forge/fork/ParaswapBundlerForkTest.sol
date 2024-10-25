@@ -5,7 +5,7 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import "./helpers/ForkTest.sol";
 
-contract ParaswapModuleForkTest is ForkTest {
+contract ParaswapBundlerForkTest is ForkTest {
     function _forkBlockNumberKey() internal virtual override returns (string memory) {
         return "paraswap";
     }
@@ -26,10 +26,10 @@ contract ParaswapModuleForkTest is ForkTest {
 
         deal(USDC, user, srcAmount);
 
-        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapBundler), type(uint256).max));
         bundle.push(
             _call(
-                paraswapModule,
+                paraswapBundler,
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -57,10 +57,10 @@ contract ParaswapModuleForkTest is ForkTest {
 
         deal(USDC, user, srcAmount * percent / 100);
 
-        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapBundler), type(uint256).max));
         bundle.push(
             _call(
-                paraswapModule,
+                paraswapBundler,
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -97,10 +97,10 @@ contract ParaswapModuleForkTest is ForkTest {
 
         deal(USDC, user, initialBalance);
 
-        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapBundler), type(uint256).max));
         bundle.push(
             _call(
-                paraswapModule,
+                paraswapBundler,
                 _paraswapBuy(
                     AUGUSTUS_V6_2,
                     buyCalldata,
@@ -148,10 +148,10 @@ contract ParaswapModuleForkTest is ForkTest {
         morpho.borrow(wethMarketParams, debt, 0, user, address(1));
         vm.stopPrank();
 
-        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapBundler), type(uint256).max));
         bundle.push(
             _call(
-                paraswapModule,
+                paraswapBundler,
                 _paraswapBuy(
                     AUGUSTUS_V6_2,
                     buyCalldata,

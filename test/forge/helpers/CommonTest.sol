@@ -27,8 +27,8 @@ import {
 import {IrmMock} from "../../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH} from "../../../lib/solmate/src/tokens/WETH.sol";
-import {IParaswapModule, Offsets} from "../../../src/interfaces/IParaswapModule.sol";
-import {ParaswapModule} from "../../../src/modules/ParaswapModule.sol";
+import {IParaswapBundler, Offsets} from "../../../src/interfaces/IParaswapBundler.sol";
+import {ParaswapBundler} from "../../../src/ParaswapBundler.sol";
 
 import {BaseBundler} from "../../../src/BaseBundler.sol";
 import {PermitBundler} from "../../../src/PermitBundler.sol";
@@ -72,7 +72,7 @@ abstract contract CommonTest is Test {
     ChainAgnosticBundler1 internal chainAgnosticBundler1;
     // The 'current' bundler.
     BaseBundler internal bundler;
-    ParaswapModule paraswapModule;
+    ParaswapBundler paraswapBundler;
 
     AugustusRegistryMock augustusRegistryMock;
 
@@ -92,7 +92,7 @@ abstract contract CommonTest is Test {
 
         hub = new Hub();
         chainAgnosticBundler1 = new ChainAgnosticBundler1(address(hub), address(morpho), address(new WETH()));
-        paraswapModule = new ParaswapModule(address(hub), address(morpho), address(augustusRegistryMock));
+        paraswapBundler = new ParaswapBundler(address(hub), address(morpho), address(augustusRegistryMock));
         bundler = chainAgnosticBundler1;
 
         irm = new IrmMock();
@@ -390,7 +390,7 @@ abstract contract CommonTest is Test {
         );
     }
 
-    /* PARASWAP MODULE ACTIONS */
+    /* PARASWAP BUNDLER ACTIONS */
 
     function _paraswapSell(
         address augustus,
@@ -402,7 +402,7 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.sell, (augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
+            IParaswapBundler.sell, (augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
         );
     }
 
@@ -416,7 +416,7 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.buy, (augustus, callData, srcToken, destToken, _marketParams, offsets, receiver)
+            IParaswapBundler.buy, (augustus, callData, srcToken, destToken, _marketParams, offsets, receiver)
         );
     }
 }
