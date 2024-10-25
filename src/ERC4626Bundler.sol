@@ -8,6 +8,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title ERC4626Bundler
 /// @author Morpho Labs
@@ -28,7 +29,7 @@ abstract contract ERC4626Bundler is BaseBundler {
         require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
         require(shares != 0, ErrorsLib.ZERO_SHARES);
 
-        _approveMaxTo(IERC4626(vault).asset(), vault);
+        BundlerLib.approveMaxTo(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
         require(assets <= maxAssets, ErrorsLib.SLIPPAGE_EXCEEDED);
@@ -52,7 +53,7 @@ abstract contract ERC4626Bundler is BaseBundler {
 
         require(assets != 0, ErrorsLib.ZERO_AMOUNT);
 
-        _approveMaxTo(asset, vault);
+        BundlerLib.approveMaxTo(asset, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(shares * initialAssets >= minShares * assets, ErrorsLib.SLIPPAGE_EXCEEDED);

@@ -8,6 +8,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title WNativeBundler
 /// @author Morpho Labs
@@ -51,7 +52,7 @@ abstract contract WNativeBundler is BaseBundler {
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         IWNative(WRAPPED_NATIVE).deposit{value: amount}();
-        _erc20Transfer(WRAPPED_NATIVE, receiver, amount);
+        BundlerLib.erc20Transfer(WRAPPED_NATIVE, receiver, amount);
     }
 
     /// @notice Unwraps the given `amount` of wNative to the native token.
@@ -66,6 +67,6 @@ abstract contract WNativeBundler is BaseBundler {
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         IWNative(WRAPPED_NATIVE).withdraw(amount);
-        _nativeTransfer(receiver, amount);
+        BundlerLib.nativeTransfer(receiver, amount);
     }
 }

@@ -9,6 +9,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title StEthBundler
 /// @author Morpho Labs
@@ -31,7 +32,7 @@ abstract contract StEthBundler is BaseBundler {
         ST_ETH = IWstEth(wstEth).stETH();
         WST_ETH = wstEth;
 
-        _approveMaxTo(ST_ETH, WST_ETH);
+        BundlerLib.approveMaxTo(ST_ETH, WST_ETH);
     }
 
     /* ACTIONS */
@@ -52,7 +53,7 @@ abstract contract StEthBundler is BaseBundler {
 
         uint256 shares = IStEth(ST_ETH).submit{value: amount}(referral);
         require(shares * initialAmount >= minShares * amount, ErrorsLib.SLIPPAGE_EXCEEDED);
-        _erc20Transfer(ST_ETH, receiver, shares);
+        BundlerLib.erc20Transfer(ST_ETH, receiver, shares);
     }
 
     /// @notice Wraps the given `amount` of stETH to wstETH.
@@ -66,7 +67,7 @@ abstract contract StEthBundler is BaseBundler {
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
-        _erc20Transfer(WST_ETH, receiver, received);
+        BundlerLib.erc20Transfer(WST_ETH, receiver, received);
     }
 
     /// @notice Unwraps the given `amount` of wstETH to stETH.
@@ -80,6 +81,6 @@ abstract contract StEthBundler is BaseBundler {
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         uint256 shares = IWstEth(WST_ETH).unwrap(amount);
-        _erc20Transfer(ST_ETH, receiver, shares);
+        BundlerLib.erc20Transfer(ST_ETH, receiver, shares);
     }
 }

@@ -10,6 +10,7 @@ import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title Permit2Bundler
 /// @author Morpho Labs
@@ -31,7 +32,7 @@ abstract contract Permit2Bundler is BaseBundler {
     {
         try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
         catch (bytes memory returnData) {
-            if (!skipRevert) _revert(returnData);
+            if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }
     }
 

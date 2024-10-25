@@ -7,6 +7,7 @@ import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title ERC20WrapperBundler
 /// @author Morpho Labs
@@ -34,11 +35,11 @@ abstract contract ERC20WrapperBundler is BaseBundler {
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
-        _approveMaxTo(address(underlying), wrapper);
+        BundlerLib.approveMaxTo(address(underlying), wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(initiator(), amount), ErrorsLib.DEPOSIT_FAILED);
 
-        _erc20Transfer(wrapper, receiver, amount);
+        BundlerLib.erc20Transfer(wrapper, receiver, amount);
     }
 
     /// @notice Burns a number of wrapped tokens and withdraws the corresponding number of underlying tokens.
