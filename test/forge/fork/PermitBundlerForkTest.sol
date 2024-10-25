@@ -24,8 +24,9 @@ contract PermitBundlerForkTest is ForkTest {
         super.setUp();
 
         permitToken = new ERC20PermitMock("Permit Token", "PT");
-        ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
-        bundler = ethereumBundler1;
+        if (block.chainid == 1) {
+            ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
+        }
     }
 
     function testPermitDai(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {
@@ -86,7 +87,7 @@ contract PermitBundlerForkTest is ForkTest {
         bytes memory callData =
             abi.encodeCall(EthereumPermitBundler.permitDai, (spender, nonce, expiry, allowed, v, r, s, skipRevert));
 
-        return _call(bundler, callData);
+        return _call(ethereumBundler1, callData);
     }
 
     function testPermit(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
