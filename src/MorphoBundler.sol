@@ -11,6 +11,7 @@ import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {BaseBundler} from "./BaseBundler.sol";
 import {Call} from "./interfaces/Call.sol";
 import {IHub} from "./interfaces/IHub.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title MorphoBundler
 /// @author Morpho Labs
@@ -66,7 +67,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     ) external hubOnly {
         try MORPHO.setAuthorizationWithSig(authorization, signature) {}
         catch (bytes memory returnData) {
-            if (!skipRevert) _revert(returnData);
+            if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }
     }
 
@@ -99,7 +100,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         // (via the `onMorphoSupply` callback).
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
 
-        _approveMaxTo(marketParams.loanToken, address(MORPHO));
+        BundlerLib.approveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
@@ -127,7 +128,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         // (via the `onMorphoSupplyCollateral` callback).
         if (assets == type(uint256).max) assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
 
-        _approveMaxTo(marketParams.collateralToken, address(MORPHO));
+        BundlerLib.approveMaxTo(marketParams.collateralToken, address(MORPHO));
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
@@ -183,7 +184,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         // (via the `onMorphoRepay` callback).
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
 
-        _approveMaxTo(marketParams.loanToken, address(MORPHO));
+        BundlerLib.approveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
@@ -233,7 +234,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external hubOnly {
-        _approveMaxTo(token, address(MORPHO));
+        BundlerLib.approveMaxTo(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
     }

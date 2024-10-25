@@ -4,6 +4,7 @@ pragma solidity 0.8.27;
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title PermitBundler
 /// @author Morpho Labs
@@ -32,7 +33,7 @@ abstract contract PermitBundler is BaseBundler {
     ) external hubOnly {
         try IERC20Permit(asset).permit(initiator(), spender, amount, deadline, v, r, s) {}
         catch (bytes memory returnData) {
-            if (!skipRevert) _revert(returnData);
+            if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }
     }
 }

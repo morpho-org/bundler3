@@ -7,6 +7,7 @@ import {IUniversalRewardsDistributor} from
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title UrdBundler
 /// @author Morpho Labs
@@ -34,7 +35,7 @@ abstract contract UrdBundler is BaseBundler {
 
         try IUniversalRewardsDistributor(distributor).claim(account, reward, amount, proof) {}
         catch (bytes memory returnData) {
-            if (!skipRevert) _revert(returnData);
+            if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }
     }
 }

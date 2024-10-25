@@ -6,6 +6,7 @@ import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 import {MainnetLib} from "./libraries/MainnetLib.sol";
 
 import {PermitBundler} from "../PermitBundler.sol";
+import {BundlerLib} from "../libraries/BundlerLib.sol";
 
 /// @title EthereumPermitBundler
 /// @author Morpho Labs
@@ -34,7 +35,7 @@ abstract contract EthereumPermitBundler is PermitBundler {
     ) external hubOnly {
         try IDaiPermit(MainnetLib.DAI).permit(initiator(), spender, nonce, expiry, allowed, v, r, s) {}
         catch (bytes memory returnData) {
-            if (!skipRevert) _revert(returnData);
+            if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }
     }
 }
