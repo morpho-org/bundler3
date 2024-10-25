@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 /// @notice Library exposing events.
 library EventsLib {
     /// @notice Emitted after a Paraswap bundler swap
-    event MorphoBundlerParaswapBundlerSwap(
+    event ParaswapBundlerSwap(
         address indexed srcToken,
         address indexed destToken,
         address indexed receiver,

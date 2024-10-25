@@ -400,9 +400,7 @@ contract ParaswapBundlerLocalTest is LocalTest {
         srcToken.setBalance(address(paraswapBundler), srcAmount);
 
         vm.expectEmit(true, true, true, true, address(paraswapBundler));
-        emit EventsLib.MorphoBundlerParaswapBundlerSwap(
-            address(srcToken), address(destToken), receiver, srcAmount, destAmount
-        );
+        emit EventsLib.ParaswapBundlerSwap(address(srcToken), address(destToken), receiver, srcAmount, destAmount);
 
         bundle.push(_sell(address(srcToken), address(destToken), srcAmount, destAmount, false, receiver));
         hub.multicall(bundle);
@@ -422,9 +420,7 @@ contract ParaswapBundlerLocalTest is LocalTest {
         srcToken.setBalance(address(paraswapBundler), srcAmount);
 
         vm.expectEmit(true, true, true, true, address(paraswapBundler));
-        emit EventsLib.MorphoBundlerParaswapBundlerSwap(
-            address(srcToken), address(destToken), receiver, srcAmount, destAmount
-        );
+        emit EventsLib.ParaswapBundlerSwap(address(srcToken), address(destToken), receiver, srcAmount, destAmount);
 
         bundle.push(_buy(address(srcToken), address(destToken), srcAmount, destAmount, emptyMarketParams, receiver));
         hub.multicall(bundle);

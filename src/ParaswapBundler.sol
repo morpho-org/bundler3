@@ -125,7 +125,7 @@ contract ParaswapBundler is BaseBundler, IParaswapBundler {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SELL_AMOUNT_TOO_HIGH);
         require(destAmount >= minDestAmount, ErrorsLib.BUY_AMOUNT_TOO_LOW);
 
-        emit EventsLib.MorphoBundlerParaswapBundlerSwap(srcToken, destToken, receiver, srcAmount, destAmount);
+        emit EventsLib.ParaswapBundlerSwap(srcToken, destToken, receiver, srcAmount, destAmount);
 
         if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
         if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);
