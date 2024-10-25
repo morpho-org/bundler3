@@ -54,9 +54,10 @@
     "@types/node": "^20.8.6",
     "chai": "^4.3.10",
     "dotenv": "^16.3.1",
-    "hardhat": "^2.18.1",
+    "hardhat": "^2.22.12",
     "hardhat-gas-reporter": "^1.0.9",
-    "hardhat-tracer": "^2.6.0",
+    "hardhat-tracer": "^3.1.0",
+    "hardhat-ignore-warnings": "^0.2.11",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
     "prettier": "^3.0.3",
@@ -89,5 +90,6 @@
       "^\\."
     ],
     "importOrderSeparation": true
-  }
+  },
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }

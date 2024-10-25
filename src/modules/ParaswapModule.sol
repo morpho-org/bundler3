@@ -4,7 +4,7 @@ pragma solidity ^0.8.27;
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
 import {IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {BaseMorphoBundlerModule} from "./BaseMorphoBundlerModule.sol";
+import {BaseBundler} from "../BaseBundler.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
@@ -12,15 +12,11 @@ import {BytesLib} from "../libraries/BytesLib.sol";
 import "../interfaces/IParaswapModule.sol";
 import {EventsLib} from "../libraries/EventsLib.sol";
 
-interface HasMorpho {
-    function MORPHO() external returns (IMorpho);
-}
-
 /// @title ParaswapModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
+contract ParaswapModule is BaseBundler, IParaswapModule {
     using Math for uint256;
     using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
@@ -33,9 +29,9 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address morphoBundler, address augustusRegistry) BaseMorphoBundlerModule(morphoBundler) {
+    constructor(address hub, address morpho, address augustusRegistry) BaseBundler(hub) {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
-        MORPHO = HasMorpho(morphoBundler).MORPHO();
+        MORPHO = IMorpho(morpho);
     }
 
     /* MODIFIERS */
@@ -56,7 +52,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
         bool sellEntireBalance,
         Offsets calldata offsets,
         address receiver
-    ) external bundlerOnly inAugustusRegistry(augustus) {
+    ) external hubOnly inAugustusRegistry(augustus) {
         if (sellEntireBalance) {
             uint256 newSrcAmount = ERC20(srcToken).balanceOf(address(this));
             updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
@@ -82,7 +78,7 @@ contract ParaswapModule is BaseMorphoBundlerModule, IParaswapModule {
         MarketParams calldata marketParams,
         Offsets calldata offsets,
         address receiver
-    ) external bundlerOnly inAugustusRegistry(augustus) {
+    ) external hubOnly inAugustusRegistry(augustus) {
         if (marketParams.loanToken != address(0)) {
             require(marketParams.loanToken == destToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
             uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, initiator());

@@ -24,7 +24,7 @@ contract Permit2BundlerForkTest is ForkTest {
         vm.startPrank(user);
         ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         (uint160 permit2Allowance,,) = Permit2Lib.PERMIT2.allowance(user, marketParams.loanToken, address(bundler));
@@ -33,11 +33,11 @@ contract Permit2BundlerForkTest is ForkTest {
         assertEq(ERC20(marketParams.loanToken).allowance(user, address(bundler)), 0, "loan.allowance(user, bundler)");
     }
 
-    function testApprove2Uninitiated() public {
+    function testApprove2Unauthorized() public {
         IAllowanceTransfer.PermitSingle memory permitSingle;
         bytes memory signature;
 
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         Permit2Bundler(address(bundler)).approve2(permitSingle, signature, false);
     }
 
@@ -54,18 +54,18 @@ contract Permit2BundlerForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testTransferFrom2ZeroAmount() public {
         bundle.push(_transferFrom2(DAI, 0));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
-    function testTransferFrom2Uninitiated() public {
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
-        Permit2Bundler(address(bundler)).transferFrom2(address(0), 0);
+    function testTransferFrom2Unauthorized() public {
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        Permit2Bundler(address(bundler)).transferFrom2(address(0), 0, address(0));
     }
 }

@@ -41,7 +41,7 @@ contract UrdBundlerLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert();
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testClaimRewardsZeroAddressAccount(uint256 claimable) public {
@@ -53,7 +53,7 @@ contract UrdBundlerLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testClaimRewardsBundlerAddress(uint256 claimable) public {
@@ -65,7 +65,7 @@ contract UrdBundlerLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testClaimRewards(uint256 claimable, uint256 size) public {
@@ -86,7 +86,7 @@ contract UrdBundlerLocalTest is LocalTest {
         bundle.push(_urdClaim(distributor, USER, address(collateralToken), claimable, loanTokenProof, true));
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(USER), claimable, "User's loan balance");
         assertEq(collateralToken.balanceOf(USER), claimable, "User's collateral balance");
@@ -110,7 +110,7 @@ contract UrdBundlerLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(bytes(UrdErrorsLib.CLAIMABLE_TOO_LOW));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function _setupRewards(uint256 claimable, uint256 size) internal returns (bytes32[] memory tree) {

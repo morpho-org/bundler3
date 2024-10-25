@@ -13,24 +13,23 @@ contract WNativeBundlerForkTest is ForkTest {
         ERC20(WETH).approve(address(bundler), type(uint256).max);
     }
 
-    function testWrapZeroAmount() public {
-        bundle.push(abi.encodeCall(WNativeBundler.wrapNative, (0)));
+    function testWrapZeroAmount(address receiver) public {
+        bundle.push(_wrapNative(0, receiver));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testWrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(abi.encodeCall(WNativeBundler.wrapNative, (amount)));
-        bundle.push(_erc20Transfer(WETH, RECEIVER, type(uint256).max));
+        bundle.push(_wrapNative(amount, RECEIVER));
 
         deal(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall{value: amount}(bundle);
+        hub.multicall{value: amount}(bundle);
 
         assertEq(ERC20(WETH).balanceOf(address(bundler)), 0, "Bundler's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
@@ -41,25 +40,24 @@ contract WNativeBundlerForkTest is ForkTest {
         assertEq(RECEIVER.balance, 0, "Receiver's native token balance");
     }
 
-    function testUnwrapZeroAmount() public {
-        bundle.push(abi.encodeCall(WNativeBundler.unwrapNative, (0)));
+    function testUnwrapZeroAmount(address receiver) public {
+        bundle.push(_unwrapNative(0, receiver));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testUnwrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20TransferFrom(WETH, amount));
-        bundle.push(abi.encodeCall(WNativeBundler.unwrapNative, (amount)));
-        bundle.push(_nativeTransfer(RECEIVER, type(uint256).max));
+        bundle.push(_unwrapNative(amount, RECEIVER));
 
         deal(WETH, USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(ERC20(WETH).balanceOf(address(bundler)), 0, "Bundler's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity ^0.8.27;
 
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
@@ -7,13 +7,13 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
-import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
+import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
 
 /// @title Permit2Bundler
 /// @author Morpho Labs
-/// @custom:contact security@morpho.xyz
+/// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Uniswap's Permit2.
 abstract contract Permit2Bundler is BaseBundler {
     using SafeCast160 for uint256;
@@ -27,8 +27,7 @@ abstract contract Permit2Bundler is BaseBundler {
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
     function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
         external
-        payable
-        protected
+        hubOnly
     {
         try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
         catch (bytes memory returnData) {
@@ -39,12 +38,13 @@ abstract contract Permit2Bundler is BaseBundler {
     /// @notice Transfers the given `amount` of `asset` from the initiator to the bundler via Permit2.
     /// @param asset The address of the ERC20 token to transfer.
     /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
-    function transferFrom2(address asset, uint256 amount) external payable protected {
+    /// @param receiver The address that will receive the assets.
+    function transferFrom2(address asset, uint256 amount, address receiver) external hubOnly {
         address _initiator = initiator();
         amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
-        Permit2Lib.PERMIT2.transferFrom(_initiator, address(this), amount.toUint160(), asset);
+        Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), asset);
     }
 }

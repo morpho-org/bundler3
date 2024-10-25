@@ -13,6 +13,7 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import {ErrorsLib as MorphoErrorsLib} from "../../lib/morpho-blue/src/libraries/ErrorsLib.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 
+import {MorphoBundler} from "../../src/MorphoBundler.sol";
 import "./helpers/MetaMorphoLocalTest.sol";
 
 contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
@@ -59,7 +60,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, true));
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertTrue(morpho.isAuthorized(user, address(bundler)), "isAuthorized(user, bundler)");
     }
@@ -73,7 +74,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
 
         vm.expectRevert(bytes(MorphoErrorsLib.INVALID_NONCE));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testSupplyOnBehalfBundlerAddress(uint256 assets) public {
@@ -82,7 +83,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoSupply(marketParams, assets, 0, 0, address(bundler)));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testSupplyCollateralOnBehalfBundlerAddress(uint256 assets) public {
@@ -91,7 +92,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoSupplyCollateral(marketParams, assets, address(bundler)));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function testRepayOnBehalfBundlerAddress(uint256 assets) public {
@@ -100,7 +101,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoRepay(marketParams, assets, 0, 0, address(bundler)));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
     }
 
     function _testSupply(uint256 amount, address onBehalf) internal view {
@@ -132,7 +133,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         loanToken.setBalance(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupply(amount, onBehalf);
     }
@@ -148,7 +149,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         loanToken.setBalance(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupply(amount, onBehalf);
     }
@@ -165,7 +166,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         loanToken.setBalance(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupply(amount, onBehalf);
     }
@@ -199,7 +200,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         collateralToken.setBalance(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupplyCollateral(amount, onBehalf);
     }
@@ -215,13 +216,13 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         collateralToken.setBalance(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupplyCollateral(amount, onBehalf);
     }
 
-    function testWithdrawUninitiated(uint256 withdrawnShares) public {
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
+    function testWithdrawUnauthorized(uint256 withdrawnShares) public {
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         MorphoBundler(address(bundler)).morphoWithdraw(marketParams, 0, withdrawnShares, 0, RECEIVER);
     }
 
@@ -243,7 +244,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         vm.startPrank(user);
         morpho.supply(marketParams, amount, 0, user, hex"");
 
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         assertEq(loanToken.balanceOf(user), expectedWithdrawnAmount, "loan.balanceOf(user)");
@@ -257,8 +258,8 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
     }
 
-    function testBorrowUnititiated(uint256 borrowedAssets) public {
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
+    function testBorrowUnauthorized(uint256 borrowedAssets) public {
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         MorphoBundler(address(bundler)).morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
     }
 
@@ -300,7 +301,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         collateralToken.setBalance(user, collateralAmount);
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupplyCollateralBorrow(user, amount, collateralAmount);
     }
@@ -326,13 +327,13 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         collateralToken.setBalance(user, collateralAmount);
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testSupplyCollateralBorrow(user, amount, collateralAmount);
     }
 
-    function testWithdrawCollateralUninitiated(uint256 collateralAmount) public {
-        vm.expectRevert(bytes(ErrorsLib.UNINITIATED));
+    function testWithdrawCollateralUnauthorized(uint256 collateralAmount) public {
+        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
         MorphoBundler(address(bundler)).morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER);
     }
 
@@ -378,7 +379,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
@@ -407,7 +408,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
@@ -437,7 +438,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoRepay(marketParams, amount, 0, 0, user));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
@@ -481,7 +482,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         collateralToken.setBalance(user, vars.initialUserCollateralBalance);
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(morpho.supplyShares(id, user), vars.expectedSupplyShares, "User's supply shares");
         assertEq(morpho.borrowShares(id, user), vars.expectedBorrowShares, "User's borrow shares");
@@ -499,7 +500,9 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
             "User's loan balance"
         );
         assertEq(collateralToken.balanceOf(address(morpho)), vars.expectedCollateral, "Morpho's collateral balance");
-        assertEq(loanToken.balanceOf(address(bundler)), vars.expectedBundlerLoanBalance, "Bundler's loan balance");
+        assertEq(
+            loanToken.balanceOf(address(bundler)), vars.expectedBundlerLoanBalance, unicode"Bundler's loan balance"
+        );
         assertEq(
             collateralToken.balanceOf(address(bundler)),
             vars.expectedBundlerCollateralBalance,
@@ -640,7 +643,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoFlashLoan(address(loanToken), amount));
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(USER), 0, "User's loan token balance");
         assertEq(loanToken.balanceOf(address(bundler)), 0, "Bundler's loan token balance");
@@ -682,7 +685,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
         vm.deal(USER, fee);
         vm.prank(USER);
-        bundler.multicall{value: fee}(bundle);
+        hub.multicall{value: fee}(bundle);
 
         assertEq(morpho.expectedSupplyAssets(idleMarketParams, address(vault)), 0, "final idle");
         assertEq(morpho.expectedSupplyAssets(marketParams, address(vault)), amount, "final market");

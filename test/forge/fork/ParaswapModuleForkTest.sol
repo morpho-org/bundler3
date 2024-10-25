@@ -3,9 +3,6 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {EthereumBundlerV2} from "../../../src/ethereum/EthereumBundlerV2.sol";
-import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
-
 import "./helpers/ForkTest.sol";
 
 contract ParaswapModuleForkTest is ForkTest {
@@ -29,10 +26,10 @@ contract ParaswapModuleForkTest is ForkTest {
 
         deal(USDC, user, srcAmount);
 
-        bundle.push(_erc20TransferFromWithReceiver(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
-            _moduleCall(
-                address(paraswapModule),
+            _call(
+                paraswapModule,
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -47,7 +44,7 @@ contract ParaswapModuleForkTest is ForkTest {
 
         vm.startPrank(user);
         ERC20(USDC).approve(address(bundler), type(uint256).max);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         assertEq(ERC20(USDC).balanceOf(user), 0, "remaining");
@@ -60,10 +57,10 @@ contract ParaswapModuleForkTest is ForkTest {
 
         deal(USDC, user, srcAmount * percent / 100);
 
-        bundle.push(_erc20TransferFromWithReceiver(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
-            _moduleCall(
-                address(paraswapModule),
+            _call(
+                paraswapModule,
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -78,7 +75,7 @@ contract ParaswapModuleForkTest is ForkTest {
 
         vm.startPrank(user);
         ERC20(USDC).approve(address(bundler), type(uint256).max);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         assertEq(ERC20(USDC).balanceOf(user), 0, "sold");
@@ -100,10 +97,10 @@ contract ParaswapModuleForkTest is ForkTest {
 
         deal(USDC, user, initialBalance);
 
-        bundle.push(_erc20TransferFromWithReceiver(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
-            _moduleCall(
-                address(paraswapModule),
+            _call(
+                paraswapModule,
                 _paraswapBuy(
                     AUGUSTUS_V6_2,
                     buyCalldata,
@@ -118,7 +115,7 @@ contract ParaswapModuleForkTest is ForkTest {
 
         vm.startPrank(user);
         ERC20(USDC).approve(address(bundler), type(uint256).max);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         uint256 sold = initialBalance - ERC20(USDC).balanceOf(user);
@@ -151,10 +148,10 @@ contract ParaswapModuleForkTest is ForkTest {
         morpho.borrow(wethMarketParams, debt, 0, user, address(1));
         vm.stopPrank();
 
-        bundle.push(_erc20TransferFromWithReceiver(USDC, address(paraswapModule), type(uint256).max));
+        bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
-            _moduleCall(
-                address(paraswapModule),
+            _call(
+                paraswapModule,
                 _paraswapBuy(
                     AUGUSTUS_V6_2,
                     buyCalldata,
@@ -169,7 +166,7 @@ contract ParaswapModuleForkTest is ForkTest {
 
         vm.startPrank(user);
         ERC20(USDC).approve(address(bundler), type(uint256).max);
-        bundler.multicall(bundle);
+        hub.multicall(bundle);
         vm.stopPrank();
 
         uint256 sold = initialBalance - ERC20(USDC).balanceOf(user);

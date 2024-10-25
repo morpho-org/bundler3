@@ -6,19 +6,21 @@ import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+// TODO: needed?
 import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {Call} from "./interfaces/Call.sol";
+import {IHub} from "./interfaces/IHub.sol";
 
 /// @title MorphoBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Bundler contract managing interactions with Morpho.
 abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
-    using SafeTransferLib for ERC20;
+    // TODO: needed?
     using MorphoBalancesLib for IMorpho;
-
     /* IMMUTABLES */
 
     /// @notice The Morpho contract address.
@@ -65,7 +67,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         Authorization calldata authorization,
         Signature calldata signature,
         bool skipRevert
-    ) external payable protected {
+    ) external hubOnly {
         try MORPHO.setAuthorizationWithSig(authorization, signature) {}
         catch (bytes memory returnData) {
             if (!skipRevert) _revert(returnData);
@@ -93,7 +95,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 slippageAmount,
         address onBehalf,
         bytes calldata data
-    ) external payable protected {
+    ) external hubOnly {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.BUNDLER_ADDRESS);
 
@@ -121,7 +123,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 assets,
         address onBehalf,
         bytes calldata data
-    ) external payable protected {
+    ) external hubOnly {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.BUNDLER_ADDRESS);
 
@@ -151,7 +153,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 shares,
         uint256 slippageAmount,
         address receiver
-    ) external payable protected {
+    ) external hubOnly {
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
@@ -177,7 +179,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 slippageAmount,
         address onBehalf,
         bytes calldata data
-    ) external payable protected {
+    ) external hubOnly {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.BUNDLER_ADDRESS);
 
@@ -210,7 +212,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 shares,
         uint256 slippageAmount,
         address receiver
-    ) external payable protected {
+    ) external hubOnly {
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
             MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 
@@ -225,8 +227,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /// @param receiver The address that will receive the collateral assets.
     function morphoWithdrawCollateral(MarketParams calldata marketParams, uint256 assets, address receiver)
         external
-        payable
-        protected
+        hubOnly
     {
         MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
     }
@@ -235,7 +236,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /// @param token The address of the token to flash loan.
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
-    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external payable protected {
+    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external hubOnly {
         _approveMaxTo(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
@@ -253,7 +254,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         uint256 value,
         Withdrawal[] calldata withdrawals,
         MarketParams calldata supplyMarketParams
-    ) external payable protected {
+    ) external payable hubOnly {
         IPublicAllocator(publicAllocator).reallocateTo{value: value}(vault, withdrawals, supplyMarketParams);
     }
 
@@ -263,11 +264,6 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     function _callback(bytes calldata data) internal {
         require(msg.sender == address(MORPHO), ErrorsLib.UNAUTHORIZED_SENDER);
 
-        _multicall(abi.decode(data, (bytes[])));
-    }
-
-    /// @inheritdoc BaseBundler
-    function _isSenderAuthorized() internal view virtual override returns (bool) {
-        return super._isSenderAuthorized() || msg.sender == address(MORPHO);
+        IHub(HUB).multicallFromBundler(abi.decode(data, (Call[])));
     }
 }
