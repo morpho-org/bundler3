@@ -79,12 +79,7 @@ contract Hub is IHub {
             setCurrentBundler(previousBundler);
 
             if (!success) {
-                uint256 length = returnData.length;
-                require(length > 0, ErrorsLib.CALL_FAILED);
-
-                assembly ("memory-safe") {
-                    revert(add(32, returnData), length)
-                }
+                BundlerLib.lowLevelRevert(returnData);
             }
         }
     }
