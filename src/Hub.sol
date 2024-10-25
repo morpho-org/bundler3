@@ -7,6 +7,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title Hub
 /// @author Morpho Labs

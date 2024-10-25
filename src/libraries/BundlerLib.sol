@@ -23,7 +23,7 @@ library BundlerLib {
     /// @dev Assumes `returnData` is the return data of any kind of failing CALL to a contract.
     function lowLevelRevert(bytes memory returnData) internal pure {
         assembly ("memory-safe") {
-            revert(add(32, returnData), returnData)
+            revert(add(32, returnData), mload(returnData))
         }
     }
 
