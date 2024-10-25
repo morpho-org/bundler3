@@ -11,6 +11,7 @@ import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol"
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapBundler.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title ParaswapBundler
 /// @author Morpho Labs
@@ -134,7 +135,7 @@ contract ParaswapBundler is BaseBundler, IParaswapBundler {
 
         ERC20(srcToken).safeApprove(augustus, type(uint256).max);
         (bool success, bytes memory returnData) = address(augustus).call(callData);
-        if (!success) _revert(returnData);
+        if (!success) BundlerLib.lowLevelRevert(returnData);
         ERC20(srcToken).safeApprove(augustus, 0);
 
         uint256 srcFinal = ERC20(srcToken).balanceOf(address(this));
