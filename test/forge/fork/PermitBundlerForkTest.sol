@@ -29,6 +29,7 @@ contract PermitBundlerForkTest is ForkTest {
     }
 
     function testPermitDai(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {
+        vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
 
@@ -49,6 +50,7 @@ contract PermitBundlerForkTest is ForkTest {
     }
 
     function testPermitDaiRevert(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {
+        vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
 
@@ -82,6 +84,7 @@ contract PermitBundlerForkTest is ForkTest {
     }
 
     function testPermit(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
@@ -98,6 +101,7 @@ contract PermitBundlerForkTest is ForkTest {
     }
 
     function testPermitUnauthorized(uint256 amount, address spender) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
@@ -105,6 +109,7 @@ contract PermitBundlerForkTest is ForkTest {
     }
 
     function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
