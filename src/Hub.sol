@@ -27,13 +27,17 @@ contract Hub is IHub {
     /* PUBLIC */
 
     /// @notice Returns the address of the initiator of the multicall transaction.
+    /// @dev Specialized getter to prevent using `_initiator` directly.
     function initiator() public view returns (address _initiator) {
         assembly ("memory-safe") {
             _initiator := tload(INITIATOR_SLOT)
         }
     }
 
-    /// @inheritdoc IHub
+    /// @notice Returns the current bundler.
+    /// @notice A bundler takes the 'current' status when called.
+    /// @notice A bundler gives back the 'current' status to the previously current bundler when it returns from a call.
+    /// @notice The initial current bundler is address(0).
     function currentBundler() public view returns (address bundler) {
         assembly ("memory-safe") {
             bundler := tload(CURRENT_BUNDLER_SLOT)
@@ -44,6 +48,7 @@ contract Hub is IHub {
 
     /// @notice Executes a series of calls to bundlers.
     /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
+    /// @param calls The ordered array of calldata to execute.
     function multicall(Call[] calldata calls) external payable {
         require(initiator() == address(0), ErrorsLib.ALREADY_INITIATED);
 
@@ -54,7 +59,9 @@ contract Hub is IHub {
         setInitiator(address(0));
     }
 
-    /// @inheritdoc IHub
+    /// @notice Responds to calls from the current bundler.
+    /// @dev Triggers `_multicall` logic during a callback.
+    /// @dev Only the current bundler can call this function.
     function multicallFromBundler(Call[] calldata calls) external payable {
         require(msg.sender == currentBundler(), ErrorsLib.UNAUTHORIZED_SENDER);
         _multicall(calls);
