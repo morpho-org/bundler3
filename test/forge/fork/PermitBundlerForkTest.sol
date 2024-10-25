@@ -72,15 +72,21 @@ contract PermitBundlerForkTest is ForkTest {
         address user = vm.addr(privateKey);
         uint256 nonce = IDaiPermit(DAI).nonces(user);
 
-        DaiPermit memory permit = DaiPermit(user, spender, nonce, expiry, allowed);
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+        {
+            DaiPermit memory permit = DaiPermit(user, spender, nonce, expiry, allowed);
 
-        bytes32 digest = SigUtils.toTypedDataHash(DAI_DOMAIN_SEPARATOR, permit);
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+            bytes32 digest = SigUtils.toTypedDataHash(DAI_DOMAIN_SEPARATOR, permit);
 
-        return _call(
-            bundler,
-            abi.encodeCall(EthereumPermitBundler.permitDai, (spender, nonce, expiry, allowed, v, r, s, skipRevert))
-        );
+            (v, r, s) = vm.sign(privateKey, digest);
+        }
+
+        bytes memory callData =
+            abi.encodeCall(EthereumPermitBundler.permitDai, (spender, nonce, expiry, allowed, v, r, s, skipRevert));
+
+        return _call(bundler, callData);
     }
 
     function testPermit(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
@@ -161,9 +167,9 @@ contract PermitBundlerForkTest is ForkTest {
         bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return _call(
-            bundler,
-            abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert))
-        );
+        bytes memory callData =
+            abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
+
+        return _call(bundler, callData);
     }
 }
