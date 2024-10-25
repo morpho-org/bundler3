@@ -92,9 +92,8 @@ contract PermitBundlerLocalTest is LocalTest {
         bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return _call(
-            bundler,
-            abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert))
-        );
+        bytes memory callData =
+            abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
+        return _call(bundler, callData);
     }
 }
