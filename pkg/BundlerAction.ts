@@ -14,8 +14,9 @@ import {
   IAllowanceTransfer,
   ERC20WrapperBundler__factory,
 } from "../types";
+import type { CallStruct } from "../types/src/Hub";
 import { AuthorizationStruct, MarketParamsStruct, WithdrawalStruct } from "../types/src/MorphoBundler";
-import type { CallStruct} from "../types/src/Hub";
+
 export type BundlerCall = CallStruct;
 
 export type BundlerCalldata = string;
@@ -40,7 +41,6 @@ export class BundlerAction {
   private genericBundler1Address: string;
   private ethereumBundler1Address: string;
 
-
   constructor(genericBundler1Address: string, ethereumBundler1Address: string) {
     this.genericBundler1Address = genericBundler1Address;
     this.ethereumBundler1Address = ethereumBundler1Address;
@@ -55,7 +55,11 @@ export class BundlerAction {
    * @param bundlerAddress The address of the bundler sending the native tokens.
    */
   nativeTransfer(recipient: string, amount: BigNumberish, bundlerAddress: string): BundlerCall {
-    return {to: bundlerAddress, value: amount, data: BASE_BUNDLER_IFC.encodeFunctionData("nativeTransfer", [recipient, amount])};
+    return {
+      to: bundlerAddress,
+      value: amount,
+      data: BASE_BUNDLER_IFC.encodeFunctionData("nativeTransfer", [recipient, amount]),
+    };
   }
 
   /**
@@ -65,7 +69,11 @@ export class BundlerAction {
    * @param amount The amount of tokens to send.
    */
   erc20Transfer(asset: string, recipient: string, amount: BigNumberish, bundlerAddress: string): BundlerCall {
-    return {to: bundlerAddress, value: 0, data: BASE_BUNDLER_IFC.encodeFunctionData("erc20Transfer", [asset, recipient, amount])};
+    return {
+      to: bundlerAddress,
+      value: 0,
+      data: BASE_BUNDLER_IFC.encodeFunctionData("erc20Transfer", [asset, recipient, amount]),
+    };
   }
 
   /**
@@ -75,7 +83,11 @@ export class BundlerAction {
    * @param amount The amount of tokens to send.
    */
   erc20TransferFrom(asset: string, receiver: string, amount: BigNumberish): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: TRANSFER_BUNDLER_IFC.encodeFunctionData("erc20TransferFrom", [asset, receiver, amount])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: TRANSFER_BUNDLER_IFC.encodeFunctionData("erc20TransferFrom", [asset, receiver, amount]),
+    };
   }
 
   /* Permit */
@@ -97,16 +109,20 @@ export class BundlerAction {
     signature: Signature,
     skipRevert: boolean,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: PERMIT_BUNDLER_IFC.encodeFunctionData("permit", [
-      asset,
-      spender,
-      amount,
-      deadline,
-      signature.v,
-      signature.r,
-      signature.s,
-      skipRevert,
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: PERMIT_BUNDLER_IFC.encodeFunctionData("permit", [
+        asset,
+        spender,
+        amount,
+        deadline,
+        signature.v,
+        signature.r,
+        signature.s,
+        skipRevert,
+      ]),
+    };
   }
 
   /**
@@ -126,16 +142,20 @@ export class BundlerAction {
     signature: Signature,
     skipRevert: boolean,
   ): BundlerCall {
-    return {to: this.ethereumBundler1Address, value: 0, data: ETHEREUM_PERMIT_BUNDLER_IFC.encodeFunctionData("permitDai", [
-      spender,
-      nonce,
-      expiry,
-      allowed,
-      signature.v,
-      signature.r,
-      signature.s,
-      skipRevert,
-    ])};
+    return {
+      to: this.ethereumBundler1Address,
+      value: 0,
+      data: ETHEREUM_PERMIT_BUNDLER_IFC.encodeFunctionData("permitDai", [
+        spender,
+        nonce,
+        expiry,
+        allowed,
+        signature.v,
+        signature.r,
+        signature.s,
+        skipRevert,
+      ]),
+    };
   }
 
   /* Permit2 */
@@ -151,7 +171,11 @@ export class BundlerAction {
     signature: Signature,
     skipRevert: boolean,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: PERMIT2_BUNDLER_IFC.encodeFunctionData("approve2", [permitSingle, signature.serialized, skipRevert])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: PERMIT2_BUNDLER_IFC.encodeFunctionData("approve2", [permitSingle, signature.serialized, skipRevert]),
+    };
   }
 
   /**
@@ -161,7 +185,11 @@ export class BundlerAction {
    * @param amount The amount of tokens to send.
    */
   transferFrom2(asset: string, receiver: string, amount: BigNumberish): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: PERMIT2_BUNDLER_IFC.encodeFunctionData("transferFrom2", [asset, receiver, amount])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: PERMIT2_BUNDLER_IFC.encodeFunctionData("transferFrom2", [asset, receiver, amount]),
+    };
   }
 
   /* ERC20 Wrapper */
@@ -173,7 +201,11 @@ export class BundlerAction {
    * @param amount The amount of tokens to send.
    */
   erc20WrapperDepositFor(wrapper: string, receiver: string, amount: BigNumberish): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: ERC20_WRAPPER_BUNDLER_IFC.encodeFunctionData("erc20WrapperDepositFor", [wrapper, receiver, amount])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: ERC20_WRAPPER_BUNDLER_IFC.encodeFunctionData("erc20WrapperDepositFor", [wrapper, receiver, amount]),
+    };
   }
 
   /**
@@ -183,7 +215,11 @@ export class BundlerAction {
    * @param amount The amount of tokens to send.
    */
   erc20WrapperWithdrawTo(wrapper: string, receiver: string, amount: BigNumberish): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: ERC20_WRAPPER_BUNDLER_IFC.encodeFunctionData("erc20WrapperWithdrawTo", [wrapper, receiver, amount])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: ERC20_WRAPPER_BUNDLER_IFC.encodeFunctionData("erc20WrapperWithdrawTo", [wrapper, receiver, amount]),
+    };
   }
 
   /* ERC4626 */
@@ -195,13 +231,12 @@ export class BundlerAction {
    * @param maxAssets The maximum amount of assets to deposit (protects the sender from unexpected slippage).
    * @param receiver The address to send the shares to.
    */
-  erc4626Mint(
-    erc4626: string,
-    shares: BigNumberish,
-    maxAssets: BigNumberish,
-    receiver: string,
-  ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Mint", [erc4626, shares, maxAssets, receiver])};
+  erc4626Mint(erc4626: string, shares: BigNumberish, maxAssets: BigNumberish, receiver: string): BundlerCall {
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Mint", [erc4626, shares, maxAssets, receiver]),
+    };
   }
 
   /**
@@ -211,13 +246,12 @@ export class BundlerAction {
    * @param minShares The minimum amount of shares to mint (protects the sender from unexpected slippage).
    * @param receiver The address to send the shares to.
    */
-  erc4626Deposit(
-    erc4626: string,
-    assets: BigNumberish,
-    minShares: BigNumberish,
-    receiver: string,
-  ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Deposit", [erc4626, assets, minShares, receiver])};
+  erc4626Deposit(erc4626: string, assets: BigNumberish, minShares: BigNumberish, receiver: string): BundlerCall {
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Deposit", [erc4626, assets, minShares, receiver]),
+    };
   }
 
   /**
@@ -234,7 +268,11 @@ export class BundlerAction {
     receiver: string,
     owner: string,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Withdraw", [erc4626, assets, maxShares, receiver, owner])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Withdraw", [erc4626, assets, maxShares, receiver, owner]),
+    };
   }
 
   /**
@@ -251,7 +289,11 @@ export class BundlerAction {
     receiver: string,
     owner: string,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Redeem", [erc4626, shares, minAssets, receiver, owner])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: ERC4626_BUNDLER_IFC.encodeFunctionData("erc4626Redeem", [erc4626, shares, minAssets, receiver, owner]),
+    };
   }
 
   /* Morpho */
@@ -267,11 +309,15 @@ export class BundlerAction {
     signature: Signature,
     skipRevert: boolean,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoSetAuthorizationWithSig", [
-      authorization,
-      { v: signature.v, r: signature.r, s: signature.s },
-      skipRevert,
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoSetAuthorizationWithSig", [
+        authorization,
+        { v: signature.v, r: signature.r, s: signature.s },
+        skipRevert,
+      ]),
+    };
   }
 
   /**
@@ -291,14 +337,18 @@ export class BundlerAction {
     onBehalf: string,
     callbackCalls: BundlerCall[],
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoSupply", [
-      market,
-      assets,
-      shares,
-      slippageAmount,
-      onBehalf,
-      MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoSupply", [
+        market,
+        assets,
+        shares,
+        slippageAmount,
+        onBehalf,
+        MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
+      ]),
+    };
   }
 
   /**
@@ -314,12 +364,16 @@ export class BundlerAction {
     onBehalf: string,
     callbackCalls: BundlerCall[],
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoSupplyCollateral", [
-      market,
-      assets,
-      onBehalf,
-      MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoSupplyCollateral", [
+        market,
+        assets,
+        onBehalf,
+        MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
+      ]),
+    };
   }
 
   /**
@@ -337,7 +391,11 @@ export class BundlerAction {
     slippageAmount: BigNumberish,
     receiver: string,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoBorrow", [market, assets, shares, slippageAmount, receiver])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoBorrow", [market, assets, shares, slippageAmount, receiver]),
+    };
   }
 
   /**
@@ -357,14 +415,18 @@ export class BundlerAction {
     onBehalf: string,
     callbackCalls: BundlerCall[],
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoRepay", [
-      market,
-      assets,
-      shares,
-      slippageAmount,
-      onBehalf,
-      MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoRepay", [
+        market,
+        assets,
+        shares,
+        slippageAmount,
+        onBehalf,
+        MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
+      ]),
+    };
   }
 
   /**
@@ -382,7 +444,11 @@ export class BundlerAction {
     slippageAmount: BigNumberish,
     receiver: string,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoWithdraw", [market, assets, shares, slippageAmount, receiver])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoWithdraw", [market, assets, shares, slippageAmount, receiver]),
+    };
   }
 
   /**
@@ -391,12 +457,12 @@ export class BundlerAction {
    * @param assets The amount of assets to withdraw.
    * @param receiver The address to send withdrawn tokens to.
    */
-  morphoWithdrawCollateral(
-    market: MarketParamsStruct,
-    assets: BigNumberish,
-    receiver: string,
-  ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoWithdrawCollateral", [market, assets, receiver])};
+  morphoWithdrawCollateral(market: MarketParamsStruct, assets: BigNumberish, receiver: string): BundlerCall {
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoWithdrawCollateral", [market, assets, receiver]),
+    };
   }
 
   /**
@@ -406,11 +472,15 @@ export class BundlerAction {
    * @param callbackCalls The array of calls to execute inside Morpho Blue's `onMorphoFlashLoan` callback.
    */
   morphoFlashLoan(asset: string, amount: BigNumberish, callbackCalls: BundlerCall[]): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoFlashLoan", [
-      asset,
-      amount,
-      MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("morphoFlashLoan", [
+        asset,
+        amount,
+        MORPHO_BUNDLER_IFC.getAbiCoder().encode(["bytes[]"], [callbackCalls]),
+      ]),
+    };
   }
 
   /**
@@ -428,13 +498,17 @@ export class BundlerAction {
     withdrawals: WithdrawalStruct[],
     supplyMarketParams: MarketParamsStruct,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: MORPHO_BUNDLER_IFC.encodeFunctionData("reallocateTo", [
-      publicAllocator,
-      vault,
-      value,
-      withdrawals,
-      supplyMarketParams,
-    ])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: MORPHO_BUNDLER_IFC.encodeFunctionData("reallocateTo", [
+        publicAllocator,
+        vault,
+        value,
+        withdrawals,
+        supplyMarketParams,
+      ]),
+    };
   }
 
   /* Universal Rewards Distributor */
@@ -456,7 +530,11 @@ export class BundlerAction {
     proof: BytesLike[],
     skipRevert: boolean,
   ): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: URD_BUNDLER_IFC.encodeFunctionData("urdClaim", [distributor, account, reward, amount, proof, skipRevert])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: URD_BUNDLER_IFC.encodeFunctionData("urdClaim", [distributor, account, reward, amount, proof, skipRevert]),
+    };
   }
 
   /* Wrapped Native */
@@ -467,7 +545,11 @@ export class BundlerAction {
    * @param receiver The address that will receive the assets.
    */
   wrapNative(amount: BigNumberish, receiver: string): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: WNATIVE_BUNDLER_IFC.encodeFunctionData("wrapNative", [amount, receiver])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: WNATIVE_BUNDLER_IFC.encodeFunctionData("wrapNative", [amount, receiver]),
+    };
   }
 
   /**
@@ -476,7 +558,11 @@ export class BundlerAction {
    * @param receiver The address that will receive the assets.
    */
   unwrapNative(amount: BigNumberish, receiver: string): BundlerCall {
-    return {to: this.genericBundler1Address, value: 0, data: WNATIVE_BUNDLER_IFC.encodeFunctionData("unwrapNative", [amount, receiver])};
+    return {
+      to: this.genericBundler1Address,
+      value: 0,
+      data: WNATIVE_BUNDLER_IFC.encodeFunctionData("unwrapNative", [amount, receiver]),
+    };
   }
 
   /* stETH */
@@ -489,7 +575,11 @@ export class BundlerAction {
    * @param receiver The address that will receive the assets.
    */
   stakeEth(amount: BigNumberish, minShares: BigNumberish, referral: string, receiver: string): BundlerCall {
-    return {to: this.ethereumBundler1Address, value: amount, data: ST_ETH_BUNDLER_IFC.encodeFunctionData("stakeEth", [amount, minShares, referral, receiver])};
+    return {
+      to: this.ethereumBundler1Address,
+      value: amount,
+      data: ST_ETH_BUNDLER_IFC.encodeFunctionData("stakeEth", [amount, minShares, referral, receiver]),
+    };
   }
 
   /* Wrapped stETH */
@@ -500,7 +590,11 @@ export class BundlerAction {
    * @param receiver The address that will receive the assets.
    */
   wrapStEth(amount: BigNumberish, receiver: string): BundlerCall {
-    return {to: this.ethereumBundler1Address, value: 0, data: ST_ETH_BUNDLER_IFC.encodeFunctionData("wrapStEth", [amount, receiver])};
+    return {
+      to: this.ethereumBundler1Address,
+      value: 0,
+      data: ST_ETH_BUNDLER_IFC.encodeFunctionData("wrapStEth", [amount, receiver]),
+    };
   }
 
   /**
@@ -509,7 +603,11 @@ export class BundlerAction {
    * @param receiver The address that will receive the assets.
    */
   unwrapStEth(amount: BigNumberish, receiver: string): BundlerCall {
-    return {to: this.ethereumBundler1Address, value: 0, data: ST_ETH_BUNDLER_IFC.encodeFunctionData("unwrapStEth", [amount, receiver])};
+    return {
+      to: this.ethereumBundler1Address,
+      value: 0,
+      data: ST_ETH_BUNDLER_IFC.encodeFunctionData("unwrapStEth", [amount, receiver]),
+    };
   }
 }
 

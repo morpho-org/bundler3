@@ -28,6 +28,7 @@
     "test:hardhat": "hardhat test",
     "lint": "yarn lint:forge && yarn lint:ts",
     "lint:ts": "prettier --check pkg",
+    "lint:ts:fix": "prettier --write pkg",
     "lint:forge": "forge fmt --check",
     "lint:fix": "yarn lint:forge:fix && yarn lint:ts:fix",
     "lint:forge:fix": "forge fmt",
