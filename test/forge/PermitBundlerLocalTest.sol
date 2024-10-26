@@ -46,6 +46,7 @@ contract PermitBundlerLocalTest is LocalTest {
     }
 
     function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
