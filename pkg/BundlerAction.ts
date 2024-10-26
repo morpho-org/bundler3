@@ -33,11 +33,6 @@ const WNATIVE_BUNDLER_IFC = WNativeBundler__factory.createInterface();
 const ST_ETH_BUNDLER_IFC = StEthBundler__factory.createInterface();
 const ETHEREUM_PERMIT_BUNDLER_IFC = EthereumPermitBundler__factory.createInterface();
 
-type BundlerAddresses = {
-  generic1: string,
-  ethereum1: string,
-}
-
 /**
  * Class to easily encode calls to the Bundler contract, using ethers.
  */
