@@ -6,7 +6,7 @@ import {
   ERC20Mock,
   ERC4626Mock,
   Hub,
-  ChainAgnosticBundler1,
+  GenericBundler1,
   EthereumBundler1,
   MorphoMock,
   OracleMock,
@@ -157,8 +157,8 @@ describe("Bundlers", () => {
   let hub: Hub;
   let hubAddress: string;
 
-  let chainAgnosticBundler1: ChainAgnosticBundler1;
-  let chainAgnosticBundler1Address: string;
+  let genericBundler1: GenericBundler1;
+  let genericBundler1Address: string;
 
   let ethereumBundler1: EthereumBundler1;
   let ethereumBundler1Address: string;
@@ -236,15 +236,15 @@ describe("Bundlers", () => {
     hub = await HubFactory.deploy();
     hubAddress = await hub.getAddress();
 
-    const ChainAgnosticBundler1Factory = await hre.ethers.getContractFactory("ChainAgnosticBundler1", admin);
-    chainAgnosticBundler1 = await ChainAgnosticBundler1Factory.deploy(hubAddress,morphoAddress,wethAddress);
-    chainAgnosticBundler1Address = await chainAgnosticBundler1.getAddress();
+    const GenericBundler1Factory = await hre.ethers.getContractFactory("GenericBundler1", admin);
+    genericBundler1 = await GenericBundler1Factory.deploy(hubAddress,morphoAddress,wethAddress);
+    genericBundler1Address = await genericBundler1.getAddress();
 
     const EthereumBundler1Factory = await hre.ethers.getContractFactory("EthereumBundler1", admin);
     ethereumBundler1 = await EthereumBundler1Factory.deploy(hubAddress);
     ethereumBundler1Address = await ethereumBundler1.getAddress();
 
-    bundlerAction = new BundlerAction(chainAgnosticBundler1Address, ethereumBundler1Address);
+    bundlerAction = new BundlerAction(genericBundler1Address, ethereumBundler1Address);
 
     for (const user of users) {
       await loan.setBalance(user.address, initBalance);
@@ -261,7 +261,7 @@ describe("Bundlers", () => {
     hre.tracer.nameTags[oracleAddress] = "Oracle";
     hre.tracer.nameTags[irmAddress] = "AdaptiveCurveIrm";
     hre.tracer.nameTags[hubAddress] = "Hub";
-    hre.tracer.nameTags[chainAgnosticBundler1Address] = "ChainAgnosticBundler1";
+    hre.tracer.nameTags[genericBundler1Address] = "GenericBundler1";
     hre.tracer.nameTags[ethereumBundler1Address] = "EthereumBundler1";
   });
 
@@ -279,7 +279,7 @@ describe("Bundlers", () => {
 
       const authorization = {
         authorizer: borrower.address,
-        authorized: chainAgnosticBundler1Address,
+        authorized: genericBundler1Address,
         isAuthorized: true,
         nonce: 0n,
         deadline: MAX_UINT48,
@@ -294,7 +294,7 @@ describe("Bundlers", () => {
           nonce: 0n,
           expiration: MAX_UINT48,
         },
-        spender: chainAgnosticBundler1Address,
+        spender: genericBundler1Address,
         sigDeadline: MAX_UINT48,
       };
 
@@ -321,7 +321,7 @@ describe("Bundlers", () => {
             Signature.from(await borrower.signTypedData(permit2Config.domain, permit2Config.types, approve2)),
             false,
           ),
-          bundlerAction.transferFrom2(collateralAddress, chainAgnosticBundler1Address, assets),
+          bundlerAction.transferFrom2(collateralAddress, genericBundler1Address, assets),
           bundlerAction.morphoSupplyCollateral(marketParams, assets, borrower.address, []),
           bundlerAction.morphoBorrow(marketParams, assets / 2n, 0, borrower.address, borrower.address),
         ]);
@@ -344,7 +344,7 @@ describe("Bundlers", () => {
           expiration: MAX_UINT48,
           nonce: 0n,
         },
-        spender: chainAgnosticBundler1Address,
+        spender: genericBundler1Address,
         sigDeadline: MAX_UINT48,
       };
 
@@ -360,7 +360,7 @@ describe("Bundlers", () => {
             Signature.from(await supplier.signTypedData(permit2Config.domain, permit2Config.types, approve2)),
             false,
           ),
-          bundlerAction.transferFrom2(collateralAddress, chainAgnosticBundler1Address, assets),
+          bundlerAction.transferFrom2(collateralAddress, genericBundler1Address, assets),
           bundlerAction.erc4626Deposit(erc4626Address, assets, 0, supplier.address),
         ]);
     }

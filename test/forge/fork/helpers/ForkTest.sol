@@ -35,8 +35,8 @@ abstract contract ForkTest is CommonTest, Configured {
 
         super.setUp();
 
-        chainAgnosticBundler1 = new ChainAgnosticBundler1(address(hub), address(morpho), address(WETH));
-        bundler = chainAgnosticBundler1;
+        genericBundler1 = new GenericBundler1(address(hub), address(morpho), address(WETH));
+        bundler = genericBundler1;
 
         for (uint256 i; i < configMarkets.length; ++i) {
             ConfigMarket memory configMarket = configMarkets[i];

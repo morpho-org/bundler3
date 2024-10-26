@@ -35,7 +35,7 @@ import {UrdBundler} from "../../../src/UrdBundler.sol";
 import {MorphoBundler, Withdrawal} from "../../../src/MorphoBundler.sol";
 import {ERC20WrapperBundler} from "../../../src/ERC20WrapperBundler.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
-import {ChainAgnosticBundler1} from "../../../src/chain-agnostic/ChainAgnosticBundler1.sol";
+import {GenericBundler1} from "../../../src/chain-agnostic/GenericBundler1.sol";
 import {TransferBundler} from "../../../src/TransferBundler.sol";
 import {Hub} from "../../../src/Hub.sol";
 import {Call} from "../../../src/interfaces/Call.sol";
@@ -65,7 +65,7 @@ abstract contract CommonTest is Test {
     OracleMock internal oracle;
 
     Hub internal hub;
-    ChainAgnosticBundler1 internal chainAgnosticBundler1;
+    GenericBundler1 internal genericBundler1;
     // The 'current' bundler.
     BaseBundler internal bundler;
 
@@ -81,8 +81,8 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         hub = new Hub();
-        chainAgnosticBundler1 = new ChainAgnosticBundler1(address(hub), address(morpho), address(new WETH()));
-        bundler = chainAgnosticBundler1;
+        genericBundler1 = new GenericBundler1(address(hub), address(morpho), address(new WETH()));
+        bundler = genericBundler1;
 
         irm = new IrmMock();
 

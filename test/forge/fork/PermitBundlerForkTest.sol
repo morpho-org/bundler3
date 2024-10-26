@@ -138,9 +138,9 @@ contract PermitBundlerForkTest is ForkTest {
 
         address user = vm.addr(privateKey);
 
-        bundle.push(_permit(permitToken, privateKey, address(chainAgnosticBundler1), amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, address(genericBundler1), amount, deadline, false));
 
-        bundler = chainAgnosticBundler1;
+        bundler = genericBundler1;
 
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
