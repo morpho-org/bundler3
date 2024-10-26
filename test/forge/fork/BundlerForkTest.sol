@@ -20,7 +20,7 @@ contract EthereumBundlerForkTest is ForkTest {
     {
         vm.assume(onBehalf != address(0));
         vm.assume(onBehalf != address(morpho));
-        vm.assume(onBehalf != address(bundler));
+        vm.assume(onBehalf != address(genericBundler1));
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         privateKey = bound(privateKey, 1, type(uint160).max);
@@ -68,12 +68,12 @@ contract EthereumBundlerForkTest is ForkTest {
         }
     }
 
-    function testProtectedFailure(address initiator, address _bundler, address caller) public {
+    function testProtectedFailure(address initiator, address bundler, address caller) public {
         vm.assume(initiator != address(0));
         vm.assume(caller != initiator);
-        vm.assume(caller != _bundler);
+        vm.assume(caller != bundler);
 
-        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (_bundler)));
+        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
@@ -81,14 +81,14 @@ contract EthereumBundlerForkTest is ForkTest {
         hub.multicallFromBundler(new Call[](0));
     }
 
-    function testProtectedSuccessAsBundler(address initiator, address _bundler) public {
+    function testProtectedSuccessAsBundler(address initiator, address bundler) public {
         vm.assume(initiator != address(0));
-        vm.assume(initiator != _bundler);
+        vm.assume(initiator != bundler);
 
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (_bundler)));
+        _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
 
-        vm.prank(_bundler);
+        vm.prank(bundler);
         hub.multicallFromBundler(new Call[](0));
     }
 }

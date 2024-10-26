@@ -29,27 +29,27 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         vm.startPrank(USER);
         loanToken.approve(address(morpho), type(uint256).max);
         collateralToken.approve(address(morpho), type(uint256).max);
-        loanToken.approve(address(bundler), type(uint256).max);
-        collateralToken.approve(address(bundler), type(uint256).max);
+        loanToken.approve(address(genericBundler1), type(uint256).max);
+        collateralToken.approve(address(genericBundler1), type(uint256).max);
         vm.stopPrank();
 
         vm.prank(LIQUIDATOR);
-        loanToken.approve(address(bundler), type(uint256).max);
+        loanToken.approve(address(genericBundler1), type(uint256).max);
     }
 
     function approveERC20ToMorphoAndBundler(address user) internal {
         vm.startPrank(user);
         loanToken.approve(address(morpho), type(uint256).max);
         collateralToken.approve(address(morpho), type(uint256).max);
-        loanToken.approve(address(bundler), type(uint256).max);
-        collateralToken.approve(address(bundler), type(uint256).max);
+        loanToken.approve(address(genericBundler1), type(uint256).max);
+        collateralToken.approve(address(genericBundler1), type(uint256).max);
         vm.stopPrank();
     }
 
     function assumeOnBehalf(address onBehalf) internal view {
         vm.assume(onBehalf != address(0));
         vm.assume(onBehalf != address(morpho));
-        vm.assume(onBehalf != address(bundler));
+        vm.assume(onBehalf != address(genericBundler1));
     }
 
     function testSetAuthorizationWithSig(uint256 privateKey, uint32 deadline) public {
@@ -62,7 +62,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
         hub.multicall(bundle);
 
-        assertTrue(morpho.isAuthorized(user, address(bundler)), "isAuthorized(user, bundler)");
+        assertTrue(morpho.isAuthorized(user, address(genericBundler1)), "isAuthorized(user, genericBundler1)");
     }
 
     function testSetAuthorizationWithSigRevert(uint256 privateKey, uint32 deadline) public {
@@ -80,7 +80,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     function testSupplyOnBehalfBundlerAddress(uint256 assets) public {
         assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_morphoSupply(marketParams, assets, 0, 0, address(bundler)));
+        bundle.push(_morphoSupply(marketParams, assets, 0, 0, address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
         hub.multicall(bundle);
@@ -89,7 +89,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     function testSupplyCollateralOnBehalfBundlerAddress(uint256 assets) public {
         assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_morphoSupplyCollateral(marketParams, assets, address(bundler)));
+        bundle.push(_morphoSupplyCollateral(marketParams, assets, address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
         hub.multicall(bundle);
@@ -98,7 +98,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     function testRepayOnBehalfBundlerAddress(uint256 assets) public {
         assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_morphoRepay(marketParams, assets, 0, 0, address(bundler)));
+        bundle.push(_morphoRepay(marketParams, assets, 0, 0, address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
         hub.multicall(bundle);
@@ -223,7 +223,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
     function testWithdrawUnauthorized(uint256 withdrawnShares) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        MorphoBundler(address(bundler)).morphoWithdraw(marketParams, 0, withdrawnShares, 0, RECEIVER);
+        genericBundler1.morphoWithdraw(marketParams, 0, withdrawnShares, 0, RECEIVER);
     }
 
     function testWithdraw(uint256 privateKey, uint256 amount, uint256 withdrawnShares) public {
@@ -248,7 +248,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         vm.stopPrank();
 
         assertEq(loanToken.balanceOf(user), expectedWithdrawnAmount, "loan.balanceOf(user)");
-        assertEq(loanToken.balanceOf(address(bundler)), 0, "loan.balanceOf(address(bundler))");
+        assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "loan.balanceOf(address(genericBundler1)");
         assertEq(
             loanToken.balanceOf(address(morpho)), amount - expectedWithdrawnAmount, "loan.balanceOf(address(morpho))"
         );
@@ -260,7 +260,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
     function testBorrowUnauthorized(uint256 borrowedAssets) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        MorphoBundler(address(bundler)).morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
+        genericBundler1.morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
     }
 
     function _testSupplyCollateralBorrow(address user, uint256 amount, uint256 collateralAmount) internal view {
@@ -334,7 +334,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
     function testWithdrawCollateralUnauthorized(uint256 collateralAmount) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        MorphoBundler(address(bundler)).morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER);
+        genericBundler1.morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER);
     }
 
     function _testRepayWithdrawCollateral(address user, uint256 collateralAmount) internal view {
@@ -501,10 +501,12 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         );
         assertEq(collateralToken.balanceOf(address(morpho)), vars.expectedCollateral, "Morpho's collateral balance");
         assertEq(
-            loanToken.balanceOf(address(bundler)), vars.expectedBundlerLoanBalance, unicode"Bundler's loan balance"
+            loanToken.balanceOf(address(genericBundler1)),
+            vars.expectedBundlerLoanBalance,
+            unicode"Bundler's loan balance"
         );
         assertEq(
-            collateralToken.balanceOf(address(bundler)),
+            collateralToken.balanceOf(address(genericBundler1)),
             vars.expectedBundlerCollateralBalance,
             "Bundler's collateral balance"
         );
@@ -544,7 +546,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         uint256 maxAmount = UtilsLib.min(supplyBalance, availableLiquidity);
         amount = bound(amount % maxAmount, 1, maxAmount);
 
-        bundle.push(_morphoWithdraw(marketParams, amount, 0, type(uint256).max, address(bundler)));
+        bundle.push(_morphoWithdraw(marketParams, amount, 0, type(uint256).max, address(genericBundler1)));
         vars.expectedBundlerLoanBalance += amount;
 
         uint256 expectedDecreasedSupplyShares = amount.toSharesUp(vars.expectedTotalSupply, vars.expectedSupplyShares);
@@ -569,7 +571,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         if (maxShares < MIN_AMOUNT) return;
         shares = bound(shares % maxShares, MIN_AMOUNT, maxShares);
 
-        bundle.push(_morphoBorrow(marketParams, 0, shares, 0, address(bundler)));
+        bundle.push(_morphoBorrow(marketParams, 0, shares, 0, address(genericBundler1)));
         uint256 expectedBorrowedAmount = shares.toAssetsDown(vars.expectedTotalBorrow, vars.expectedBorrowShares);
         vars.expectedBundlerLoanBalance += expectedBorrowedAmount;
 
@@ -606,7 +608,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
         amount = bound(amount % withdrawableCollateral, 1, withdrawableCollateral);
 
-        bundle.push(_morphoWithdrawCollateral(marketParams, amount, address(bundler)));
+        bundle.push(_morphoWithdrawCollateral(marketParams, amount, address(genericBundler1)));
         vars.expectedBundlerCollateralBalance += amount;
 
         vars.expectedCollateral -= amount;
@@ -637,7 +639,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
-        callbackBundle.push(_erc20Transfer(address(loanToken), USER, amount));
+        callbackBundle.push(_erc20Transfer(address(loanToken), USER, amount, genericBundler1));
         callbackBundle.push(_erc20TransferFrom(address(loanToken), amount));
 
         bundle.push(_morphoFlashLoan(address(loanToken), amount));
@@ -646,7 +648,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(USER), 0, "User's loan token balance");
-        assertEq(loanToken.balanceOf(address(bundler)), 0, "Bundler's loan token balance");
+        assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "Bundler's loan token balance");
         assertEq(loanToken.balanceOf(address(morpho)), amount, "Morpho's loan token balance");
     }
 

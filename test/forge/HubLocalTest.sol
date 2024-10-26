@@ -9,22 +9,18 @@ import {BundlerMock, Initiator} from "../../src/mocks/BundlerMock.sol";
 import {CURRENT_BUNDLER_SLOT} from "../../src/libraries/ConstantsLib.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
-contract ConcreteBaseBundler is BaseBundler {
-    constructor(address hub) BaseBundler(hub) {}
-}
-
 contract HubLocalTest is LocalTest {
     BundlerMock bundlerMock;
     Call[] callbackBundle2;
 
     function setUp() public override {
         super.setUp();
-        bundler = new BundlerMock(address(hub));
+        bundlerMock = new BundlerMock(address(hub));
     }
 
     function testHubZeroAddress() public {
         vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
-        new ConcreteBaseBundler(address(0));
+        new BaseBundler(address(0));
     }
 
     function testMulticallEmpty() public {
@@ -37,7 +33,7 @@ contract HubLocalTest is LocalTest {
 
     function testAlreadyInitiated(address initiator) public {
         vm.assume(initiator != address(0));
-        bundle.push(_call(bundler, abi.encodeCall(BundlerMock.callbackHubWithMulticall, ())));
+        bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.callbackHubWithMulticall, ())));
 
         vm.expectRevert(bytes(ErrorsLib.ALREADY_INITIATED));
         vm.prank(initiator);
@@ -47,9 +43,9 @@ contract HubLocalTest is LocalTest {
     function testPassthroughValue(address initiator, uint128 value) public {
         vm.assume(initiator != address(0));
 
-        bundle.push(_call(bundler, abi.encodeCall(BundlerMock.isProtected, ()), value));
+        bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.isProtected, ()), value));
 
-        vm.expectCall(address(bundler), value, bytes.concat(BundlerMock.isProtected.selector));
+        vm.expectCall(address(bundlerMock), value, bytes.concat(BundlerMock.isProtected.selector));
 
         vm.deal(initiator, value);
         vm.prank(initiator);
@@ -58,16 +54,16 @@ contract HubLocalTest is LocalTest {
 
     function testNestedCallbackAndCurrentBundlerValue(address initiator) public {
         vm.assume(initiator != address(0));
-        BundlerMock bundler2 = new BundlerMock(address(hub));
-        BundlerMock bundler3 = new BundlerMock(address(hub));
+        BundlerMock bundlerMock2 = new BundlerMock(address(hub));
+        BundlerMock bundlerMock3 = new BundlerMock(address(hub));
 
-        callbackBundle2.push(_call(bundler2, abi.encodeCall(BundlerMock.isProtected, ())));
+        callbackBundle2.push(_call(bundlerMock2, abi.encodeCall(BundlerMock.isProtected, ())));
 
-        callbackBundle.push(_call(bundler2, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle2))));
+        callbackBundle.push(_call(bundlerMock2, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle2))));
 
-        callbackBundle.push(_call(bundler3, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle2))));
+        callbackBundle.push(_call(bundlerMock3, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle2))));
 
-        bundle.push(_call(bundler, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle))));
+        bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle))));
 
         vm.prank(initiator);
 
@@ -81,14 +77,14 @@ contract HubLocalTest is LocalTest {
             assertEq(entries[i].topics[0], keccak256("CurrentBundler(address)"));
         }
 
-        assertEq(entries[0].data, abi.encode(bundler));
-        assertEq(entries[1].data, abi.encode(bundler2));
-        assertEq(entries[2].data, abi.encode(bundler2));
-        assertEq(entries[3].data, abi.encode(bundler2));
-        assertEq(entries[4].data, abi.encode(bundler3));
-        assertEq(entries[5].data, abi.encode(bundler2));
-        assertEq(entries[6].data, abi.encode(bundler3));
-        assertEq(entries[7].data, abi.encode(bundler));
+        assertEq(entries[0].data, abi.encode(bundlerMock));
+        assertEq(entries[1].data, abi.encode(bundlerMock2));
+        assertEq(entries[2].data, abi.encode(bundlerMock2));
+        assertEq(entries[3].data, abi.encode(bundlerMock2));
+        assertEq(entries[4].data, abi.encode(bundlerMock3));
+        assertEq(entries[5].data, abi.encode(bundlerMock2));
+        assertEq(entries[6].data, abi.encode(bundlerMock3));
+        assertEq(entries[7].data, abi.encode(bundlerMock));
     }
 
     function testCurrentBundlerSlot() public pure {
@@ -98,9 +94,9 @@ contract HubLocalTest is LocalTest {
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
         vm.assume(initiator != address(0));
 
-        bundle.push(_call(bundler, abi.encodeCall(BundlerMock.emitInitiator, ())));
+        bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
 
-        vm.expectEmit(true, true, false, true, address(bundler));
+        vm.expectEmit(true, true, false, true, address(bundlerMock));
         emit Initiator(initiator);
 
         vm.prank(initiator);
@@ -108,7 +104,7 @@ contract HubLocalTest is LocalTest {
     }
 
     function testMulticallShouldPassRevertData(string memory revertReason) public {
-        bundle.push(_call(bundler, abi.encodeCall(BundlerMock.doRevert, (revertReason))));
+        bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));
         hub.multicall(bundle);
     }

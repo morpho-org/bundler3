@@ -18,7 +18,6 @@ bytes32 constant DAI_DOMAIN_SEPARATOR = 0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f
 
 contract PermitBundlerForkTest is ForkTest {
     ERC20PermitMock internal permitToken;
-    EthereumBundler1 ethereumBundler1;
 
     function setUp() public override {
         super.setUp();
@@ -42,7 +41,7 @@ contract PermitBundlerForkTest is ForkTest {
         vm.prank(user);
         hub.multicall(bundle);
 
-        assertEq(ERC20(DAI).allowance(user, spender), type(uint256).max, "allowance(user, bundler)");
+        assertEq(ERC20(DAI).allowance(user, spender), type(uint256).max, "allowance(user, spender)");
     }
 
     function testPermitDaiUnauthorized(address receiver) public onlyEthereum {
@@ -104,7 +103,7 @@ contract PermitBundlerForkTest is ForkTest {
         vm.prank(user);
         hub.multicall(bundle);
 
-        assertEq(permitToken.allowance(user, spender), amount, "allowance(user, bundler)");
+        assertEq(permitToken.allowance(user, spender), amount, "allowance(user, spender)");
     }
 
     function testPermitUnauthorized(uint256 amount, address spender) public {
@@ -112,7 +111,7 @@ contract PermitBundlerForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        PermitBundler(address(bundler)).permit(address(USDC), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
+        genericBundler1.permit(address(USDC), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 
     function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
@@ -140,8 +139,6 @@ contract PermitBundlerForkTest is ForkTest {
 
         bundle.push(_permit(permitToken, privateKey, address(genericBundler1), amount, deadline, false));
 
-        bundler = genericBundler1;
-
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
         permitToken.setBalance(user, amount);
@@ -149,7 +146,7 @@ contract PermitBundlerForkTest is ForkTest {
         vm.prank(user);
         hub.multicall(bundle);
 
-        assertEq(permitToken.balanceOf(address(bundler)), amount, "balanceOf(bundler)");
+        assertEq(permitToken.balanceOf(address(genericBundler1)), amount, "balanceOf(genericBundler1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
     }
 
@@ -171,6 +168,6 @@ contract PermitBundlerForkTest is ForkTest {
         bytes memory callData =
             abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
 
-        return _call(bundler, callData);
+        return _call(genericBundler1, callData);
     }
 }
