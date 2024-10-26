@@ -19,7 +19,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         super.setUp();
 
-        EthereumBundler1 ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
+        EthereumBundler1 ethereumBundler1 = new EthereumBundler1(address(hub));
         bundler = ethereumBundler1;
     }
 

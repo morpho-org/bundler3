@@ -25,7 +25,7 @@ contract PermitBundlerForkTest is ForkTest {
 
         permitToken = new ERC20PermitMock("Permit Token", "PT");
         if (block.chainid == 1) {
-            ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
+            ethereumBundler1 = new EthereumBundler1(address(hub));
         }
     }
 
@@ -47,7 +47,7 @@ contract PermitBundlerForkTest is ForkTest {
 
     function testPermitDaiUnauthorized(address receiver) public onlyEthereum {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        EthereumBundler1(address(bundler)).permitDai(receiver, 0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
+        ethereumBundler1.permitDai(receiver, 0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
     }
 
     function testPermitDaiRevert(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {

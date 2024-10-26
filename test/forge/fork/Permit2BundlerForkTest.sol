@@ -66,6 +66,6 @@ contract Permit2BundlerForkTest is ForkTest {
 
     function testTransferFrom2Unauthorized() public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        Permit2Bundler(address(bundler)).transferFrom2(address(0), 0, address(0));
+        Permit2Bundler(address(bundler)).transferFrom2(address(0), address(0), 0);
     }
 }

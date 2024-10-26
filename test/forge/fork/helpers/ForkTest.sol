@@ -155,7 +155,7 @@ abstract contract ForkTest is CommonTest, Configured {
     }
 
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, amount, address(bundler))));
+        return _call(bundler, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, address(bundler), amount)));
     }
 
     /* wstETH ACTIONS */
