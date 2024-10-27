@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
+import "forge-std/console.sol";
+
 import {IWstEth} from "./interfaces/IWstEth.sol";
 import {IStEth} from "./interfaces/IStEth.sol";
 
@@ -53,7 +55,8 @@ abstract contract StEthBundler is BaseBundler {
 
         uint256 shares = IStEth(ST_ETH).submit{value: amount}(referral);
         require(shares * initialAmount >= minShares * amount, ErrorsLib.SLIPPAGE_EXCEEDED);
-        BundlerLib.erc20Transfer(ST_ETH, receiver, shares);
+
+        BundlerLib.erc20Transfer(ST_ETH, receiver, ERC20(ST_ETH).balanceOf(address(this)));
     }
 
     /// @notice Wraps the given `amount` of stETH to wstETH.

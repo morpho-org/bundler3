@@ -15,15 +15,15 @@ contract EthereumStEthBundlerForkTest is ForkTest {
     using SafeTransferLib for ERC20;
 
     function setUp() public override {
-        if (block.chainid != 1) return;
-
         super.setUp();
+
+        if (block.chainid != 1) return;
 
         ethereumBundler1 = new EthereumBundler1(address(hub));
     }
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
-        bundle.push(_call(ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (0, 0, address(0), receiver))));
+        bundle.push(_stakeEth(0, 0, address(0), receiver));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
@@ -35,9 +35,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(
-            _call(ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), RECEIVER)))
-        );
+        bundle.push(_stakeEth(amount, shares - 2, address(0), RECEIVER));
 
         deal(USER, amount);
 
@@ -57,9 +55,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(
-            _call(ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), USER)))
-        );
+        bundle.push(_stakeEth(amount, shares - 2, address(0), USER, amount / 2));
 
         deal(USER, amount / 2);
 
@@ -75,12 +71,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(
-            _call(
-                ethereumBundler1,
-                abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), address(ethereumBundler1)))
-            )
-        );
+        bundle.push(_stakeEth(amount, shares - 2, address(0), address(ethereumBundler1)));
 
         vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
 
@@ -109,7 +100,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         amount = ERC20(ST_ETH).balanceOf(user);
 
         bundle.push(_approve2(privateKey, ST_ETH, amount, 0, false));
-        bundle.push(_transferFrom2(ST_ETH, amount));
+        bundle.push(_transferFrom2(ST_ETH, address(ethereumBundler1), amount));
         bundle.push(_wrapStEth(amount, RECEIVER));
 
         uint256 wstEthExpectedAmount = IStEth(ST_ETH).getSharesByPooledEth(ERC20(ST_ETH).balanceOf(user));
@@ -145,7 +136,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_approve2(privateKey, WST_ETH, amount, 0, false));
-        bundle.push(_transferFrom2(WST_ETH, amount));
+        bundle.push(_transferFrom2(WST_ETH, address(ethereumBundler1), amount));
         bundle.push(_unwrapStEth(amount, RECEIVER));
 
         deal(WST_ETH, user, amount);

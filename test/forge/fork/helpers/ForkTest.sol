@@ -164,8 +164,30 @@ abstract contract ForkTest is CommonTest, Configured {
     }
 
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
+        return _transferFrom2(asset, address(genericBundler1), amount);
+    }
+
+    function _transferFrom2(address asset, address receiver, uint256 amount) internal view returns (Call memory) {
+        return _call(genericBundler1, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, receiver, amount)));
+    }
+
+    /* STAKE ACTIONS */
+
+    function _stakeEth(uint256 amount, uint256 shares, address referral, address receiver)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _stakeEth(amount, shares, referral, receiver, amount);
+    }
+
+    function _stakeEth(uint256 amount, uint256 shares, address referral, address receiver, uint256 callValue)
+        internal
+        view
+        returns (Call memory)
+    {
         return _call(
-            genericBundler1, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, address(genericBundler1), amount))
+            ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (amount, shares, referral, receiver)), callValue
         );
     }
 
