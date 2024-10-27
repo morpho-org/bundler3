@@ -7,6 +7,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title Hub
 /// @author Morpho Labs
@@ -79,12 +80,7 @@ contract Hub is IHub {
             setCurrentBundler(previousBundler);
 
             if (!success) {
-                uint256 length = returnData.length;
-                require(length > 0, ErrorsLib.CALL_FAILED);
-
-                assembly ("memory-safe") {
-                    revert(add(32, returnData), length)
-                }
+                BundlerLib.lowLevelRevert(returnData);
             }
         }
     }

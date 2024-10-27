@@ -43,7 +43,7 @@ contract ParaswapBundlerForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(bundler), type(uint256).max);
+        ERC20(USDC).approve(address(genericBundler1), type(uint256).max);
         hub.multicall(bundle);
         vm.stopPrank();
 
@@ -74,7 +74,7 @@ contract ParaswapBundlerForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(bundler), type(uint256).max);
+        ERC20(USDC).approve(address(genericBundler1), type(uint256).max);
         hub.multicall(bundle);
         vm.stopPrank();
 
@@ -114,7 +114,7 @@ contract ParaswapBundlerForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(bundler), type(uint256).max);
+        ERC20(USDC).approve(address(genericBundler1), type(uint256).max);
         hub.multicall(bundle);
         vm.stopPrank();
 
@@ -165,7 +165,7 @@ contract ParaswapBundlerForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(bundler), type(uint256).max);
+        ERC20(USDC).approve(address(genericBundler1), type(uint256).max);
         hub.multicall(bundle);
         vm.stopPrank();
 

@@ -22,11 +22,8 @@ library BundlerLib {
     /// @dev Bubbles up the revert reason / custom error encoded in `returnData`.
     /// @dev Assumes `returnData` is the return data of any kind of failing CALL to a contract.
     function lowLevelRevert(bytes memory returnData) internal pure {
-        uint256 length = returnData.length;
-        require(length > 0, ErrorsLib.CALL_FAILED);
-
         assembly ("memory-safe") {
-            revert(add(32, returnData), length)
+            revert(add(32, returnData), mload(returnData))
         }
     }
 

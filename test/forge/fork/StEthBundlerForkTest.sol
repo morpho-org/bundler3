@@ -19,12 +19,11 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         super.setUp();
 
-        EthereumBundler1 ethereumBundler1 = new EthereumBundler1(address(hub), MainnetLib.WST_ETH);
-        bundler = ethereumBundler1;
+        ethereumBundler1 = new EthereumBundler1(address(hub));
     }
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
-        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (0, 0, address(0), receiver))));
+        bundle.push(_call(ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (0, 0, address(0), receiver))));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         vm.prank(USER);
@@ -36,7 +35,9 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), RECEIVER))));
+        bundle.push(
+            _call(ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), RECEIVER)))
+        );
 
         deal(USER, amount);
 
@@ -45,9 +46,9 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         assertEq(USER.balance, 0, "USER.balance");
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
-        assertEq(address(bundler).balance, 0, "bundler.balance");
+        assertEq(address(ethereumBundler1).balance, 0, "ethereumBundler1.balance");
         assertEq(ERC20(ST_ETH).balanceOf(USER), 0, "balanceOf(USER)");
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(bundler)), 0, 1, "balanceOf(bundler)");
+        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumBundler1)), 0, 1, "balanceOf(ethereumBundler1)");
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), amount, 3, "balanceOf(RECEIVER)");
     }
 
@@ -56,7 +57,9 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_call(bundler, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), USER))));
+        bundle.push(
+            _call(ethereumBundler1, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), USER)))
+        );
 
         deal(USER, amount / 2);
 
@@ -73,7 +76,10 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
         bundle.push(
-            _call(bundler, abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), address(bundler))))
+            _call(
+                ethereumBundler1,
+                abi.encodeCall(StEthBundler.stakeEth, (amount, shares - 2, address(0), address(ethereumBundler1)))
+            )
         );
 
         vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
@@ -114,11 +120,13 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         hub.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(ERC20(WST_ETH).balanceOf(address(bundler)), 0, "wstEth.balanceOf(bundler)");
+        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumBundler1)), 0, "wstEth.balanceOf(ethereumBundler1)");
         assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertApproxEqAbs(ERC20(WST_ETH).balanceOf(RECEIVER), wstEthExpectedAmount, 1, "wstEth.balanceOf(RECEIVER)");
 
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(bundler)), 0, 1, "wstEth.balanceOf(bundler)");
+        assertApproxEqAbs(
+            ERC20(ST_ETH).balanceOf(address(ethereumBundler1)), 0, 1, "wstEth.balanceOf(ethereumBundler1)"
+        );
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
         assertEq(ERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
     }
@@ -150,11 +158,11 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         uint256 expectedUnwrappedAmount = IWstEth(WST_ETH).getStETHByWstETH(amount);
 
-        assertEq(ERC20(WST_ETH).balanceOf(address(bundler)), 0, "wstEth.balanceOf(bundler)");
+        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumBundler1)), 0, "wstEth.balanceOf(ethereumBundler1)");
         assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertEq(ERC20(WST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
 
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(bundler)), 0, 1, "stEth.balanceOf(bundler)");
+        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumBundler1)), 0, 1, "stEth.balanceOf(ethereumBundler1)");
         assertEq(ERC20(ST_ETH).balanceOf(user), 0, "stEth.balanceOf(user)");
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
     }

@@ -15,7 +15,7 @@ import {ERC20WrapperBundler} from "../ERC20WrapperBundler.sol";
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic bundler contract n°1.
-contract ChainAgnosticBundler1 is
+contract GenericBundler1 is
     TransferBundler,
     PermitBundler,
     Permit2Bundler,

@@ -11,7 +11,7 @@ import {BundlerLib} from "./libraries/BundlerLib.sol";
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Morpho Bundlers.
-abstract contract BaseBundler {
+contract BaseBundler {
     address public immutable HUB;
 
     constructor(address hub) {

@@ -61,7 +61,7 @@ contract UrdBundlerLocalTest is LocalTest {
 
         bytes32[] memory proof;
 
-        bundle.push(_urdClaim(distributor, address(bundler), address(loanToken), claimable, proof, false));
+        bundle.push(_urdClaim(distributor, address(genericBundler1), address(loanToken), claimable, proof, false));
 
         vm.prank(USER);
         vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));

@@ -5,11 +5,12 @@ import { BundlerAction } from "pkg";
 import {
   ERC20Mock,
   ERC4626Mock,
-  EthereumBundlerV2,
+  Hub,
+  GenericBundler1,
+  EthereumBundler1,
   MorphoMock,
   OracleMock,
   AdaptiveCurveIrm,
-  EthereumBundlerV2__factory,
 } from "types";
 import { MarketParamsStruct } from "types/lib/morpho-blue/src/Morpho";
 
@@ -19,11 +20,14 @@ import {
   latest,
   setNextBlockTimestamp,
 } from "@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time";
+import { chain } from "lodash";
 
 interface TypedDataConfig {
   domain: TypedDataDomain;
   types: Record<string, TypedDataField[]>;
 }
+
+const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 const permit2Address = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
@@ -134,7 +138,7 @@ const randomForwardTimestamp = async () => {
   await forwardTimestamp(elapsed);
 };
 
-describe("EthereumBundler", () => {
+describe("Bundlers", () => {
   let admin: SignerWithAddress;
   let suppliers: SignerWithAddress[];
   let borrowers: SignerWithAddress[];
@@ -150,8 +154,16 @@ describe("EthereumBundler", () => {
   let erc4626: ERC4626Mock;
   let erc4626Address: string;
 
-  let bundler: EthereumBundlerV2;
-  let bundlerAddress: string;
+  let hub: Hub;
+  let hubAddress: string;
+
+  let genericBundler1: GenericBundler1;
+  let genericBundler1Address: string;
+
+  let ethereumBundler1: EthereumBundler1;
+  let ethereumBundler1Address: string;
+
+  let bundlerAction: BundlerAction;
 
   let marketParams: MarketParamsStruct;
   let id: Buffer;
@@ -220,11 +232,19 @@ describe("EthereumBundler", () => {
     await morpho.enableLltv(marketParams.lltv);
     await morpho.createMarket(marketParams);
 
-    const EthereumBundlerV2Factory = await hre.ethers.getContractFactory("EthereumBundlerV2", admin);
+    const HubFactory = await hre.ethers.getContractFactory("Hub", admin);
+    hub = await HubFactory.deploy();
+    hubAddress = await hub.getAddress();
 
-    bundler = await EthereumBundlerV2Factory.deploy(morphoAddress);
+    const GenericBundler1Factory = await hre.ethers.getContractFactory("GenericBundler1", admin);
+    genericBundler1 = await GenericBundler1Factory.deploy(hubAddress,morphoAddress,wethAddress);
+    genericBundler1Address = await genericBundler1.getAddress();
 
-    bundlerAddress = await bundler.getAddress();
+    const EthereumBundler1Factory = await hre.ethers.getContractFactory("EthereumBundler1", admin);
+    ethereumBundler1 = await EthereumBundler1Factory.deploy(hubAddress);
+    ethereumBundler1Address = await ethereumBundler1.getAddress();
+
+    bundlerAction = new BundlerAction(genericBundler1Address, ethereumBundler1Address);
 
     for (const user of users) {
       await loan.setBalance(user.address, initBalance);
@@ -240,7 +260,9 @@ describe("EthereumBundler", () => {
     hre.tracer.nameTags[loanAddress] = "Loan";
     hre.tracer.nameTags[oracleAddress] = "Oracle";
     hre.tracer.nameTags[irmAddress] = "AdaptiveCurveIrm";
-    hre.tracer.nameTags[bundlerAddress] = "EthereumBundlerV2";
+    hre.tracer.nameTags[hubAddress] = "Hub";
+    hre.tracer.nameTags[genericBundler1Address] = "GenericBundler1";
+    hre.tracer.nameTags[ethereumBundler1Address] = "EthereumBundler1";
   });
 
   it("should simulate gas cost [morpho-supplyCollateral+borrow]", async () => {
@@ -257,7 +279,7 @@ describe("EthereumBundler", () => {
 
       const authorization = {
         authorizer: borrower.address,
-        authorized: bundlerAddress,
+        authorized: genericBundler1Address,
         isAuthorized: true,
         nonce: 0n,
         deadline: MAX_UINT48,
@@ -272,7 +294,7 @@ describe("EthereumBundler", () => {
           nonce: 0n,
           expiration: MAX_UINT48,
         },
-        spender: bundlerAddress,
+        spender: genericBundler1Address,
         sigDeadline: MAX_UINT48,
       };
 
@@ -280,10 +302,10 @@ describe("EthereumBundler", () => {
 
       await randomForwardTimestamp();
 
-      await bundler
+      await hub
         .connect(borrower)
         .multicall([
-          BundlerAction.morphoSetAuthorizationWithSig(
+          bundlerAction.morphoSetAuthorizationWithSig(
             authorization,
             Signature.from(
               await borrower.signTypedData(
@@ -294,14 +316,14 @@ describe("EthereumBundler", () => {
             ),
             false,
           ),
-          BundlerAction.approve2(
+          bundlerAction.approve2(
             approve2,
             Signature.from(await borrower.signTypedData(permit2Config.domain, permit2Config.types, approve2)),
             false,
           ),
-          BundlerAction.transferFrom2(collateralAddress, assets),
-          BundlerAction.morphoSupplyCollateral(marketParams, assets, borrower.address, []),
-          BundlerAction.morphoBorrow(marketParams, assets / 2n, 0, borrower.address, borrower.address),
+          bundlerAction.transferFrom2(collateralAddress, genericBundler1Address, assets),
+          bundlerAction.morphoSupplyCollateral(marketParams, assets, borrower.address, []),
+          bundlerAction.morphoBorrow(marketParams, assets / 2n, 0, borrower.address, borrower.address),
         ]);
     }
   });
@@ -322,7 +344,7 @@ describe("EthereumBundler", () => {
           expiration: MAX_UINT48,
           nonce: 0n,
         },
-        spender: bundlerAddress,
+        spender: genericBundler1Address,
         sigDeadline: MAX_UINT48,
       };
 
@@ -330,27 +352,17 @@ describe("EthereumBundler", () => {
 
       await randomForwardTimestamp();
 
-      await bundler
+      await hub
         .connect(supplier)
         .multicall([
-          BundlerAction.approve2(
+          bundlerAction.approve2(
             approve2,
             Signature.from(await supplier.signTypedData(permit2Config.domain, permit2Config.types, approve2)),
             false,
           ),
-          BundlerAction.transferFrom2(collateralAddress, assets),
-          BundlerAction.erc4626Deposit(erc4626Address, assets, 0, supplier.address),
+          bundlerAction.transferFrom2(collateralAddress, genericBundler1Address, assets),
+          bundlerAction.erc4626Deposit(erc4626Address, assets, 0, supplier.address),
         ]);
     }
-  });
-
-  it("should have all batched functions payable", async () => {
-    EthereumBundlerV2__factory.createInterface().forEachFunction((func) => {
-      if (func.stateMutability === "view" || func.stateMutability === "pure") return;
-
-      const shouldPayable = !func.name.startsWith("onMorpho");
-
-      expect(func.payable).to.equal(shouldPayable);
-    });
   });
 });

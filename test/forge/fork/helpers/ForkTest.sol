@@ -10,6 +10,7 @@ import {Permit2Bundler} from "../../../../src/Permit2Bundler.sol";
 
 import {WNativeBundler} from "../../../../src/WNativeBundler.sol";
 import {StEthBundler} from "../../../../src/StEthBundler.sol";
+import {EthereumBundler1} from "../../../../src/ethereum/EthereumBundler1.sol";
 
 import "../../../../config/Configured.sol";
 import "../../helpers/CommonTest.sol";
@@ -17,6 +18,8 @@ import "../../helpers/CommonTest.sol";
 abstract contract ForkTest is CommonTest, Configured {
     using ConfigLib for Config;
     using SafeTransferLib for ERC20;
+
+    EthereumBundler1 internal ethereumBundler1;
 
     uint256 internal forkId;
 
@@ -35,8 +38,7 @@ abstract contract ForkTest is CommonTest, Configured {
 
         super.setUp();
 
-        chainAgnosticBundler1 = new ChainAgnosticBundler1(address(hub), address(morpho), address(WETH));
-        bundler = chainAgnosticBundler1;
+        genericBundler1 = new GenericBundler1(address(hub), address(morpho), address(WETH));
 
         paraswapBundler = new ParaswapBundler(address(hub), address(morpho), address(AUGUSTUS_REGISTRY));
 
@@ -60,7 +62,7 @@ abstract contract ForkTest is CommonTest, Configured {
         }
 
         vm.prank(USER);
-        morpho.setAuthorization(address(bundler), true);
+        morpho.setAuthorization(address(genericBundler1), true);
     }
 
     function _fork() internal virtual {
@@ -147,7 +149,7 @@ abstract contract ForkTest is CommonTest, Configured {
                 expiration: type(uint48).max,
                 nonce: uint48(nonce)
             }),
-            spender: address(bundler),
+            spender: address(genericBundler1),
             sigDeadline: SIGNATURE_DEADLINE
         });
 
@@ -156,31 +158,34 @@ abstract contract ForkTest is CommonTest, Configured {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            bundler, abi.encodeCall(Permit2Bundler.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
+            genericBundler1,
+            abi.encodeCall(Permit2Bundler.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
         );
     }
 
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, amount, address(bundler))));
+        return _call(
+            genericBundler1, abi.encodeCall(Permit2Bundler.transferFrom2, (asset, address(genericBundler1), amount))
+        );
     }
 
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(StEthBundler.wrapStEth, (amount, receiver)));
+        return _call(ethereumBundler1, abi.encodeCall(StEthBundler.wrapStEth, (amount, receiver)));
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(StEthBundler.unwrapStEth, (amount, receiver)));
+        return _call(ethereumBundler1, abi.encodeCall(StEthBundler.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(WNativeBundler.wrapNative, (amount, receiver)), amount);
+        return _call(genericBundler1, abi.encodeCall(WNativeBundler.wrapNative, (amount, receiver)), amount);
     }
 
     function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(bundler, abi.encodeCall(WNativeBundler.unwrapNative, (amount, receiver)));
+        return _call(genericBundler1, abi.encodeCall(WNativeBundler.unwrapNative, (amount, receiver)));
     }
 }

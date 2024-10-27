@@ -10,7 +10,7 @@ contract WNativeBundlerForkTest is ForkTest {
         super.setUp();
 
         vm.prank(USER);
-        ERC20(WETH).approve(address(bundler), type(uint256).max);
+        ERC20(WETH).approve(address(genericBundler1), type(uint256).max);
     }
 
     function testWrapZeroAmount(address receiver) public {
@@ -31,11 +31,11 @@ contract WNativeBundlerForkTest is ForkTest {
         vm.prank(USER);
         hub.multicall{value: amount}(bundle);
 
-        assertEq(ERC20(WETH).balanceOf(address(bundler)), 0, "Bundler's wrapped token balance");
+        assertEq(ERC20(WETH).balanceOf(address(genericBundler1)), 0, "Bundler's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(RECEIVER), amount, "Receiver's wrapped token balance");
 
-        assertEq(address(bundler).balance, 0, "Bundler's native token balance");
+        assertEq(address(genericBundler1).balance, 0, "Bundler's native token balance");
         assertEq(USER.balance, 0, "User's native token balance");
         assertEq(RECEIVER.balance, 0, "Receiver's native token balance");
     }
@@ -59,11 +59,11 @@ contract WNativeBundlerForkTest is ForkTest {
         vm.prank(USER);
         hub.multicall(bundle);
 
-        assertEq(ERC20(WETH).balanceOf(address(bundler)), 0, "Bundler's wrapped token balance");
+        assertEq(ERC20(WETH).balanceOf(address(genericBundler1)), 0, "Bundler's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(RECEIVER), 0, "Receiver's wrapped token balance");
 
-        assertEq(address(bundler).balance, 0, "Bundler's native token balance");
+        assertEq(address(genericBundler1).balance, 0, "Bundler's native token balance");
         assertEq(USER.balance, 0, "User's native token balance");
         assertEq(RECEIVER.balance, amount, "Receiver's native token balance");
     }

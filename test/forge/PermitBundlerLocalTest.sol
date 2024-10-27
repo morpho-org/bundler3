@@ -21,6 +21,7 @@ contract PermitBundlerLocalTest is LocalTest {
     }
 
     function testPermit(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
@@ -33,17 +34,19 @@ contract PermitBundlerLocalTest is LocalTest {
         vm.prank(user);
         hub.multicall(bundle);
 
-        assertEq(permitToken.allowance(user, spender), amount, "allowance(user, bundler)");
+        assertEq(permitToken.allowance(user, spender), amount, "allowance(user, genericBundler1");
     }
 
     function testPermitUnauthorized(uint256 amount, address spender) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        PermitBundler(address(bundler)).permit(address(loanToken), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
+        genericBundler1.permit(address(loanToken), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 
     function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+        vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
         privateKey = bound(privateKey, 1, type(uint160).max);
@@ -65,7 +68,7 @@ contract PermitBundlerLocalTest is LocalTest {
 
         address user = vm.addr(privateKey);
 
-        bundle.push(_permit(permitToken, privateKey, address(bundler), amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, address(genericBundler1), amount, deadline, false));
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
         permitToken.setBalance(user, amount);
@@ -73,7 +76,7 @@ contract PermitBundlerLocalTest is LocalTest {
         vm.prank(user);
         hub.multicall(bundle);
 
-        assertEq(permitToken.balanceOf(address(bundler)), amount, "balanceOf(bundler)");
+        assertEq(permitToken.balanceOf(address(genericBundler1)), amount, "balanceOf(genericBundler1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
     }
 
@@ -94,6 +97,6 @@ contract PermitBundlerLocalTest is LocalTest {
 
         bytes memory callData =
             abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
-        return _call(bundler, callData);
+        return _call(genericBundler1, callData);
     }
 }

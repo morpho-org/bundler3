@@ -15,5 +15,5 @@ import {BaseBundler} from "../BaseBundler.sol";
 contract EthereumBundler1 is EthereumPermitBundler, StEthBundler {
     /* CONSTRUCTOR */
 
-    constructor(address hub, address wstEth) BaseBundler(hub) StEthBundler(wstEth) {}
+    constructor(address hub) BaseBundler(hub) StEthBundler(MainnetLib.WST_ETH) {}
 }

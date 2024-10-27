@@ -17,15 +17,15 @@ contract ERC4626BundlerLocalTest is LocalTest {
         vault = new ERC4626Mock(address(loanToken), "LoanToken Vault", "BV");
 
         vm.startPrank(USER);
-        vault.approve(address(bundler), type(uint256).max);
-        loanToken.approve(address(bundler), type(uint256).max);
+        vault.approve(address(genericBundler1), type(uint256).max);
+        loanToken.approve(address(genericBundler1), type(uint256).max);
         loanToken.approve(address(vault), type(uint256).max);
         vm.stopPrank();
     }
 
     function test4626MintUnauthorized(uint256 shares) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        ERC4626Bundler(address(bundler)).erc4626Mint(address(vault), 0, shares, RECEIVER);
+        genericBundler1.erc4626Mint(address(vault), 0, shares, RECEIVER);
     }
 
     function testErc4626MintZeroAdressVault(uint256 shares) public {
@@ -44,7 +44,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
 
     function test4626DepositUnauthorized(uint256 assets) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        ERC4626Bundler(address(bundler)).erc4626Deposit(address(vault), assets, 0, RECEIVER);
+        genericBundler1.erc4626Deposit(address(vault), assets, 0, RECEIVER);
     }
 
     function testErc4626DepositZeroAdressVault(uint256 assets) public {
@@ -63,18 +63,18 @@ contract ERC4626BundlerLocalTest is LocalTest {
 
     function test4626WithdrawUnauthorized(uint256 assets) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        ERC4626Bundler(address(bundler)).erc4626Withdraw(address(vault), assets, 0, RECEIVER, address(bundler));
+        genericBundler1.erc4626Withdraw(address(vault), assets, 0, RECEIVER, address(genericBundler1));
     }
 
     function testErc4626WithdrawZeroAdressVault(uint256 assets) public {
-        bundle.push(_erc4626Withdraw(address(0), assets, type(uint256).max, RECEIVER, address(bundler)));
+        bundle.push(_erc4626Withdraw(address(0), assets, type(uint256).max, RECEIVER, address(genericBundler1)));
 
         vm.expectRevert();
         hub.multicall(bundle);
     }
 
     function testErc4626WithdrawUnexpectedOwner(uint256 assets, address owner) public {
-        vm.assume(owner != address(this) && owner != address(bundler));
+        vm.assume(owner != address(this) && owner != address(genericBundler1));
 
         bundle.push(_erc4626Withdraw(address(vault), assets, type(uint256).max, RECEIVER, owner));
 
@@ -83,7 +83,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function testErc4626WithdrawZeroAdress(uint256 assets) public {
-        bundle.push(_erc4626Withdraw(address(vault), assets, type(uint256).max, address(0), address(bundler)));
+        bundle.push(_erc4626Withdraw(address(vault), assets, type(uint256).max, address(0), address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
         hub.multicall(bundle);
@@ -91,11 +91,11 @@ contract ERC4626BundlerLocalTest is LocalTest {
 
     function test4626RedeemUnauthorized(uint256 shares) public {
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        ERC4626Bundler(address(bundler)).erc4626Redeem(address(vault), shares, 0, RECEIVER, address(bundler));
+        genericBundler1.erc4626Redeem(address(vault), shares, 0, RECEIVER, address(genericBundler1));
     }
 
     function testErc4626RedeemZeroAdressVault(uint256 shares) public {
-        bundle.push(_erc4626Redeem(address(0), shares, 0, RECEIVER, address(bundler)));
+        bundle.push(_erc4626Redeem(address(0), shares, 0, RECEIVER, address(genericBundler1)));
 
         vm.expectRevert();
         hub.multicall(bundle);
@@ -111,7 +111,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function testErc4626RedeemZeroAdress(uint256 shares) public {
-        bundle.push(_erc4626Redeem(address(vault), shares, 0, address(0), address(bundler)));
+        bundle.push(_erc4626Redeem(address(vault), shares, 0, address(0), address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
         hub.multicall(bundle);
@@ -132,14 +132,14 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function testErc4626WithdrawZero() public {
-        bundle.push(_erc4626Withdraw(address(vault), 0, type(uint256).max, RECEIVER, address(bundler)));
+        bundle.push(_erc4626Withdraw(address(vault), 0, type(uint256).max, RECEIVER, address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         hub.multicall(bundle);
     }
 
     function testErc4626RedeemZero() public {
-        bundle.push(_erc4626Redeem(address(vault), 0, 0, RECEIVER, address(bundler)));
+        bundle.push(_erc4626Redeem(address(vault), 0, 0, RECEIVER, address(genericBundler1)));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_SHARES));
         hub.multicall(bundle);
@@ -176,8 +176,8 @@ contract ERC4626BundlerLocalTest is LocalTest {
         hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), assets, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(bundler)), 0, "loan.balanceOf(bundler)");
-        assertEq(vault.balanceOf(address(bundler)), 0, "vault.balanceOf(USER)");
+        assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "loan.balanceOf(genericBundler1)");
+        assertEq(vault.balanceOf(address(genericBundler1)), 0, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
     }
 
@@ -229,8 +229,8 @@ contract ERC4626BundlerLocalTest is LocalTest {
         hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), assets, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(bundler)), 0, "loan.balanceOf(bundler)");
-        assertEq(vault.balanceOf(address(bundler)), 0, "vault.balanceOf(USER)");
+        assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "loan.balanceOf(genericBundler1)");
+        assertEq(vault.balanceOf(address(genericBundler1)), 0, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
     }
 
@@ -263,13 +263,13 @@ contract ERC4626BundlerLocalTest is LocalTest {
         uint256 redeemed = vault.previewWithdraw(assets);
 
         bundle.push(_erc20TransferFrom(address(vault), redeemed));
-        bundle.push(_erc4626Withdraw(address(vault), assets, redeemed, RECEIVER, address(bundler)));
+        bundle.push(_erc4626Withdraw(address(vault), assets, redeemed, RECEIVER, address(genericBundler1)));
 
         vm.prank(USER);
         hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), deposited - assets, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(bundler)), 0, "loan.balanceOf(bundler)");
+        assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "loan.balanceOf(genericBundler1)");
         assertEq(loanToken.balanceOf(RECEIVER), assets, "loan.balanceOf(RECEIVER)");
         assertEq(vault.balanceOf(USER), minted - redeemed, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(RECEIVER), 0, "vault.balanceOf(RECEIVER)");
@@ -320,13 +320,13 @@ contract ERC4626BundlerLocalTest is LocalTest {
         uint256 withdrawn = vault.previewRedeem(shares);
 
         bundle.push(_erc20TransferFrom(address(vault), shares));
-        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn, RECEIVER, address(bundler)));
+        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn, RECEIVER, address(genericBundler1)));
 
         vm.prank(USER);
         hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), deposited - withdrawn, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(bundler)), 0, "loan.balanceOf(bundler)");
+        assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "loan.balanceOf(genericBundler1)");
         assertEq(loanToken.balanceOf(RECEIVER), withdrawn, "loan.balanceOf(RECEIVER)");
         assertEq(vault.balanceOf(USER), minted - shares, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(RECEIVER), 0, "vault.balanceOf(RECEIVER)");
