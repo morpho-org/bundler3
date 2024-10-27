@@ -15,9 +15,9 @@ contract EthereumStEthBundlerForkTest is ForkTest {
     using SafeTransferLib for ERC20;
 
     function setUp() public override {
-        if (block.chainid != 1) return;
-
         super.setUp();
+
+        if (block.chainid != 1) return;
 
         ethereumBundler1 = new EthereumBundler1(address(hub));
     }
