@@ -80,8 +80,6 @@ abstract contract CommonTest is Test {
 
     FunctionMocker functionMocker;
 
-    MarketParams internal emptyMarketParams;
-
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
         vm.label(address(morpho), "Morpho");
@@ -108,6 +106,8 @@ abstract contract CommonTest is Test {
         // So tests can borrow/withdraw on behalf of USER without pranking it.
         morpho.setAuthorization(address(this), true);
     }
+
+    function emptyMarketParams() internal pure returns (MarketParams memory _emptyMarketParams) {}
 
     function _boundPrivateKey(uint256 privateKey) internal returns (uint256, address) {
         privateKey = bound(privateKey, 1, type(uint160).max);
