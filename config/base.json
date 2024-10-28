@@ -1,7 +1,8 @@
 {
     "chainId": 8453,
     "forkBlockNumbers": {
-        "default": 14000000
+        "default": 14000000,
+        "paraswap": 0
     },
     "markets": [
         {
@@ -30,6 +31,6 @@
     "cDAIv2": "0x0000000000000000000000000000000000000000",
     "cETHv2": "0x0000000000000000000000000000000000000000",
     "cUSDCv2": "0x0000000000000000000000000000000000000000",
-    "AugustustusV6_2": "0x6A000F20005980200259B80c5102003040001068",
-    "AugustustusRegistry": "0x7E31B336F9E8bA52ba3c4ac861b033Ba90900bb3"
+    "AugustusV6_2": "0x6A000F20005980200259B80c5102003040001068",
+    "AugustusRegistry": "0x7E31B336F9E8bA52ba3c4ac861b033Ba90900bb3"
 }

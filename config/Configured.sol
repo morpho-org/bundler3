@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {Config, ConfigMarket, ConfigLib} from "./ConfigLib.sol";
 
 import {StdChains, VmSafe} from "../lib/forge-std/src/StdChains.sol";
+import "forge-std/console.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -72,7 +73,9 @@ abstract contract Configured is StdChains {
         WST_ETH = CONFIG.getAddress("wstETH");
         CB_ETH = CONFIG.getAddress("cbETH");
         S_DAI = CONFIG.getAddress("sDai");
+        console.log("a");
         AUGUSTUS_V6_2 = CONFIG.getAddress("AugustusV6_2");
+        console.log("b");
         AUGUSTUS_REGISTRY = CONFIG.getAddress("AugustusRegistry");
 
         allAssets = [DAI, USDC, USDT, LINK, WBTC, WETH, ST_ETH, WST_ETH, CB_ETH, S_DAI];
