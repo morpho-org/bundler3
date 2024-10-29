@@ -46,4 +46,33 @@ contract TransferBundlerLocalTest is LocalTest {
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         hub.multicall(bundle);
     }
+
+    function testApproveMaxTo(address spender) public {
+        bundle.push(_erc20ApproveMaxTo(address(loanToken), spender));
+
+        vm.prank(USER);
+        hub.multicall(bundle);
+
+        assertEq(
+            loanToken.allowance(address(genericBundler1), spender),
+            type(uint256).max,
+            "loan.allowance(spender, genericBundler1)"
+        );
+    }
+
+    function testApproveMaxToZeroAddress() public {
+        bundle.push(_erc20ApproveMaxTo(address(loanToken), address(0)));
+
+        vm.prank(USER);
+        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        hub.multicall(bundle);
+    }
+
+    function testApproveMaxToZeroSpender() public {
+        bundle.push(_erc20ApproveMaxTo(address(0), address(genericBundler1)));
+
+        vm.prank(USER);
+        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        hub.multicall(bundle);
+    }
 }

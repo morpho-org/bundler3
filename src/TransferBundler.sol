@@ -6,6 +6,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
+import {BundlerLib} from "./libraries/BundlerLib.sol";
 
 /// @title TransferBundler
 /// @author Morpho Labs
@@ -29,5 +30,11 @@ abstract contract TransferBundler is BaseBundler {
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
         ERC20(asset).safeTransferFrom(_initiator, receiver, amount);
+    }
+
+    function erc20ApproveMaxTo(address asset, address spender) external hubOnly {
+        require(asset != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(spender != address(0), ErrorsLib.ZERO_ADDRESS);
+        BundlerLib.approveMaxTo(asset, spender);
     }
 }

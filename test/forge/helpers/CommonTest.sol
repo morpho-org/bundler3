@@ -156,6 +156,10 @@ abstract contract CommonTest is Test {
         );
     }
 
+    function _erc20ApproveMaxTo(address asset, address spender) internal view returns (Call memory) {
+        return _call(genericBundler1, abi.encodeCall(TransferBundler.erc20ApproveMaxTo, (asset, spender)));
+    }
+
     /* ERC20 WRAPPER ACTIONS */
 
     function _erc20WrapperDepositFor(address asset, address receiver, uint256 amount)
