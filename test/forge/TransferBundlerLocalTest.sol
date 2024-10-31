@@ -48,6 +48,7 @@ contract TransferBundlerLocalTest is LocalTest {
     }
 
     function testApproveMaxTo(address spender) public {
+        vm.assume(spender != address(0));
         bundle.push(_erc20ApproveMaxTo(address(loanToken), spender));
 
         vm.prank(USER);
