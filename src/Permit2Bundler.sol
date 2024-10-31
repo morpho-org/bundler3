@@ -21,8 +21,9 @@ abstract contract Permit2Bundler is BaseBundler {
 
     /* ACTIONS */
 
-    /// @notice Approves the given `amount` of `asset` from the initiator to be spent by `permitSingle.spender` via
-    /// Permit2 with the given `deadline` & EIP-712 `signature`.
+    /// @notice Approves the given `permitSingle.details.amount` of `permitSingle.details.token` from the initiator to
+    /// be spent by `permitSingle.spender` via
+    /// Permit2 with the given `permitSingle.sigDeadline` & EIP-712 `signature`.
     /// @param permitSingle The `PermitSingle` struct.
     /// @param signature The signature, serialized.
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
@@ -31,6 +32,21 @@ abstract contract Permit2Bundler is BaseBundler {
         hubOnly
     {
         try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
+        catch (bytes memory returnData) {
+            if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
+        }
+    }
+
+    /// @notice Gives multiple approvals with a single permit data structure, to be used by `permitBatch.sigDeadline`.
+    /// @param permitBatch The `PermitBatch` struct.
+    /// @param signature The signature, serialized.
+    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
+    function approve2Batch(
+        IAllowanceTransfer.PermitBatch calldata permitBatch,
+        bytes calldata signature,
+        bool skipRevert
+    ) external hubOnly {
+        try Permit2Lib.PERMIT2.permit(initiator(), permitBatch, signature) {}
         catch (bytes memory returnData) {
             if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }

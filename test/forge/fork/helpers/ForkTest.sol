@@ -157,6 +157,40 @@ abstract contract ForkTest is CommonTest, Configured {
         );
     }
 
+    function _approve2Batch(
+        uint256 privateKey,
+        address[] memory assets,
+        uint256[] memory amounts,
+        uint256[] memory nonces,
+        bool skipRevert
+    ) internal view returns (Call memory) {
+        IAllowanceTransfer.PermitDetails[] memory details = new IAllowanceTransfer.PermitDetails[](assets.length);
+
+        for (uint256 i; i < assets.length; i++) {
+            details[i] = IAllowanceTransfer.PermitDetails({
+                token: assets[i],
+                amount: uint160(amounts[i]),
+                expiration: type(uint48).max,
+                nonce: uint48(nonces[i])
+            });
+        }
+
+        IAllowanceTransfer.PermitBatch memory permitBatch = IAllowanceTransfer.PermitBatch({
+            details: details,
+            spender: address(genericBundler1),
+            sigDeadline: SIGNATURE_DEADLINE
+        });
+
+        bytes32 digest = SigUtils.toTypedDataHash(Permit2Lib.PERMIT2.DOMAIN_SEPARATOR(), permitBatch);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+
+        return _call(
+            genericBundler1,
+            abi.encodeCall(Permit2Bundler.approve2Batch, (permitBatch, abi.encodePacked(r, s, v), skipRevert))
+        );
+    }
+
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
         return _transferFrom2(asset, address(genericBundler1), amount);
     }
