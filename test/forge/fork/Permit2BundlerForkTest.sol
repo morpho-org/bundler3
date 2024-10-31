@@ -10,9 +10,8 @@ error InvalidNonce();
 contract Permit2BundlerForkTest is ForkTest {
     using SafeTransferLib for ERC20;
 
-    function testApprove2(uint256 seed, uint256 privateKey, uint256 deadline, uint256 amount) public {
+    function testApprove2(uint256 seed, uint256 privateKey, uint256 amount) public {
         privateKey = bound(privateKey, 1, type(uint160).max);
-        deadline = bound(deadline, block.timestamp, type(uint48).max);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         address user = vm.addr(privateKey);
@@ -41,9 +40,8 @@ contract Permit2BundlerForkTest is ForkTest {
         Permit2Bundler(address(bundler)).approve2(permitSingle, signature, false);
     }
 
-    function testApprove2InvalidNonce(uint256 seed, uint256 privateKey, uint256 deadline, uint256 amount) public {
+    function testApprove2InvalidNonce(uint256 seed, uint256 privateKey, uint256 amount) public {
         privateKey = bound(privateKey, 1, type(uint160).max);
-        deadline = bound(deadline, block.timestamp, type(uint48).max);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         address user = vm.addr(privateKey);
