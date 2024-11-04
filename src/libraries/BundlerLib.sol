@@ -7,7 +7,7 @@ import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLi
 /// @title BundlerLib
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Library exposing cimmon bundler functionality
+/// @notice Library exposing common bundler functionality
 library BundlerLib {
     using SafeTransferLib for ERC20;
 
