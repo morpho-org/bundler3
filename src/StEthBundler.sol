@@ -51,8 +51,8 @@ abstract contract StEthBundler is BaseBundler {
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
-        uint256 shares = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(shares * initialAmount >= minShares * amount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        uint256 received = IStEth(ST_ETH).submit{value: amount}(referral);
+        require(received * initialAmount >= minShares * amount, ErrorsLib.SLIPPAGE_EXCEEDED);
 
         BundlerLib.erc20Transfer(ST_ETH, receiver, ERC20(ST_ETH).balanceOf(address(this)));
     }
@@ -81,7 +81,7 @@ abstract contract StEthBundler is BaseBundler {
 
         require(amount != 0, ErrorsLib.ZERO_AMOUNT);
 
-        uint256 shares = IWstEth(WST_ETH).unwrap(amount);
-        BundlerLib.erc20Transfer(ST_ETH, receiver, shares);
+        uint256 received = IWstEth(WST_ETH).unwrap(amount);
+        BundlerLib.erc20Transfer(ST_ETH, receiver, received);
     }
 }
