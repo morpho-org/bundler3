@@ -17,22 +17,21 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
         loanWrapper = new ERC20WrapperMock(loanToken, "Wrapped Loan Token", "WLT");
     }
 
-    function testErc20WrapperDepositFor(uint256 amount) public {
+    function testErc20WrapperDepositFor(uint256 amount, address receiver) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(genericBundler1), amount));
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
 
         loanToken.setBalance(address(genericBundler1), amount);
 
-        vm.prank(RECEIVER);
         hub.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "loan.balanceOf(genericBundler1)");
-        assertEq(loanWrapper.balanceOf(RECEIVER), amount, "loanWrapper.balanceOf(RECEIVER)");
+        assertEq(loanWrapper.balanceOf(receiver), amount, "loanWrapper.balanceOf(receiver)");
     }
 
     function testErc20WrapperDepositForZeroAmount() public {
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(genericBundler1), 0));
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), 0));
 
         vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
         hub.multicall(bundle);
@@ -87,7 +86,7 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
-        genericBundler1.erc20WrapperDepositFor(address(loanWrapper), address(genericBundler1), amount);
+        genericBundler1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
     function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
@@ -101,7 +100,7 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         loanToken.setBalance(address(genericBundler1), amount);
 
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(genericBundler1), amount));
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount));
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false));
 

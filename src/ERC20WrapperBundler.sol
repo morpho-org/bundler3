@@ -37,9 +37,7 @@ abstract contract ERC20WrapperBundler is BaseBundler {
 
         BundlerLib.approveMaxTo(address(underlying), wrapper);
 
-        require(ERC20Wrapper(wrapper).depositFor(initiator(), amount), ErrorsLib.DEPOSIT_FAILED);
-
-        BundlerLib.erc20Transfer(wrapper, receiver, amount);
+        require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DEPOSIT_FAILED);
     }
 
     /// @notice Burns a number of wrapped tokens and withdraws the corresponding number of underlying tokens.
