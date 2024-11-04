@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import "forge-std/console.sol";
-
 import {IWstEth} from "./interfaces/IWstEth.sol";
 import {IStEth} from "./interfaces/IStEth.sol";
 
