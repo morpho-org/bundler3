@@ -77,11 +77,12 @@ contract Hub is IHub {
             address bundler = calls[i].to;
             setCurrentBundler(bundler);
             (bool success, bytes memory returnData) = bundler.call{value: calls[i].value}(calls[i].data);
-            setCurrentBundler(previousBundler);
 
             if (!success) {
                 BundlerLib.lowLevelRevert(returnData);
             }
+
+            setCurrentBundler(previousBundler);
         }
     }
 
