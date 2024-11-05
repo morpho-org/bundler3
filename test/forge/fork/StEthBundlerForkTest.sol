@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
+import "../../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 
 import "../../../src/ethereum/EthereumBundler1.sol";
 
@@ -19,13 +19,13 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         if (block.chainid != 1) return;
 
-        ethereumBundler1 = new EthereumBundler1(address(hub));
+        ethereumBundler1 = new EthereumBundler1(address(hub), DAI, WST_ETH);
     }
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_stakeEth(0, 0, address(0), receiver));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
         hub.multicall(bundle);
     }
@@ -78,14 +78,14 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         deal(USER, amount);
 
         vm.prank(USER);
-        vm.expectRevert(bytes(ErrorsLib.SLIPPAGE_EXCEEDED));
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
         hub.multicall{value: amount}(bundle);
     }
 
     function testWrapZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_wrapStEth(0, receiver));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
         hub.multicall(bundle);
     }
@@ -125,7 +125,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
     function testUnwrapZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_unwrapStEth(0, receiver));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
         hub.multicall(bundle);
     }

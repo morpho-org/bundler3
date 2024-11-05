@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
@@ -26,13 +26,13 @@ abstract contract ERC4626Bundler is BaseBundler {
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver) external hubOnly {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the vault's shares.
-        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(shares != 0, ErrorsLib.ZERO_SHARES);
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(shares != 0, ErrorsLib.ZeroShares());
 
         BundlerLib.approveMaxTo(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
-        require(assets <= maxAssets, ErrorsLib.SLIPPAGE_EXCEEDED);
+        require(assets <= maxAssets, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Deposits the given amount of `assets` on the given ERC4626 `vault`, on behalf of `receiver`.
@@ -45,18 +45,18 @@ abstract contract ERC4626Bundler is BaseBundler {
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver) external hubOnly {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the vault's shares.
-        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         uint256 initialAssets = assets;
         address asset = IERC4626(vault).asset();
         assets = Math.min(assets, ERC20(asset).balanceOf(address(this)));
 
-        require(assets != 0, ErrorsLib.ZERO_AMOUNT);
+        require(assets != 0, ErrorsLib.ZeroAmount());
 
         BundlerLib.approveMaxTo(asset, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
-        require(shares * initialAssets >= minShares * assets, ErrorsLib.SLIPPAGE_EXCEEDED);
+        require(shares * initialAssets >= minShares * assets, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws the given amount of `assets` from the given ERC4626 `vault`, transferring assets to
@@ -74,12 +74,12 @@ abstract contract ERC4626Bundler is BaseBundler {
         hubOnly
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
-        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UNEXPECTED_OWNER);
-        require(assets != 0, ErrorsLib.ZERO_AMOUNT);
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
-        require(shares <= maxShares, ErrorsLib.SLIPPAGE_EXCEEDED);
+        require(shares <= maxShares, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Redeems the given amount of `shares` from the given ERC4626 `vault`, transferring assets to `receiver`.
@@ -97,15 +97,15 @@ abstract contract ERC4626Bundler is BaseBundler {
         hubOnly
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
-        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UNEXPECTED_OWNER);
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
 
         uint256 initialShares = shares;
         shares = Math.min(shares, IERC4626(vault).balanceOf(owner));
 
-        require(shares != 0, ErrorsLib.ZERO_SHARES);
+        require(shares != 0, ErrorsLib.ZeroShares());
 
         uint256 assets = IERC4626(vault).redeem(shares, receiver, owner);
-        require(assets * initialShares >= minAssets * shares, ErrorsLib.SLIPPAGE_EXCEEDED);
+        require(assets * initialShares >= minAssets * shares, ErrorsLib.SlippageExceeded());
     }
 }

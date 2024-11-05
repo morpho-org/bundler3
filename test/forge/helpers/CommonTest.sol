@@ -141,40 +141,40 @@ abstract contract CommonTest is Test {
 
     /* ERC20 ACTIONS */
 
-    function _erc20Transfer(address asset, address recipient, uint256 amount, BaseBundler bundler)
+    function _erc20Transfer(address token, address recipient, uint256 amount, BaseBundler bundler)
         internal
         pure
         returns (Call memory)
     {
-        return _call(bundler, abi.encodeCall(bundler.erc20Transfer, (asset, recipient, amount)));
+        return _call(bundler, abi.encodeCall(bundler.erc20Transfer, (token, recipient, amount)));
     }
 
-    function _erc20TransferFrom(address asset, uint256 amount) internal view returns (Call memory) {
+    function _erc20TransferFrom(address token, uint256 amount) internal view returns (Call memory) {
         return _call(
             genericBundler1,
-            abi.encodeCall(TransferBundler.erc20TransferFrom, (asset, address(genericBundler1), amount))
+            abi.encodeCall(TransferBundler.erc20TransferFrom, (token, address(genericBundler1), amount))
         );
     }
 
     /* ERC20 WRAPPER ACTIONS */
 
-    function _erc20WrapperDepositFor(address asset, address receiver, uint256 amount)
+    function _erc20WrapperDepositFor(address token, address receiver, uint256 amount)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericBundler1, abi.encodeCall(ERC20WrapperBundler.erc20WrapperDepositFor, (asset, receiver, amount))
+            genericBundler1, abi.encodeCall(ERC20WrapperBundler.erc20WrapperDepositFor, (token, receiver, amount))
         );
     }
 
-    function _erc20WrapperWithdrawTo(address asset, address receiver, uint256 amount)
+    function _erc20WrapperWithdrawTo(address token, address receiver, uint256 amount)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericBundler1, abi.encodeCall(ERC20WrapperBundler.erc20WrapperWithdrawTo, (asset, receiver, amount))
+            genericBundler1, abi.encodeCall(ERC20WrapperBundler.erc20WrapperWithdrawTo, (token, receiver, amount))
         );
     }
 
@@ -342,9 +342,9 @@ abstract contract CommonTest is Test {
         );
     }
 
-    function _morphoFlashLoan(address asset, uint256 amount) internal view returns (Call memory) {
+    function _morphoFlashLoan(address token, uint256 amount) internal view returns (Call memory) {
         return _call(
-            genericBundler1, abi.encodeCall(MorphoBundler.morphoFlashLoan, (asset, amount, abi.encode(callbackBundle)))
+            genericBundler1, abi.encodeCall(MorphoBundler.morphoFlashLoan, (token, amount, abi.encode(callbackBundle)))
         );
     }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
+import "../../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 
 import "./helpers/ForkTest.sol";
 
@@ -41,7 +41,7 @@ contract Permit2BundlerForkTest is ForkTest {
         IAllowanceTransfer.PermitSingle memory permitSingle;
         bytes memory signature;
 
-        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericBundler1.approve2(permitSingle, signature, false);
     }
 
@@ -63,12 +63,12 @@ contract Permit2BundlerForkTest is ForkTest {
     function testTransferFrom2ZeroAmount() public {
         bundle.push(_transferFrom2(DAI, 0));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         hub.multicall(bundle);
     }
 
     function testTransferFrom2Unauthorized() public {
-        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericBundler1.transferFrom2(address(0), address(0), 0);
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
+import "../../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 
 import "./helpers/ForkTest.sol";
 
@@ -16,7 +16,7 @@ contract WNativeBundlerForkTest is ForkTest {
     function testWrapZeroAmount(address receiver) public {
         bundle.push(_wrapNative(0, receiver));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
         hub.multicall(bundle);
     }
@@ -43,7 +43,7 @@ contract WNativeBundlerForkTest is ForkTest {
     function testUnwrapZeroAmount(address receiver) public {
         bundle.push(_unwrapNative(0, receiver));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
         hub.multicall(bundle);
     }

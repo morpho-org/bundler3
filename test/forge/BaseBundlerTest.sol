@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 
 import "./helpers/LocalTest.sol";
 
@@ -31,7 +31,7 @@ contract BaseBundlerLocalTest is LocalTest {
 
         bundle.push(_erc20Transfer(address(loanToken), address(0), amount, baseBundler));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         hub.multicall(bundle);
     }
 
@@ -40,7 +40,7 @@ contract BaseBundlerLocalTest is LocalTest {
 
         bundle.push(_erc20Transfer(address(loanToken), address(baseBundler), amount, baseBundler));
 
-        vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
+        vm.expectRevert(ErrorsLib.BundlerAddress.selector);
         hub.multicall(bundle);
     }
 
@@ -62,7 +62,7 @@ contract BaseBundlerLocalTest is LocalTest {
 
         bundle.push(_nativeTransferNoFunding(address(0), amount, baseBundler));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         hub.multicall(bundle);
     }
 
@@ -71,7 +71,7 @@ contract BaseBundlerLocalTest is LocalTest {
 
         bundle.push(_nativeTransferNoFunding(address(baseBundler), amount, baseBundler));
 
-        vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
+        vm.expectRevert(ErrorsLib.BundlerAddress.selector);
         hub.multicall(bundle);
     }
 }

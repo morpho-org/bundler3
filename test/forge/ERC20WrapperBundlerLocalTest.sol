@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 
 import {ERC20WrapperMock, ERC20Wrapper} from "../../src/mocks/ERC20WrapperMock.sol";
 
@@ -33,7 +33,7 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
     function testErc20WrapperDepositForZeroAmount() public {
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), 0));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         hub.multicall(bundle);
     }
 
@@ -71,28 +71,28 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), address(0), amount));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         hub.multicall(bundle);
     }
 
     function testErc20WrapperWithdrawToZeroAmount() public {
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, 0));
 
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         hub.multicall(bundle);
     }
 
     function testErc20WrapperDepositForUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericBundler1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
     function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericBundler1.erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount);
     }
 
@@ -104,7 +104,7 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false));
 
-        vm.expectRevert(bytes(ErrorsLib.DEPOSIT_FAILED));
+        vm.expectRevert(ErrorsLib.DepositFailed.selector);
         hub.multicall(bundle);
     }
 
@@ -117,7 +117,7 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.withdrawTo.selector), abi.encode(false));
 
-        vm.expectRevert(bytes(ErrorsLib.WITHDRAW_FAILED));
+        vm.expectRevert(ErrorsLib.WithdrawFailed.selector);
         hub.multicall(bundle);
     }
 }

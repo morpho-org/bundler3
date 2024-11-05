@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 
 import "./helpers/LocalTest.sol";
 
@@ -25,7 +25,7 @@ contract TransferBundlerLocalTest is LocalTest {
     function testTransferFromUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(bytes(ErrorsLib.UNAUTHORIZED_SENDER));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericBundler1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
     }
 
@@ -43,7 +43,7 @@ contract TransferBundlerLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), 0));
 
         vm.prank(USER);
-        vm.expectRevert(bytes(ErrorsLib.ZERO_AMOUNT));
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         hub.multicall(bundle);
     }
 }

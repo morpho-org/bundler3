@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {IUniversalRewardsDistributor} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 import {ErrorsLib as UrdErrorsLib} from "../../lib/universal-rewards-distributor/src/libraries/ErrorsLib.sol";
 
 import {Merkle} from "../../lib/murky/src/Merkle.sol";
@@ -52,7 +52,7 @@ contract UrdBundlerLocalTest is LocalTest {
         bundle.push(_urdClaim(distributor, address(0), address(loanToken), claimable, proof, false));
 
         vm.prank(USER);
-        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         hub.multicall(bundle);
     }
 
@@ -64,7 +64,7 @@ contract UrdBundlerLocalTest is LocalTest {
         bundle.push(_urdClaim(distributor, address(genericBundler1), address(loanToken), claimable, proof, false));
 
         vm.prank(USER);
-        vm.expectRevert(bytes(ErrorsLib.BUNDLER_ADDRESS));
+        vm.expectRevert(ErrorsLib.BundlerAddress.selector);
         hub.multicall(bundle);
     }
 

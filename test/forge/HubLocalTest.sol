@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
 import "../../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
@@ -19,7 +19,7 @@ contract HubLocalTest is LocalTest {
     }
 
     function testHubZeroAddress() public {
-        vm.expectRevert(bytes(ErrorsLib.ZERO_ADDRESS));
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         new BaseBundler(address(0));
     }
 
@@ -35,7 +35,7 @@ contract HubLocalTest is LocalTest {
         vm.assume(initiator != address(0));
         bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.callbackHubWithMulticall, ())));
 
-        vm.expectRevert(bytes(ErrorsLib.ALREADY_INITIATED));
+        vm.expectRevert(ErrorsLib.AlreadyInitiated.selector);
         vm.prank(initiator);
         hub.multicall(bundle);
     }

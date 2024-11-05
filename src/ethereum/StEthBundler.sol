@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IWstEth} from "./interfaces/IWstEth.sol";
-import {IStEth} from "./interfaces/IStEth.sol";
+import {IWstEth} from "../interfaces/IWstEth.sol";
+import {IStEth} from "../interfaces/IStEth.sol";
 
-import {Math} from "../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
+import "../libraries/ErrorsLib.sol" as ErrorsLib;
+import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
-import {BaseBundler} from "./BaseBundler.sol";
-import {BundlerLib} from "./libraries/BundlerLib.sol";
+import {BaseBundler} from "../BaseBundler.sol";
+import {BundlerLib} from "../libraries/BundlerLib.sol";
 
 /// @title StEthBundler
 /// @author Morpho Labs
@@ -49,10 +49,10 @@ abstract contract StEthBundler is BaseBundler {
         uint256 initialAmount = amount;
         amount = Math.min(amount, address(this).balance);
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(received * initialAmount >= minShares * amount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        require(received * initialAmount >= minShares * amount, ErrorsLib.SlippageExceeded());
 
         BundlerLib.erc20Transfer(ST_ETH, receiver, ERC20(ST_ETH).balanceOf(address(this)));
     }
@@ -65,7 +65,7 @@ abstract contract StEthBundler is BaseBundler {
     function wrapStEth(uint256 amount, address receiver) external hubOnly {
         amount = Math.min(amount, ERC20(ST_ETH).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
         BundlerLib.erc20Transfer(WST_ETH, receiver, received);
@@ -79,7 +79,7 @@ abstract contract StEthBundler is BaseBundler {
     function unwrapStEth(uint256 amount, address receiver) external hubOnly {
         amount = Math.min(amount, ERC20(WST_ETH).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
         BundlerLib.erc20Transfer(ST_ETH, receiver, received);
