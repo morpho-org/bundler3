@@ -64,6 +64,7 @@ contract BaseBundler {
     /* INTERNAL */
 
     /// @notice Returns the current initiator stored in the bundler.
+    /// @dev If the caller is not the hub, the initiator value may be 0.
     function initiator() internal view returns (address) {
         return IHub(HUB).initiator();
     }
