@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {CompoundV3Authorization} from "../../helpers/SigUtils.sol";
 
-import "../../../../src/migration/CompoundV3MigrationBundlerV2.sol";
+import "../../../src/migration/CompoundV3MigrationBundlerV2.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

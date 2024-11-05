@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {IStEth} from "../../../../src/interfaces/IStEth.sol";
-import {IAaveV2} from "../../../../src/migration/interfaces/IAaveV2.sol";
-import {IERC4626} from "../../../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+import {IStEth} from "../../../src/interfaces/IStEth.sol";
+import {IAaveV2} from "../../../src/migration/interfaces/IAaveV2.sol";
+import {IERC4626} from "../../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
-import "../../../../src/migration/AaveV2MigrationBundlerV2.sol";
+import "../../../src/migration/AaveV2MigrationBundlerV2.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

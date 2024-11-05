@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
 
-import {IStEth} from "../../../../src/interfaces/IStEth.sol";
-import {IWstEth} from "../../../../src/interfaces/IWstEth.sol";
-import {IAllowanceTransfer} from "../../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
+import {IStEth} from "../../../src/interfaces/IStEth.sol";
+import {IWstEth} from "../../../src/interfaces/IWstEth.sol";
+import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {Permit2Lib} from "../../../../lib/permit2/src/libraries/Permit2Lib.sol";
+import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {Permit2Bundler} from "../../../../src/Permit2Bundler.sol";
-import {WNativeBundler} from "../../../../src/WNativeBundler.sol";
-import {StEthBundler} from "../../../../src/StEthBundler.sol";
-import {EthereumBundlerV2} from "../../../../src/ethereum/EthereumBundlerV2.sol";
-import {ChainAgnosticBundlerV2} from "../../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
+import {Permit2Bundler} from "../../../src/Permit2Bundler.sol";
+import {WNativeBundler} from "../../../src/WNativeBundler.sol";
+import {StEthBundler} from "../../../src/StEthBundler.sol";
+import {EthereumBundlerV2} from "../../../src/ethereum/EthereumBundlerV2.sol";
+import {ChainAgnosticBundlerV2} from "../../../src/chain-agnostic/ChainAgnosticBundlerV2.sol";
 
-import "../../../../config/Configured.sol";
+import "../../../config/Configured.sol";
 import "../../helpers/CommonTest.sol";
 
 abstract contract ForkTest is CommonTest, Configured {

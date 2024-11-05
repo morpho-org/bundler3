@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {IAToken} from "./interfaces/IAToken.sol";
-import {IAaveV3} from "../../../../src/migration/interfaces/IAaveV3.sol";
+import {IAaveV3} from "../../../src/migration/interfaces/IAaveV3.sol";
 
 import {SigUtils, Permit} from "../../helpers/SigUtils.sol";
-import "../../../../src/migration/AaveV3MigrationBundlerV2.sol";
+import "../../../src/migration/AaveV3MigrationBundlerV2.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

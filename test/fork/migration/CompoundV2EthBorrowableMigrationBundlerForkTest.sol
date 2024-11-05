@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {IComptroller} from "../../../../src/migration/interfaces/IComptroller.sol";
+import {IComptroller} from "../../../src/migration/interfaces/IComptroller.sol";
 
-import "../../../../src/migration/CompoundV2MigrationBundlerV2.sol";
+import "../../../src/migration/CompoundV2MigrationBundlerV2.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ICompoundV3} from "../../../src/migration/interfaces/ICompoundV3.sol";
-import {Authorization} from "../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
+import {ICompoundV3} from "../../src/migration/interfaces/ICompoundV3.sol";
+import {Authorization} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 import {
     Authorization as AaveV3OptimizerAuthorization,
     AUTHORIZATION_TYPEHASH as AAVE_V3_OPTIMIZER_AUTHORIZATION_TYPEHASH
-} from "../../../src/migration/interfaces/IAaveV3Optimizer.sol";
+} from "../../src/migration/interfaces/IAaveV3Optimizer.sol";
 import {
     Authorization as CompoundV3Authorization,
     DOMAIN_TYPEHASH as COMPOUND_V3_DOMAIN_TYPEHASH,
     AUTHORIZATION_TYPEHASH as COMPOUND_V3_AUTHORIZATION_TYPEHASH
-} from "../../../src/migration/interfaces/ICompoundV3.sol";
+} from "../../src/migration/interfaces/ICompoundV3.sol";
 
-import {PermitHash} from "../../../lib/permit2/src/libraries/PermitHash.sol";
-import {MessageHashUtils} from "../../../lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol";
-import {AUTHORIZATION_TYPEHASH} from "../../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+import {PermitHash} from "../../lib/permit2/src/libraries/PermitHash.sol";
+import {MessageHashUtils} from "../../lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol";
+import {AUTHORIZATION_TYPEHASH} from "../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 
 bytes32 constant PERMIT_TYPEHASH =
     keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
