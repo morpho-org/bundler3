@@ -23,7 +23,7 @@ abstract contract Permit2Bundler is BaseBundler {
 
     /// @notice Approves the given `permitSingle.details.amount` of `permitSingle.details.token` from the initiator to
     /// be spent by `permitSingle.spender` via
-    /// Permit2 with the given `permitSIngle.sigDeadline` & EIP-712 `signature`.
+    /// Permit2 with the given `permitSingle.sigDeadline` & EIP-712 `signature`.
     /// @param permitSingle The `PermitSingle` struct.
     /// @param signature The signature, serialized.
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
