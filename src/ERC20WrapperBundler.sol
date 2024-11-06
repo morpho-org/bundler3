@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
@@ -33,13 +33,11 @@ abstract contract ERC20WrapperBundler is BaseBundler {
 
         amount = Math.min(amount, underlying.balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
         BundlerLib.approveMaxTo(address(underlying), wrapper);
 
-        require(ERC20Wrapper(wrapper).depositFor(initiator(), amount), ErrorsLib.DEPOSIT_FAILED);
-
-        BundlerLib.erc20Transfer(wrapper, receiver, amount);
+        require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
 
     /// @notice Burns a number of wrapped tokens and withdraws the corresponding number of underlying tokens.
@@ -50,12 +48,12 @@ abstract contract ERC20WrapperBundler is BaseBundler {
     /// @param receiver The address receiving the underlying tokens.
     /// @param amount The amount of wrapped tokens to burn. Capped at the bundler's balance.
     function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external hubOnly {
-        require(receiver != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         amount = Math.min(amount, ERC20(wrapper).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
-        require(ERC20Wrapper(wrapper).withdrawTo(receiver, amount), ErrorsLib.WITHDRAW_FAILED);
+        require(ERC20Wrapper(wrapper).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
 }

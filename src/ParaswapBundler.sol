@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.27;
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
 import {IMorpho, MarketParams} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {BaseBundler} from "./BaseBundler.sol";
@@ -38,7 +38,7 @@ contract ParaswapBundler is BaseBundler, IParaswapBundler {
     /* MODIFIERS */
 
     modifier inAugustusRegistry(address augustus) {
-        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AUGUSTUS_NOT_IN_REGISTRY);
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry(augustus));
         _;
     }
 
@@ -102,7 +102,7 @@ contract ParaswapBundler is BaseBundler, IParaswapBundler {
         address receiver
     ) external hubOnly inAugustusRegistry(augustus) {
         if (marketParams.loanToken != address(0)) {
-            require(marketParams.loanToken == destToken, ErrorsLib.INCORRECT_LOAN_TOKEN);
+            require(marketParams.loanToken == destToken, ErrorsLib.IncorrectLoanToken(marketParams.loanToken));
             uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, initiator());
             updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
@@ -144,8 +144,8 @@ contract ParaswapBundler is BaseBundler, IParaswapBundler {
         uint256 srcAmount = srcInitial - srcFinal;
         uint256 destAmount = destFinal - destInitial;
 
-        require(srcAmount <= maxSrcAmount, ErrorsLib.SELL_AMOUNT_TOO_HIGH);
-        require(destAmount >= minDestAmount, ErrorsLib.BUY_AMOUNT_TOO_LOW);
+        require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh(srcAmount));
+        require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow(destAmount));
 
         emit EventsLib.ParaswapBundlerSwap(srcToken, destToken, receiver, srcAmount, destAmount);
 

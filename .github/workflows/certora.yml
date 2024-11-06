@@ -1,0 +1,49 @@
+name: Certora
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        conf:
+          - AaveV2MigrationBundlerV2
+          - AaveV3MigrationBundlerV2
+          - AaveV3OptimizerMigrationBundlerV2
+          - ChainAgnosticBundlerV2
+          - CompoundV2MigrationBundlerV2
+          - CompoundV3MigrationBundlerV2
+          - EthereumBundlerV2
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ">=3.11"
+
+      - name: Install certora
+        run: pip install certora-cli
+
+      - name: Install solc (0.8.24)
+        run: |
+          wget https://github.com/ethereum/solidity/releases/download/v0.8.24/solc-static-linux
+          chmod +x solc-static-linux
+          sudo mv solc-static-linux /usr/local/bin/solc-0.8.24
+
+      - name: Verify ${{ matrix.conf }} specification
+        run: certoraRun certora/confs/${{ matrix.conf }}.conf
+        env:
+          CERTORAKEY: ${{ secrets.CERTORAKEY }}
