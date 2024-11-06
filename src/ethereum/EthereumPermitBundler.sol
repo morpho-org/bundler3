@@ -3,16 +3,24 @@ pragma solidity 0.8.27;
 
 import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 
-import {MainnetLib} from "./libraries/MainnetLib.sol";
-
-import {PermitBundler} from "../PermitBundler.sol";
+import {BaseBundler} from "../BaseBundler.sol";
 import {BundlerLib} from "../libraries/BundlerLib.sol";
 
 /// @title EthereumPermitBundler
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice PermitBundler contract specific to Ethereum, handling permit to DAI.
-abstract contract EthereumPermitBundler is PermitBundler {
+abstract contract EthereumPermitBundler is BaseBundler {
+    /* IMMUTABLES */
+
+    address public immutable DAI;
+
+    /* CONSTRUCTOR */
+
+    constructor(address dai) {
+        DAI = dai;
+    }
+
     /// @notice Permits DAI from sender to be spent by the bundler with the given `nonce`, `expiry` & EIP-712
     /// signature's `v`, `r` & `s`.
     /// @param spender The account allowed to spend the Dai.
@@ -33,7 +41,7 @@ abstract contract EthereumPermitBundler is PermitBundler {
         bytes32 s,
         bool skipRevert
     ) external hubOnly {
-        try IDaiPermit(MainnetLib.DAI).permit(initiator(), spender, nonce, expiry, allowed, v, r, s) {}
+        try IDaiPermit(DAI).permit(initiator(), spender, nonce, expiry, allowed, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) BundlerLib.lowLevelRevert(returnData);
         }

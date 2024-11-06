@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {IWNative} from "./interfaces/IWNative.sol";
 
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
@@ -27,7 +27,7 @@ abstract contract WNativeBundler is BaseBundler {
 
     /// @param wNative The address of the wNative token contract.
     constructor(address wNative) {
-        require(wNative != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(wNative != address(0), ErrorsLib.ZeroAddress());
 
         WRAPPED_NATIVE = wNative;
     }
@@ -49,7 +49,7 @@ abstract contract WNativeBundler is BaseBundler {
     function wrapNative(uint256 amount, address receiver) external payable hubOnly {
         amount = Math.min(amount, address(this).balance);
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
         IWNative(WRAPPED_NATIVE).deposit{value: amount}();
         BundlerLib.erc20Transfer(WRAPPED_NATIVE, receiver, amount);
@@ -64,7 +64,7 @@ abstract contract WNativeBundler is BaseBundler {
     function unwrapNative(uint256 amount, address receiver) external hubOnly {
         amount = Math.min(amount, ERC20(WRAPPED_NATIVE).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
         IWNative(WRAPPED_NATIVE).withdraw(amount);
         BundlerLib.nativeTransfer(receiver, amount);
