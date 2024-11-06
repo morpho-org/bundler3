@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IHub} from "./interfaces/IHub.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";

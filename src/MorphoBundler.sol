@@ -5,7 +5,7 @@ import {IMorphoBundler} from "./interfaces/IMorphoBundler.sol";
 import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";

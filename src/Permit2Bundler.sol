@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";

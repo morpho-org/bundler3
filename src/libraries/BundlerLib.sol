@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import "./ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
 /// @title BundlerLib

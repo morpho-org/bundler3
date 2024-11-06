@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import "../../src/ethereum/EthereumBundler1.sol";
 

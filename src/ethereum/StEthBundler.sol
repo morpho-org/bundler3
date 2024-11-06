@@ -5,7 +5,7 @@ import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
 import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
-import "../libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "../BaseBundler.sol";

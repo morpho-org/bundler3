@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 import {IHub} from "./interfaces/IHub.sol";
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";

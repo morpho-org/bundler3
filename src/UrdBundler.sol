@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {IUniversalRewardsDistributor} from
     "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
 import {BundlerLib} from "./libraries/BundlerLib.sol";
