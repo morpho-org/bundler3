@@ -26,7 +26,7 @@ jobs:
       - name: Build contracts via IR & check sizes
         # don't use compilation cache
         # skip import files, because we don't care if contracts are too big
-        run: yarn build:forge --force --sizes --skip Import
+        run: yarn build --force --sizes --skip Import
 
 
   build-no-ir:
@@ -42,7 +42,7 @@ jobs:
       - uses: ./.github/actions/install-cache
 
       - name: Build contracts without IR
-        run: yarn build:forge
+        run: yarn build
         env:
           FOUNDRY_PROFILE: test
 
@@ -81,7 +81,7 @@ jobs:
       - uses: ./.github/actions/install-cache
 
       - name: Run local tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:forge:local
+        run: yarn test:local
         env:
           FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
           FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
@@ -115,7 +115,7 @@ jobs:
       - uses: ./.github/actions/install-cache
 
       - name: Run fork tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:forge:fork --chain ${{ matrix.chain }}
+        run: yarn test:fork --chain ${{ matrix.chain }}
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
           FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}

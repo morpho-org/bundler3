@@ -1,9 +1,7 @@
 [profile.default]
 names = true
 sizes = true
-src = "src"
 evm_version = "cancun"
-test = "test/forge"
 fs_permissions = [
     { access = "read", path = "./out/"},
     { access = "read", path = "./config/"}

@@ -110,7 +110,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /// @notice Supplies `assets` of collateral on behalf of `onBehalf`.
     /// @dev Initiator must have previously transferred their assets to the bundler.
     /// @param marketParams The Morpho market to supply collateral to.
-    /// @param assets The amount of collateral to supply. Pass `type(uint256).max` to supply the bundler's loan asset
+    /// @param assets The amount of collateral to supply. Pass `type(uint256).max` to supply the bundler's collateral
     /// balance.
     /// @param onBehalf The address that will own the increased collateral position.
     /// @param data Arbitrary data to pass to the `onMorphoSupplyCollateral` callback. Pass empty data if not needed.

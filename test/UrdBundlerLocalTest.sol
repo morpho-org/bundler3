@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {IUniversalRewardsDistributor} from
-    "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
+    "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
-import {ErrorsLib as UrdErrorsLib} from "../../lib/universal-rewards-distributor/src/libraries/ErrorsLib.sol";
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
+import {ErrorsLib as UrdErrorsLib} from "../lib/universal-rewards-distributor/src/libraries/ErrorsLib.sol";
 
-import {Merkle} from "../../lib/murky/src/Merkle.sol";
+import {Merkle} from "../lib/murky/src/Merkle.sol";
 
 import "./helpers/LocalTest.sol";
 

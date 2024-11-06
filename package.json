@@ -17,79 +17,14 @@
   },
   "homepage": "https://github.com/morpho-labs/morpho-blue-bundlers#readme",
   "scripts": {
-    "prepare": "husky install && forge install",
-    "build:pkg": "yarn build:hardhat --force && tsc --build ./tsconfig.build.json",
-    "build:forge": "FOUNDRY_PROFILE=build forge build",
-    "build:hardhat": "hardhat compile",
-    "typecheck": "tsc --noEmit",
-    "test:forge": "FOUNDRY_PROFILE=test forge test",
-    "test:forge:local": "FOUNDRY_MATCH_CONTRACT=LocalTest yarn test:forge",
-    "test:forge:fork": "FOUNDRY_MATCH_CONTRACT=ForkTest yarn test:forge",
-    "test:hardhat": "hardhat test",
-    "lint": "yarn lint:forge && yarn lint:ts",
-    "lint:ts": "prettier --check pkg",
-    "lint:forge": "forge fmt --check",
-    "lint:fix": "yarn lint:forge:fix && yarn lint:ts:fix",
-    "lint:forge:fix": "forge fmt",
-    "clean": "hardhat clean && forge clean"
-  },
-  "dependencies": {
-    "ethers": "^6.12.0",
-    "evm-maths": "^6.0.0",
-    "lodash": "^4.17.21"
-  },
-  "devDependencies": {
-    "@commitlint/cli": "^17.8.0",
-    "@commitlint/config-conventional": "^17.8.0",
-    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
-    "@nomicfoundation/hardhat-ethers": "^3.0.4",
-    "@nomicfoundation/hardhat-foundry": "^1.1.1",
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
-    "@trivago/prettier-plugin-sort-imports": "^4.2.0",
-    "@typechain/ethers-v6": "^0.5.1",
-    "@typechain/hardhat": "^9.1.0",
-    "@types/chai": "^4.3.8",
-    "@types/lodash": "^4.14.199",
-    "@types/mocha": "^10.0.2",
-    "@types/node": "^20.8.6",
-    "chai": "^4.3.10",
-    "dotenv": "^16.3.1",
-    "hardhat": "^2.22.12",
-    "hardhat-gas-reporter": "^1.0.9",
-    "hardhat-tracer": "^3.1.0",
-    "hardhat-ignore-warnings": "^0.2.11",
-    "husky": "^8.0.3",
-    "lint-staged": "^14.0.1",
-    "prettier": "^3.0.3",
-    "solidity-coverage": "^0.8.5",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.2.0",
-    "typechain": "^8.3.2",
-    "typescript": "^5.2.2"
-  },
-  "lint-staged": {
-    "*.sol": "forge fmt",
-    "*.js": "prettier",
-    "*.ts": "prettier",
-    "*.json": "prettier",
-    "*.yml": "prettier"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
-  "prettier": {
-    "printWidth": 120,
-    "plugins": [
-      "@trivago/prettier-plugin-sort-imports"
-    ],
-    "importOrder": [
-      "^@",
-      "^\\.\\.",
-      "^\\."
-    ],
-    "importOrderSeparation": true
-  },
-  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+    "prepare": "forge install",
+    "build": "FOUNDRY_PROFILE=build forge build",
+    "test": "FOUNDRY_PROFILE=test forge test",
+    "test:local": "FOUNDRY_MATCH_CONTRACT=LocalTest yarn test",
+    "test:fork": "FOUNDRY_MATCH_CONTRACT=ForkTest yarn test",
+    "lint": "forge fmt",
+    "lint:check": "forge fmt --check",
+    "lint:fix": "forge fmt",
+    "clean": "forge clean"
+  }
 }

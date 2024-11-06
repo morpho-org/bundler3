@@ -2,16 +2,13 @@
 pragma solidity ^0.8.0;
 
 import {
-    Withdrawal,
-    FlowCapsConfig,
-    MAX_SETTABLE_FLOW_CAP,
-    IPublicAllocator
-} from "../../src/interfaces/IPublicAllocator.sol";
+    Withdrawal, FlowCapsConfig, MAX_SETTABLE_FLOW_CAP, IPublicAllocator
+} from "../src/interfaces/IPublicAllocator.sol";
 
 import {SigUtils} from "./helpers/SigUtils.sol";
-import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
-import {ErrorsLib as MorphoErrorsLib} from "../../lib/morpho-blue/src/libraries/ErrorsLib.sol";
-import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
+import {ErrorsLib as MorphoErrorsLib} from "../lib/morpho-blue/src/libraries/ErrorsLib.sol";
+import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 
 import "./helpers/MetaMorphoLocalTest.sol";
 

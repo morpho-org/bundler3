@@ -1,7 +1,6 @@
 # Compiler files
 cache/
 out/
-dist/
 
 # Ignores development broadcast logs
 !/broadcast
@@ -21,12 +20,7 @@ docs/
 data/
 broadcast/
 
-# Node.js
-node_modules/
-
-# Hardhat
-/types
-/cache_hardhat
-/artifacts
-
 *.log
+
+# Certora
+.certora_internal

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import "../../src/interfaces/IWNative.sol";
-import "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
-import "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-import "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
+import "../src/interfaces/IWNative.sol";
+import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+import "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
 // The bundler can do call to arbitrary contracts, we make sure no selectors clash by inheriting all the interfaces in
 // one single contract.
