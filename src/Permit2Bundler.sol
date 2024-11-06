@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
@@ -52,16 +52,16 @@ abstract contract Permit2Bundler is BaseBundler {
         }
     }
 
-    /// @notice Transfers the given `amount` of `asset` from the initiator to the bundler via Permit2.
-    /// @param asset The address of the ERC20 token to transfer.
-    /// @param receiver The address that will receive the assets.
-    /// @param amount The amount of `asset` to transfer from the initiator. Capped at the initiator's balance.
-    function transferFrom2(address asset, address receiver, uint256 amount) external hubOnly {
+    /// @notice Transfers the given `amount` of `token` from the initiator to the bundler via Permit2.
+    /// @param token The address of the ERC20 token to transfer.
+    /// @param receiver The address that will receive the tokens.
+    /// @param amount The amount of `token` to transfer from the initiator. Capped at the initiator's balance.
+    function transferFrom2(address token, address receiver, uint256 amount) external hubOnly {
         address _initiator = initiator();
-        amount = Math.min(amount, ERC20(asset).balanceOf(_initiator));
+        amount = Math.min(amount, ERC20(token).balanceOf(_initiator));
 
-        require(amount != 0, ErrorsLib.ZERO_AMOUNT);
+        require(amount != 0, ErrorsLib.ZeroAmount());
 
-        Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), asset);
+        Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), token);
     }
 }

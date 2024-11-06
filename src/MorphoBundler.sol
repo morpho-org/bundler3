@@ -5,7 +5,7 @@ import {IMorphoBundler} from "./interfaces/IMorphoBundler.sol";
 import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
@@ -26,7 +26,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /* CONSTRUCTOR */
 
     constructor(address morpho) {
-        require(morpho != address(0), ErrorsLib.ZERO_ADDRESS);
+        require(morpho != address(0), ErrorsLib.ZeroAddress());
 
         MORPHO = IMorpho(morpho);
     }
@@ -94,7 +94,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         bytes calldata data
     ) external hubOnly {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
-        require(onBehalf != address(this), ErrorsLib.BUNDLER_ADDRESS);
+        require(onBehalf != address(this), ErrorsLib.BundlerAddress());
 
         // Don't always cap the assets to the bundler's balance because the liquidity can be transferred later
         // (via the `onMorphoSupply` callback).
@@ -104,14 +104,14 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
-        if (assets > 0) require(suppliedShares >= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
-        else require(suppliedAssets <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        if (assets > 0) require(suppliedShares >= slippageAmount, ErrorsLib.SlippageExceeded());
+        else require(suppliedAssets <= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Supplies `assets` of collateral on behalf of `onBehalf`.
     /// @dev Initiator must have previously transferred their assets to the bundler.
     /// @param marketParams The Morpho market to supply collateral to.
-    /// @param assets The amount of collateral to supply. Pass `type(uint256).max` to supply the bundler's loan asset
+    /// @param assets The amount of collateral to supply. Pass `type(uint256).max` to supply the bundler's collateral
     /// balance.
     /// @param onBehalf The address that will own the increased collateral position.
     /// @param data Arbitrary data to pass to the `onMorphoSupplyCollateral` callback. Pass empty data if not needed.
@@ -122,7 +122,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         bytes calldata data
     ) external hubOnly {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
-        require(onBehalf != address(this), ErrorsLib.BUNDLER_ADDRESS);
+        require(onBehalf != address(this), ErrorsLib.BundlerAddress());
 
         // Don't always cap the assets to the bundler's balance because the liquidity can be transferred later
         // (via the `onMorphoSupplyCollateral` callback).
@@ -154,8 +154,8 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
-        if (assets > 0) require(borrowedShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
-        else require(borrowedAssets >= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        if (assets > 0) require(borrowedShares <= slippageAmount, ErrorsLib.SlippageExceeded());
+        else require(borrowedAssets >= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Repays `assets` of the loan asset on behalf of `onBehalf`.
@@ -178,7 +178,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         bytes calldata data
     ) external hubOnly {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
-        require(onBehalf != address(this), ErrorsLib.BUNDLER_ADDRESS);
+        require(onBehalf != address(this), ErrorsLib.BundlerAddress());
 
         // Don't always cap the assets to the bundler's balance because the liquidity can be transferred later
         // (via the `onMorphoRepay` callback).
@@ -188,8 +188,8 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
-        if (assets > 0) require(repaidShares >= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
-        else require(repaidAssets <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        if (assets > 0) require(repaidShares >= slippageAmount, ErrorsLib.SlippageExceeded());
+        else require(repaidAssets <= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws `assets` of the loan asset on behalf of the initiator.
@@ -213,8 +213,8 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
             MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 
-        if (assets > 0) require(withdrawnShares <= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
-        else require(withdrawnAssets >= slippageAmount, ErrorsLib.SLIPPAGE_EXCEEDED);
+        if (assets > 0) require(withdrawnShares <= slippageAmount, ErrorsLib.SlippageExceeded());
+        else require(withdrawnAssets >= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws `assets` of the collateral asset on behalf of the initiator.
@@ -259,7 +259,7 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
 
     /// @dev Triggers `_multicall` logic during a callback.
     function _callback(bytes calldata data) internal {
-        require(msg.sender == address(MORPHO), ErrorsLib.UNAUTHORIZED_SENDER);
+        require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
 
         IHub(HUB).multicallFromBundler(abi.decode(data, (Call[])));
     }

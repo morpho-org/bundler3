@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 import {IHub} from "./interfaces/IHub.sol";
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import "./libraries/ErrorsLib.sol" as ErrorsLib;
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";
@@ -51,7 +51,7 @@ contract Hub is IHub {
     /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
     /// @param calls The ordered array of calldata to execute.
     function multicall(Call[] calldata calls) external payable {
-        require(initiator() == address(0), ErrorsLib.ALREADY_INITIATED);
+        require(initiator() == address(0), ErrorsLib.AlreadyInitiated());
 
         setInitiator(msg.sender);
 
@@ -64,7 +64,7 @@ contract Hub is IHub {
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current bundler can call this function.
     function multicallFromBundler(Call[] calldata calls) external payable {
-        require(msg.sender == currentBundler(), ErrorsLib.UNAUTHORIZED_SENDER);
+        require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender());
         _multicall(calls);
     }
 
@@ -77,11 +77,12 @@ contract Hub is IHub {
             address bundler = calls[i].to;
             setCurrentBundler(bundler);
             (bool success, bytes memory returnData) = bundler.call{value: calls[i].value}(calls[i].data);
-            setCurrentBundler(previousBundler);
 
             if (!success) {
                 BundlerLib.lowLevelRevert(returnData);
             }
+
+            setCurrentBundler(previousBundler);
         }
     }
 
