@@ -219,7 +219,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     }
 
     function testWithdrawUnauthorized(uint256 withdrawnShares) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.morphoWithdraw(marketParams, 0, withdrawnShares, 0, RECEIVER);
     }
 
@@ -256,7 +256,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     }
 
     function testBorrowUnauthorized(uint256 borrowedAssets) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
     }
 
@@ -330,7 +330,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     }
 
     function testWithdrawCollateralUnauthorized(uint256 collateralAmount) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER);
     }
 

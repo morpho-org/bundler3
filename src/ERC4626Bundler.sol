@@ -75,7 +75,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
@@ -98,7 +98,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
 
         uint256 initialShares = shares;
         shares = Math.min(shares, IERC4626(vault).balanceOf(owner));

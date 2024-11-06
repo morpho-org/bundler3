@@ -25,7 +25,7 @@ contract TransferBundlerLocalTest is LocalTest {
     function testTransferFromUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
     }
 

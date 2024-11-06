@@ -76,7 +76,7 @@ contract EthereumBundlerForkTest is ForkTest {
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
         vm.prank(caller);
         hub.multicallFromBundler(new Call[](0));
     }

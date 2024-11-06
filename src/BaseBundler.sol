@@ -24,7 +24,7 @@ contract BaseBundler {
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
     modifier hubOnly() {
-        require(msg.sender == HUB, ErrorsLib.UnauthorizedSender());
+        require(msg.sender == HUB, ErrorsLib.UnauthorizedSender(msg.sender));
         _;
     }
 

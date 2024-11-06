@@ -86,14 +86,14 @@ contract ERC20WrapperBundlerLocalTest is LocalTest {
     function testErc20WrapperDepositForUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
     function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount);
     }
 

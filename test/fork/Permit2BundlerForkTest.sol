@@ -41,7 +41,7 @@ contract Permit2BundlerForkTest is ForkTest {
         IAllowanceTransfer.PermitSingle memory permitSingle;
         bytes memory signature;
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.approve2(permitSingle, signature, false);
     }
 
@@ -68,7 +68,7 @@ contract Permit2BundlerForkTest is ForkTest {
     }
 
     function testTransferFrom2Unauthorized() public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.transferFrom2(address(0), address(0), 0);
     }
 }

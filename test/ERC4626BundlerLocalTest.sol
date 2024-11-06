@@ -24,7 +24,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function test4626MintUnauthorized(uint256 shares) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc4626Mint(address(vault), 0, shares, RECEIVER);
     }
 
@@ -43,7 +43,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function test4626DepositUnauthorized(uint256 assets) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc4626Deposit(address(vault), assets, 0, RECEIVER);
     }
 
@@ -62,7 +62,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function test4626WithdrawUnauthorized(uint256 assets) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc4626Withdraw(address(vault), assets, 0, RECEIVER, address(genericBundler1));
     }
 
@@ -78,7 +78,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
 
         bundle.push(_erc4626Withdraw(address(vault), assets, type(uint256).max, RECEIVER, owner));
 
-        vm.expectRevert(ErrorsLib.UnexpectedOwner.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnexpectedOwner.selector, owner));
         hub.multicall(bundle);
     }
 
@@ -90,7 +90,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
     }
 
     function test4626RedeemUnauthorized(uint256 shares) public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.erc4626Redeem(address(vault), shares, 0, RECEIVER, address(genericBundler1));
     }
 
@@ -106,7 +106,7 @@ contract ERC4626BundlerLocalTest is LocalTest {
 
         bundle.push(_erc4626Redeem(address(vault), shares, 0, RECEIVER, owner));
 
-        vm.expectRevert(ErrorsLib.UnexpectedOwner.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnexpectedOwner.selector, owner));
         hub.multicall(bundle);
     }
 

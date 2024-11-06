@@ -64,7 +64,7 @@ contract Hub is IHub {
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current bundler can call this function.
     function multicallFromBundler(Call[] calldata calls) external payable {
-        require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender());
+        require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender(msg.sender));
         _multicall(calls);
     }
 
