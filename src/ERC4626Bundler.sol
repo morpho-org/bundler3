@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseBundler} from "./BaseBundler.sol";
@@ -75,7 +75,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
@@ -98,7 +98,7 @@ abstract contract ERC4626Bundler is BaseBundler {
     {
         /// Do not check `receiver != address(this)` to allow the bundler to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
 
         uint256 initialShares = shares;
         shares = Math.min(shares, IERC4626(vault).balanceOf(owner));

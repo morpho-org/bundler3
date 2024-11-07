@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {IUniversalRewardsDistributor} from
     "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import "../src/libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {ErrorsLib as UrdErrorsLib} from "../lib/universal-rewards-distributor/src/libraries/ErrorsLib.sol";
 
 import {Merkle} from "../lib/murky/src/Merkle.sol";

@@ -40,7 +40,10 @@ abstract contract ForkTest is CommonTest, Configured {
 
         genericBundler1 = new GenericBundler1(address(hub), address(morpho), address(WETH));
 
-        paraswapBundler = new ParaswapBundler(address(hub), address(morpho), address(AUGUSTUS_REGISTRY));
+        if (block.chainid == 1) {
+            ethereumBundler1 = new EthereumBundler1(address(hub), DAI, WST_ETH);
+            paraswapBundler = new ParaswapBundler(address(hub), address(morpho), address(AUGUSTUS_REGISTRY));
+        }
 
         for (uint256 i; i < configMarkets.length; ++i) {
             ConfigMarket memory configMarket = configMarkets[i];
@@ -202,6 +205,10 @@ abstract contract ForkTest is CommonTest, Configured {
     }
 
     /* WRAPPED NATIVE ACTIONS */
+
+    function _wrapNativeNoFunding(uint256 amount, address receiver) internal view returns (Call memory) {
+        return _call(genericBundler1, abi.encodeCall(WNativeBundler.wrapNative, (amount, receiver)), 0);
+    }
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
         return _call(genericBundler1, abi.encodeCall(WNativeBundler.wrapNative, (amount, receiver)), amount);

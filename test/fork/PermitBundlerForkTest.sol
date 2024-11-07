@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import {DaiPermit, Permit} from "../helpers/SigUtils.sol";
 
@@ -23,9 +23,6 @@ contract PermitBundlerForkTest is ForkTest {
         super.setUp();
 
         permitToken = new ERC20PermitMock("Permit Token", "PT");
-        if (block.chainid == 1) {
-            ethereumBundler1 = new EthereumBundler1(address(hub), DAI, WST_ETH);
-        }
     }
 
     function testPermitDai(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {
@@ -45,7 +42,7 @@ contract PermitBundlerForkTest is ForkTest {
     }
 
     function testPermitDaiUnauthorized(address receiver) public onlyEthereum {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         ethereumBundler1.permitDai(receiver, 0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
     }
 
@@ -110,7 +107,7 @@ contract PermitBundlerForkTest is ForkTest {
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericBundler1.permit(address(USDC), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 

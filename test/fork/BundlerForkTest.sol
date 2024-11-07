@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import {MorphoBundler} from "../../src/MorphoBundler.sol";
 import "./helpers/ForkTest.sol";
@@ -76,7 +76,7 @@ contract EthereumBundlerForkTest is ForkTest {
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
         vm.prank(caller);
         hub.multicallFromBundler(new Call[](0));
     }

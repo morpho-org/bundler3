@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IHub} from "./interfaces/IHub.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
@@ -24,9 +24,15 @@ contract BaseBundler {
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
     modifier hubOnly() {
-        require(msg.sender == HUB, ErrorsLib.UnauthorizedSender());
+        require(msg.sender == HUB, ErrorsLib.UnauthorizedSender(msg.sender));
         _;
     }
+
+    /* FALLBACKS */
+
+    /// @notice Native tokens are received by the bundler and should be used afterwards.
+    /// @dev Allows the wrapped native contract to send native tokens to the bundler.
+    receive() external payable {}
 
     /* ACTIONS */
 

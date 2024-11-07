@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 import {IHub} from "./interfaces/IHub.sol";
 
-import "./libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";
@@ -64,7 +64,7 @@ contract Hub is IHub {
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current bundler can call this function.
     function multicallFromBundler(Call[] calldata calls) external payable {
-        require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender());
+        require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender(msg.sender));
         _multicall(calls);
     }
 

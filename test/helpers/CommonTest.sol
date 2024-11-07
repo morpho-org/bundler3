@@ -147,6 +147,7 @@ abstract contract CommonTest is Test {
     }
 
     function _call(BaseBundler bundler, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        require(address(bundler) != address(0), "Bundler address is zero");
         return Call({to: address(bundler), data: data, value: value});
     }
 
@@ -178,12 +179,12 @@ abstract contract CommonTest is Test {
         return _call(bundler, abi.encodeCall(bundler.erc20Transfer, (token, recipient, amount)));
     }
 
-    function _erc20TransferFrom(address token, uint256 amount) internal view returns (Call memory) {
-        return _erc20TransferFrom(token, address(genericBundler1), amount);
+    function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
+        return _call(genericBundler1, abi.encodeCall(TransferBundler.erc20TransferFrom, (token, recipient, amount)));
     }
 
-    function _erc20TransferFrom(address token, address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(genericBundler1, abi.encodeCall(TransferBundler.erc20TransferFrom, (token, receiver, amount)));
+    function _erc20TransferFrom(address token, uint256 amount) internal view returns (Call memory) {
+        return _erc20TransferFrom(token, address(genericBundler1), amount);
     }
 
     /* ERC20 WRAPPER ACTIONS */

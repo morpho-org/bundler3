@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import "../src/libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";

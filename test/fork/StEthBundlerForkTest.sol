@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import "../../src/libraries/ErrorsLib.sol" as ErrorsLib;
+import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import "../../src/ethereum/EthereumBundler1.sol";
 
@@ -18,8 +18,6 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         super.setUp();
 
         if (block.chainid != 1) return;
-
-        ethereumBundler1 = new EthereumBundler1(address(hub), DAI, WST_ETH);
     }
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
