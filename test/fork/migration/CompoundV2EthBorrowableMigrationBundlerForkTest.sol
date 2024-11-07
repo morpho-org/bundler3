@@ -37,6 +37,13 @@ contract CompoundV2EthLoanMigrationBundlerForkTest is MigrationForkTest {
         migrationBundler.compoundV2Repay(C_DAI_V2, amount);
     }
 
+    function testCompoundV2RedeemUnauthorized(uint256 amount, address receiver) public onlyEthereum {
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        migrationBundler.compoundV2Redeem(C_DAI_V2, amount, receiver);
+    }
+
     function testCompoundV2RepayCEthZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2Repay(C_ETH_V2, 0));
 

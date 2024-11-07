@@ -40,6 +40,13 @@ contract CompoundV3MigrationBundlerForkTest is MigrationForkTest {
         hub.multicall(bundle);
     }
 
+    function testCompoundV3AllowBySigUnauthorized(uint256 privateKey) public {
+        privateKey = boundPrivateKey(privateKey);
+
+        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        migrationBundler.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
+    }
+
     function testCompoundVAuthorizationWithSigRevert(uint256 privateKey, address owner) public {
         address user;
         (privateKey, user) = _boundPrivateKey(privateKey);
