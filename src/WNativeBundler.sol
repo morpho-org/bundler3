@@ -32,12 +32,6 @@ abstract contract WNativeBundler is BaseBundler {
         WRAPPED_NATIVE = wNative;
     }
 
-    /* FALLBACKS */
-
-    /// @notice Native tokens are received by the bundler and should be used afterwards.
-    /// @dev Allows the wrapped native contract to send native tokens to the bundler.
-    receive() external payable {}
-
     /* ACTIONS */
 
     /// @notice Wraps the given `amount` of the native token to wNative.

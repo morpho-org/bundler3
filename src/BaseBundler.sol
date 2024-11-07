@@ -28,6 +28,12 @@ contract BaseBundler {
         _;
     }
 
+    /* FALLBACKS */
+
+    /// @notice Native tokens are received by the bundler and should be used afterwards.
+    /// @dev Allows the wrapped native contract to send native tokens to the bundler.
+    receive() external payable {}
+
     /* ACTIONS */
 
     /// @notice Transfers the minimum between the given `amount` and the bundler's balance of native asset from the
