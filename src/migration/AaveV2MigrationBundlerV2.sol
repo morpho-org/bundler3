@@ -7,7 +7,7 @@ import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseBundler} from "../BaseBundler.sol";
-import {ERC20} from "./MigrationBundler.sol";
+import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {BundlerLib} from "../libraries/BundlerLib.sol";
 
 /// @title AaveV2MigrationBundlerV2
