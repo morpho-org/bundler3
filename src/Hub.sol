@@ -68,10 +68,42 @@ contract Hub is IHub {
         _multicall(calls);
     }
 
+    /// @notice Responds to calls from the current bundler.
+    /// @dev Triggers `_multicall` logic during a callback.
+    /// @dev Only the current bundler can call this function.
+    /// @dev Directly reads the calls from calldata to save gas.
+    function multicallFromBundler(bytes calldata data) external payable {
+        require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender(msg.sender));
+        Call[] calldata calls;
+        assembly {
+            calls.offset := add(data.offset, 64)
+            calls.length := calldataload(add(data.offset, 32))
+        }
+        _multicall(calls);
+    }
+
     /* INTERNAL */
 
-    /// @notice Executes a series of calls to bundlers.
-    function _multicall(Call[] memory calls) internal {
+    /// @notice Executes a series of calls to bundlers
+    /// @dev Calls are in calldata
+    function _multicall(Call[] calldata calls) internal {
+        for (uint256 i; i < calls.length; ++i) {
+            address previousBundler = currentBundler();
+            address bundler = calls[i].to;
+            setCurrentBundler(bundler);
+            (bool success, bytes memory returnData) = bundler.call{value: calls[i].value}(calls[i].data);
+
+            if (!success) {
+                BundlerLib.lowLevelRevert(returnData);
+            }
+
+            setCurrentBundler(previousBundler);
+        }
+    }
+
+    /// @notice Executes a series of calls to bundlers
+    /// @dev Calls are in memory
+    function _multicallFromMemory(Call[] memory calls) internal {
         for (uint256 i; i < calls.length; ++i) {
             address previousBundler = currentBundler();
             address bundler = calls[i].to;

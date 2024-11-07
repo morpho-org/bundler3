@@ -10,6 +10,7 @@ import {Call} from "./Call.sol";
 interface IHub {
     function multicall(Call[] calldata data) external payable;
     function multicallFromBundler(Call[] calldata data) external payable;
+    function multicallFromBundler(bytes calldata data) external payable;
     function currentBundler() external view returns (address bundler);
     function initiator() external view returns (address);
 }
