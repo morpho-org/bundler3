@@ -23,9 +23,6 @@ contract PermitBundlerForkTest is ForkTest {
         super.setUp();
 
         permitToken = new ERC20PermitMock("Permit Token", "PT");
-        if (block.chainid == 1) {
-            ethereumBundler1 = new EthereumBundler1(address(hub), DAI, WST_ETH);
-        }
     }
 
     function testPermitDai(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {

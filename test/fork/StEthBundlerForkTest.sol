@@ -18,8 +18,6 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         super.setUp();
 
         if (block.chainid != 1) return;
-
-        ethereumBundler1 = new EthereumBundler1(address(hub), DAI, WST_ETH);
     }
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {

@@ -6,6 +6,8 @@ pragma solidity ^0.8.0;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing error messages.
 library ErrorsLib {
+    /* STANDARD BUNDLERS */
+
     /// @dev Thrown when a multicall is attempted while the bundler in an initiated execution context.
     error AlreadyInitiated();
 
@@ -35,4 +37,12 @@ library ErrorsLib {
 
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
+
+    /* MIGRATION BUNDLERS */
+
+    /// @dev Thrown when repaying a CompoundV2 debt returns an error code.
+    error RepayError();
+
+    /// @dev Thrown when redeeming CompoundV2 cTokens returns an error code.
+    error RedeemError();
 }
