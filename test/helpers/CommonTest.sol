@@ -43,6 +43,13 @@ import {Call} from "../../src/interfaces/Call.sol";
 import "../../lib/forge-std/src/Test.sol";
 import "../../lib/forge-std/src/console2.sol";
 
+// Simplify hub.multicall in the absence of callbacks when writing tests.
+library HubLib {
+    function multicall(Hub hub, Call[] memory bundle) internal {
+        hub.multicall(bundle, new bytes32[](0));
+    }
+}
+
 uint256 constant MIN_AMOUNT = 1000;
 uint256 constant MAX_AMOUNT = 2 ** 64; // Must be less than or equal to type(uint160).max.
 uint256 constant SIGNATURE_DEADLINE = type(uint32).max;
@@ -110,6 +117,19 @@ abstract contract CommonTest is Test {
         vm.mockFunction(target, address(functionMocker), callData);
         (bool success,) = target.call(callData);
         require(success, "Function mocker call failed");
+    }
+
+    function _hashBundles(Call[] memory _bundle) internal pure returns (bytes32[] memory) {
+        bytes32[] memory hashes = new bytes32[](1);
+        hashes[0] = keccak256(abi.encode(_bundle));
+        return hashes;
+    }
+
+    function _hashBundles(Call[] memory bundle0, Call[] memory bundle1) internal pure returns (bytes32[] memory) {
+        bytes32[] memory hashes = new bytes32[](2);
+        hashes[0] = keccak256(abi.encode(bundle0));
+        hashes[1] = keccak256(abi.encode(bundle1));
+        return hashes;
     }
 
     /* GENERIC BUNDLER CALL */
@@ -270,12 +290,13 @@ abstract contract CommonTest is Test {
         uint256 slippageAmount,
         address onBehalf
     ) internal view returns (Call memory) {
+        bytes memory data;
+        if (callbackBundle.length > 0) {
+            data = abi.encode(callbackBundle);
+        }
         return _call(
             genericBundler1,
-            abi.encodeCall(
-                MorphoBundler.morphoSupply,
-                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(MorphoBundler.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
@@ -312,12 +333,13 @@ abstract contract CommonTest is Test {
         uint256 slippageAmount,
         address onBehalf
     ) internal view returns (Call memory) {
+        bytes memory data;
+        if (callbackBundle.length > 0) {
+            data = abi.encode(callbackBundle);
+        }
         return _call(
             genericBundler1,
-            abi.encodeCall(
-                MorphoBundler.morphoRepay,
-                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(MorphoBundler.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
@@ -326,11 +348,13 @@ abstract contract CommonTest is Test {
         view
         returns (Call memory)
     {
+        bytes memory data;
+        if (callbackBundle.length > 0) {
+            data = abi.encode(callbackBundle);
+        }
         return _call(
             genericBundler1,
-            abi.encodeCall(
-                MorphoBundler.morphoSupplyCollateral, (marketParams, assets, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(MorphoBundler.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
         );
     }
 
@@ -345,9 +369,11 @@ abstract contract CommonTest is Test {
     }
 
     function _morphoFlashLoan(address token, uint256 amount) internal view returns (Call memory) {
-        return _call(
-            genericBundler1, abi.encodeCall(MorphoBundler.morphoFlashLoan, (token, amount, abi.encode(callbackBundle)))
-        );
+        bytes memory data;
+        if (callbackBundle.length > 0) {
+            data = abi.encode(callbackBundle);
+        }
+        return _call(genericBundler1, abi.encodeCall(MorphoBundler.morphoFlashLoan, (token, amount, data)));
     }
 
     function _reallocateTo(

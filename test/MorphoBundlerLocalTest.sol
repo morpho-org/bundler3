@@ -19,6 +19,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
     using MorphoBalancesLib for IMorpho;
     using SharesMathLib for uint256;
     using MarketParamsLib for MarketParams;
+    using HubLib for Hub;
 
     function setUp() public override {
         super.setUp();
@@ -163,7 +164,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         loanToken.setBalance(USER, amount);
 
         vm.prank(USER);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _testSupply(amount, onBehalf);
     }
@@ -324,7 +325,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         collateralToken.setBalance(user, collateralAmount);
 
         vm.prank(user);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _testSupplyCollateralBorrow(user, amount, collateralAmount);
     }
@@ -435,7 +436,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoRepay(marketParams, amount, 0, 0, user));
 
         vm.prank(user);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
@@ -642,7 +643,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoFlashLoan(address(loanToken), amount));
 
         vm.prank(USER);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         assertEq(loanToken.balanceOf(USER), 0, "User's loan token balance");
         assertEq(loanToken.balanceOf(address(genericBundler1)), 0, "Bundler's loan token balance");
@@ -684,7 +685,7 @@ contract MorphoBundlerLocalTest is MetaMorphoLocalTest {
 
         vm.deal(USER, fee);
         vm.prank(USER);
-        hub.multicall{value: fee}(bundle);
+        hub.multicall{value: fee}(bundle, new bytes32[](0));
 
         assertEq(morpho.expectedSupplyAssets(idleMarketParams, address(vault)), 0, "final idle");
         assertEq(morpho.expectedSupplyAssets(marketParams, address(vault)), amount, "final market");

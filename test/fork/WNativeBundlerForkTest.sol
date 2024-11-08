@@ -6,6 +6,8 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import "./helpers/ForkTest.sol";
 
 contract WNativeBundlerForkTest is ForkTest {
+    using HubLib for Hub;
+
     function setUp() public override {
         super.setUp();
 
@@ -29,7 +31,7 @@ contract WNativeBundlerForkTest is ForkTest {
         deal(USER, amount);
 
         vm.prank(USER);
-        hub.multicall{value: amount}(bundle);
+        hub.multicall{value: amount}(bundle, new bytes32[](0));
 
         assertEq(ERC20(WETH).balanceOf(address(genericBundler1)), 0, "Bundler's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");

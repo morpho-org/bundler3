@@ -13,6 +13,7 @@ contract CompoundV2EthLoanMigrationBundlerForkTest is MigrationForkTest {
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
+    using HubLib for Hub;
 
     address[] internal enteredMarkets;
 
@@ -88,7 +89,7 @@ contract CompoundV2EthLoanMigrationBundlerForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user));
 
         vm.prank(user);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _assertBorrowerPosition(collateral, borrowed, user, address(genericBundler1));
     }

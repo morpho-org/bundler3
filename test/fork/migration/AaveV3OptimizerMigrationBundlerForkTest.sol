@@ -12,6 +12,7 @@ contract AaveV3OptimizerMigrationBundlerForkTest is MigrationForkTest {
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
+    using HubLib for Hub;
 
     uint256 public constant MAX_ITERATIONS = 15;
 
@@ -104,7 +105,7 @@ contract AaveV3OptimizerMigrationBundlerForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user));
 
         vm.prank(user);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericBundler1));
     }
@@ -140,7 +141,7 @@ contract AaveV3OptimizerMigrationBundlerForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user));
 
         vm.prank(user);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _assertBorrowerPosition(amountUsdt, borrowed, user, address(genericBundler1));
     }

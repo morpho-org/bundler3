@@ -9,6 +9,7 @@ error InvalidNonce();
 
 contract Permit2BundlerForkTest is ForkTest {
     using SafeTransferLib for ERC20;
+    using HubLib for Hub;
 
     function testApprove2(uint256 seed, uint256 privateKey, uint256 amount) public {
         privateKey = bound(privateKey, 1, type(uint160).max);

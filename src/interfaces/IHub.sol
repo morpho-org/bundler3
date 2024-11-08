@@ -8,8 +8,8 @@ import {Call} from "./Call.sol";
 /// @custom:contact security@morpho.org
 /// @notice Interface of Hub.
 interface IHub {
-    function multicall(Call[] calldata data) external payable;
-    function multicallFromBundler(Call[] calldata data) external payable;
+    function multicall(Call[] calldata initialBundle, bytes32[] calldata callbackBundlesHashes) external payable;
+    function multicallFromBundler(Call[] calldata bundle) external payable;
     function currentBundler() external view returns (address bundler);
     function initiator() external view returns (address);
 }

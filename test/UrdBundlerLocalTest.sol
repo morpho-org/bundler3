@@ -16,6 +16,8 @@ interface IUrdFactory {
 }
 
 contract UrdBundlerLocalTest is LocalTest {
+    using HubLib for Hub;
+
     IUrdFactory internal urdFactory;
     Merkle internal merkle;
 

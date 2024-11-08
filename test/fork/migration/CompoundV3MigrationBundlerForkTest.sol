@@ -12,6 +12,7 @@ contract CompoundV3MigrationBundlerForkTest is MigrationForkTest {
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
+    using HubLib for Hub;
 
     uint256 collateralSupplied = 10 ether;
     uint256 borrowed = 1 ether;
@@ -103,7 +104,7 @@ contract CompoundV3MigrationBundlerForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user));
 
         vm.prank(user);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
 
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericBundler1));
     }

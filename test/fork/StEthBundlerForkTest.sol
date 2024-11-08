@@ -13,6 +13,7 @@ bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972b
 
 contract EthereumStEthBundlerForkTest is ForkTest {
     using SafeTransferLib for ERC20;
+    using HubLib for Hub;
 
     function setUp() public override {
         super.setUp();
@@ -38,7 +39,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         deal(USER, amount);
 
         vm.prank(USER);
-        hub.multicall{value: amount}(bundle);
+        hub.multicall{value: amount}(bundle, new bytes32[](0));
 
         assertEq(USER.balance, 0, "USER.balance");
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
@@ -58,7 +59,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
         deal(USER, amount / 2);
 
         vm.prank(USER);
-        hub.multicall{value: amount / 2}(bundle);
+        hub.multicall{value: amount / 2}(bundle, new bytes32[](0));
 
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(USER), amount / 2, 3, "amount");
         assertApproxEqAbs(IStEth(ST_ETH).sharesOf(USER), shares / 2, 2, "shares");
@@ -77,7 +78,7 @@ contract EthereumStEthBundlerForkTest is ForkTest {
 
         vm.prank(USER);
         vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
-        hub.multicall{value: amount}(bundle);
+        hub.multicall{value: amount}(bundle, new bytes32[](0));
     }
 
     function testWrapZeroAmount(address receiver) public onlyEthereum {

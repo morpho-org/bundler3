@@ -31,7 +31,7 @@ contract BundlerMock is BaseBundler {
     }
 
     function callbackHubWithMulticall() external hubOnly {
-        IHub(HUB).multicall(new Call[](0));
+        IHub(HUB).multicall(new Call[](0), new bytes32[](0));
     }
 
     function emitCurrentBundler() external {}

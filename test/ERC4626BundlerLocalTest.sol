@@ -9,6 +9,8 @@ import {ERC4626Bundler} from "../src/ERC4626Bundler.sol";
 import "./helpers/LocalTest.sol";
 
 contract ERC4626BundlerLocalTest is LocalTest {
+    using HubLib for Hub;
+
     ERC4626Mock internal vault;
 
     function setUp() public override {

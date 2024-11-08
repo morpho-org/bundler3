@@ -6,6 +6,8 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 
 contract BaseBundlerLocalTest is LocalTest {
+    using HubLib for Hub;
+
     BaseBundler baseBundler;
 
     function setUp() public override {

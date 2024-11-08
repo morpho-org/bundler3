@@ -13,6 +13,7 @@ contract CompoundV2NoEthMigrationBundlerForkTest is MigrationForkTest {
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
+    using HubLib for Hub;
 
     address[] internal enteredMarkets;
 
@@ -71,7 +72,7 @@ contract CompoundV2NoEthMigrationBundlerForkTest is MigrationForkTest {
 
         vm.startPrank(user);
         ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
-        hub.multicall(bundle);
+        hub.multicall(bundle, _hashBundles(callbackBundle));
         vm.stopPrank();
 
         _assertBorrowerPosition(collateral, borrowed, user, address(genericBundler1));

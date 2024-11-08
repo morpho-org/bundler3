@@ -9,6 +9,8 @@ import {ERC20WrapperBundler} from "../src/ERC20WrapperBundler.sol";
 import "./helpers/LocalTest.sol";
 
 contract ERC20WrapperBundlerLocalTest is LocalTest {
+    using HubLib for Hub;
+
     ERC20WrapperMock internal loanWrapper;
 
     function setUp() public override {

@@ -258,7 +258,9 @@ abstract contract MorphoBundler is BaseBundler, IMorphoBundler {
     /* INTERNAL */
 
     /// @dev Triggers `_multicall` logic during a callback.
+    /// @dev Does not call back if data is empty.
     function _callback(bytes calldata data) internal {
+        if (data.length == 0) return;
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender(msg.sender));
 
         IHub(HUB).multicallFromBundler(abi.decode(data, (Call[])));

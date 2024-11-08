@@ -6,6 +6,8 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 
 contract TransferBundlerLocalTest is LocalTest {
+    using HubLib for Hub;
+
     function testTransferFrom(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 

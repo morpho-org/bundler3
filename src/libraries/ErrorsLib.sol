@@ -8,6 +8,12 @@ pragma solidity ^0.8.0;
 library ErrorsLib {
     /* STANDARD BUNDLERS */
 
+    /// @dev Thrown when attempting to execute a bundle with the wrong hash.
+    error InvalidBundle();
+
+    /// @dev Thrown when an expected bundle execution does not happen.
+    error MissingBundle();
+
     /// @dev Thrown when a multicall is attempted while the bundler in an initiated execution context.
     error AlreadyInitiated();
 

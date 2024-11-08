@@ -14,6 +14,7 @@ contract EthereumBundlerForkTest is ForkTest {
     using MorphoBalancesLib for IMorpho;
     using MarketParamsLib for MarketParams;
     using SafeTransferLib for ERC20;
+    using HubLib for Hub;
 
     function testSupplyWithPermit2(uint256 seed, uint256 amount, address onBehalf, uint256 privateKey, uint256 deadline)
         public
@@ -75,6 +76,9 @@ contract EthereumBundlerForkTest is ForkTest {
 
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(
+            address(hub), abi.encodeCall(FunctionMocker.setBundleHashAtIndex, (keccak256(abi.encode(new Call[](0))), 0))
+        );
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
         vm.prank(caller);
@@ -87,6 +91,9 @@ contract EthereumBundlerForkTest is ForkTest {
 
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
+        _delegatePrank(
+            address(hub), abi.encodeCall(FunctionMocker.setBundleHashAtIndex, (keccak256(abi.encode(new Call[](0))), 0))
+        );
 
         vm.prank(bundler);
         hub.multicallFromBundler(new Call[](0));

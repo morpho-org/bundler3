@@ -12,6 +12,8 @@ import {PermitBundler} from "../src/PermitBundler.sol";
 import "./helpers/LocalTest.sol";
 
 contract PermitBundlerLocalTest is LocalTest {
+    using HubLib for Hub;
+
     ERC20PermitMock internal permitToken;
 
     function setUp() public override {

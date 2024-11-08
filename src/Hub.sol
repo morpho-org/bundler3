@@ -5,7 +5,7 @@ import {IHub} from "./interfaces/IHub.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
-import {CURRENT_BUNDLER_SLOT} from "./libraries/ConstantsLib.sol";
+import {CURRENT_BUNDLER_SLOT, CURRENT_BUNDLE_HASH_INDEX_SLOT, BUNDLE_HASH_0_SLOT} from "./libraries/ConstantsLib.sol";
 import {Call} from "./interfaces/Call.sol";
 import {BundlerLib} from "./libraries/BundlerLib.sol";
 
@@ -49,23 +49,35 @@ contract Hub is IHub {
 
     /// @notice Executes a series of calls to bundlers.
     /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
-    /// @param calls The ordered array of calldata to execute.
-    function multicall(Call[] calldata calls) external payable {
+    /// @param initialBundle The ordered array of calldata to execute.
+    /// @param callbackBundlesHashes The ordered hashes of bundles that will be executed through `multicallFromBundler`.
+    /// @dev The number of given hashes must exactly match the number of subsequent calls.
+    function multicall(Call[] calldata initialBundle, bytes32[] calldata callbackBundlesHashes) external payable {
         require(initiator() == address(0), ErrorsLib.AlreadyInitiated());
 
         setInitiator(msg.sender);
 
-        _multicall(calls);
+        for (uint256 i = 0; i < callbackBundlesHashes.length; i++) {
+            setBundleHashAtIndex(callbackBundlesHashes[i], i);
+        }
+
+        _multicall(initialBundle);
+
+        require(useBundleHash() == hex"", ErrorsLib.MissingBundle());
 
         setInitiator(address(0));
     }
 
     /// @notice Responds to calls from the current bundler.
+    /// @param bundle The actions to execute.
+    /// @notice The `bundle` is checked against its hash, stored at the beginning of the initial bundle execution.
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current bundler can call this function.
-    function multicallFromBundler(Call[] calldata calls) external payable {
+    function multicallFromBundler(Call[] calldata bundle) external payable {
         require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender(msg.sender));
-        _multicall(calls);
+        require(useBundleHash() == keccak256(abi.encode(bundle)), ErrorsLib.InvalidBundle());
+
+        _multicall(bundle);
     }
 
     /* INTERNAL */
@@ -90,6 +102,26 @@ contract Hub is IHub {
     function setCurrentBundler(address bundler) internal {
         assembly ("memory-safe") {
             tstore(CURRENT_BUNDLER_SLOT, bundler)
+        }
+    }
+
+    /// @notice Transiently store `_hash` at index `index`.
+    /// @param bundleHash The hash to store.
+    /// @param index The index at which to store the hash.
+    function setBundleHashAtIndex(bytes32 bundleHash, uint256 index) internal {
+        assembly ("memory-safe") {
+            tstore(add(BUNDLE_HASH_0_SLOT, index), bundleHash)
+        }
+    }
+
+    /// @notice Return the current hash in the sequence and move to the next index.
+    /// @dev The current index starts at 0 and is stored in transient storage.
+    function useBundleHash() internal returns (bytes32 bundleHash) {
+        uint256 index;
+        assembly ("memory-safe") {
+            index := tload(CURRENT_BUNDLE_HASH_INDEX_SLOT)
+            tstore(CURRENT_BUNDLE_HASH_INDEX_SLOT, add(index, 1))
+            bundleHash := tload(add(BUNDLE_HASH_0_SLOT, index))
         }
     }
 }

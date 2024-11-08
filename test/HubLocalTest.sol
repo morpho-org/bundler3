@@ -10,8 +10,12 @@ import {CURRENT_BUNDLER_SLOT} from "../src/libraries/ConstantsLib.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 contract HubLocalTest is LocalTest {
+    using HubLib for Hub;
+
     BundlerMock bundlerMock;
     Call[] callbackBundle2;
+
+    bytes32[] internal callbackBundlesHashes;
 
     function setUp() public override {
         super.setUp();
@@ -29,6 +33,16 @@ contract HubLocalTest is LocalTest {
 
     function testInitiatorSlot() public pure {
         assertEq(ConstantsLib.INITIATOR_SLOT, keccak256("Morpho Bundler Hub Initiator Slot"));
+    }
+
+    function testCurrentBundleHashIndexSlot() public pure {
+        assertEq(
+            ConstantsLib.CURRENT_BUNDLE_HASH_INDEX_SLOT, keccak256("Morpho Bundler Current Bundle Hash Index Slot")
+        );
+    }
+
+    function testBundleHash0Slot() public pure {
+        assertEq(ConstantsLib.BUNDLE_HASH_0_SLOT, keccak256("Morpho Bundler Bundle Hash 0 Slot"));
     }
 
     function testAlreadyInitiated(address initiator) public {
@@ -49,7 +63,7 @@ contract HubLocalTest is LocalTest {
 
         vm.deal(initiator, value);
         vm.prank(initiator);
-        hub.multicall{value: value}(bundle);
+        hub.multicall{value: value}(bundle, new bytes32[](0));
     }
 
     function testNestedCallbackAndCurrentBundlerValue(address initiator) public {
@@ -65,10 +79,14 @@ contract HubLocalTest is LocalTest {
 
         bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle))));
 
-        vm.prank(initiator);
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle)));
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle2)));
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle2)));
 
+        vm.prank(initiator);
         vm.recordLogs();
-        hub.multicall(bundle);
+        hub.multicall(bundle, callbackBundlesHashes);
+
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
         assertEq(entries.length, 8);
@@ -107,5 +125,76 @@ contract HubLocalTest is LocalTest {
         bundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));
         hub.multicall(bundle);
+    }
+
+    function testZeroHashes() public {
+        bundle.push(_call(bundlerMock, abi.encodeCall(bundlerMock.emitInitiator, ())));
+        hub.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testSingleHash() public {
+        callbackBundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
+
+        bundle.push(_call(bundlerMock, abi.encodeCall(bundlerMock.callbackHub, (callbackBundle))));
+
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle)));
+
+        hub.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testWrongHash(bytes32 wrongHash) public {
+        callbackBundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
+
+        bundle.push(_call(bundlerMock, abi.encodeCall(bundlerMock.callbackHub, (callbackBundle))));
+
+        callbackBundlesHashes.push(wrongHash);
+
+        vm.expectRevert(ErrorsLib.InvalidBundle.selector);
+        hub.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testMissingHash() public {
+        callbackBundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
+
+        bundle.push(_call(bundlerMock, abi.encodeCall(bundlerMock.callbackHub, (callbackBundle))));
+
+        vm.expectRevert(ErrorsLib.InvalidBundle.selector);
+        hub.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testExtraHash(bytes32 _hash) public {
+        callbackBundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
+
+        callbackBundlesHashes.push(_hash);
+
+        vm.expectRevert(ErrorsLib.MissingBundle.selector);
+        hub.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testMulticallMultiHashOK() public {
+        callbackBundle2.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
+
+        callbackBundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle2))));
+
+        bundle.push(_call(bundlerMock, abi.encodeCall(bundlerMock.callbackHub, (callbackBundle))));
+
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle)));
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle2)));
+
+        hub.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testMulticallMultiHashWrongOrder() public {
+        callbackBundle2.push(_call(bundlerMock, abi.encodeCall(BundlerMock.emitInitiator, ())));
+
+        callbackBundle.push(_call(bundlerMock, abi.encodeCall(BundlerMock.callbackHub, (callbackBundle2))));
+
+        bundle.push(_call(bundlerMock, abi.encodeCall(bundlerMock.callbackHub, (callbackBundle))));
+
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle2)));
+        callbackBundlesHashes.push(keccak256(abi.encode(callbackBundle)));
+
+        vm.expectRevert(ErrorsLib.InvalidBundle.selector);
+        hub.multicall(bundle, callbackBundlesHashes);
     }
 }
