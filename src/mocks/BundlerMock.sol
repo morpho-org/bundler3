@@ -26,7 +26,7 @@ contract BundlerMock is BaseBundler {
 
     function callbackHub(Call[] calldata calls) external hubOnly {
         emit CurrentBundler(IHub(HUB).currentBundler());
-        IHub(HUB).multicallFromBundler(calls);
+        IHub(HUB).multicallFromBundler(abi.encode(calls));
         emit CurrentBundler(IHub(HUB).currentBundler());
     }
 

@@ -78,7 +78,7 @@ contract EthereumBundlerForkTest is ForkTest {
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
         vm.prank(caller);
-        hub.multicallFromBundler(new Call[](0));
+        hub.multicallFromBundler(abi.encode(new Call[](0)));
     }
 
     function testProtectedSuccessAsBundler(address initiator, address bundler) public {
@@ -89,6 +89,6 @@ contract EthereumBundlerForkTest is ForkTest {
         _delegatePrank(address(hub), abi.encodeCall(FunctionMocker.setCurrentBundler, (bundler)));
 
         vm.prank(bundler);
-        hub.multicallFromBundler(new Call[](0));
+        hub.multicallFromBundler(abi.encode(new Call[](0)));
     }
 }
