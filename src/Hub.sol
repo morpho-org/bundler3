@@ -75,7 +75,7 @@ contract Hub is IHub {
     /// @dev Only the current bundler can call this function.
     function multicallFromBundler(Call[] calldata bundle) external payable {
         require(msg.sender == currentBundler(), ErrorsLib.UnauthorizedSender(msg.sender));
-        require(useBundleHash() == keccak256(abi.encode(bundle)), ErrorsLib.InvalidBundle());
+        require(useBundleHash() == hashCalldataArgs(), ErrorsLib.InvalidBundle());
 
         _multicall(bundle);
     }
@@ -123,5 +123,14 @@ contract Hub is IHub {
             tstore(CURRENT_BUNDLE_HASH_INDEX_SLOT, add(index, 1))
             bundleHash := tload(add(BUNDLE_HASH_0_SLOT, index))
         }
+    }
+
+    /// @notice Hashes bytes [4:] of the calldata.
+    function hashCalldataArgs() internal pure returns (bytes32) {
+        bytes memory data = new bytes(msg.data.length - 4);
+        assembly ("memory-safe") {
+            calldatacopy(add(data, 32), 4, mload(data))
+        }
+        return keccak256(data);
     }
 }
