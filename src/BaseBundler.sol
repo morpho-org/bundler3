@@ -74,4 +74,14 @@ contract BaseBundler {
     function initiator() internal view returns (address) {
         return IHub(HUB).initiator();
     }
+
+    /// @notice Calls hub.multicallFromBundler with an already encoded Call array.
+    /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
+    /// @param data An abi-encoded Call[]
+    function multicallHub(bytes calldata data) internal {
+        (bool success, bytes memory returnData) = HUB.call(bytes.concat(IHub.multicallFromBundler.selector, data));
+        if (!success) {
+            BundlerLib.lowLevelRevert(returnData);
+        }
+    }
 }

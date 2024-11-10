@@ -71,7 +71,7 @@ contract Hub is IHub {
     /* INTERNAL */
 
     /// @notice Executes a series of calls to bundlers.
-    function _multicall(Call[] memory calls) internal {
+    function _multicall(Call[] calldata calls) internal {
         for (uint256 i; i < calls.length; ++i) {
             address previousBundler = currentBundler();
             address bundler = calls[i].to;
