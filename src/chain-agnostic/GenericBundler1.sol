@@ -27,9 +27,9 @@ contract GenericBundler1 is
 {
     /* CONSTRUCTOR */
 
-    constructor(address hub, address morpho, address weth)
+    constructor(address hub, address morpho, address wNative)
         BaseBundler(hub)
-        WNativeBundler(weth)
+        WNativeBundler(wNative)
         MorphoBundler(morpho)
     {}
 }
