@@ -5,7 +5,6 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 import {ERC4626Mock} from "../src/mocks/ERC4626Mock.sol";
 
-import {ERC4626Bundler} from "../src/ERC4626Bundler.sol";
 import "./helpers/LocalTest.sol";
 
 contract ERC4626BundlerLocalTest is LocalTest {

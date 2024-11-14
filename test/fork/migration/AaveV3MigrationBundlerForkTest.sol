@@ -304,7 +304,7 @@ contract AaveV3MigrationBundlerForkTest is MigrationForkTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, hashed);
 
         bytes memory callData =
-            abi.encodeCall(PermitBundler.permit, (aToken, bundler, amount, SIGNATURE_DEADLINE, v, r, s, false));
+            abi.encodeCall(GenericBundler1.permit, (aToken, bundler, amount, SIGNATURE_DEADLINE, v, r, s, false));
 
         return _call(genericBundler1, callData);
     }

@@ -5,7 +5,6 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 import {ERC20WrapperMock, ERC20Wrapper} from "../src/mocks/ERC20WrapperMock.sol";
 
-import {ERC20WrapperBundler} from "../src/ERC20WrapperBundler.sol";
 import "./helpers/LocalTest.sol";
 
 contract ERC20WrapperBundlerLocalTest is LocalTest {

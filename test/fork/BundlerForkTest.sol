@@ -5,7 +5,6 @@ import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTra
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
-import {MorphoBundler} from "../../src/MorphoBundler.sol";
 import "./helpers/ForkTest.sol";
 
 contract EthereumBundlerForkTest is ForkTest {

@@ -10,7 +10,6 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {ErrorsLib as MorphoErrorsLib} from "../lib/morpho-blue/src/libraries/ErrorsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 
-import {MorphoBundler} from "../src/MorphoBundler.sol";
 import "./helpers/MetaMorphoLocalTest.sol";
 
 contract MorphoBundlerLocalTest is MetaMorphoLocalTest {

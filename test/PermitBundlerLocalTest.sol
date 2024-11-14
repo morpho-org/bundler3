@@ -8,7 +8,6 @@ import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/
 import {ERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../src/mocks/ERC20PermitMock.sol";
 
-import {PermitBundler} from "../src/PermitBundler.sol";
 import "./helpers/LocalTest.sol";
 
 contract PermitBundlerLocalTest is LocalTest {
@@ -96,7 +95,7 @@ contract PermitBundlerLocalTest is LocalTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         bytes memory callData =
-            abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
+            abi.encodeCall(GenericBundler1.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
         return _call(genericBundler1, callData);
     }
 }
