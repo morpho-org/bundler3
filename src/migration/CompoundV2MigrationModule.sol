@@ -73,11 +73,13 @@ contract CompoundV2MigrationModule is BaseModule {
 
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (cToken == C_ETH) {
-            SafeTransferLib.safeTransferETH(receiver, address(this).balance);
-        } else {
-            address underlying = ICToken(cToken).underlying();
-            SafeTransferLib.safeTransfer(ERC20(underlying), receiver, ERC20(underlying).balanceOf(address(this)));
+        if (receiver != address(this)) {
+            if (cToken == C_ETH) {
+                SafeTransferLib.safeTransferETH(receiver, address(this).balance);
+            } else {
+                address underlying = ICToken(cToken).underlying();
+                SafeTransferLib.safeTransfer(ERC20(underlying), receiver, ERC20(underlying).balanceOf(address(this)));
+            }
         }
     }
 }
