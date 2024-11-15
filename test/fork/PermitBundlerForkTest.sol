@@ -163,7 +163,7 @@ contract PermitBundlerForkTest is ForkTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         bytes memory callData =
-            abi.encodeCall(PermitBundler.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
+            abi.encodeCall(GenericBundler1.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
 
         return _call(genericBundler1, callData);
     }
