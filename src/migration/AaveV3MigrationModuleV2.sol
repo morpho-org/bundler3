@@ -44,7 +44,7 @@ contract AaveV3MigrationModuleV2 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxTo(token, address(AAVE_V3_POOL));
+        ModuleLib.approveMaxToIfAllowanceZero(token, address(AAVE_V3_POOL));
 
         AAVE_V3_POOL.repay(token, amount, interestRateMode, initiator());
     }

@@ -37,7 +37,7 @@ contract CompoundV3MigrationModuleV2 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxTo(asset, instance);
+        ModuleLib.approveMaxToIfAllowanceZero(asset, instance);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
         ICompoundV3(instance).supplyTo(_initiator, asset, amount);

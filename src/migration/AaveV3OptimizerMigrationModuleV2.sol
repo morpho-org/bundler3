@@ -43,7 +43,7 @@ contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxTo(underlying, address(AAVE_V3_OPTIMIZER));
+        ModuleLib.approveMaxToIfAllowanceZero(underlying, address(AAVE_V3_OPTIMIZER));
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, initiator());
     }

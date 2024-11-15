@@ -13,7 +13,7 @@ library ModuleLib {
 
     /// @dev Gives the max approval to `spender` to spend the given `token` if not already approved.
     /// @dev Assumes that `type(uint256).max` is large enough to never have to increase the allowance again.
-    function approveMaxTo(address token, address spender) internal {
+    function approveMaxToIfAllowanceZero(address token, address spender) internal {
         if (ERC20(token).allowance(address(this), spender) == 0) {
             ERC20(token).safeApprove(spender, type(uint256).max);
         }

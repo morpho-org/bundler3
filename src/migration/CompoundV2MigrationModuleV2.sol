@@ -57,7 +57,7 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
 
             require(amount != 0, ErrorsLib.ZeroAmount());
 
-            ModuleLib.approveMaxTo(underlying, cToken);
+            ModuleLib.approveMaxToIfAllowanceZero(underlying, cToken);
 
             require(ICToken(cToken).repayBorrowBehalf(_initiator, amount) == 0, ErrorsLib.RepayError());
         }

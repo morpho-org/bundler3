@@ -32,7 +32,7 @@ abstract contract StEthModule is BaseModule {
         ST_ETH = IWstEth(wstEth).stETH();
         WST_ETH = wstEth;
 
-        ModuleLib.approveMaxTo(ST_ETH, WST_ETH);
+        ModuleLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
     }
 
     /* ACTIONS */

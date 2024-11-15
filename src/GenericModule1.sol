@@ -73,7 +73,7 @@ contract GenericModule1 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxTo(address(underlying), wrapper);
+        ModuleLib.approveMaxToIfAllowanceZero(address(underlying), wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
@@ -109,7 +109,7 @@ contract GenericModule1 is BaseModule {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        ModuleLib.approveMaxTo(IERC4626(vault).asset(), vault);
+        ModuleLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
         require(assets <= maxAssets, ErrorsLib.SlippageExceeded());
@@ -133,7 +133,7 @@ contract GenericModule1 is BaseModule {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxTo(asset, vault);
+        ModuleLib.approveMaxToIfAllowanceZero(asset, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(shares * initialAssets >= minShares * assets, ErrorsLib.SlippageExceeded());
@@ -258,7 +258,7 @@ contract GenericModule1 is BaseModule {
         // (via the `onMorphoSupply` callback).
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
 
-        ModuleLib.approveMaxTo(marketParams.loanToken, address(MORPHO));
+        ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
@@ -286,7 +286,7 @@ contract GenericModule1 is BaseModule {
         // (via the `onMorphoSupplyCollateral` callback).
         if (assets == type(uint256).max) assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
 
-        ModuleLib.approveMaxTo(marketParams.collateralToken, address(MORPHO));
+        ModuleLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
@@ -342,7 +342,7 @@ contract GenericModule1 is BaseModule {
         // (via the `onMorphoRepay` callback).
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
 
-        ModuleLib.approveMaxTo(marketParams.loanToken, address(MORPHO));
+        ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
@@ -392,7 +392,7 @@ contract GenericModule1 is BaseModule {
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external bundlerOnly {
-        ModuleLib.approveMaxTo(token, address(MORPHO));
+        ModuleLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
     }
