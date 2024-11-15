@@ -314,6 +314,6 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function _aaveV3Withdraw(address asset, uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModuleaveV3Withdraw, (asset, amount, receiver)));
+        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModule.aaveV3Withdraw, (asset, amount, receiver)));
     }
 }
