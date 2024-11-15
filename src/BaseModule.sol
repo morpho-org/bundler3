@@ -49,9 +49,7 @@ contract BaseModule {
 
         amount = Math.min(amount, address(this).balance);
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        SafeTransferLib.safeTransferETH(receiver, amount);
+        if (amount > 0) SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
     /// @notice Transfers the minimum between the given `amount` and the module's balance of `token` from the module
@@ -67,9 +65,7 @@ contract BaseModule {
 
         amount = Math.min(amount, ERC20(token).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
+        if (amount > 0) SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
     }
 
     /* INTERNAL */

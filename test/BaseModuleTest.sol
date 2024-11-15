@@ -14,7 +14,7 @@ contract BaseModuleLocalTest is LocalTest {
     }
 
     function testTransfer(uint256 amount) public {
-        amount = bound(amount, 1, MAX_AMOUNT);
+        amount = bound(amount, 0, MAX_AMOUNT);
 
         bundle.push(_erc20Transfer(address(loanToken), RECEIVER, amount, baseModule));
 
@@ -45,7 +45,7 @@ contract BaseModuleLocalTest is LocalTest {
     }
 
     function testNativeTransfer(uint256 amount) public {
-        amount = bound(amount, 1, MAX_AMOUNT);
+        amount = bound(amount, 0, MAX_AMOUNT);
 
         bundle.push(_nativeTransfer(RECEIVER, amount, baseModule));
 
