@@ -19,7 +19,7 @@ struct Withdrawal {
     uint128 amount;
 }
 
-/// @dev Copy of the Public Allocator interface but using the struct of morpho-blue imported by the bundler.
+/// @dev Copy of the Public Allocator interface but using the struct of morpho-blue imported by the module.
 interface IPublicAllocator {
     function MORPHO() external view returns (IMorpho);
     function owner(address vault) external view returns (address);
