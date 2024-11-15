@@ -9,11 +9,11 @@ import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
-/// @title CompoundV2MigrationModuleV2
+/// @title CompoundV2MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
-contract CompoundV2MigrationModuleV2 is BaseModule {
+contract CompoundV2MigrationModule is BaseModule {
     /* IMMUTABLES */
 
     /// @dev The address of the cETH contract.

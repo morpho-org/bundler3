@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {CompoundV3Authorization} from "../../helpers/SigUtils.sol";
 
-import "../../../src/migration/CompoundV3MigrationModuleV2.sol";
+import "../../../src/migration/CompoundV3MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -16,14 +16,14 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     uint256 collateralSupplied = 10 ether;
     uint256 borrowed = 1 ether;
 
-    CompoundV3MigrationModuleV2 public migrationModule;
+    CompoundV3MigrationModule public migrationModule;
 
     function setUp() public override {
         super.setUp();
 
         _initMarket(CB_ETH, WETH);
 
-        migrationModule = new CompoundV3MigrationModuleV2(address(bundler));
+        migrationModule = new CompoundV3MigrationModule(address(bundler));
     }
 
     function testCompoundV3RepayUnauthorized(uint256 amount) public {
@@ -208,7 +208,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     {
         return _call(
             migrationModule,
-            abi.encodeCall(CompoundV3MigrationModuleV2.compoundV3WithdrawFrom, (instance, asset, amount, receiver))
+            abi.encodeCall(CompoundV3MigrationModule.compoundV3WithdrawFrom, (instance, asset, amount, receiver))
         );
     }
 }

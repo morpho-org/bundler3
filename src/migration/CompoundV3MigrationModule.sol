@@ -10,11 +10,11 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title CompoundV3MigrationModuleV2
+/// @title CompoundV3MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.
-contract CompoundV3MigrationModuleV2 is BaseModule {
+contract CompoundV3MigrationModule is BaseModule {
     /* CONSTRUCTOR */
 
     /// @param bundler The Bundler contract address

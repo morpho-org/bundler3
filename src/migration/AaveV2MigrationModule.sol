@@ -10,11 +10,11 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title AaveV2MigrationModuleV2
+/// @title AaveV2MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V2 to Morpho Blue easily.
-contract AaveV2MigrationModuleV2 is BaseModule {
+contract AaveV2MigrationModule is BaseModule {
     /* IMMUTABLES */
 
     /// @dev The AaveV2 contract address.

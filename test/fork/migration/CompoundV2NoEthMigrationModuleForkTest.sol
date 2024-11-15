@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IComptroller} from "../../../src/migration/interfaces/IComptroller.sol";
 
-import "../../../src/migration/CompoundV2MigrationModuleV2.sol";
+import "../../../src/migration/CompoundV2MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -16,7 +16,7 @@ contract CompoundV2NoEthMigrationModuleForkTest is MigrationForkTest {
 
     address[] internal enteredMarkets;
 
-    CompoundV2MigrationModuleV2 public migrationModule;
+    CompoundV2MigrationModule public migrationModule;
 
     function setUp() public override {
         super.setUp();
@@ -25,7 +25,7 @@ contract CompoundV2NoEthMigrationModuleForkTest is MigrationForkTest {
 
         _initMarket(DAI, USDC);
 
-        migrationModule = new CompoundV2MigrationModuleV2(address(bundler), C_ETH_V2);
+        migrationModule = new CompoundV2MigrationModule(address(bundler), C_ETH_V2);
 
         enteredMarkets.push(C_DAI_V2);
     }
