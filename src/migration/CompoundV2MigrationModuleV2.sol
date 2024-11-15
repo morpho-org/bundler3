@@ -7,10 +7,7 @@ import {ICToken} from "./interfaces/ICToken.sol";
 import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
-import {BaseModule} from "../BaseModule.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
-import "forge-std/console.sol";
+import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
 /// @title CompoundV2MigrationModuleV2
 /// @author Morpho Labs
@@ -64,7 +61,6 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Redeems `amount` of `cToken` from CompoundV2.
-    /// @notice Withdrawn assets are received `receiver`.
     /// @dev Initiator must have previously transferred their cTokens to the module.
     /// @param cToken The address of the cToken contract
     /// @param amount The amount of `cToken` to redeem. Pass `type(uint256).max` to redeem the module's `cToken`
@@ -78,10 +74,10 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
         if (cToken == C_ETH) {
-            ModuleLib.nativeTransfer(receiver, address(this).balance);
+            SafeTransferLib.safeTransferETH(receiver, address(this).balance);
         } else {
             address underlying = ICToken(cToken).underlying();
-            ModuleLib.erc20Transfer(underlying, receiver, ERC20(underlying).balanceOf(address(this)));
+            SafeTransferLib.safeTransfer(ERC20(underlying), receiver, ERC20(underlying).balanceOf(address(this)));
         }
     }
 }

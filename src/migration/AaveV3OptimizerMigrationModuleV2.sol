@@ -49,7 +49,6 @@ contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
     }
 
     /// @notice Withdraws `amount` of `underlying` on the AaveV3 Optimizer, on behalf of the initiator`.
-    /// @notice Withdrawn assets are received by `receiver`.
     /// @dev Initiator must have previously approved the module to manage their AaveV3 Optimizer position.
     /// @param underlying The address of the underlying asset to withdraw.
     /// @param amount The amount of `underlying` to withdraw. Pass `type(uint256).max` to withdraw all.
@@ -65,7 +64,6 @@ contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
 
     /// @notice Withdraws `amount` of `underlying` used as collateral on the AaveV3 Optimizer, on behalf of the
     /// initiator.
-    /// @notice Withdrawn assets are received by `receiver`.
     /// @dev Initiator must have previously approved the module to manage their AaveV3 Optimizer position.
     /// @param underlying The address of the underlying asset to withdraw.
     /// @param amount The amount of `underlying` to withdraw. Pass `type(uint256).max` to withdraw all.

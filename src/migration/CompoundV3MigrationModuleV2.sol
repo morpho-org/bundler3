@@ -44,7 +44,6 @@ contract CompoundV3MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Withdraws `amount` of `asset` from the CompoundV3 `instance`, on behalf of the initiator.
-    /// @notice Withdrawn assets are received by `receiver`.
     /// @dev Initiator must have previously approved the module to manage their CompoundV3 position.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.

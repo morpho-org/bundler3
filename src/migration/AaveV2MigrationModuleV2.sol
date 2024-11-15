@@ -50,7 +50,6 @@ contract AaveV2MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Withdraws `amount` of `token` on AaveV2, on behalf of the initiator.
-    /// @notice Withdrawn tokens are received by `receiver`.
     /// @dev Initiator must have previously transferred their aTokens to the module.
     /// @param token The address of the token to withdraw.
     /// @param amount The amount of `token` to withdraw. Pass `type(uint256).max` to withdraw all.

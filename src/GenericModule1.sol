@@ -23,7 +23,7 @@ import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
 
-/// @title Module1
+/// @title GenericModule1
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
@@ -42,7 +42,6 @@ contract GenericModule1 is BaseModule {
     /* CONSTRUCTOR */
 
     constructor(address bundler, address morpho, address wNative) BaseModule(bundler) {
-        require(bundler != address(0), ErrorsLib.ZeroAddress());
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
 
@@ -54,15 +53,11 @@ contract GenericModule1 is BaseModule {
 
     // Enables the wrapping and unwrapping of ERC20 tokens. The largest usecase is to wrap permissionless tokens to
     // their permissioned counterparts and access permissioned markets on Morpho Blue. Permissioned tokens can be built
-    // using: https://gitbundler.com/morpho-org/erc20-permissioned
+    // using: https://github.com/morpho-org/erc20-permissioned
 
-    /// @notice Deposits underlying tokens and mints the corresponding amount of wrapped tokens to the initiator.
-    /// @dev Wraps tokens on behalf of the initiator to make sure they are able to receive and transfer wrapped tokens.
-    /// @dev Wrapped tokens must be transferred to the module afterwards to perform additional actions.
-    /// @dev Initiator must have previously transferred their tokens to the module.
-    /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface and that the `depositFor` function returns a
-    /// @dev Assumes that the ERC20Wrapper wraps tokens 1:1.
-    /// boolean.
+    /// @notice Deposits underlying tokens and mints the corresponding amount of wrapped tokens.
+    /// @dev Underlying tokens must have been previously sent to the module.
+    /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
     /// @param receiver The account receiving the wrapped tokens.
     /// @param amount The amount of underlying tokens to deposit. Capped at the module's balance.
@@ -78,10 +73,9 @@ contract GenericModule1 is BaseModule {
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
 
-    /// @notice Burns a number of wrapped tokens and withdraws the corresponding number of underlying tokens.
-    /// @dev Initiator must have previously transferred their wrapped tokens to the module.
-    /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface and that the `withdrawTo` function returns a
-    /// boolean.
+    /// @notice Burns wrapped tokens and withdraws the corresponding amount of underlying tokens.
+    /// @dev Wrapped tokens must have been previously sent to the module.
+    /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
     /// @param receiver The address receiving the underlying tokens.
     /// @param amount The amount of wrapped tokens to burn. Capped at the module's balance.
@@ -98,14 +92,13 @@ contract GenericModule1 is BaseModule {
     /* ERC4626 ACTIONS */
 
     /// @notice Mints the given amount of `shares` on the given ERC4626 `vault`, on behalf of `receiver`.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param shares The amount of shares to mint.
     /// @param maxAssets The maximum amount of assets to deposit in exchange for `shares`.
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver) external bundlerOnly {
-        /// Do not check `receiver != address(this)` to allow the module to receive the vault's shares.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
@@ -116,7 +109,7 @@ contract GenericModule1 is BaseModule {
     }
 
     /// @notice Deposits the given amount of `assets` on the given ERC4626 `vault`, on behalf of `receiver`.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param assets The amount of assets to deposit. Capped at the module's assets.
@@ -124,7 +117,6 @@ contract GenericModule1 is BaseModule {
     /// scaled down in case there are fewer assets than `assets` on the module.
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver) external bundlerOnly {
-        /// Do not check `receiver != address(this)` to allow the module to receive the vault's shares.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         uint256 initialAssets = assets;
@@ -139,21 +131,19 @@ contract GenericModule1 is BaseModule {
         require(shares * initialAssets >= minShares * assets, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Withdraws the given amount of `assets` from the given ERC4626 `vault`, transferring assets to
-    /// `receiver`.
+    /// @notice Withdraws the given amount of `assets` from the given ERC4626 `vault` to `receiver`.
     /// @dev Assumes the given `vault` implements EIP-4626.
+    /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
+    /// Otherwise, they must have previously transferred their vault shares to the module.
     /// @param vault The address of the vault.
     /// @param assets The amount of assets to withdraw.
     /// @param maxShares The maximum amount of shares to redeem in exchange for `assets`.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the assets are withdrawn. Can only be the module or the initiator.
-    /// If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
-    /// Otherwise, they must have previously transferred their vault shares to the module.
     function erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
         external
         bundlerOnly
     {
-        /// Do not check `receiver != address(this)` to allow the module to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
         require(assets != 0, ErrorsLib.ZeroAmount());
@@ -162,21 +152,20 @@ contract GenericModule1 is BaseModule {
         require(shares <= maxShares, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Redeems the given amount of `shares` from the given ERC4626 `vault`, transferring assets to `receiver`.
+    /// @notice Redeems the given amount of `shares` from the given ERC4626 `vault` to `receiver`.
     /// @dev Assumes the given `vault` implements EIP-4626.
+    /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
+    /// Otherwise, they must have previously transferred their vault shares to the module.
     /// @param vault The address of the vault.
     /// @param shares The amount of shares to redeem. Capped at the owner's shares.
     /// @param minAssets The minimum amount of assets to withdraw in exchange for `shares`. This parameter is
     /// proportionally scaled down in case the owner holds fewer shares than `shares`.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the shares are redeemed. Can only be the module or the initiator.
-    /// If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
-    /// Otherwise, they must have previously transferred their vault shares to the module.
     function erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
         external
         bundlerOnly
     {
-        /// Do not check `receiver != address(this)` to allow the module to receive the underlying asset.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
 
@@ -192,22 +181,18 @@ contract GenericModule1 is BaseModule {
     /* MORPHO CALLBACKS */
 
     function onMorphoSupply(uint256, bytes calldata data) external {
-        // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _morphoCallback(data);
     }
 
     function onMorphoSupplyCollateral(uint256, bytes calldata data) external {
-        // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _morphoCallback(data);
     }
 
     function onMorphoRepay(uint256, bytes calldata data) external {
-        // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _morphoCallback(data);
     }
 
     function onMorphoFlashLoan(uint256, bytes calldata data) external {
-        // Don't need to approve Morpho to pull tokens because it should already be approved max.
         _morphoCallback(data);
     }
 
@@ -230,11 +215,10 @@ contract GenericModule1 is BaseModule {
     }
 
     /// @notice Supplies `assets` of the loan asset on behalf of `onBehalf`.
-    /// @notice The supplied assets cannot be used as collateral but is eligible to earn interest.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// module is guaranteed to have `assets` tokens pulled from its balance, but the possibility to mint a specific
     /// amount of shares is given for full compatibility and precision.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param marketParams The Morpho market to supply assets to.
     /// @param assets The amount of assets to supply. Pass `type(uint256).max` to supply the module's loan asset
     /// balance.
@@ -251,7 +235,7 @@ contract GenericModule1 is BaseModule {
         address onBehalf,
         bytes calldata data
     ) external bundlerOnly {
-        // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
+        // Do not check `onBehalf` against the zero address as it's done in Morpho.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
 
         // Don't always cap the assets to the module's balance because the liquidity can be transferred later
@@ -267,7 +251,7 @@ contract GenericModule1 is BaseModule {
     }
 
     /// @notice Supplies `assets` of collateral on behalf of `onBehalf`.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param marketParams The Morpho market to supply collateral to.
     /// @param assets The amount of collateral to supply. Pass `type(uint256).max` to supply the module's collateral
     /// balance.
@@ -320,6 +304,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// module is guaranteed to have `assets` tokens pulled from its balance, but the possibility to burn a specific
     /// amount of shares is given for full compatibility and precision.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param marketParams The Morpho market to repay assets to.
     /// @param assets The amount of assets to repay. Pass `type(uint256).max` to repay the module's loan asset balance.
     /// @param shares The amount of shares to burn.
@@ -475,7 +460,7 @@ contract GenericModule1 is BaseModule {
     /* TRANSFER ACTIONS */
 
     /// @notice Transfers the given `amount` of `token` from sender to this contract via ERC20 transferFrom.
-    /// @notice User must have given sufficient allowance to the Module to spend their tokens.
+    /// @notice Initiator must have given sufficient allowance to the Module to spend their tokens.
     /// @notice The amount must be strictly positive.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
@@ -492,9 +477,7 @@ contract GenericModule1 is BaseModule {
     /* WRAPPED NATIVE TOKEN ACTIONS */
 
     /// @notice Wraps the given `amount` of the native token to wNative.
-    /// @notice Wrapped native tokens are received by the module and should be used afterwards.
-    /// @dev Initiator must have previously transferred their native tokens to the module.
-    /// @dev Assumes that native token wrapper wraps at 1:1.
+    /// @dev Native tokens must have been previously sent to the module.
     /// @param amount The amount of native token to wrap. Capped at the module's native token balance.
     /// @param receiver The account receiving the wrapped native tokens.
     function wrapNative(uint256 amount, address receiver) external payable bundlerOnly {
@@ -503,13 +486,11 @@ contract GenericModule1 is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         WRAPPED_NATIVE.deposit{value: amount}();
-        ModuleLib.erc20Transfer(address(WRAPPED_NATIVE), receiver, amount);
+        if (receiver != address(this)) ERC20(address(WRAPPED_NATIVE)).safeTransfer(receiver, amount);
     }
 
     /// @notice Unwraps the given `amount` of wNative to the native token.
-    /// @notice Unwrapped native tokens are received by the module and should be used afterwards.
-    /// @dev Initiator must have previously transferred their wrapped native tokens to the module.
-    /// @dev Assumes that native token wrapper unwraps at 1:1.
+    /// @dev Wrapped native tokens must have been previously sent to the module.
     /// @param amount The amount of wrapped native token to unwrap. Capped at the module's wNative balance.
     /// @param receiver The account receiving the native tokens.
     function unwrapNative(uint256 amount, address receiver) external bundlerOnly {
@@ -518,7 +499,7 @@ contract GenericModule1 is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         WRAPPED_NATIVE.withdraw(amount);
-        ModuleLib.nativeTransfer(receiver, amount);
+        if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
     /* UNIVERSAL REWARDS DISTRIBUTOR ACTIONS */
@@ -553,6 +534,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Triggers `_multicall` logic during a callback.
     function _morphoCallback(bytes calldata data) internal {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender(msg.sender));
+        // No need to approve Morpho to pull tokens because it should already be approved max.
 
         multicallBundler(data);
     }
