@@ -134,7 +134,7 @@ contract GenericModule1 is BaseModule {
     /// @notice Withdraws the given amount of `assets` from the given ERC4626 `vault` to `receiver`.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
-    /// Otherwise, they must have previously transferred their vault shares to the module.
+    /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param assets The amount of assets to withdraw.
     /// @param maxShares The maximum amount of shares to redeem in exchange for `assets`.
@@ -155,7 +155,7 @@ contract GenericModule1 is BaseModule {
     /// @notice Redeems the given amount of `shares` from the given ERC4626 `vault` to `receiver`.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
-    /// Otherwise, they must have previously transferred their vault shares to the module.
+    /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param shares The amount of shares to redeem. Capped at the owner's shares.
     /// @param minAssets The minimum amount of assets to withdraw in exchange for `shares`. This parameter is

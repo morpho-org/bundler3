@@ -38,7 +38,7 @@ abstract contract StEthModule is BaseModule {
     /* ACTIONS */
 
     /// @notice Stakes the given `amount` of ETH via Lido, using the `referral` id.
-    /// @dev Initiator must have previously transferred their ETH to the module.
+    /// @dev ETH must have been previously sent to the module.
     /// @param amount The amount of ETH to stake. Capped at the module's ETH balance.
     /// @param minShares The minimum amount of shares to mint in exchange for `amount`. This parameter is
     /// proportionally scaled down in case there is fewer ETH than `amount` on the module.
@@ -61,7 +61,7 @@ abstract contract StEthModule is BaseModule {
     }
 
     /// @notice Wraps the given `amount` of stETH to wstETH.
-    /// @dev Initiator must have previously transferred their stETH tokens to the module.
+    /// @dev stETH must have been previously sent to the module.
     /// @param amount The amount of stEth to wrap. Capped at the module's stETH balance.
     /// @param receiver The account receiving the wstETH tokens.
     function wrapStEth(uint256 amount, address receiver) external bundlerOnly {
@@ -74,7 +74,7 @@ abstract contract StEthModule is BaseModule {
     }
 
     /// @notice Unwraps the given `amount` of wstETH to stETH.
-    /// @dev Initiator must have previously transferred their wstETH tokens to the module.
+    /// @dev wstETH must have been previously sent to the module.
     /// @param amount The amount of wstEth to unwrap. Capped at the module's wstETH balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external bundlerOnly {

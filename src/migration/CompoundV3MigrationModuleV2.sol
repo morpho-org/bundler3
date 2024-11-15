@@ -23,7 +23,7 @@ contract CompoundV3MigrationModuleV2 is BaseModule {
     /* ACTIONS */
 
     /// @notice Repays `amount` on the CompoundV3 `instance`, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param amount The amount of `asset` to repay. Capped at the maximum repayable debt

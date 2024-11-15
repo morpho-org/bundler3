@@ -32,7 +32,7 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
     /* ACTIONS */
 
     /// @notice Repays `amount` of `cToken`'s underlying asset, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
     /// @param amount The amount of `cToken` to repay. Capped at the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
@@ -61,7 +61,7 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Redeems `amount` of `cToken` from CompoundV2.
-    /// @dev Initiator must have previously transferred their cTokens to the module.
+    /// @dev cTokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract
     /// @param amount The amount of `cToken` to redeem. Pass `type(uint256).max` to redeem the module's `cToken`
     /// balance.

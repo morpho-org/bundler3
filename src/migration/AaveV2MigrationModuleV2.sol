@@ -34,7 +34,7 @@ contract AaveV2MigrationModuleV2 is BaseModule {
     /* ACTIONS */
 
     /// @notice Repays `amount` of `token` on AaveV2, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their tokens to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
     /// @param amount The amount of `token` to repay. Capped at the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
@@ -50,7 +50,7 @@ contract AaveV2MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Withdraws `amount` of `token` on AaveV2, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their aTokens to the module.
+    /// @dev aTokens must have been previously sent to the module.
     /// @param token The address of the token to withdraw.
     /// @param amount The amount of `token` to withdraw. Pass `type(uint256).max` to withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
