@@ -89,6 +89,9 @@ jobs:
 
       - uses: ./.github/actions/install-cache
 
+      - name: Forge build
+        run: yarn build
+
       - name: Run fork tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
         run: yarn test:fork --chain ${{ matrix.chain }}
         env:
