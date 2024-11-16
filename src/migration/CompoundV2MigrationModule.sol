@@ -10,8 +10,6 @@ import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
-import {console} from "forge-std/console.sol";
-
 /// @title CompoundV2MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
