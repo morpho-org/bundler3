@@ -13,4 +13,6 @@ interface IStEth {
     function getCurrentStakeLimit() external view returns (uint256);
 
     function submit(address _referral) external payable returns (uint256);
+
+    function transfer(address _recipient, uint256 _amount) external returns (bool);
 }
