@@ -6,11 +6,11 @@ import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 import {BaseModule} from "../BaseModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title EthereumPermitModule
+/// @title EthereumDaiPermitModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice PermitModule contract specific to Ethereum, handling permit to DAI.
-abstract contract EthereumPermitModule is BaseModule {
+abstract contract EthereumDaiPermitModule is BaseModule {
     /* IMMUTABLES */
 
     address public immutable DAI;

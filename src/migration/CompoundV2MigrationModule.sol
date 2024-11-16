@@ -6,17 +6,17 @@ import {ICToken} from "./interfaces/ICToken.sol";
 
 import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {BaseModule} from "../BaseModule.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
-import "forge-std/console.sol";
+import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
-/// @title CompoundV2MigrationModuleV2
+import {console} from "forge-std/console.sol";
+
+/// @title CompoundV2MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
-contract CompoundV2MigrationModuleV2 is BaseModule {
+contract CompoundV2MigrationModule is BaseModule {
     /* IMMUTABLES */
 
     /// @dev The address of the cETH contract.
@@ -35,7 +35,7 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
     /* ACTIONS */
 
     /// @notice Repays `amount` of `cToken`'s underlying asset, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
     /// @param amount The amount of `cToken` to repay. Capped at the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
@@ -64,8 +64,7 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Redeems `amount` of `cToken` from CompoundV2.
-    /// @notice Withdrawn assets are received `receiver`.
-    /// @dev Initiator must have previously transferred their cTokens to the module.
+    /// @dev cTokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract
     /// @param amount The amount of `cToken` to redeem. Pass `type(uint256).max` to redeem the module's `cToken`
     /// balance.
@@ -75,13 +74,15 @@ contract CompoundV2MigrationModuleV2 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        uint256 received = MathLib.wMulDown(ICToken(cToken).exchangeRateCurrent(), amount);
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (cToken == C_ETH) {
-            ModuleLib.nativeTransfer(receiver, address(this).balance);
-        } else {
-            address underlying = ICToken(cToken).underlying();
-            ModuleLib.erc20Transfer(underlying, receiver, ERC20(underlying).balanceOf(address(this)));
+        if (receiver != address(this)) {
+            if (cToken == C_ETH) {
+                SafeTransferLib.safeTransferETH(receiver, received);
+            } else {
+                SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
+            }
         }
     }
 }

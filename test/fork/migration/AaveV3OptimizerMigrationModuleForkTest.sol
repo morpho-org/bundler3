@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {Authorization as AaveV3OptimizerAuthorization} from "../../../src/migration/interfaces/IAaveV3Optimizer.sol";
 
-import "../../../src/migration/AaveV3OptimizerMigrationModuleV2.sol";
+import "../../../src/migration/AaveV3OptimizerMigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -18,7 +18,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     uint256 collateralSupplied = 10_000 ether;
     uint256 borrowed = 1 ether;
 
-    AaveV3OptimizerMigrationModuleV2 public migrationModule;
+    AaveV3OptimizerMigrationModule public migrationModule;
 
     function setUp() public override {
         if (block.chainid != 1) return;
@@ -29,7 +29,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         vm.label(AAVE_V3_OPTIMIZER, "AaveV3Optimizer");
 
-        migrationModule = new AaveV3OptimizerMigrationModuleV2(address(bundler), address(AAVE_V3_OPTIMIZER));
+        migrationModule = new AaveV3OptimizerMigrationModule(address(bundler), address(AAVE_V3_OPTIMIZER));
     }
 
     function testAaveV3OptimizerRepayUnauthorized(uint256 amount) public onlyEthereum {

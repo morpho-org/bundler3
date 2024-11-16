@@ -10,11 +10,11 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title AaveV3MigrationModuleV2
+/// @title AaveV3MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V3 to Morpho Blue easily.
-contract AaveV3MigrationModuleV2 is BaseModule {
+contract AaveV3MigrationModule is BaseModule {
     /* IMMUTABLES */
 
     /// @dev The AaveV3 contract address.
@@ -34,7 +34,7 @@ contract AaveV3MigrationModuleV2 is BaseModule {
     /* ACTIONS */
 
     /// @notice Repays `amount` of `token` on AaveV3, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their tokens to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
     /// @param amount The amount of `token` to repay. Capped at the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
@@ -50,8 +50,7 @@ contract AaveV3MigrationModuleV2 is BaseModule {
     }
 
     /// @notice Withdraws `amount` of `token` on AaveV3, on behalf of the initiator.
-    /// @notice Withdrawn tokens are received by `receiver`
-    /// @dev Initiator must have previously transferred their aTokens to the module.
+    /// @dev aTokens must have been previously sent to the module.
     /// @param token The address of the token to withdraw.
     /// @param amount The amount of `token` to withdraw. Pass `type(uint256).max` to withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.

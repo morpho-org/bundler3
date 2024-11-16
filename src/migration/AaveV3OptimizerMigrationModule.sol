@@ -10,11 +10,11 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title AaveV3OptimizerMigrationModuleV2
+/// @title AaveV3OptimizerMigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho Blue easily.
-contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
+contract AaveV3OptimizerMigrationModule is BaseModule {
     /* IMMUTABLES */
 
     /// @dev The AaveV3 optimizer contract address.
@@ -34,7 +34,7 @@ contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
     /* ACTIONS */
 
     /// @notice Repays `amount` of `underlying` on the AaveV3 Optimizer, on behalf of the initiator.
-    /// @dev Initiator must have previously transferred their assets to the module.
+    /// @dev Underlying tokens must have been previously sent to the module.
     /// @param underlying The address of the underlying asset to repay.
     /// @param amount The amount of `underlying` to repay. Capped at the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
@@ -49,7 +49,6 @@ contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
     }
 
     /// @notice Withdraws `amount` of `underlying` on the AaveV3 Optimizer, on behalf of the initiator`.
-    /// @notice Withdrawn assets are received by `receiver`.
     /// @dev Initiator must have previously approved the module to manage their AaveV3 Optimizer position.
     /// @param underlying The address of the underlying asset to withdraw.
     /// @param amount The amount of `underlying` to withdraw. Pass `type(uint256).max` to withdraw all.
@@ -65,7 +64,6 @@ contract AaveV3OptimizerMigrationModuleV2 is BaseModule {
 
     /// @notice Withdraws `amount` of `underlying` used as collateral on the AaveV3 Optimizer, on behalf of the
     /// initiator.
-    /// @notice Withdrawn assets are received by `receiver`.
     /// @dev Initiator must have previously approved the module to manage their AaveV3 Optimizer position.
     /// @param underlying The address of the underlying asset to withdraw.
     /// @param amount The amount of `underlying` to withdraw. Pass `type(uint256).max` to withdraw all.

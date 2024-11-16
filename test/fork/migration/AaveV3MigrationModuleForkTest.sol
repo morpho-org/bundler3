@@ -5,7 +5,7 @@ import {IAToken} from "./interfaces/IAToken.sol";
 import {IAaveV3} from "../../../src/migration/interfaces/IAaveV3.sol";
 
 import {SigUtils, Permit} from "../../helpers/SigUtils.sol";
-import "../../../src/migration/AaveV3MigrationModuleV2.sol";
+import "../../../src/migration/AaveV3MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -20,7 +20,7 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
     uint256 collateralSupplied;
     uint256 borrowed = 1 ether;
 
-    AaveV3MigrationModuleV2 public migrationModule;
+    AaveV3MigrationModule public migrationModule;
 
     function setUp() public override {
         super.setUp();
@@ -37,7 +37,7 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
 
         vm.label(AAVE_V3_POOL, "Aave V3 Pool");
 
-        migrationModule = new AaveV3MigrationModuleV2(address(bundler), address(AAVE_V3_POOL));
+        migrationModule = new AaveV3MigrationModule(address(bundler), address(AAVE_V3_POOL));
         vm.label(address(migrationModule), "Aave V3 Migration Module");
     }
 
@@ -310,10 +310,10 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function _aaveV3Repay(address asset, uint256 amount) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModuleV2.aaveV3Repay, (asset, amount, RATE_MODE)));
+        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModule.aaveV3Repay, (asset, amount, RATE_MODE)));
     }
 
     function _aaveV3Withdraw(address asset, uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModuleV2.aaveV3Withdraw, (asset, amount, receiver)));
+        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModule.aaveV3Withdraw, (asset, amount, receiver)));
     }
 }

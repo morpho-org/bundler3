@@ -26,25 +26,4 @@ library ModuleLib {
             revert(add(32, returnData), mload(returnData))
         }
     }
-
-    /// @notice Transfer an `amount` of `token` to `receiver`.
-    /// @dev Skips if receiver is address(this) or the amount is 0.
-    /// @param token The address of the ERC20 token to transfer.
-    /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of `token` to transfer.
-    function erc20Transfer(address token, address receiver, uint256 amount) internal {
-        if (receiver != address(this) && amount > 0) {
-            ERC20(token).safeTransfer(receiver, amount);
-        }
-    }
-
-    /// @notice Transfer an `amount` of native tokens to `receiver`.
-    /// @dev Skips if receiver is address(this) or the amount is 0.
-    /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of native tokens to transfer.
-    function nativeTransfer(address receiver, uint256 amount) internal {
-        if (receiver != address(this) && amount > 0) {
-            SafeTransferLib.safeTransferETH(receiver, amount);
-        }
-    }
 }

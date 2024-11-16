@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IBundler} from "./interfaces/IBundler.sol";
 import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
@@ -16,6 +16,7 @@ contract BaseModule {
 
     constructor(address bundler) {
         require(bundler != address(0), ErrorsLib.ZeroAddress());
+
         BUNDLER = bundler;
     }
 
@@ -48,7 +49,7 @@ contract BaseModule {
 
         amount = Math.min(amount, address(this).balance);
 
-        ModuleLib.nativeTransfer(receiver, amount);
+        if (amount > 0) SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
     /// @notice Transfers the minimum between the given `amount` and the module's balance of `token` from the module
@@ -64,7 +65,7 @@ contract BaseModule {
 
         amount = Math.min(amount, ERC20(token).balanceOf(address(this)));
 
-        ModuleLib.erc20Transfer(token, receiver, amount);
+        if (amount > 0) SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
     }
 
     /* INTERNAL */
