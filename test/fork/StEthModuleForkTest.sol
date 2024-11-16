@@ -48,22 +48,6 @@ contract EthereumStEthModuleForkTest is ForkTest {
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), amount, 3, "balanceOf(RECEIVER)");
     }
 
-    function testStakeEthSlippageAdapts(uint256 amount) public onlyEthereum {
-        amount = bound(amount, MIN_AMOUNT, 10_000 ether);
-
-        uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
-
-        bundle.push(_stakeEth(amount, shares - 2, address(0), USER, amount / 2));
-
-        deal(USER, amount / 2);
-
-        vm.prank(USER);
-        bundler.multicall{value: amount / 2}(bundle);
-
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(USER), amount / 2, 3, "amount");
-        assertApproxEqAbs(IStEth(ST_ETH).sharesOf(USER), shares / 2, 2, "shares");
-    }
-
     function testStakeEthSlippageExceeded(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, 10_000 ether);
 

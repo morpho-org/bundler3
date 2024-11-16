@@ -48,7 +48,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param asset The address of the token to withdraw.
-    /// @param amount The amount of `asset` to withdraw. Pass `type(uint256).max` to withdraw all.
+    /// @param amount The amount of `asset` to withdraw. Pass max to withdraw the initiator's balance.
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
@@ -59,7 +59,7 @@ contract CompoundV3MigrationModule is BaseModule {
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
 
-        amount = Math.min(amount, balance);
+        if (amount == type(uint256).max) amount = balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

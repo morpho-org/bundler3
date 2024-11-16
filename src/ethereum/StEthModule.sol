@@ -4,7 +4,6 @@ pragma solidity 0.8.27;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
@@ -49,23 +48,22 @@ abstract contract StEthModule is BaseModule {
         payable
         bundlerOnly
     {
-        uint256 initialAmount = amount;
-        amount = Math.min(amount, address(this).balance);
+        if (amount == type(uint256).max) amount = address(this).balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(sharesReceived * initialAmount >= minShares * amount, ErrorsLib.SlippageExceeded());
+        require(sharesReceived >= minShares, ErrorsLib.SlippageExceeded());
 
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }
 
     /// @notice Wraps the given `amount` of stETH to wstETH.
     /// @dev stETH must have been previously sent to the module.
-    /// @param amount The amount of stEth to wrap. Capped at the module's stETH balance.
+    /// @param amount The amount of stEth to wrap. Pass max to wrap the module's balance.
     /// @param receiver The account receiving the wstETH tokens.
     function wrapStEth(uint256 amount, address receiver) external bundlerOnly {
-        amount = Math.min(amount, ERC20(ST_ETH).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -75,10 +73,10 @@ abstract contract StEthModule is BaseModule {
 
     /// @notice Unwraps the given `amount` of wstETH to stETH.
     /// @dev wstETH must have been previously sent to the module.
-    /// @param amount The amount of wstEth to unwrap. Capped at the module's wstETH balance.
+    /// @param amount The amount of wstEth to unwrap. Pass max to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external bundlerOnly {
-        amount = Math.min(amount, ERC20(WST_ETH).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(WST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

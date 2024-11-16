@@ -3,7 +3,6 @@ pragma solidity 0.8.27;
 
 import {IAaveV3} from "./interfaces/IAaveV3.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
@@ -40,7 +39,7 @@ contract AaveV3MigrationModule is BaseModule {
     /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV3Repay(address token, uint256 amount, uint256 interestRateMode) external bundlerOnly {
-        amount = Math.min(amount, ERC20(token).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

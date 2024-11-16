@@ -3,7 +3,6 @@ pragma solidity 0.8.27;
 
 import {IAaveV3Optimizer, Signature} from "./interfaces/IAaveV3Optimizer.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
@@ -39,7 +38,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// @param amount The amount of `underlying` to repay. Capped at the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function aaveV3OptimizerRepay(address underlying, uint256 amount) external bundlerOnly {
-        amount = Math.min(amount, ERC20(underlying).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

@@ -10,8 +10,6 @@ import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
-import {console} from "forge-std/console.sol";
-
 /// @title CompoundV2MigrationModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
@@ -70,7 +68,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// balance.
     /// @param receiver The account receiving the redeemed assets.
     function compoundV2Redeem(address cToken, uint256 amount, address receiver) external bundlerOnly {
-        amount = Math.min(amount, ERC20(cToken).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ICToken(cToken).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

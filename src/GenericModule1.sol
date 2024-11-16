@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.27;
 
-import {BaseModule, Math} from "./BaseModule.sol";
+import {BaseModule} from "./BaseModule.sol";
 
 import {IMorphoModule} from "./interfaces/IMorphoModule.sol";
 import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
@@ -64,7 +64,7 @@ contract GenericModule1 is BaseModule {
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external bundlerOnly {
         ERC20 underlying = ERC20(address(ERC20Wrapper(wrapper).underlying()));
 
-        amount = Math.min(amount, underlying.balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -82,7 +82,7 @@ contract GenericModule1 is BaseModule {
     function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        amount = Math.min(amount, ERC20(wrapper).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(wrapper).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -121,7 +121,7 @@ contract GenericModule1 is BaseModule {
 
         uint256 initialAssets = assets;
         address underlyingToken = IERC4626(vault).asset();
-        assets = Math.min(assets, ERC20(underlyingToken).balanceOf(address(this)));
+        if (assets == type(uint256).max) assets = ERC20(underlyingToken).balanceOf(address(this));
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
@@ -170,7 +170,7 @@ contract GenericModule1 is BaseModule {
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
 
         uint256 initialShares = shares;
-        shares = Math.min(shares, IERC4626(vault).balanceOf(owner));
+        if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
 
         require(shares != 0, ErrorsLib.ZeroShares());
 
@@ -422,7 +422,7 @@ contract GenericModule1 is BaseModule {
     /// @param amount The amount of `token` to transfer from the initiator. Capped at the initiator's balance.
     function transferFrom2(address token, address receiver, uint256 amount) external bundlerOnly {
         address _initiator = initiator();
-        amount = Math.min(amount, ERC20(token).balanceOf(_initiator));
+        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -459,15 +459,18 @@ contract GenericModule1 is BaseModule {
 
     /* TRANSFER ACTIONS */
 
-    /// @notice Transfers the given `amount` of `token` from sender to this contract via ERC20 transferFrom.
+    /// @notice Transfers ERC20 tokens from the initiator.
     /// @notice Initiator must have given sufficient allowance to the Module to spend their tokens.
     /// @notice The amount must be strictly positive.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of `token` to transfer from the initiator. Capped at the initiator's balance.
+    /// @param amount The amount of token to transfer. Pass max to transfer the initiator's balance.
     function erc20TransferFrom(address token, address receiver, uint256 amount) external bundlerOnly {
+        require(token != address(0), ErrorsLib.ZeroAddress());
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+
         address _initiator = initiator();
-        amount = Math.min(amount, ERC20(token).balanceOf(_initiator));
+        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -478,10 +481,10 @@ contract GenericModule1 is BaseModule {
 
     /// @notice Wraps the given `amount` of the native token to wNative.
     /// @dev Native tokens must have been previously sent to the module.
-    /// @param amount The amount of native token to wrap. Capped at the module's native token balance.
+    /// @param amount The amount of native token to wrap. Pass max to wrap the module's balance.
     /// @param receiver The account receiving the wrapped native tokens.
     function wrapNative(uint256 amount, address receiver) external payable bundlerOnly {
-        amount = Math.min(amount, address(this).balance);
+        if (amount == type(uint256).max) amount = address(this).balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -491,10 +494,10 @@ contract GenericModule1 is BaseModule {
 
     /// @notice Unwraps the given `amount` of wNative to the native token.
     /// @dev Wrapped native tokens must have been previously sent to the module.
-    /// @param amount The amount of wrapped native token to unwrap. Capped at the module's wNative balance.
+    /// @param amount The amount of wrapped native token to unwrap. Pass max to unwrap the module's balance.
     /// @param receiver The account receiving the native tokens.
     function unwrapNative(uint256 amount, address receiver) external bundlerOnly {
-        amount = Math.min(amount, WRAPPED_NATIVE.balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(address(WRAPPED_NATIVE)).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
