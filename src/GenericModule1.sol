@@ -120,12 +120,12 @@ contract GenericModule1 is BaseModule {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         uint256 initialAssets = assets;
-        address asset = IERC4626(vault).asset();
-        assets = Math.min(assets, ERC20(asset).balanceOf(address(this)));
+        address underlyingToken = IERC4626(vault).asset();
+        assets = Math.min(assets, ERC20(underlyingToken).balanceOf(address(this)));
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(asset, vault);
+        ModuleLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(shares * initialAssets >= minShares * assets, ErrorsLib.SlippageExceeded());

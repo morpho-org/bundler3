@@ -70,7 +70,7 @@ abstract contract StEthModule is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
-        SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
+        if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
     }
 
     /// @notice Unwraps the given `amount` of wstETH to stETH.
@@ -83,6 +83,6 @@ abstract contract StEthModule is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
-        SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, received);
+        if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, received);
     }
 }
