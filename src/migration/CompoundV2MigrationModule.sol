@@ -6,8 +6,11 @@ import {ICToken} from "./interfaces/ICToken.sol";
 
 import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
+
+import {console} from "forge-std/console.sol";
 
 /// @title CompoundV2MigrationModule
 /// @author Morpho Labs
@@ -71,14 +74,14 @@ contract CompoundV2MigrationModule is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        uint256 received = MathLib.wMulDown(ICToken(cToken).exchangeRateCurrent(), amount);
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
         if (receiver != address(this)) {
             if (cToken == C_ETH) {
-                SafeTransferLib.safeTransferETH(receiver, address(this).balance);
+                SafeTransferLib.safeTransferETH(receiver, received);
             } else {
-                address underlying = ICToken(cToken).underlying();
-                SafeTransferLib.safeTransfer(ERC20(underlying), receiver, ERC20(underlying).balanceOf(address(this)));
+                SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
             }
         }
     }
