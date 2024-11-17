@@ -19,7 +19,7 @@
   "scripts": {
     "prepare": "forge install",
     "build": "FOUNDRY_PROFILE=build forge build",
-    "test": "FOUNDRY_PROFILE=test forge test",
+    "test": "forge test",
     "test:local": "FOUNDRY_MATCH_CONTRACT=LocalTest yarn test",
     "test:fork": "FOUNDRY_MATCH_CONTRACT=ForkTest yarn test",
     "lint": "forge fmt",
