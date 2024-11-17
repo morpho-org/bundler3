@@ -26,14 +26,15 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
-    /// @param amount The amount of `asset` to repay. Capped at the maximum repayable debt
-    /// (mininimum of the module's balance and the initiator's debt).
+    /// @param amount The amount of `asset` to repay. Pass max to repay the maximum repayable debt (mininimum of the
+    /// module's balance and the initiator's debt).
     function compoundV3Repay(address instance, uint256 amount) external bundlerOnly {
         address _initiator = initiator();
         address asset = ICompoundV3(instance).baseToken();
 
-        amount = Math.min(amount, ERC20(asset).balanceOf(address(this)));
-        amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(_initiator));
+        if (amount == type(uint256).max) {
+            amount = Math.min(ICompoundV3(instance).borrowBalanceOf(_initiator), ERC20(asset).balanceOf(address(this)));
+        }
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

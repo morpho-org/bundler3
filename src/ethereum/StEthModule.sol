@@ -38,7 +38,7 @@ abstract contract StEthModule is BaseModule {
 
     /// @notice Stakes the given `amount` of ETH via Lido, using the `referral` id.
     /// @dev ETH must have been previously sent to the module.
-    /// @param amount The amount of ETH to stake. Capped at the module's ETH balance.
+    /// @param amount The amount of ETH to stake. Pass max to repay the module's ETH balance.
     /// @param minShares The minimum amount of shares to mint in exchange for `amount`. This parameter is
     /// proportionally scaled down in case there is fewer ETH than `amount` on the module.
     /// @param referral The address of the referral regarding the Lido Rewards-Share Program.
