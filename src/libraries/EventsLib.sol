@@ -6,8 +6,8 @@ pragma solidity ^0.8.0;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing events.
 library EventsLib {
-    /// @notice Emitted after a Paraswap bundler swap
-    event ParaswapBundlerSwap(
+    /// @notice Emitted after a Paraswap Module swap
+    event ParaswapModuleSwap(
         address indexed srcToken,
         address indexed destToken,
         address indexed receiver,

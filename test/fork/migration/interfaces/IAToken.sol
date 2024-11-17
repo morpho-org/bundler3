@@ -74,7 +74,7 @@ interface IAToken {
     /**
      * @notice Allow passing a signed message to approve spending
      * @dev implements the permit function as for
-     * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
+     * https://gitbundler.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
      * @param owner The owner of the funds
      * @param spender The spender
      * @param value The amount

@@ -6,9 +6,9 @@ pragma solidity ^0.8.0;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing error messages.
 library ErrorsLib {
-    /* STANDARD BUNDLERS */
+    /* STANDARD MODULES */
 
-    /// @dev Thrown when a multicall is attempted while the bundler in an initiated execution context.
+    /// @dev Thrown when a multicall is attempted while the module in an initiated execution context.
     error AlreadyInitiated();
 
     /// @dev Thrown when a call is attempted from an unauthorized sender.
@@ -17,8 +17,8 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted with a zero address as input.
     error ZeroAddress();
 
-    /// @dev Thrown when a call is attempted with the bundler address as input.
-    error BundlerAddress();
+    /// @dev Thrown when a call is attempted with the module address as input.
+    error ModuleAddress();
 
     /// @dev Thrown when a call is attempted with a zero amount as input.
     error ZeroAmount();
@@ -38,7 +38,7 @@ library ErrorsLib {
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
 
-    /* MIGRATION BUNDLERS */
+    /* MIGRATION MODULES */
 
     /// @dev Thrown when repaying a CompoundV2 debt returns an error code.
     error RepayError();
