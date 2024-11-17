@@ -931,9 +931,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, type(uint256).max, address(paraswapModule)));
         // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams
         callbackBundle.push(
-            _buy(
-                destParams.loanToken, sourceParams.loanToken, toBorrow, toRepay, sourceParams, address(genericModule1)
-            )
+            _buy(destParams.loanToken, sourceParams.loanToken, toBorrow, toRepay, sourceParams, address(genericModule1))
         );
         callbackBundle.push(_morphoRepay(sourceParams, 0, borrowShares, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, 0, user, hex""));
