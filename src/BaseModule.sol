@@ -16,6 +16,7 @@ contract BaseModule {
 
     constructor(address bundler) {
         require(bundler != address(0), ErrorsLib.ZeroAddress());
+
         BUNDLER = bundler;
     }
 
