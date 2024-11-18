@@ -183,7 +183,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
-        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, 0, user));
+        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);

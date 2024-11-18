@@ -9,6 +9,7 @@ import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseModule, SafeTransferLib} from "../BaseModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 /// @title StEthModule
 /// @author Morpho Labs
@@ -40,10 +41,10 @@ abstract contract StEthModule is BaseModule {
     /// @notice Stakes ETH via Lido.
     /// @dev ETH must have been previously sent to the module.
     /// @param amount The amount of ETH to stake. Pass `type(uint).max` to repay the module's ETH balance.
-    /// @param minShares The minimum amount of shares to mint.
+    /// @param maxSharePriceE18 The maximum amount of wei to pay for minting 1 share, scaled by 1e18.
     /// @param referral The address of the referral regarding the Lido Rewards-Share Program.
     /// @param receiver The account receiving the stETH tokens.
-    function stakeEth(uint256 amount, uint256 minShares, address referral, address receiver)
+    function stakeEth(uint256 amount, uint256 maxSharePriceE18, address referral, address receiver)
         external
         payable
         bundlerOnly
@@ -53,7 +54,7 @@ abstract contract StEthModule is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(sharesReceived >= minShares, ErrorsLib.SlippageExceeded());
+        require(amount * WAD >= maxSharePriceE18 * sharesReceived, ErrorsLib.SlippageExceeded());
 
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }

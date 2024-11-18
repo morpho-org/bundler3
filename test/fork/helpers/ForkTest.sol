@@ -169,21 +169,23 @@ abstract contract ForkTest is CommonTest, Configured {
 
     /* STAKE ACTIONS */
 
-    function _stakeEth(uint256 amount, uint256 shares, address referral, address receiver)
+    function _stakeEth(uint256 amount, uint256 maxSharePriceE18, address referral, address receiver)
         internal
         view
         returns (Call memory)
     {
-        return _stakeEth(amount, shares, referral, receiver, amount);
+        return _stakeEth(amount, maxSharePriceE18, referral, receiver, amount);
     }
 
-    function _stakeEth(uint256 amount, uint256 shares, address referral, address receiver, uint256 callValue)
+    function _stakeEth(uint256 amount, uint256 maxSharePriceE18, address referral, address receiver, uint256 callValue)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            ethereumModule1, abi.encodeCall(StEthModule.stakeEth, (amount, shares, referral, receiver)), callValue
+            ethereumModule1,
+            abi.encodeCall(StEthModule.stakeEth, (amount, maxSharePriceE18, referral, receiver)),
+            callValue
         );
     }
 
