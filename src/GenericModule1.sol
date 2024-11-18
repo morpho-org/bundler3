@@ -55,7 +55,7 @@ contract GenericModule1 is BaseModule {
     // their permissioned counterparts and access permissioned markets on Morpho Blue. Permissioned tokens can be built
     // using: https://github.com/morpho-org/erc20-permissioned
 
-    /// @notice Deposits underlying tokens and mints the corresponding amount of wrapped tokens.
+    /// @notice Wraps underlying tokens to wrapped token.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
@@ -74,7 +74,7 @@ contract GenericModule1 is BaseModule {
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
 
-    /// @notice Burns wrapped tokens and withdraws the corresponding amount of underlying tokens.
+    /// @notice Unwraps wrapped token to underlying token.
     /// @dev Wrapped tokens must have been previously sent to the module.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
@@ -93,12 +93,12 @@ contract GenericModule1 is BaseModule {
 
     /* ERC4626 ACTIONS */
 
-    /// @notice Mints the given amount of `shares` on the given ERC4626 `vault`, on behalf of `receiver`.
+    /// @notice Mints shares of a ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the module.
-    /// @dev Assumes the given `vault` implements EIP-4626.
+    /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to mint.
-    /// @param maxAssets The maximum amount of underlying token to deposit in exchange for `shares`.
+    /// @param maxAssets The maximum amount of underlying token to deposit in exchange for shares.
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
@@ -110,12 +110,12 @@ contract GenericModule1 is BaseModule {
         require(assets <= maxAssets, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Deposits the given amount of `assets` on the given ERC4626 `vault`, on behalf of `receiver`.
+    /// @notice Deposits underlying token in a ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the module.
-    /// @dev Assumes the given `vault` implements EIP-4626.
+    /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to deposit. Pass `type(uint).max` to deposit the module's balance.
-    /// @param minShares The minimum amount of shares to mint in exchange for `assets`.
+    /// @param minShares The minimum amount of shares to mint in exchange for assets.
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
@@ -131,7 +131,7 @@ contract GenericModule1 is BaseModule {
         require(shares >= minShares, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Withdraws the given amount of `assets` from the given ERC4626 `vault` to `receiver`.
+    /// @notice Withdraws underlying token from a ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
@@ -152,7 +152,7 @@ contract GenericModule1 is BaseModule {
         require(shares <= maxShares, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Redeems the given amount of `shares` from the given ERC4626 `vault` to `receiver`.
+    /// @notice Redeems shares of a ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
@@ -196,8 +196,7 @@ contract GenericModule1 is BaseModule {
 
     /* MORPHO ACTIONS */
 
-    /// @notice Approves `authorization.authorized` to manage `authorization.authorizer`'s position via EIP712
-    /// `signature`.
+    /// @notice Approves with signature on Morpho.
     /// @param authorization The `Authorization` struct.
     /// @param signature The signature.
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
@@ -212,7 +211,7 @@ contract GenericModule1 is BaseModule {
         }
     }
 
-    /// @notice Supplies `assets` of the loan asset on behalf of `onBehalf`.
+    /// @notice Supplies loan asset on Morpho.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// module is guaranteed to have `assets` tokens pulled from its balance, but the possibility to mint a specific
     /// amount of shares is given for full compatibility and precision.
@@ -245,7 +244,7 @@ contract GenericModule1 is BaseModule {
         else require(suppliedAssets <= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Supplies `assets` of collateral on behalf of `onBehalf`.
+    /// @notice Supplies collateral on Morpho.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param marketParams The Morpho market to supply collateral to.
     /// @param assets The amount of collateral to supply. Pass `type(uint).max` to supply the module's collateral
@@ -268,7 +267,7 @@ contract GenericModule1 is BaseModule {
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
 
-    /// @notice Borrows `assets` of the loan asset on behalf of the initiator.
+    /// @notice Borrows assets on Morpho.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// initiator is guaranteed to borrow `assets` tokens, but the possibility to mint a specific amount of shares is
     /// given for full compatibility and precision.
@@ -293,7 +292,7 @@ contract GenericModule1 is BaseModule {
         else require(borrowedAssets >= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Repays `assets` of the loan asset on behalf of `onBehalf`.
+    /// @notice Repays assets on Morpho.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// module is guaranteed to have `assets` tokens pulled from its balance, but the possibility to burn a specific
     /// amount of shares is given for full compatibility and precision.
@@ -326,11 +325,11 @@ contract GenericModule1 is BaseModule {
         else require(repaidAssets <= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Withdraws `assets` of the loan asset on behalf of the initiator.
+    /// @notice Withdraws assets on Morpho.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// initiator is guaranteed to withdraw `assets` tokens, but the possibility to burn a specific amount of shares is
     /// given for full compatibility and precision.
-    /// @dev Initiator must have previously authorized the module to act on their behalf on Morpho.
+    /// @dev Initiator must have previously authorized the maodule to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to withdraw assets from.
     /// @param assets The amount of assets to withdraw.
     /// @param shares The amount of shares to burn.
@@ -351,7 +350,7 @@ contract GenericModule1 is BaseModule {
         else require(withdrawnAssets >= slippageAmount, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Withdraws `assets` of the collateral asset on behalf of the initiator.
+    /// @notice Withdraws collateral from Morpho.
     /// @dev Initiator must have previously authorized the module to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to withdraw collateral from.
     /// @param assets The amount of collateral to withdraw.
@@ -373,7 +372,7 @@ contract GenericModule1 is BaseModule {
         MORPHO.flashLoan(token, assets, data);
     }
 
-    /// @notice Reallocates funds from markets of a vault to another market of that same vault.
+    /// @notice Reallocates funds using the public allocator.
     /// @param publicAllocator The address of the public allocator.
     /// @param vault The address of the vault.
     /// @param value The value in ETH to pay for the reallocate fee.
@@ -391,9 +390,7 @@ contract GenericModule1 is BaseModule {
 
     /* PERMIT2 ACTIONS */
 
-    /// @notice Approves the given `permitSingle.details.amount` of `permitSingle.details.token` from the initiator to
-    /// be spent by `permitSingle.spender` via
-    /// Permit2 with the given `permitSingle.sigDeadline` & EIP-712 `signature`.
+    /// @notice Approves with Permit2.
     /// @param permitSingle The `PermitSingle` struct.
     /// @param signature The signature, serialized.
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
@@ -407,7 +404,7 @@ contract GenericModule1 is BaseModule {
         }
     }
 
-    /// @notice Transfers the given `amount` of token from the initiator to the module via Permit2.
+    /// @notice Transfers with Permit2.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's
@@ -423,8 +420,7 @@ contract GenericModule1 is BaseModule {
 
     /* PERMIT ACTIONS */
 
-    /// @notice Permits the given `amount` of token from sender to be spent by the module via EIP-2612 Permit with
-    /// the given `deadline` & EIP-712 signature's `v`, `r` & `s`.
+    /// @notice Permits with EIP-2612.
     /// @param token The address of the token to be permitted.
     /// @param spender The address allowed to spend the tokens.
     /// @param amount The amount of token to be permitted.
@@ -471,7 +467,7 @@ contract GenericModule1 is BaseModule {
 
     /* WRAPPED NATIVE TOKEN ACTIONS */
 
-    /// @notice Wraps the given `amount` of the native token to wNative.
+    /// @notice Wraps native tokens to wNative.
     /// @dev Native tokens must have been previously sent to the module.
     /// @param amount The amount of native token to wrap. Pass `type(uint).max` to wrap the module's balance.
     /// @param receiver The account receiving the wrapped native tokens.
@@ -484,7 +480,7 @@ contract GenericModule1 is BaseModule {
         if (receiver != address(this)) ERC20(address(WRAPPED_NATIVE)).safeTransfer(receiver, amount);
     }
 
-    /// @notice Unwraps the given `amount` of wNative to the native token.
+    /// @notice Unwraps wNative tokens to the native token.
     /// @dev Wrapped native tokens must have been previously sent to the module.
     /// @param amount The amount of wrapped native token to unwrap. Pass `type(uint).max` to unwrap the module's
     /// balance.
@@ -500,8 +496,8 @@ contract GenericModule1 is BaseModule {
 
     /* UNIVERSAL REWARDS DISTRIBUTOR ACTIONS */
 
-    /// @notice Claims available `reward` tokens on behalf of `account` on the given rewards distributor, using `proof`.
-    /// @dev Assumes the given distributor implements IUniversalRewardsDistributor.
+    /// @notice Claims rewards on the URD.
+    /// @dev Assumes the given distributor implements `IUniversalRewardsDistributor`.
     /// @param distributor The address of the reward distributor contract.
     /// @param account The address of the owner of the rewards (also the address that will receive the rewards).
     /// @param reward The address of the token reward.

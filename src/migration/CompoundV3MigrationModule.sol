@@ -17,16 +17,16 @@ import {ModuleLib} from "../libraries/ModuleLib.sol";
 contract CompoundV3MigrationModule is BaseModule {
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address
+    /// @param bundler The Bundler contract address.
     constructor(address bundler) BaseModule(bundler) {}
 
     /* ACTIONS */
 
-    /// @notice Repays `amount` on the CompoundV3 `instance`, on behalf of the initiator.
+    /// @notice Repays on a CompoundV3 instance.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
-    /// @param amount The amount of `asset` to repay. Pass `type(uint).max` to repay the maximum repayable debt
+    /// @param amount The amount of `asset` to repay. Pass 2^256-1 to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV3Repay(address instance, uint256 amount) external bundlerOnly {
         address _initiator = initiator();
@@ -44,12 +44,12 @@ contract CompoundV3MigrationModule is BaseModule {
         ICompoundV3(instance).supplyTo(_initiator, asset, amount);
     }
 
-    /// @notice Withdraws `amount` of `asset` from the CompoundV3 `instance`, on behalf of the initiator.
+    /// @notice Withdraws from a CompoundV3 instance.
     /// @dev Initiator must have previously approved the module to manage their CompoundV3 position.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param asset The address of the token to withdraw.
-    /// @param amount The amount of `asset` to withdraw. Pass `type(uint).max` to withdraw the initiator's balance.
+    /// @param amount The amount of `asset` to withdraw. Pass 2^256-1 to withdraw the initiator's balance.
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
@@ -67,9 +67,8 @@ contract CompoundV3MigrationModule is BaseModule {
         ICompoundV3(instance).withdrawFrom(_initiator, receiver, asset, amount);
     }
 
-    /// @notice Approves the module to act on behalf of the initiator on the CompoundV3 `instance`, given a signed
-    /// EIP-712 approval message.
-    /// @dev Assumes the given `instance` is a CompoundV3 instance.
+    /// @notice Approves on a CompoundV3 instance.
+    /// @dev Assumes the given instance is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param isAllowed Whether the module is allowed to manage the initiator's position or not.
     /// @param nonce The nonce of the signed message.

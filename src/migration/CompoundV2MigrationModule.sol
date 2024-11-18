@@ -22,7 +22,7 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address
+    /// @param bundler The Bundler contract address.
     /// @param cEth The address of the cETH contract.
     constructor(address bundler, address cEth) BaseModule(bundler) {
         require(cEth != address(0), ErrorsLib.ZeroAddress());
@@ -32,10 +32,10 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Repays `amount` of `cToken`'s underlying asset, on behalf of the initiator.
+    /// @notice Repays on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
-    /// @param amount The amount of `cToken` to repay. Pass `type(uint).max` to repay the maximum repayable debt
+    /// @param amount The amount of `cToken` to repay. Pass 2^256-1 to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV2Repay(address cToken, uint256 amount) external bundlerOnly {
         address _initiator = initiator();
@@ -65,10 +65,10 @@ contract CompoundV2MigrationModule is BaseModule {
         }
     }
 
-    /// @notice Redeems `amount` of `cToken` from CompoundV2.
+    /// @notice Redeems cToken from CompoundV2.
     /// @dev cTokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract
-    /// @param amount The amount of cToken to redeem. Pass `type(uint).max` to redeem the module's `cToken` balance.
+    /// @param amount The amount of cToken to redeem. Pass 2^256-1 to redeem the module's `cToken` balance.
     /// @param receiver The account receiving the redeemed assets.
     function compoundV2Redeem(address cToken, uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ICToken(cToken).balanceOf(address(this));

@@ -22,8 +22,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /* CONSTRUCTOR */
 
     /// @param bundler The Bundler contract address
-    /// @param aaveV3Optimizer The AaveV3 optimizer contract address. Assumes it is non-zero (not expected to be an
-    /// input at deployment).
+    /// @param aaveV3Optimizer The AaveV3 optimizer contract address.
     constructor(address bundler, address aaveV3Optimizer) BaseModule(bundler) {
         require(aaveV3Optimizer != address(0), ErrorsLib.ZeroAddress());
 
@@ -32,10 +31,10 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Repays `amount` of `underlying` on the AaveV3 Optimizer, on behalf of the initiator.
+    /// @notice Repays on the AaveV3 Optimizer.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param underlying The address of the underlying asset to repay.
-    /// @param amount The amount of `underlying` to repay. Pass `type(uint).max` to repay the maximum repayable debt
+    /// @param amount The amount of `underlying` to repay. Pass 2^256-1 to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function aaveV3OptimizerRepay(address underlying, uint256 amount) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
@@ -47,10 +46,10 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         AAVE_V3_OPTIMIZER.repay(underlying, amount, initiator());
     }
 
-    /// @notice Withdraws `amount` of `underlying` on the AaveV3 Optimizer, on behalf of the initiator`.
+    /// @notice Withdraws on the AaveV3 Optimizer.
     /// @dev Initiator must have previously approved the module to manage their AaveV3 Optimizer position.
     /// @param underlying The address of the underlying asset to withdraw.
-    /// @param amount The amount of `underlying` to withdraw. Pass `type(uint).max` to withdraw all.
+    /// @param amount The amount of `underlying` to withdraw. Pass 2^256-1 to withdraw all.
     /// @param maxIterations The maximum number of iterations allowed during the matching process. If it is less than
     /// `_defaultIterations.withdraw`, the latter will be used. Pass 0 to fallback to the `_defaultIterations.withdraw`.
     /// @param receiver The account that will receive the withdrawn assets.
@@ -61,11 +60,10 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), receiver, maxIterations);
     }
 
-    /// @notice Withdraws `amount` of `underlying` used as collateral on the AaveV3 Optimizer, on behalf of the
-    /// initiator.
+    /// @notice Withdraws on the AaveV3 Optimizer.
     /// @dev Initiator must have previously approved the module to manage their AaveV3 Optimizer position.
     /// @param underlying The address of the underlying asset to withdraw.
-    /// @param amount The amount of `underlying` to withdraw. Pass `type(uint).max` to withdraw all.
+    /// @param amount The amount of `underlying` to withdraw. Pass 2^256-1 to withdraw all.
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdrawCollateral(address underlying, uint256 amount, address receiver)
         external
@@ -74,8 +72,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), receiver);
     }
 
-    /// @notice Approves the module to act on behalf of the initiator on the AaveV3 Optimizer, given a signed EIP-712
-    /// approval message.
+    /// @notice Approves on the AaveV3 Optimizer.
     /// @param isApproved Whether the module is allowed to manage the initiator's position or not.
     /// @param nonce The nonce of the signed message.
     /// @param deadline The deadline of the signed message.

@@ -12,7 +12,7 @@ optimizer_runs = 999999
 ignored_error_codes = ["transient-storage"]
 
 [profile.default.fuzz]
-runs = 16
+runs = 64
 
 
 [profile.default.rpc_endpoints]

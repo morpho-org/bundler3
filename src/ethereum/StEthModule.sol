@@ -25,9 +25,10 @@ abstract contract StEthModule is BaseModule {
 
     /* CONSTRUCTOR */
 
-    /// @dev Warning: assumes the given addresses are non-zero (they are not expected to be deployment arguments).
     /// @param wstEth The address of the wstEth contract.
     constructor(address wstEth) {
+        require(wstEth != address(0), ErrorsLib.ZeroAddress());
+
         ST_ETH = IWstEth(wstEth).stETH();
         WST_ETH = wstEth;
 
@@ -36,10 +37,10 @@ abstract contract StEthModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Stakes the given `amount` of ETH via Lido, using the `referral` id.
+    /// @notice Stakes ETH via Lido.
     /// @dev ETH must have been previously sent to the module.
-    /// @param amount The amount of ETH to stake. Pass `type(uint).max` to repay the module's ETH balance.
-    /// @param minShares The minimum amount of shares to mint in exchange for `amount`.
+    /// @param amount The amount of ETH to stake. Pass 2^256-1 to repay the module's ETH balance.
+    /// @param minShares The minimum amount of shares to mint.
     /// @param referral The address of the referral regarding the Lido Rewards-Share Program.
     /// @param receiver The account receiving the stETH tokens.
     function stakeEth(uint256 amount, uint256 minShares, address referral, address receiver)
@@ -57,9 +58,9 @@ abstract contract StEthModule is BaseModule {
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }
 
-    /// @notice Wraps the given `amount` of stETH to wstETH.
+    /// @notice Wraps stETH to wstETH.
     /// @dev stETH must have been previously sent to the module.
-    /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the module's balance.
+    /// @param amount The amount of stEth to wrap. Pass 2^256-1 to wrap the module's balance.
     /// @param receiver The account receiving the wstETH tokens.
     function wrapStEth(uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
@@ -70,9 +71,9 @@ abstract contract StEthModule is BaseModule {
         if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
     }
 
-    /// @notice Unwraps the given `amount` of wstETH to stETH.
+    /// @notice Unwraps wstETH to stETH.
     /// @dev wstETH must have been previously sent to the module.
-    /// @param amount The amount of wstEth to unwrap. Pass `type(uint).max` to unwrap the module's balance.
+    /// @param amount The amount of wstEth to unwrap. Pass 2^256-1 to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(WST_ETH).balanceOf(address(this));
