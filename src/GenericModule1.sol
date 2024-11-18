@@ -97,8 +97,8 @@ contract GenericModule1 is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @param vault The address of the vault.
-    /// @param shares The amount of shares to mint.
-    /// @param maxAssets The maximum amount of assets to deposit in exchange for `shares`.
+    /// @param shares The amount of vault shares to mint.
+    /// @param maxAssets The maximum amount of underlying token to deposit in exchange for `shares`.
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
@@ -114,14 +114,12 @@ contract GenericModule1 is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @param vault The address of the vault.
-    /// @param assets The amount of assets to deposit. Pass `type(uint).max` to deposit the module's balance.
-    /// @param minShares The minimum amount of shares to mint in exchange for `assets`. This parameter is proportionally
-    /// scaled down in case there are fewer assets than `assets` on the module.
+    /// @param assets The amount of underlying token to deposit. Pass `type(uint).max` to deposit the module's balance.
+    /// @param minShares The minimum amount of shares to mint in exchange for `assets`.
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        uint256 initialAssets = assets;
         address underlyingToken = IERC4626(vault).asset();
         if (assets == type(uint256).max) assets = ERC20(underlyingToken).balanceOf(address(this));
 
@@ -130,7 +128,7 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
-        require(shares * initialAssets >= minShares * assets, ErrorsLib.SlippageExceeded());
+        require(shares >= minShares, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws the given amount of `assets` from the given ERC4626 `vault` to `receiver`.
@@ -138,7 +136,7 @@ contract GenericModule1 is BaseModule {
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
-    /// @param assets The amount of assets to withdraw.
+    /// @param assets The amount of underlying token to withdraw.
     /// @param maxShares The maximum amount of shares to redeem in exchange for `assets`.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the assets are withdrawn. Can only be the module or the initiator.
@@ -159,9 +157,8 @@ contract GenericModule1 is BaseModule {
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
-    /// @param shares The amount of shares to redeem. Pass `type(uint).max` to redeem the owner's shares.
-    /// @param minAssets The minimum amount of assets to withdraw in exchange for `shares`. This parameter is
-    /// proportionally scaled down in case the owner holds fewer shares than `shares`.
+    /// @param shares The amount of vault shares to redeem. Pass `type(uint).max` to redeem the owner's shares.
+    /// @param minAssets The minimum amount of underlying token to withdraw in exchange for `shares`.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the shares are redeemed. Can only be the module or the initiator.
     function erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
@@ -171,13 +168,12 @@ contract GenericModule1 is BaseModule {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
 
-        uint256 initialShares = shares;
         if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
 
         require(shares != 0, ErrorsLib.ZeroShares());
 
         uint256 assets = IERC4626(vault).redeem(shares, receiver, owner);
-        require(assets * initialShares >= minAssets * shares, ErrorsLib.SlippageExceeded());
+        require(assets >= minAssets, ErrorsLib.SlippageExceeded());
     }
 
     /* MORPHO CALLBACKS */
@@ -411,10 +407,10 @@ contract GenericModule1 is BaseModule {
         }
     }
 
-    /// @notice Transfers the given `amount` of `token` from the initiator to the module via Permit2.
+    /// @notice Transfers the given `amount` of token from the initiator to the module via Permit2.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of `token` to transfer. Pass `type(uint).max` to transfer the initiator's
+    /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's
     /// balance.
     function transferFrom2(address token, address receiver, uint256 amount) external bundlerOnly {
         address _initiator = initiator();
@@ -427,11 +423,11 @@ contract GenericModule1 is BaseModule {
 
     /* PERMIT ACTIONS */
 
-    /// @notice Permits the given `amount` of `token` from sender to be spent by the module via EIP-2612 Permit with
+    /// @notice Permits the given `amount` of token from sender to be spent by the module via EIP-2612 Permit with
     /// the given `deadline` & EIP-712 signature's `v`, `r` & `s`.
     /// @param token The address of the token to be permitted.
     /// @param spender The address allowed to spend the tokens.
-    /// @param amount The amount of `token` to be permitted.
+    /// @param amount The amount of token to be permitted.
     /// @param deadline The deadline of the approval.
     /// @param v The `v` component of a signature.
     /// @param r The `r` component of a signature.
@@ -494,7 +490,7 @@ contract GenericModule1 is BaseModule {
     /// balance.
     /// @param receiver The account receiving the native tokens.
     function unwrapNative(uint256 amount, address receiver) external bundlerOnly {
-        if (amount == type(uint256).max) amount = ERC20(address(WRAPPED_NATIVE)).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = WRAPPED_NATIVE.balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
