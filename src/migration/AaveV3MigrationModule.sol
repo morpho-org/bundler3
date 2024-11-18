@@ -35,7 +35,7 @@ contract AaveV3MigrationModule is BaseModule {
     /// @notice Repays on AaveV3.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
-    /// @param amount The amount of `token` to repay. Pass 2^256-1 to repay the maximum repayable debt
+    /// @param amount The amount of `token` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV3Repay(address token, uint256 amount, uint256 interestRateMode) external bundlerOnly {
@@ -51,7 +51,7 @@ contract AaveV3MigrationModule is BaseModule {
     /// @notice Withdraws on AaveV3.
     /// @dev aTokens must have been previously sent to the module.
     /// @param token The address of the token to withdraw.
-    /// @param amount The amount of `token` to withdraw. Pass 2^256-1 to withdraw all.
+    /// @param amount The amount of `token` to withdraw. Pass `type(uint).max` to withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV3Withdraw(address token, uint256 amount, address receiver) external bundlerOnly {
         AAVE_V3_POOL.withdraw(token, amount, receiver);

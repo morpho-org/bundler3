@@ -40,7 +40,7 @@ contract BaseModule {
     /// @notice Transfers native assets.
     /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
-    /// @param amount The amount of native tokens to transfer. Pass 2^256-1 to transfer the module's balance.
+    /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
     function nativeTransfer(address receiver, uint256 amount) external payable bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
@@ -54,7 +54,7 @@ contract BaseModule {
     /// @dev The amount transfered can be zero.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of token to transfer. Pass 2^256-1 to transfer the module's balance.
+    /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
     function erc20Transfer(address token, address receiver, uint256 amount) external bundlerOnly {
         require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
