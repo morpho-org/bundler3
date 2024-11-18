@@ -35,8 +35,8 @@ contract AaveV2MigrationModule is BaseModule {
     /// @notice Repays `amount` of `token` on AaveV2, on behalf of the initiator.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
-    /// @param amount The amount of `token` to repay. Pass max to repay the maximum repayable debt (mininimum of the
-    /// module's balance and the initiator's debt).
+    /// @param amount The amount of `token` to repay. Pass `type(uint).max` to repay the maximum repayable debt
+    /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV2Repay(address token, uint256 amount, uint256 interestRateMode) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
@@ -51,7 +51,7 @@ contract AaveV2MigrationModule is BaseModule {
     /// @notice Withdraws `amount` of `token` on AaveV2, on behalf of the initiator.
     /// @dev aTokens must have been previously sent to the module.
     /// @param token The address of the token to withdraw.
-    /// @param amount The amount of `token` to withdraw. Pass max to withdraw all.
+    /// @param amount The amount of `token` to withdraw. Pass `type(uint).max` to withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV2Withdraw(address token, uint256 amount, address receiver) external bundlerOnly {
         AAVE_V2_POOL.withdraw(token, amount, receiver);

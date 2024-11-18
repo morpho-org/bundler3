@@ -38,7 +38,7 @@ abstract contract StEthModule is BaseModule {
 
     /// @notice Stakes the given `amount` of ETH via Lido, using the `referral` id.
     /// @dev ETH must have been previously sent to the module.
-    /// @param amount The amount of ETH to stake. Pass max to repay the module's ETH balance.
+    /// @param amount The amount of ETH to stake. Pass `type(uint).max` to repay the module's ETH balance.
     /// @param minShares The minimum amount of shares to mint in exchange for `amount`. This parameter is
     /// proportionally scaled down in case there is fewer ETH than `amount` on the module.
     /// @param referral The address of the referral regarding the Lido Rewards-Share Program.
@@ -60,7 +60,7 @@ abstract contract StEthModule is BaseModule {
 
     /// @notice Wraps the given `amount` of stETH to wstETH.
     /// @dev stETH must have been previously sent to the module.
-    /// @param amount The amount of stEth to wrap. Pass max to wrap the module's balance.
+    /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the module's balance.
     /// @param receiver The account receiving the wstETH tokens.
     function wrapStEth(uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
@@ -73,7 +73,7 @@ abstract contract StEthModule is BaseModule {
 
     /// @notice Unwraps the given `amount` of wstETH to stETH.
     /// @dev wstETH must have been previously sent to the module.
-    /// @param amount The amount of wstEth to unwrap. Pass max to unwrap the module's balance.
+    /// @param amount The amount of wstEth to unwrap. Pass `type(uint).max` to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(WST_ETH).balanceOf(address(this));
