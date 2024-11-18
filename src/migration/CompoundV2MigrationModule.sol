@@ -68,7 +68,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// @notice Redeems cToken from CompoundV2.
     /// @dev cTokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract
-    /// @param amount The amount of cToken to redeem. Pass 2^256-1 to redeem the module's `cToken` balance.
+    /// @param amount The amount of cToken to redeem. Pass 2^256-1 to redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
     function compoundV2Redeem(address cToken, uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ICToken(cToken).balanceOf(address(this));
