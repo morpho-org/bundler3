@@ -101,7 +101,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function testErc4626RedeemUnexpectedOwner(uint256 shares, address owner) public {
-        vm.assume(owner != address(this) && owner != address(bundler));
+        vm.assume(owner != address(this) && owner != address(genericModule1));
 
         bundle.push(_erc4626Redeem(address(vault), shares, 0, RECEIVER, owner));
 
