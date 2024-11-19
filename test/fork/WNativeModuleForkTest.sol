@@ -48,6 +48,9 @@ contract WNativeModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
+    // function testX() public {
+    //     testUnwrapNative(1003);
+    // }
     function testUnwrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -55,6 +58,12 @@ contract WNativeModuleForkTest is ForkTest {
         bundle.push(_unwrapNative(amount, RECEIVER));
 
         deal(WETH, USER, amount);
+
+        console.log("WETH", WETH);
+        console.log(WETH.balance);
+        address WN = address(genericModule1.WRAPPED_NATIVE());
+        console.log("WNATIVE", WN);
+        console.log(WN.balance);
 
         vm.prank(USER);
         bundler.multicall(bundle);
