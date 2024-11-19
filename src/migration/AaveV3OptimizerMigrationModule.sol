@@ -37,6 +37,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// @param amount The amount of `underlying` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function aaveV3OptimizerRepay(address underlying, uint256 amount) external bundlerOnly {
+        // Amount will be capped to the initiator's debt by the optimizer.
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
