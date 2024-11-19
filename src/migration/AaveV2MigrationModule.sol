@@ -3,7 +3,6 @@ pragma solidity 0.8.27;
 
 import {IAaveV2} from "./interfaces/IAaveV2.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
@@ -23,8 +22,7 @@ contract AaveV2MigrationModule is BaseModule {
     /* CONSTRUCTOR */
 
     /// @param bundler The Bundler contract address
-    /// @param aaveV2Pool The AaveV2 contract address. Assumes it is non-zero (not expected to be an input at
-    /// deployment).
+    /// @param aaveV2Pool The AaveV2 contract address.
     constructor(address bundler, address aaveV2Pool) BaseModule(bundler) {
         require(aaveV2Pool != address(0), ErrorsLib.ZeroAddress());
 
@@ -33,14 +31,14 @@ contract AaveV2MigrationModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Repays `amount` of `token` on AaveV2, on behalf of the initiator.
+    /// @notice Repays on AaveV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
-    /// @param amount The amount of `token` to repay. Capped at the maximum repayable debt
+    /// @param amount The amount of `token` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV2Repay(address token, uint256 amount, uint256 interestRateMode) external bundlerOnly {
-        amount = Math.min(amount, ERC20(token).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -49,10 +47,10 @@ contract AaveV2MigrationModule is BaseModule {
         AAVE_V2_POOL.repay(token, amount, interestRateMode, initiator());
     }
 
-    /// @notice Withdraws `amount` of `token` on AaveV2, on behalf of the initiator.
+    /// @notice Withdraws on AaveV2.
     /// @dev aTokens must have been previously sent to the module.
     /// @param token The address of the token to withdraw.
-    /// @param amount The amount of `token` to withdraw. Pass `type(uint256).max` to withdraw all.
+    /// @param amount The amount of `token` to withdraw. Pass `type(uint).max` to withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV2Withdraw(address token, uint256 amount, address receiver) external bundlerOnly {
         AAVE_V2_POOL.withdraw(token, amount, receiver);

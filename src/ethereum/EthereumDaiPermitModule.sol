@@ -5,6 +5,7 @@ import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 
 import {BaseModule} from "../BaseModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 /// @title EthereumDaiPermitModule
 /// @author Morpho Labs
@@ -18,11 +19,12 @@ abstract contract EthereumDaiPermitModule is BaseModule {
     /* CONSTRUCTOR */
 
     constructor(address dai) {
+        require(dai != address(0), ErrorsLib.ZeroAddress());
+
         DAI = dai;
     }
 
-    /// @notice Permits DAI from sender to be spent by the module with the given `nonce`, `expiry` & EIP-712
-    /// signature's `v`, `r` & `s`.
+    /// @notice Permits DAI.
     /// @param spender The account allowed to spend the Dai.
     /// @param nonce The nonce of the signed message.
     /// @param expiry The expiry of the signed message.
