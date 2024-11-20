@@ -20,6 +20,7 @@ abstract contract ForkTest is CommonTest, Configured {
     address internal constant MORPHO_WRAPPER = 0x9D03bb2092270648d7480049d0E58d2FcF0E5123;
     address internal constant MORPHO_TOKEN_LEGACY = 0x9994E35Db50125E0DF82e4c2dde62496CE330999;
     address internal constant MORPHO_DAO = 0xcBa28b38103307Ec8dA98377ffF9816C164f9AFa;
+    address internal constant MORPHO_SAFE_OWNER = 0x0b9915C13e8E184951Df0d9C0b104f8f1277648B;
 
     EthereumModule1 internal ethereumModule1;
 
