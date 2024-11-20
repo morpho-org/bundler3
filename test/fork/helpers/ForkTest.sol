@@ -7,7 +7,6 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {StEthModule} from "../../../src/ethereum/StEthModule.sol";
 import {EthereumModule1} from "../../../src/ethereum/EthereumModule1.sol";
 
 import "../../../config/Configured.sol";
@@ -225,18 +224,18 @@ abstract contract ForkTest is CommonTest, Configured {
         returns (Call memory)
     {
         return _call(
-            ethereumModule1, abi.encodeCall(StEthModule.stakeEth, (amount, shares, referral, receiver)), callValue
+            ethereumModule1, abi.encodeCall(EthereumModule1.stakeEth, (amount, shares, referral, receiver)), callValue
         );
     }
 
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(StEthModule.wrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.wrapStEth, (amount, receiver)));
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(StEthModule.unwrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */
