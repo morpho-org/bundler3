@@ -9,13 +9,15 @@ import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
 import {BaseModule, SafeTransferLib} from "../BaseModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
-import {WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 /// @title StEthModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to bundle multiple interactions with stETH together.
 abstract contract StEthModule is BaseModule {
+    using MathLib for uint256;
+
     /* IMMUTABLES */
 
     /// @dev The address of the stETH contract.
@@ -54,7 +56,7 @@ abstract contract StEthModule is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(amount * WAD >= maxSharePriceE18 * sharesReceived, ErrorsLib.SlippageExceeded());
+        require(amount.wDivDown(sharesReceived) <= maxSharePriceE18, ErrorsLib.SlippageExceeded());
 
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }
