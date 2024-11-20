@@ -7,7 +7,7 @@ import "../../../src/migration/CompoundV2MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
-contract CompoundV2NoEthMigrationModuleForkTest is MigrationForkTest {
+contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     using MathLib for uint256;
     using SafeTransferLib for ERC20;
     using MarketParamsLib for MarketParams;
