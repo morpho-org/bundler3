@@ -5,13 +5,15 @@ import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-
-import {SafeTransferLib} from "../BaseModule.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
-
-import {GenericModule1, BaseModule, ErrorsLib, ERC20Wrapper, ModuleLib, ERC20} from "../GenericModule1.sol";
+import {
+    GenericModule1,
+    BaseModule,
+    ErrorsLib,
+    ERC20Wrapper,
+    ModuleLib,
+    SafeTransferLib,
+    ERC20
+} from "../GenericModule1.sol";
 
 /// @title EthereumModule1
 /// @author Morpho Labs
