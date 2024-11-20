@@ -68,13 +68,14 @@ contract EthereumModule1 is GenericModule1 {
         MORPHO_WRAPPER = morphoWrapper;
 
         ModuleLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
+        ModuleLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
 
     /// @notice Unwraps Morpho tokens.
     /// @dev Separated from the erc20WrapperWithdrawTo function because the Morpho wrapper is separated from the
-    /// underlying ERC20, so it does not have a balanceOf function and it needs to be approved on the underlying token.
+    /// underlying ERC20, so it does not have a balanceOf function.
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external bundlerOnly {
@@ -83,8 +84,6 @@ contract EthereumModule1 is GenericModule1 {
         if (amount == type(uint256).max) amount = ERC20(MORPHO_TOKEN).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
-
-        ModuleLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
