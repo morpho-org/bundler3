@@ -141,7 +141,6 @@ contract CompoundV2NoEthMigrationModuleForkTest is MigrationForkTest {
         return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayErc20, (cToken, repayAmount)));
     }
 
-
     function _compoundV2Redeem(address cToken, uint256 amount, address receiver) internal view returns (Call memory) {
         return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2Redeem, (cToken, amount, receiver)));
     }

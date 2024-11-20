@@ -37,7 +37,6 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         migrationModule.compoundV2RepayErc20(C_DAI_V2, amount);
     }
 
-
     function testCompoundV2RepayErc20ZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, 0));
 

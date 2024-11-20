@@ -43,9 +43,8 @@ contract CompoundV2MigrationModule is BaseModule {
         address underlying = ICToken(cToken).underlying();
 
         if (amount == type(uint256).max) {
-            amount = Math.min(
-                ERC20(underlying).balanceOf(address(this)), ICToken(cToken).borrowBalanceCurrent(_initiator)
-            );
+            amount =
+                Math.min(ERC20(underlying).balanceOf(address(this)), ICToken(cToken).borrowBalanceCurrent(_initiator));
         }
 
         require(amount != 0, ErrorsLib.ZeroAmount());
