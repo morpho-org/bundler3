@@ -7,7 +7,6 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {StEthModule} from "../../../src/ethereum/StEthModule.sol";
 import {EthereumModule1} from "../../../src/ethereum/EthereumModule1.sol";
 
 import "../../../config/Configured.sol";
@@ -36,10 +35,11 @@ abstract contract ForkTest is CommonTest, Configured {
 
         super.setUp();
 
-        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(WETH));
-
         if (block.chainid == 1) {
-            ethereumModule1 = new EthereumModule1(address(bundler), DAI, WST_ETH);
+            ethereumModule1 = new EthereumModule1(address(bundler), address(morpho), address(WETH), DAI, WST_ETH);
+            genericModule1 = GenericModule1(ethereumModule1);
+        } else {
+            genericModule1 = new GenericModule1(address(bundler), address(morpho), address(WETH));
         }
 
         for (uint256 i; i < configMarkets.length; ++i) {
@@ -159,6 +159,40 @@ abstract contract ForkTest is CommonTest, Configured {
         );
     }
 
+    function _approve2Batch(
+        uint256 privateKey,
+        address[] memory assets,
+        uint256[] memory amounts,
+        uint256[] memory nonces,
+        bool skipRevert
+    ) internal view returns (Call memory) {
+        IAllowanceTransfer.PermitDetails[] memory details = new IAllowanceTransfer.PermitDetails[](assets.length);
+
+        for (uint256 i; i < assets.length; i++) {
+            details[i] = IAllowanceTransfer.PermitDetails({
+                token: assets[i],
+                amount: uint160(amounts[i]),
+                expiration: type(uint48).max,
+                nonce: uint48(nonces[i])
+            });
+        }
+
+        IAllowanceTransfer.PermitBatch memory permitBatch = IAllowanceTransfer.PermitBatch({
+            details: details,
+            spender: address(genericModule1),
+            sigDeadline: SIGNATURE_DEADLINE
+        });
+
+        bytes32 digest = SigUtils.toTypedDataHash(Permit2Lib.PERMIT2.DOMAIN_SEPARATOR(), permitBatch);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+
+        return _call(
+            genericModule1,
+            abi.encodeCall(GenericModule1.approve2Batch, (permitBatch, abi.encodePacked(r, s, v), skipRevert))
+        );
+    }
+
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
         return _transferFrom2(asset, address(genericModule1), amount);
     }
@@ -183,18 +217,18 @@ abstract contract ForkTest is CommonTest, Configured {
         returns (Call memory)
     {
         return _call(
-            ethereumModule1, abi.encodeCall(StEthModule.stakeEth, (amount, shares, referral, receiver)), callValue
+            ethereumModule1, abi.encodeCall(EthereumModule1.stakeEth, (amount, shares, referral, receiver)), callValue
         );
     }
 
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(StEthModule.wrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.wrapStEth, (amount, receiver)));
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(StEthModule.unwrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */

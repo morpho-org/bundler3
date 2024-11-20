@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
+import {IDaiPermit} from "../../src/ethereum/interfaces/IDaiPermit.sol";
 import {DaiPermit, Permit} from "../helpers/SigUtils.sol";
 
-import "../../src/ethereum/EthereumDaiPermitModule.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../../src/mocks/ERC20PermitMock.sol";
