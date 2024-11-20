@@ -15,12 +15,13 @@ interface SemiTransferableToken {
 contract MorphoWrapperModuleForkTest is ForkTest {
     function setUp() public override {
         super.setUp();
+        if (block.chainid != 1) return;
 
         vm.prank(SemiTransferableToken(MORPHO_TOKEN_LEGACY).owner());
         SemiTransferableToken(MORPHO_TOKEN_LEGACY).setUserRole(MORPHO_WRAPPER, 0, true);
     }
 
-    function testMorphoWrapperWithdrawToAccountZeroAddress(uint256 amount) public {
+    function testMorphoWrapperWithdrawToAccountZeroAddress(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_morphoWrapperWithdrawTo(address(0), amount));
@@ -29,21 +30,21 @@ contract MorphoWrapperModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMorphoWrapperWithdrawToZeroAmount() public {
+    function testMorphoWrapperWithdrawToZeroAmount() public onlyEthereum {
         bundle.push(_morphoWrapperWithdrawTo(RECEIVER, 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
-    function testMorphoWrapperWithdrawToUnauthorized(uint256 amount) public {
+    function testMorphoWrapperWithdrawToUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         ethereumModule1.morphoWrapperWithdrawTo(RECEIVER, amount);
     }
 
-    function testMorphoWrapperWithdrawToFailed(uint256 amount) public {
+    function testMorphoWrapperWithdrawToFailed(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         deal(MORPHO_TOKEN, address(genericModule1), amount);
@@ -57,7 +58,7 @@ contract MorphoWrapperModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMorphoWrapperWithdrawTo(uint256 amount) public {
+    function testMorphoWrapperWithdrawTo(uint256 amount) public onlyEthereum {
         vm.prank(SemiTransferableToken(MORPHO_TOKEN_LEGACY).owner());
         SemiTransferableToken(MORPHO_TOKEN_LEGACY).setUserRole(MORPHO_WRAPPER, 0, true);
 
