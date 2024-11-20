@@ -17,6 +17,11 @@ abstract contract ForkTest is CommonTest, Configured {
     using ConfigLib for Config;
     using SafeTransferLib for ERC20;
 
+    address internal constant MORPHO_TOKEN = 0x58D97B57BB95320F9a05dC918Aef65434969c2B2;
+    address internal constant MORPHO_WRAPPER = 0x9D03bb2092270648d7480049d0E58d2FcF0E5123;
+    address internal constant MORPHO_TOKEN_LEGACY = 0x9994E35Db50125E0DF82e4c2dde62496CE330999;
+    address internal constant MORPHO_DAO = 0xcBa28b38103307Ec8dA98377ffF9816C164f9AFa;
+
     EthereumModule1 internal ethereumModule1;
 
     uint256 internal forkId;
@@ -37,7 +42,9 @@ abstract contract ForkTest is CommonTest, Configured {
         super.setUp();
 
         if (block.chainid == 1) {
-            ethereumModule1 = new EthereumModule1(address(bundler), address(morpho), address(WETH), DAI, WST_ETH);
+            ethereumModule1 = new EthereumModule1(
+                address(bundler), address(morpho), address(WETH), DAI, WST_ETH, MORPHO_TOKEN, MORPHO_WRAPPER
+            );
             genericModule1 = GenericModule1(ethereumModule1);
         } else {
             genericModule1 = new GenericModule1(address(bundler), address(morpho), address(WETH));
@@ -244,5 +251,11 @@ abstract contract ForkTest is CommonTest, Configured {
 
     function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
         return _call(genericModule1, abi.encodeCall(GenericModule1.unwrapNative, (amount, receiver)));
+    }
+
+    /* MORPHO WRAPPER ACTIONS */
+
+    function _morphoWrapperWithdrawTo(address receiver, uint256 amount) internal view returns (Call memory) {
+        return _call(genericModule1, abi.encodeCall(EthereumModule1.morphoWrapperWithdrawTo, (receiver, amount)));
     }
 }

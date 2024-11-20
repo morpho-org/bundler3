@@ -7,6 +7,10 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import "./helpers/ForkTest.sol";
 
+interface SemiTransferableToken {
+    function setUserRole(address, uint8, bool) external;
+}
+
 contract EthereumModuleForkTest is ForkTest {
     using MathLib for uint256;
     using MorphoLib for IMorpho;
@@ -89,5 +93,36 @@ contract EthereumModuleForkTest is ForkTest {
 
         vm.prank(module);
         bundler.multicallFromModule(new Call[](0));
+    }
+
+    function testMorphoWrapperWithdrawTo(uint256 amount) public {
+        vm.prank(MORPHO_DAO);
+        SemiTransferableToken(MORPHO_TOKEN_LEGACY).setUserRole(MORPHO_WRAPPER, 0, true);
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        deal(MORPHO_TOKEN, address(genericModule1), amount);
+        deal(MORPHO_TOKEN_LEGACY, address(MORPHO_WRAPPER), amount);
+
+        uint256 wrapperLegacyBalanceBefore = ERC20(MORPHO_TOKEN_LEGACY).balanceOf(address(MORPHO_WRAPPER));
+        uint256 wrapperBalanceBefore = ERC20(MORPHO_TOKEN).balanceOf(address(MORPHO_WRAPPER));
+
+        bundle.push(_morphoWrapperWithdrawTo(RECEIVER, amount));
+
+        bundler.multicall(bundle);
+
+        assertEq(ERC20(MORPHO_TOKEN).balanceOf(address(genericModule1)), 0, "morpho.balanceOf(genericModule1)");
+        assertEq(
+            ERC20(MORPHO_TOKEN).balanceOf(address(MORPHO_WRAPPER)),
+            wrapperBalanceBefore + amount,
+            "morpho.balanceOf(morphoWrapper)"
+        );
+
+        assertEq(ERC20(MORPHO_TOKEN_LEGACY).balanceOf(address(RECEIVER)), amount, "morphoLegacy.balanceOf(receiver)");
+        assertEq(
+            ERC20(MORPHO_TOKEN_LEGACY).balanceOf(address(MORPHO_WRAPPER)),
+            wrapperLegacyBalanceBefore - amount,
+            "morphoLegacy.balanceOf(morphoWrapper)"
+        );
     }
 }
