@@ -24,7 +24,7 @@ contract BaseModule {
 
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
-    modifier bundlerOnly() {
+    modifier onlyBundler() {
         require(msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender(msg.sender));
         _;
     }
@@ -41,7 +41,7 @@ contract BaseModule {
     /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
-    function nativeTransfer(address receiver, uint256 amount) external payable bundlerOnly {
+    function nativeTransfer(address receiver, uint256 amount) external payable onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
@@ -55,7 +55,7 @@ contract BaseModule {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
-    function erc20Transfer(address token, address receiver, uint256 amount) external bundlerOnly {
+    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
         require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
