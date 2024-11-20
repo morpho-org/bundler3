@@ -22,7 +22,7 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
-import {WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {MathLib, WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 
 /// @title GenericModule1
 /// @author Morpho Labs
@@ -31,6 +31,7 @@ import {WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
     using SafeTransferLib for ERC20;
+    using MathLib for uint256;
 
     /* IMMUTABLES */
 
@@ -135,7 +136,7 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
-        require(assets * WAD <= maxSharePriceE18 * shares, ErrorsLib.SlippageExceeded());
+        require(assets.wDivDown(shares) <= maxSharePriceE18, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws underlying token from a ERC4626 vault.
@@ -156,7 +157,7 @@ contract GenericModule1 is BaseModule {
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
-        require(assets * WAD >= minSharePriceE18 * shares, ErrorsLib.SlippageExceeded());
+        require(assets.wDivDown(shares) >= minSharePriceE18, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Redeems shares of a ERC4626 vault.
@@ -180,7 +181,7 @@ contract GenericModule1 is BaseModule {
         require(shares != 0, ErrorsLib.ZeroShares());
 
         uint256 assets = IERC4626(vault).redeem(shares, receiver, owner);
-        require(assets * WAD >= minSharePriceE18 * shares, ErrorsLib.SlippageExceeded());
+        require(assets.wDivDown(shares) >= minSharePriceE18, ErrorsLib.SlippageExceeded());
     }
 
     /* MORPHO CALLBACKS */
