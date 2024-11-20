@@ -30,6 +30,13 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         enteredMarkets.push(C_DAI_V2);
     }
 
+    function testCompoundV2RepayCeth() public onlyEthereum {
+        bundle.push(_compoundV2RepayErc20(C_ETH_V2, 1));
+
+        vm.expectRevert(ErrorsLib.CTokenIsCETH.selector);
+        bundler.multicall(bundle);
+    }
+
     function testCompoundV2RedeemZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2Redeem(C_USDC_V2, 0, address(this)));
 
