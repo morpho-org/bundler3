@@ -31,13 +31,14 @@ contract AaveV2MigrationModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Repays on AaveV2.
+    /// @notice Repays the initiator's debt on AaveV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
     /// @param amount The amount of `token` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV2Repay(address token, uint256 amount, uint256 interestRateMode) external bundlerOnly {
+        // Amount will be capped to the initiator's debt by Aave.
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

@@ -32,37 +32,44 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Repays on CompoundV2.
+    /// @notice Repays an ERC20 debt on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
     /// @param amount The amount of `cToken` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
-    function compoundV2Repay(address cToken, uint256 amount) external bundlerOnly {
+    function compoundV2RepayErc20(address cToken, uint256 amount) external bundlerOnly {
+        require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
+
         address _initiator = initiator();
 
-        if (cToken == C_ETH) {
-            if (amount == type(uint256).max) {
-                amount = Math.min(address(this).balance, ICEth(C_ETH).borrowBalanceCurrent(_initiator));
-            }
+        address underlying = ICToken(cToken).underlying();
 
-            require(amount != 0, ErrorsLib.ZeroAmount());
-
-            ICEth(C_ETH).repayBorrowBehalf{value: amount}(_initiator);
-        } else {
-            address underlying = ICToken(cToken).underlying();
-
-            if (amount == type(uint256).max) {
-                amount = Math.min(
-                    ERC20(underlying).balanceOf(address(this)), ICToken(cToken).borrowBalanceCurrent(_initiator)
-                );
-            }
-
-            require(amount != 0, ErrorsLib.ZeroAmount());
-
-            ModuleLib.approveMaxToIfAllowanceZero(underlying, cToken);
-
-            require(ICToken(cToken).repayBorrowBehalf(_initiator, amount) == 0, ErrorsLib.RepayError());
+        if (amount == type(uint256).max) {
+            amount =
+                Math.min(ERC20(underlying).balanceOf(address(this)), ICToken(cToken).borrowBalanceCurrent(_initiator));
         }
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        ModuleLib.approveMaxToIfAllowanceZero(underlying, cToken);
+
+        require(ICToken(cToken).repayBorrowBehalf(_initiator, amount) == 0, ErrorsLib.RepayError());
+    }
+
+    /// @notice Repays an ETH debt on CompoundV2.
+    /// @dev Underlying tokens must have been previously sent to the module.
+    /// @param amount The amount of cEth to repay. Pass `type(uint).max` to repay the maximum repayable debt
+    /// (mininimum of the module's balance and the initiator's debt).
+    function compoundV2RepayEth(uint256 amount) external bundlerOnly {
+        address _initiator = initiator();
+
+        if (amount == type(uint256).max) {
+            amount = Math.min(address(this).balance, ICEth(C_ETH).borrowBalanceCurrent(_initiator));
+        }
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        ICEth(C_ETH).repayBorrowBehalf{value: amount}(_initiator);
     }
 
     /// @notice Redeems cToken from CompoundV2.

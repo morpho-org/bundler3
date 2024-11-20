@@ -39,6 +39,7 @@ contract AaveV3MigrationModule is BaseModule {
     /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV3Repay(address token, uint256 amount, uint256 interestRateMode) external bundlerOnly {
+        // Amount will be capped to the initiator's debt by Aave.
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

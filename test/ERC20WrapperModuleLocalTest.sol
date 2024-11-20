@@ -18,6 +18,7 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
     function testErc20WrapperDepositFor(uint256 amount, address receiver) public {
         vm.assume(receiver != address(0));
+        vm.assume(receiver != address(loanWrapper));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
