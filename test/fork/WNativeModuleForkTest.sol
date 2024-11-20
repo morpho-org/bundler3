@@ -56,11 +56,6 @@ contract WNativeModuleForkTest is ForkTest {
 
         deal(WETH, USER, amount);
 
-        console.log("WETH", WETH);
-        console.log(WETH.balance);
-        address WN = address(genericModule1.WRAPPED_NATIVE());
-        console.log("WNATIVE", WN);
-        console.log(WN.balance);
 
         vm.prank(USER);
         bundler.multicall(bundle);
