@@ -404,6 +404,21 @@ contract GenericModule1 is BaseModule {
         }
     }
 
+    /// @notice Batch approves with Permit2.
+    /// @param permitBatch The `PermitBatch` struct.
+    /// @param signature The signature, serialized.
+    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
+    function approve2Batch(
+        IAllowanceTransfer.PermitBatch calldata permitBatch,
+        bytes calldata signature,
+        bool skipRevert
+    ) external bundlerOnly {
+        try Permit2Lib.PERMIT2.permit(initiator(), permitBatch, signature) {}
+        catch (bytes memory returnData) {
+            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
+        }
+    }
+
     /// @notice Transfers with Permit2.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
