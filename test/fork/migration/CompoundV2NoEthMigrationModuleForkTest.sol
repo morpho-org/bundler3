@@ -61,8 +61,8 @@ contract CompoundV2NoEthMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(migrationModule)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
-        callbackBundle.push(_compoundV2Repay(C_USDC_V2, borrowed / 2));
-        callbackBundle.push(_compoundV2Repay(C_USDC_V2, type(uint256).max));
+        callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, borrowed / 2));
+        callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2Redeem(C_DAI_V2, cTokenBalance, address(genericModule1)));
@@ -137,9 +137,10 @@ contract CompoundV2NoEthMigrationModuleForkTest is MigrationForkTest {
 
     /* ACTIONS */
 
-    function _compoundV2Repay(address cToken, uint256 repayAmount) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2Repay, (cToken, repayAmount)));
+    function _compoundV2RepayErc20(address cToken, uint256 repayAmount) internal view returns (Call memory) {
+        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayErc20, (cToken, repayAmount)));
     }
+
 
     function _compoundV2Redeem(address cToken, uint256 amount, address receiver) internal view returns (Call memory) {
         return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2Redeem, (cToken, amount, receiver)));
