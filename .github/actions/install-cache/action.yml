@@ -10,7 +10,6 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: |
-          cache
           out
         key: forge-${{ github.ref_name }}
         restore-keys: |
