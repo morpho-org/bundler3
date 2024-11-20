@@ -13,6 +13,9 @@ import {BaseModule} from "../BaseModule.sol";
 contract EthereumModule1 is EthereumDaiPermitModule, StEthModule {
     /* CONSTRUCTOR */
 
+    /// @param bundler The address of the bundler.
+    /// @param dai The address of the dai.
+    /// @param wStEth The address of the wstEth.
     constructor(address bundler, address dai, address wStEth)
         BaseModule(bundler)
         EthereumDaiPermitModule(dai)

@@ -11,7 +11,7 @@ import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLi
 library ModuleLib {
     using SafeTransferLib for ERC20;
 
-    /// @dev Gives the max approval to `spender` to spend the given `token` if not already approved.
+    /// @dev Gives the max approval to `spender` to spend the given token if not already approved.
     /// @dev Assumes that `type(uint256).max` is large enough to never have to increase the allowance again.
     function approveMaxToIfAllowanceZero(address token, address spender) internal {
         if (ERC20(token).allowance(address(this), spender) == 0) {

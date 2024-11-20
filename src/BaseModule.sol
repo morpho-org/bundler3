@@ -37,33 +37,30 @@ contract BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Transfers the minimum between the given `amount` and the module's balance of native asset from the
-    /// module to `receiver`.
-    /// @dev If the minimum happens to be zero, the transfer is silently skipped.
-    /// @dev The receiver must not be the module or the zero address.
+    /// @notice Transfers native assets.
+    /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
-    /// @param amount The amount of native tokens to transfer. Capped at the module's balance.
+    /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
     function nativeTransfer(address receiver, uint256 amount) external payable bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
-        amount = Math.min(amount, address(this).balance);
+        if (amount == type(uint256).max) amount = address(this).balance;
 
         if (amount > 0) SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
-    /// @notice Transfers the minimum between the given `amount` and the module's balance of `token` from the module
-    /// to `receiver`.
-    /// @dev If the minimum happens to be zero the transfer is silently skipped.
-    /// @dev The receiver must not be the module or the zero address.
+    /// @notice Transfers ERC20 tokens.
+    /// @dev The amount transfered can be zero.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of `token` to transfer. Capped at the module's balance.
+    /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
     function erc20Transfer(address token, address receiver, uint256 amount) external bundlerOnly {
+        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
-        amount = Math.min(amount, ERC20(token).balanceOf(address(this)));
+        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
         if (amount > 0) SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
     }
@@ -78,7 +75,7 @@ contract BaseModule {
 
     /// @notice Calls bundler.multicallFromModule with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
-    /// @param data An abi-encoded Call[]
+    /// @param data An abi-encoded Call[].
     function multicallBundler(bytes calldata data) internal {
         (bool success, bytes memory returnData) =
             BUNDLER.call(bytes.concat(IBundler.multicallFromModule.selector, data));
