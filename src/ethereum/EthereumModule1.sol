@@ -40,7 +40,7 @@ contract EthereumModule1 is GenericModule1 {
     /* CONSTRUCTOR */
 
     /// @param bundler The address of the bundler.
-    /// @param morpho The address of the morpho.
+    /// @param morpho The address of Morpho.
     /// @param weth The address of the weth.
     /// @param dai The address of the dai.
     /// @param wStEth The address of the wStEth.
