@@ -26,7 +26,7 @@ contract EthereumModule1 is GenericModule1 {
     /// @dev The address of the stETH contract.
     address public immutable ST_ETH;
 
-    /// @dev The address of the wstETH contract.
+    /// @dev The address of the wStETH contract.
     address public immutable WST_ETH;
 
     /// @notice The address of the Morpho token.
@@ -41,9 +41,9 @@ contract EthereumModule1 is GenericModule1 {
     /// @param morpho The address of the morpho.
     /// @param weth The address of the weth.
     /// @param dai The address of the dai.
-    /// @param wStEth The address of the wstEth.
+    /// @param wStEth The address of the wStEth.
     /// @param morphoToken The address of the morpho token.
-    /// @param morphoWrapper The address of the morpho wrapper.
+    /// @param morphoWrapper The address of the morpho token wrapper.
     constructor(
         address bundler,
         address morpho,
@@ -137,10 +137,10 @@ contract EthereumModule1 is GenericModule1 {
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }
 
-    /// @notice Wraps stETH to wstETH.
+    /// @notice Wraps stETH to wStETH.
     /// @dev stETH must have been previously sent to the module.
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the module's balance.
-    /// @param receiver The account receiving the wstETH tokens.
+    /// @param receiver The account receiving the wStETH tokens.
     function wrapStEth(uint256 amount, address receiver) external bundlerOnly {
         if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
 
@@ -150,8 +150,8 @@ contract EthereumModule1 is GenericModule1 {
         if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
     }
 
-    /// @notice Unwraps wstETH to stETH.
-    /// @dev wstETH must have been previously sent to the module.
+    /// @notice Unwraps wStETH to stETH.
+    /// @dev wStETH must have been previously sent to the module.
     /// @param amount The amount of wStEth to unwrap. Pass `type(uint).max` to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external bundlerOnly {
