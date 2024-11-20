@@ -56,7 +56,6 @@ contract WNativeModuleForkTest is ForkTest {
 
         deal(WETH, USER, amount);
 
-
         vm.prank(USER);
         bundler.multicall(bundle);
 
