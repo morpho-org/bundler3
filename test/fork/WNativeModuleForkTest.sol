@@ -48,9 +48,6 @@ contract WNativeModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    // function testX() public {
-    //     testUnwrapNative(1003);
-    // }
     function testUnwrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
