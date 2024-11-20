@@ -21,6 +21,7 @@ import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/
 import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+import {Wrapper} from "../lib/morpho-token-upgradeable/src/Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
 
 /// @title GenericModule1

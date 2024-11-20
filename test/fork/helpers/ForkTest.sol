@@ -36,7 +36,9 @@ abstract contract ForkTest is CommonTest, Configured {
         super.setUp();
 
         if (block.chainid == 1) {
-            ethereumModule1 = new EthereumModule1(address(bundler), address(morpho), address(WETH), DAI, WST_ETH);
+            ethereumModule1 = new EthereumModule1(
+                address(bundler), address(morpho), address(WETH), DAI, WST_ETH, MORPHO_TOKEN_WRAPPER
+            );
             genericModule1 = GenericModule1(ethereumModule1);
         } else {
             genericModule1 = new GenericModule1(address(bundler), address(morpho), address(WETH));

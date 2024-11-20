@@ -36,6 +36,8 @@ abstract contract Configured is StdChains {
     address internal C_USDC_V2;
     address internal C_WETH_V3;
 
+    address internal MORPHO_TOKEN_WRAPPER;
+
     ConfigMarket[] internal configMarkets;
 
     string internal network;
@@ -86,5 +88,7 @@ abstract contract Configured is StdChains {
         C_ETH_V2 = CONFIG.getAddress("cETHv2");
         C_USDC_V2 = CONFIG.getAddress("cUSDCv2");
         C_WETH_V3 = CONFIG.getAddress("cWETHv3");
+
+        MORPHO_TOKEN_WRAPPER = CONFIG.getAddress("morphoTokenWrapper");
     }
 }

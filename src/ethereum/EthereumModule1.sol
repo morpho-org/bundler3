@@ -12,6 +12,7 @@ import {SafeTransferLib} from "../BaseModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
 import {GenericModule1} from "../GenericModule1.sol";
+import {Wrapper} from "../../lib/morpho-token-upgradeable/src/Wrapper.sol";
 
 /// @title EthereumModule1
 /// @author Morpho Labs
@@ -29,6 +30,12 @@ contract EthereumModule1 is GenericModule1 {
     /// @dev The address of the wstETH contract.
     address public immutable WST_ETH;
 
+    /// @dev The address of the Morpho legacy token wrapper.
+    address public immutable MORPHO_TOKEN_WRAPPER;
+
+    /// @dev The address of the Morpho token.
+    address public immutable MORPHO_TOKEN;
+
     /* CONSTRUCTOR */
 
     /// @param bundler The address of the bundler.
@@ -36,7 +43,7 @@ contract EthereumModule1 is GenericModule1 {
     /// @param weth The address of the wrapped ether token.
     /// @param dai The address of the dai.
     /// @param wStEth The address of the wStEth.
-    constructor(address bundler, address morpho, address weth, address dai, address wStEth)
+    constructor(address bundler, address morpho, address weth, address dai, address wStEth, address morphoTokenWrapper)
         GenericModule1(bundler, morpho, weth)
     {
         require(dai != address(0), ErrorsLib.ZeroAddress());
@@ -45,8 +52,11 @@ contract EthereumModule1 is GenericModule1 {
         DAI = dai;
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
+        MORPHO_TOKEN_WRAPPER = morphoTokenWrapper;
+        MORPHO_TOKEN = Wrapper(morphoTokenWrapper).NEW_MORPHO();
 
         ModuleLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
+        ModuleLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_TOKEN_WRAPPER);
     }
 
     /* DAI PERMIT ACTIONS */
@@ -123,5 +133,23 @@ contract EthereumModule1 is GenericModule1 {
 
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
         if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, received);
+    }
+
+    /* MORPHO TOKEN WRAPPER ACTION */
+
+    /// @notice Withdraw legacy Morpho tokens from Morpho token wrapper.
+    /// @dev Use the generic `erc20WrapperDepositFor` to deposit legacy Morpho tokens in the wrapper.
+    /// @dev This functions replaces `erc20WrapperWithdrawTo`, which reverts when `amount == type(uint).max`.
+    /// @param receiver The address receiving the new Morpho tokens.
+    /// @param amount The amount of wrapped tokens to burn. Pass `type(uint).max` to burn the module's wrapped token
+    /// balance.
+    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external bundlerOnly {
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+
+        if (amount == type(uint256).max) amount = ERC20(MORPHO_TOKEN).balanceOf(address(this));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        require(Wrapper(MORPHO_TOKEN_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
 }
