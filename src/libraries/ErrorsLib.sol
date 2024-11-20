@@ -26,9 +26,6 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted with a zero shares as input.
     error ZeroShares();
 
-    /// @dev Thrown when the given owner is unexpected.
-    error UnexpectedOwner(address account);
-
     /// @dev Thrown when an action ends up minting/burning more shares than a given slippage.
     error SlippageExceeded();
 

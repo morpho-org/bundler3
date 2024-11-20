@@ -133,46 +133,34 @@ contract GenericModule1 is BaseModule {
 
     /// @notice Withdraws underlying token from a ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
-    /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
-    /// Otherwise, vault shares must have been previously sent to the module.
+    /// @dev Vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to withdraw.
     /// @param maxShares The maximum amount of shares to redeem in exchange for `assets`.
     /// @param receiver The address that will receive the withdrawn assets.
-    /// @param owner The address on behalf of which the assets are withdrawn. Can only be the module or the initiator.
-    function erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
-        external
-        bundlerOnly
-    {
+    function erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
+        uint256 shares = IERC4626(vault).withdraw(assets, receiver, address(this));
         require(shares <= maxShares, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Redeems shares of a ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
-    /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
-    /// Otherwise, vault shares must have been previously sent to the module.
+    /// @dev Vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
-    /// @param shares The amount of vault shares to redeem. Pass `type(uint).max` to redeem the owner's shares.
+    /// @param shares The amount of vault shares to redeem. Pass `type(uint).max` to redeem the initiator's shares.
     /// @param minAssets The minimum amount of underlying token to withdraw in exchange for `shares`.
     /// @param receiver The address that will receive the withdrawn assets.
-    /// @param owner The address on behalf of which the shares are redeemed. Can only be the module or the initiator.
-    function erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
-        external
-        bundlerOnly
-    {
+    function erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver) external bundlerOnly {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
 
-        if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
+        if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(address(this));
 
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        uint256 assets = IERC4626(vault).redeem(shares, receiver, owner);
+        uint256 assets = IERC4626(vault).redeem(shares, receiver, address(this));
         require(assets >= minAssets, ErrorsLib.SlippageExceeded());
     }
 

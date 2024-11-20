@@ -189,24 +189,21 @@ abstract contract CommonTest is Test {
             _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, minShares, receiver)));
     }
 
-    function _erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
+    function _erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver)
         internal
         view
         returns (Call memory)
     {
-        return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, maxShares, receiver, owner))
-        );
+        return
+            _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, maxShares, receiver)));
     }
 
-    function _erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
+    function _erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver)
         internal
         view
         returns (Call memory)
     {
-        return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minAssets, receiver, owner))
-        );
+        return _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minAssets, receiver)));
     }
 
     /* URD ACTIONS */
