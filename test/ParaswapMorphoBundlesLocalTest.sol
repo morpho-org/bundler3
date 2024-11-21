@@ -354,7 +354,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 address(genericModule1)
             )
         );
-        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user));
+        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
         callbackBundle.push(
             _morphoBorrow(destParams, overestimatedDebtToRepay, 0, type(uint256).max, address(genericModule1))
         );
