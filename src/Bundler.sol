@@ -28,7 +28,6 @@ contract Bundler is IBundler {
     /* PUBLIC */
 
     /// @notice Returns the address of the initiator of the multicall transaction.
-    /// @dev Specialized getter to prevent using `_initiator` directly.
     function initiator() public view returns (address _initiator) {
         assembly ("memory-safe") {
             _initiator := tload(INITIATOR_SLOT)

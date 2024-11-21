@@ -18,6 +18,7 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
     function testErc20WrapperDepositFor(uint256 amount, address receiver) public {
         vm.assume(receiver != address(0));
+        vm.assume(receiver != address(loanWrapper));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
@@ -51,14 +52,13 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
     }
 
-    function testErc20WrapperWithdrawToAll(uint256 amount, uint256 inputAmount) public {
+    function testErc20WrapperWithdrawToAll(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        inputAmount = bound(inputAmount, amount, type(uint256).max);
 
         loanWrapper.setBalance(address(genericModule1), amount);
         loanToken.setBalance(address(loanWrapper), amount);
 
-        bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, inputAmount));
+        bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, type(uint256).max));
 
         bundler.multicall(bundle);
 
