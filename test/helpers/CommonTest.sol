@@ -410,23 +410,7 @@ abstract contract CommonTest is Test {
         );
     }
 
-    /* SWAP ACTIONS */
-
-    function _paraswapBuyMorphoDebt(
-        address _augustus,
-        bytes memory callData,
-        address srcToken,
-        MarketParams memory marketParams,
-        Offsets memory offsets,
-        address receiver
-    ) internal view returns (bytes memory) {
-        return abi.encodeCall(
-            genericModule1.paraswapBuyMorphoDebt,
-            (address(paraswapModule), _augustus, callData, srcToken, marketParams, offsets, receiver)
-        );
-    }
-
-    /* PARASWAP BUNDLER ACTIONS */
+    /* PARASWAP MODULE ACTIONS */
 
     function _paraswapSell(
         address _augustus,
@@ -464,6 +448,8 @@ abstract contract CommonTest is Test {
         bool sellEntireBalance,
         address receiver
     ) internal view returns (Call memory) {
+        uint256 fromAmountOffset = 4 + 32 + 32;
+        uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
             paraswapModule,
             _paraswapSell(
@@ -472,7 +458,7 @@ abstract contract CommonTest is Test {
                 srcToken,
                 destToken,
                 sellEntireBalance,
-                Offsets(4 + 32 + 32, 4 + 32 + 32 + 32, 0),
+                Offsets({exactAmount: fromAmountOffset, limitAmount: toAmountOffset, quotedAmount: 0}),
                 receiver
             )
         );
@@ -486,6 +472,8 @@ abstract contract CommonTest is Test {
         uint256 newDestAmount,
         address receiver
     ) internal view returns (Call memory) {
+        uint256 fromAmountOffset = 4 + 32 + 32;
+        uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
             paraswapModule,
             _paraswapBuy(
@@ -494,7 +482,7 @@ abstract contract CommonTest is Test {
                 srcToken,
                 destToken,
                 newDestAmount,
-                Offsets(4 + 32 + 32 + 32, 4 + 32 + 32, 0),
+                Offsets({exactAmount: toAmountOffset, limitAmount: fromAmountOffset, quotedAmount: 0}),
                 receiver
             )
         );

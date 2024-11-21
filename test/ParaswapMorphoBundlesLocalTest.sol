@@ -75,15 +75,21 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         MarketParams memory marketParams,
         address receiver
     ) internal view returns (Call memory) {
+        uint256 fromAmountOffset = 4 + 32 + 32;
+        uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
             genericModule1,
-            _paraswapBuyMorphoDebt(
-                address(augustus),
-                abi.encodeCall(augustus.mockBuy, (srcToken, marketParams.loanToken, maxSrcAmount, destAmount)),
-                srcToken,
-                marketParams,
-                Offsets(4 + 32 + 32 + 32, 4 + 32 + 32, 0),
-                receiver
+            abi.encodeCall(
+                genericModule1.paraswapBuyMorphoDebt,
+                (
+                    address(paraswapModule),
+                    address(augustus),
+                    abi.encodeCall(augustus.mockBuy, (srcToken, marketParams.loanToken, maxSrcAmount, destAmount)),
+                    srcToken,
+                    marketParams,
+                    Offsets({exactAmount: toAmountOffset, limitAmount: fromAmountOffset, quotedAmount: 0}),
+                    receiver
+                )
             )
         );
     }

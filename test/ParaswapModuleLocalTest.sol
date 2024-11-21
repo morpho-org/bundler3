@@ -17,7 +17,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         augustusRegistryMock.setValid(address(augustus), true);
     }
 
-    function _callable(address account) internal {
+    function _makeEmptyAccountCallable(address account) internal {
         assumeNotPrecompile(account);
         assumeNotForgeAddress(account);
         assumeNotZeroAddress(account);
@@ -80,7 +80,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         uint256 offset,
         bool adjustQuoted
     ) internal {
-        _callable(_augustus);
+        _makeEmptyAccountCallable(_augustus);
         augustusRegistryMock.setValid(_augustus, true);
 
         offset = _boundOffset(offset);
@@ -159,7 +159,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         uint256 offset,
         bool adjustQuoted
     ) internal {
-        _callable(_augustus);
+        _makeEmptyAccountCallable(_augustus);
         augustusRegistryMock.setValid(_augustus, true);
 
         offset = _boundOffset(offset);

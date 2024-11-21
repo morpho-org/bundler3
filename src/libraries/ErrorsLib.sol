@@ -49,7 +49,7 @@ library ErrorsLib {
     /// @dev Thrown when redeeming CompoundV2 cTokens returns an error code.
     error RedeemError();
 
-    /* PARASWAP BUNDLER */
+    /* PARASWAP MODULE */
 
     /// @dev Thrown when contract used to trade is not in the paraswap registry.
     error AugustusNotInRegistry(address account);

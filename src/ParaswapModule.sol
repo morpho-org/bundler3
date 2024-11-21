@@ -42,7 +42,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sell an exact amount. Reverts unless at least `minDestAmount` tokens are received.
+    /// @notice Sell an exact amount. Can check for a minimum purchased amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -77,7 +77,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         );
     }
 
-    /// @notice Buy an exact amount. Reverts unless at most `maxSrcAmount` tokens are sold.
+    /// @notice Buy an exact amount. Can check for a maximum sold amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @dev `callData` can change if `marketParams.loanToken == destToken`.
