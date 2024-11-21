@@ -36,7 +36,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// @param underlying The address of the underlying asset to repay.
     /// @param amount The amount of `underlying` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
-    function aaveV3OptimizerRepay(address underlying, uint256 amount) external bundlerOnly {
+    function aaveV3OptimizerRepay(address underlying, uint256 amount) external onlyBundler {
         // Amount will be capped to the initiator's debt by the optimizer.
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
@@ -56,7 +56,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdraw(address underlying, uint256 amount, uint256 maxIterations, address receiver)
         external
-        bundlerOnly
+        onlyBundler
     {
         AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), receiver, maxIterations);
     }
@@ -68,7 +68,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdrawCollateral(address underlying, uint256 amount, address receiver)
         external
-        bundlerOnly
+        onlyBundler
     {
         AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), receiver);
     }
@@ -85,7 +85,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         uint256 deadline,
         Signature calldata signature,
         bool skipRevert
-    ) external bundlerOnly {
+    ) external onlyBundler {
         try AAVE_V3_OPTIMIZER.approveManagerWithSig(initiator(), address(this), isApproved, nonce, deadline, signature)
         {} catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
