@@ -183,11 +183,11 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         (privateKey, user) = _boundPrivateKey(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
-        deal(marketParams.loanToken, user, supplied + 1);
+        deal(marketParams.loanToken, user, supplied + 2);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(AAVE_V3_OPTIMIZER, supplied + 1);
-        IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 1, user, MAX_ITERATIONS);
+        ERC20(marketParams.loanToken).safeApprove(AAVE_V3_OPTIMIZER, supplied + 2);
+        IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
