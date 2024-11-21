@@ -37,6 +37,7 @@ import {Bundler} from "../../src/Bundler.sol";
 import {Call} from "../../src/interfaces/Call.sol";
 
 import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
+import {AugustusMock} from "../../src/mocks/AugustusMock.sol";
 
 import "../../lib/forge-std/src/Test.sol";
 import "../../lib/forge-std/src/console2.sol";
@@ -68,6 +69,7 @@ abstract contract CommonTest is Test {
     ParaswapModule paraswapModule;
 
     AugustusRegistryMock augustusRegistryMock;
+    AugustusMock augustus;
 
     Call[] internal bundle;
     Call[] internal callbackBundle;
@@ -408,10 +410,26 @@ abstract contract CommonTest is Test {
         );
     }
 
+    /* SWAP ACTIONS */
+
+    function _paraswapBuyMorphoDebt(
+        address _augustus,
+        bytes memory callData,
+        address srcToken,
+        MarketParams memory marketParams,
+        Offsets memory offsets,
+        address receiver
+    ) internal view returns (bytes memory) {
+        return abi.encodeCall(
+            genericModule1.paraswapBuyMorphoDebt,
+            (address(paraswapModule), _augustus, callData, srcToken, marketParams, offsets, receiver)
+        );
+    }
+
     /* PARASWAP BUNDLER ACTIONS */
 
     function _paraswapSell(
-        address augustus,
+        address _augustus,
         bytes memory callData,
         address srcToken,
         address destToken,
@@ -420,21 +438,65 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.sell, (augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
+            IParaswapModule.sell, (_augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
         );
     }
 
     function _paraswapBuy(
-        address augustus,
+        address _augustus,
         bytes memory callData,
         address srcToken,
         address destToken,
-        MarketParams memory _marketParams,
+        uint256 newDestAmount,
         Offsets memory offsets,
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.buy, (augustus, callData, srcToken, destToken, _marketParams, offsets, receiver)
+            IParaswapModule.buy, (_augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver)
+        );
+    }
+
+    function _sell(
+        address srcToken,
+        address destToken,
+        uint256 srcAmount,
+        uint256 minDestAmount,
+        bool sellEntireBalance,
+        address receiver
+    ) internal view returns (Call memory) {
+        return _call(
+            paraswapModule,
+            _paraswapSell(
+                address(augustus),
+                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
+                srcToken,
+                destToken,
+                sellEntireBalance,
+                Offsets(4 + 32 + 32, 4 + 32 + 32 + 32, 0),
+                receiver
+            )
+        );
+    }
+
+    function _buy(
+        address srcToken,
+        address destToken,
+        uint256 maxSrcAmount,
+        uint256 destAmount,
+        uint256 newDestAmount,
+        address receiver
+    ) internal view returns (Call memory) {
+        return _call(
+            paraswapModule,
+            _paraswapBuy(
+                address(augustus),
+                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
+                srcToken,
+                destToken,
+                newDestAmount,
+                Offsets(4 + 32 + 32 + 32, 4 + 32 + 32, 0),
+                receiver
+            )
         );
     }
 }

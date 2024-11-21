@@ -22,6 +22,8 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
+import {IParaswapModule, Offsets} from "./interfaces/IParaswapModule.sol";
+import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 /// @title GenericModule1
 /// @author Morpho Labs
@@ -30,6 +32,7 @@ import {IWNative} from "./interfaces/IWNative.sol";
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
     using SafeTransferLib for ERC20;
+    using MorphoBalancesLib for IMorpho;
 
     /* IMMUTABLES */
 
@@ -527,6 +530,23 @@ contract GenericModule1 is BaseModule {
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
+    }
+
+    /* SWAP ACTIONS */
+
+    function paraswapBuyMorphoDebt(
+        address paraswapModule,
+        address augustus,
+        bytes memory callData,
+        address srcToken,
+        MarketParams calldata marketParams,
+        Offsets calldata offsets,
+        address receiver
+    ) external bundlerOnly {
+        uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, initiator());
+        IParaswapModule(paraswapModule).buy(
+            augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver
+        );
     }
 
     /* INTERNAL FUNCTIONS */

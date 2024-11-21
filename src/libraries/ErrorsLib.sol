@@ -51,9 +51,6 @@ library ErrorsLib {
     /// @dev Thrown when contract used to trade is not in the paraswap registry.
     error AugustusNotInRegistry(address account);
 
-    /// @dev Thrown when the selected market does not have the correct loan token.
-    error IncorrectLoanToken(address token);
-
     /// @dev Thrown when a data offset is invalid.
     error InvalidOffset(uint256 offset);
 

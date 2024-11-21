@@ -6,7 +6,6 @@ import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
 import {IMorpho, MarketParams} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {BaseModule} from "./BaseModule.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
@@ -20,7 +19,6 @@ import {ModuleLib} from "./libraries/ModuleLib.sol";
 contract ParaswapModule is BaseModule, IParaswapModule {
     using Math for uint256;
     using SafeTransferLib for ERC20;
-    using MorphoBalancesLib for IMorpho;
     using BytesLib for bytes;
 
     /* IMMUTABLES */
@@ -62,7 +60,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         bool sellEntireBalance,
         Offsets calldata offsets,
         address receiver
-    ) external bundlerOnly inAugustusRegistry(augustus) {
+    ) external inAugustusRegistry(augustus) {
         if (sellEntireBalance) {
             uint256 newSrcAmount = ERC20(srcToken).balanceOf(address(this));
             updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
@@ -85,9 +83,8 @@ contract ParaswapModule is BaseModule, IParaswapModule {
     /// @dev `callData` can change if `marketParams.loanToken == destToken`.
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
-    /// @param marketParams If `marketParams.loanToken == destToken`, adjusts amounts to sell the current balance of
-    /// this contract.
-    /// @dev Revert if `marketParams.loanToken != destToken` and is nonzero.
+    /// @param newDestAmount Adjusted amount to buy. Will be used to update callData before before sent to Augustus
+    /// contract.
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @dev The quoted sell amount will change only if its offset is not zero.
@@ -97,13 +94,11 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         bytes memory callData,
         address srcToken,
         address destToken,
-        MarketParams calldata marketParams,
+        uint256 newDestAmount,
         Offsets calldata offsets,
         address receiver
-    ) external bundlerOnly inAugustusRegistry(augustus) {
-        if (marketParams.loanToken != address(0)) {
-            require(marketParams.loanToken == destToken, ErrorsLib.IncorrectLoanToken(marketParams.loanToken));
-            uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, initiator());
+    ) external inAugustusRegistry(augustus) {
+        if (newDestAmount != 0) {
             updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
 

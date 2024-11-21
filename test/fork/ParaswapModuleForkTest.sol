@@ -102,13 +102,7 @@ contract ParaswapModuleForkTest is ForkTest {
             _call(
                 paraswapModule,
                 _paraswapBuy(
-                    AUGUSTUS_V6_2,
-                    buyCalldata,
-                    USDC,
-                    WETH,
-                    emptyMarketParams(),
-                    Offsets(destAmountOffset, maxSrcAmountOffset, 0),
-                    user
+                    AUGUSTUS_V6_2, buyCalldata, USDC, WETH, 0, Offsets(destAmountOffset, maxSrcAmountOffset, 0), user
                 )
             )
         );
@@ -133,20 +127,13 @@ contract ParaswapModuleForkTest is ForkTest {
         });
         morpho.createMarket(wethMarketParams);
         percent = bound(percent, 10, MAX_EXACT_VALUE_CHANGE_PERCENT);
-        uint256 debt = destAmount * percent / 100;
+        uint256 newDestAmount = destAmount * percent / 100;
         uint256 initialBalance = 1_000_000_000e6;
 
         address user = makeAddr("Test User");
 
         deal(USDC, user, initialBalance);
         deal(WETH, address(this), type(uint128).max, false);
-        ERC20(WETH).approve(address(morpho), type(uint256).max);
-        morpho.supplyCollateral(wethMarketParams, debt * 2, user, hex"");
-        morpho.supply(wethMarketParams, debt * 2, 0, user, hex"");
-        vm.startPrank(user);
-        ERC20(WETH).approve(address(morpho), type(uint256).max);
-        morpho.borrow(wethMarketParams, debt, 0, user, address(1));
-        vm.stopPrank();
 
         bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
@@ -157,7 +144,7 @@ contract ParaswapModuleForkTest is ForkTest {
                     buyCalldata,
                     USDC,
                     WETH,
-                    wethMarketParams,
+                    newDestAmount,
                     Offsets(destAmountOffset, maxSrcAmountOffset, quotedSrcAmountOffset),
                     user
                 )
@@ -171,6 +158,6 @@ contract ParaswapModuleForkTest is ForkTest {
 
         uint256 sold = initialBalance - ERC20(USDC).balanceOf(user);
         assertApproxEqRel(sold, expectedSrcAmount * percent / 100, 2 * WAD / 100, "sold");
-        assertEq(ERC20(WETH).balanceOf(user), debt, "bought");
+        assertEq(ERC20(WETH).balanceOf(user), newDestAmount, "bought");
     }
 }
