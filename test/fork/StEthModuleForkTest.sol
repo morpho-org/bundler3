@@ -14,7 +14,7 @@ bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972b
 
 contract EthereumStEthModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
-    using MathLib for uint256;
+    using MathRayLib for uint256;
 
     function setUp() public override {
         super.setUp();
@@ -35,7 +35,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_stakeEth(amount, amount.wDivDown(shares - 2), address(0), RECEIVER));
+        bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), RECEIVER));
 
         deal(USER, amount);
 
@@ -55,7 +55,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_stakeEth(amount, amount.wDivDown(shares - 2), address(0), address(ethereumModule1)));
+        bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), address(ethereumModule1)));
 
         vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
 

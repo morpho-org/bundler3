@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {ERC4626Mock} from "../src/mocks/ERC4626Mock.sol";
-import {MathLib, WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {MathRayLib} from "../src/libraries/MathRayLib.sol";
 
 import "./helpers/LocalTest.sol";
 
 contract ERC4626ModuleLocalTest is LocalTest {
-    using MathLib for uint256;
+    using MathRayLib for uint256;
 
     ERC4626Mock internal vault;
 
@@ -152,7 +152,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 assets = vault.previewMint(shares);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets * 2));
-        bundle.push(_erc4626Mint(address(vault), shares, assets.wDivDown(shares), USER));
+        bundle.push(_erc4626Mint(address(vault), shares, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(address(vault), 1);
 
@@ -169,7 +169,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 assets = vault.previewMint(shares);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
-        bundle.push(_erc4626Mint(address(vault), shares, assets.wDivDown(shares), USER));
+        bundle.push(_erc4626Mint(address(vault), shares, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(USER, assets);
 
@@ -188,7 +188,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 shares = vault.previewDeposit(assets);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
-        bundle.push(_erc4626Deposit(address(vault), assets, assets.wDivDown(shares), USER));
+        bundle.push(_erc4626Deposit(address(vault), assets, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(address(vault), 1);
 
@@ -205,7 +205,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 shares = vault.previewDeposit(assets);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
-        bundle.push(_erc4626Deposit(address(vault), assets, assets.wDivDown(shares), USER));
+        bundle.push(_erc4626Deposit(address(vault), assets, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(USER, assets);
 
@@ -228,7 +228,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         uint256 redeemed = vault.previewWithdraw(assets);
 
-        bundle.push(_erc4626Withdraw(address(vault), assets, assets.wDivDown(redeemed), RECEIVER, USER));
+        bundle.push(_erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, USER));
 
         loanToken.setBalance(address(vault), deposited - 1);
 
@@ -248,7 +248,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         bundle.push(_erc20TransferFrom(address(vault), redeemed));
         bundle.push(
-            _erc4626Withdraw(address(vault), assets, assets.wDivDown(redeemed), RECEIVER, address(genericModule1))
+            _erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, address(genericModule1))
         );
 
         vm.prank(USER);
@@ -270,7 +270,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         uint256 withdrawn = vault.previewRedeem(shares);
 
-        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn.wDivDown(shares), RECEIVER, USER));
+        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, USER));
 
         loanToken.setBalance(address(vault), deposited - 1);
 
@@ -290,7 +290,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         bundle.push(_erc20TransferFrom(address(vault), shares));
         bundle.push(
-            _erc4626Redeem(address(vault), shares, withdrawn.wDivDown(shares), RECEIVER, address(genericModule1))
+            _erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, address(genericModule1))
         );
 
         vm.prank(USER);

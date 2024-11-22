@@ -12,14 +12,14 @@ import {SafeTransferLib} from "../BaseModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
 import {GenericModule1} from "../GenericModule1.sol";
-import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @title EthereumModule1
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module contract specific to Ethereum n°1.
 contract EthereumModule1 is GenericModule1 {
-    using MathLib for uint256;
+    using MathRayLib for uint256;
 
     /* IMMUTABLES */
 
@@ -84,10 +84,10 @@ contract EthereumModule1 is GenericModule1 {
     /// @notice Stakes ETH via Lido.
     /// @dev ETH must have been previously sent to the module.
     /// @param amount The amount of ETH to stake. Pass `type(uint).max` to repay the module's ETH balance.
-    /// @param maxSharePriceE18 The maximum amount of wei to pay for minting 1 share, scaled by 1e18.
+    /// @param maxSharePriceE27 The maximum amount of wei to pay for minting 1 share, scaled by 1e27.
     /// @param referral The address of the referral regarding the Lido Rewards-Share Program.
     /// @param receiver The account receiving the stETH tokens.
-    function stakeEth(uint256 amount, uint256 maxSharePriceE18, address referral, address receiver)
+    function stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver)
         external
         payable
         onlyBundler
@@ -97,7 +97,7 @@ contract EthereumModule1 is GenericModule1 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(amount.wDivDown(sharesReceived) <= maxSharePriceE18, ErrorsLib.SlippageExceeded());
+        require(amount.rDivDown(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }

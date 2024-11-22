@@ -172,45 +172,45 @@ abstract contract CommonTest is Test {
 
     /* ERC4626 ACTIONS */
 
-    function _erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE18, address receiver)
+    function _erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxSharePriceE18, receiver))
+            genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
         );
     }
 
-    function _erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE18, address receiver)
+    function _erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, maxSharePriceE18, receiver))
+            genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
         );
     }
 
-    function _erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE18, address receiver, address owner)
+    function _erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
         internal
         view
         returns (Call memory)
     {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, minSharePriceE18, receiver, owner))
+            abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
         );
     }
 
-    function _erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE18, address receiver, address owner)
+    function _erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
         internal
         view
         returns (Call memory)
     {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minSharePriceE18, receiver, owner))
+            abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
         );
     }
 

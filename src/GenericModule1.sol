@@ -22,7 +22,7 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
-import {MathLib, WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {MathRayLib} from "./libraries/MathRayLib.sol";
 
 /// @title GenericModule1
 /// @author Morpho Labs
@@ -31,7 +31,7 @@ import {MathLib, WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
     using SafeTransferLib for ERC20;
-    using MathLib for uint256;
+    using MathRayLib for uint256;
 
     /* IMMUTABLES */
 
@@ -100,9 +100,9 @@ contract GenericModule1 is BaseModule {
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to mint.
-    /// @param maxSharePriceE18 The maximum amount of assets to pay for minting 1 share, scaled by 1e18.
+    /// @param maxSharePriceE27 The maximum amount of assets to pay for minting 1 share, scaled by 1e27.
     /// @param receiver The address to which shares will be minted.
-    function erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE18, address receiver)
+    function erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         external
         onlyBundler
     {
@@ -112,7 +112,7 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
-        require(assets * WAD <= maxSharePriceE18 * shares, ErrorsLib.SlippageExceeded());
+        require(assets.rDivDown(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Deposits underlying token in a ERC4626 vault.
@@ -120,9 +120,9 @@ contract GenericModule1 is BaseModule {
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to deposit. Pass `type(uint).max` to deposit the module's balance.
-    /// @param maxSharePriceE18 The maximum amount of assets to pay for minting 1 share, scaled by 1e18.
+    /// @param maxSharePriceE27 The maximum amount of assets to pay for minting 1 share, scaled by 1e27.
     /// @param receiver The address to which shares will be minted.
-    function erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE18, address receiver)
+    function erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         external
         onlyBundler
     {
@@ -136,7 +136,7 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
-        require(assets.wDivDown(shares) <= maxSharePriceE18, ErrorsLib.SlippageExceeded());
+        require(assets.rDivDown(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws underlying token from a ERC4626 vault.
@@ -145,10 +145,10 @@ contract GenericModule1 is BaseModule {
     /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to withdraw.
-    /// @param minSharePriceE18 the minimum number of assets to receive per share, scaled by 1e18.
+    /// @param minSharePriceE27 the minimum number of assets to receive per share, scaled by 1e27.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the assets are withdrawn. Can only be the module or the initiator.
-    function erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE18, address receiver, address owner)
+    function erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
         external
         onlyBundler
     {
@@ -157,7 +157,7 @@ contract GenericModule1 is BaseModule {
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
-        require(assets.wDivDown(shares) >= minSharePriceE18, ErrorsLib.SlippageExceeded());
+        require(assets.rDivDown(shares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Redeems shares of a ERC4626 vault.
@@ -166,10 +166,10 @@ contract GenericModule1 is BaseModule {
     /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to redeem. Pass `type(uint).max` to redeem the owner's shares.
-    /// @param minSharePriceE18 the minimum number of assets to receive per share, scaled by 1e18.
+    /// @param minSharePriceE27 the minimum number of assets to receive per share, scaled by 1e27.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the shares are redeemed. Can only be the module or the initiator.
-    function erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE18, address receiver, address owner)
+    function erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
         external
         onlyBundler
     {
@@ -181,7 +181,7 @@ contract GenericModule1 is BaseModule {
         require(shares != 0, ErrorsLib.ZeroShares());
 
         uint256 assets = IERC4626(vault).redeem(shares, receiver, owner);
-        require(assets.wDivDown(shares) >= minSharePriceE18, ErrorsLib.SlippageExceeded());
+        require(assets.rDivDown(shares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /* MORPHO CALLBACKS */
