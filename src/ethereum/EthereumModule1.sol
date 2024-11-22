@@ -72,7 +72,7 @@ contract EthereumModule1 is GenericModule1 {
         bytes32 r,
         bytes32 s,
         bool skipRevert
-    ) external bundlerOnly {
+    ) external onlyBundler {
         try IDaiPermit(DAI).permit(initiator(), spender, nonce, expiry, allowed, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
@@ -90,7 +90,7 @@ contract EthereumModule1 is GenericModule1 {
     function stakeEth(uint256 amount, uint256 maxSharePriceE18, address referral, address receiver)
         external
         payable
-        bundlerOnly
+        onlyBundler
     {
         if (amount == type(uint256).max) amount = address(this).balance;
 
@@ -106,7 +106,7 @@ contract EthereumModule1 is GenericModule1 {
     /// @dev stETH must have been previously sent to the module.
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the module's balance.
     /// @param receiver The account receiving the wstETH tokens.
-    function wrapStEth(uint256 amount, address receiver) external bundlerOnly {
+    function wrapStEth(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -119,7 +119,7 @@ contract EthereumModule1 is GenericModule1 {
     /// @dev wstETH must have been previously sent to the module.
     /// @param amount The amount of wStEth to unwrap. Pass `type(uint).max` to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
-    function unwrapStEth(uint256 amount, address receiver) external bundlerOnly {
+    function unwrapStEth(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = ERC20(WST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

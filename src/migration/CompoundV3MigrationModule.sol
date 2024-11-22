@@ -28,7 +28,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param amount The amount of `asset` to repay. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
-    function compoundV3Repay(address instance, uint256 amount) external bundlerOnly {
+    function compoundV3Repay(address instance, uint256 amount) external onlyBundler {
         address _initiator = initiator();
         address asset = ICompoundV3(instance).baseToken();
 
@@ -53,7 +53,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
-        bundlerOnly
+        onlyBundler
     {
         address _initiator = initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
@@ -86,7 +86,7 @@ contract CompoundV3MigrationModule is BaseModule {
         bytes32 r,
         bytes32 s,
         bool skipRevert
-    ) external bundlerOnly {
+    ) external onlyBundler {
         try ICompoundV3(instance).allowBySig(initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
