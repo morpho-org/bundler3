@@ -63,7 +63,6 @@ contract EthereumModule1 is GenericModule1 {
         DAI = dai;
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
-
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
 
@@ -75,7 +74,7 @@ contract EthereumModule1 is GenericModule1 {
 
     /// @notice Unwraps Morpho tokens.
     /// @dev Separated from the erc20WrapperWithdrawTo function because the Morpho wrapper is separated from the
-    /// underlying ERC20, so it does not have a balanceOf function.
+    /// wrapped token, so it does not have a balanceOf function, and the wrapped token needs to be approved before withdrawTo.
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
