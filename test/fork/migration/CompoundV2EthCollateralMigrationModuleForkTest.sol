@@ -77,7 +77,7 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_compoundV2Redeem(C_ETH_V2, cTokenBalance, address(genericModule1)));
         callbackBundle.push(_wrapNativeNoFunding(collateral, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);

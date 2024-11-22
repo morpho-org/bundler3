@@ -258,14 +258,12 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
-        address onBehalf
+        address onBehalf,
+        bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(
-                GenericModule1.morphoSupply,
-                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(GenericModule1.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
@@ -300,27 +298,24 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
-        address onBehalf
+        address onBehalf,
+        bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(
-                GenericModule1.morphoRepay,
-                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
-    function _morphoSupplyCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf)
-        internal
-        view
-        returns (Call memory)
-    {
+    function _morphoSupplyCollateral(
+        MarketParams memory marketParams,
+        uint256 assets,
+        address onBehalf,
+        bytes memory data
+    ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(
-                GenericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(GenericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
         );
     }
 
@@ -334,10 +329,8 @@ abstract contract CommonTest is Test {
         );
     }
 
-    function _morphoFlashLoan(address token, uint256 amount) internal view returns (Call memory) {
-        return _call(
-            genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, abi.encode(callbackBundle)))
-        );
+    function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
+        return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
     }
 
     function _reallocateTo(
