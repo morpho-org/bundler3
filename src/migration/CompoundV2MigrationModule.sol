@@ -77,7 +77,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// @param cToken The address of the cToken contract
     /// @param amount The amount of cToken to redeem. Pass `type(uint).max` to redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
-    function compoundV2Redeem(address cToken, uint256 amount, address receiver) external onlyBundler {
+    function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = ICToken(cToken).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -86,11 +86,24 @@ contract CompoundV2MigrationModule is BaseModule {
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
         if (receiver != address(this)) {
-            if (cToken == C_ETH) {
-                SafeTransferLib.safeTransferETH(receiver, received);
-            } else {
-                SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
-            }
+            SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
+        }
+    }
+
+    /// @notice Redeems cEth from CompoundV2.
+    /// @dev cEth must have been previously sent to the module.
+    /// @param amount The amount of cEth to redeem. Pass `type(uint).max` to redeem the module's balance.
+    /// @param receiver The account receiving the redeemed ETH.
+    function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundler {
+        if (amount == type(uint256).max) amount = ICEth(C_ETH).balanceOf(address(this));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
+        require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
+
+        if (receiver != address(this)) {
+            SafeTransferLib.safeTransferETH(receiver, received);
         }
     }
 }
