@@ -78,7 +78,7 @@ contract EthereumModule1 is GenericModule1 {
     /// underlying ERC20, so it does not have a balanceOf function.
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
-    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external bundlerOnly {
+    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         if (amount == type(uint256).max) amount = ERC20(MORPHO_TOKEN).balanceOf(address(this));
