@@ -112,7 +112,7 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
-        require(assets.rDivDown(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
+        require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Deposits underlying token in a ERC4626 vault.
@@ -136,7 +136,7 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
-        require(assets.rDivDown(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
+        require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws underlying token from a ERC4626 vault.

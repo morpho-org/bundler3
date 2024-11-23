@@ -136,7 +136,7 @@ contract EthereumModule1 is GenericModule1 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
-        require(amount.rDivDown(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
+        require(amount.rDivUp(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }

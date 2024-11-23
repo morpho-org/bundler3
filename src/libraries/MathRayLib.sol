@@ -8,11 +8,6 @@ uint256 constant RAY = 1e27;
 /// @custom:contact security@morpho.org
 /// @notice Library to manage high-precision fixed-point arithmetic.
 library MathRayLib {
-    /// @dev Returns (`x` * `y`) / `RAY` rounded down.
-    function rMulDown(uint256 x, uint256 y) internal pure returns (uint256) {
-        return (x * y) / RAY;
-    }
-
     /// @dev Returns (`x` * `RAY`) / `y` rounded down.
     function rDivDown(uint256 x, uint256 y) internal pure returns (uint256) {
         return (x * RAY) / y;
