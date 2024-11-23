@@ -15,7 +15,8 @@ contract EthereumModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
 
     function testSupplyWithPermit2(uint256 seed, uint256 amount, address onBehalf, uint256 deadline) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         vm.assume(onBehalf != address(0));
         vm.assume(onBehalf != address(morpho));

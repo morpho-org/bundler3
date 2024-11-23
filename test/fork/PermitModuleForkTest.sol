@@ -29,7 +29,8 @@ contract PermitModuleForkTest is ForkTest {
     }
 
     function testPermitDai(address spender, uint256 expiry) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
@@ -49,7 +50,8 @@ contract PermitModuleForkTest is ForkTest {
     }
 
     function testPermitDaiRevert(address spender, uint256 expiry) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
 
@@ -87,7 +89,8 @@ contract PermitModuleForkTest is ForkTest {
     }
 
     function testPermit(uint256 amount, address spender, uint256 deadline) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
@@ -110,7 +113,8 @@ contract PermitModuleForkTest is ForkTest {
     }
 
     function testPermitRevert(uint256 amount, address spender, uint256 deadline) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
@@ -124,7 +128,8 @@ contract PermitModuleForkTest is ForkTest {
     }
 
     function testTransferFrom(uint256 amount, uint256 deadline) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
 

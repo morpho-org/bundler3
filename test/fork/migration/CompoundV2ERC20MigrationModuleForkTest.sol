@@ -61,7 +61,8 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10 ether;
         uint256 borrowed = 1e6;
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -97,7 +98,8 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
@@ -125,7 +127,8 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);

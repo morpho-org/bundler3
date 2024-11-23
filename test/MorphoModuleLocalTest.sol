@@ -50,7 +50,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testSetAuthorizationWithSig(uint256 privateKey, uint32 deadline) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         deadline = uint32(bound(deadline, block.timestamp + 1, type(uint32).max));
 
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
@@ -63,7 +64,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testSetAuthorizationWithSigRevert(uint256 privateKey, uint32 deadline) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         deadline = uint32(bound(deadline, block.timestamp + 1, type(uint32).max));
 
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
@@ -224,7 +226,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testWithdraw(uint256 privateKey, uint256 amount, uint256 withdrawnShares) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -279,7 +282,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testSupplyCollateralBorrow(uint256 privateKey, uint256 amount) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -304,7 +308,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testSupplyCollateralBorrowViaCallback(uint256 privateKey, uint256 amount) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -353,7 +358,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testRepayWithdrawCollateral(uint256 privateKey, uint256 amount) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -382,7 +388,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testRepayMaxAndWithdrawCollateral(uint256 privateKey, uint256 amount) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -411,7 +418,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testRepayWithdrawCollateralViaCallback(uint256 privateKey, uint256 amount) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -453,7 +461,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
     function testBundleTransactions(uint256 privateKey, uint256 size, uint256 seedAction, uint256 seedAmount) public {
         address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
         approveERC20ToMorphoAndModule(user);
 
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));

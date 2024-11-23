@@ -57,7 +57,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testAaveV3OtimizerAuthorizationWithSigRevert(address owner) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         vm.assume(owner != user);
 
@@ -84,7 +85,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateBorrowerWithOptimizerPermit() public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -118,7 +120,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateUSDTBorrowerWithOptimizerPermit() public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         vm.startPrank(getAddress("MORPHO_SAFE_OWNER"));
         IMorphoSettersPartial(AAVE_V3_OPTIMIZER).setIsSupplyCollateralPaused(USDT, false);
         IMorphoSettersPartial(AAVE_V3_OPTIMIZER).setAssetIsCollateral(USDT, true);
@@ -157,7 +160,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierWithOptimizerPermit(uint256 supplied) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 2);
@@ -179,7 +183,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierToVaultWithOptimizerPermit(uint256 supplied) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 2);

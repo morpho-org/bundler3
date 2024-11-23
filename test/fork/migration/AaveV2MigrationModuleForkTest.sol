@@ -63,7 +63,8 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateBorrowerWithPermit2() public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -99,7 +100,8 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateBorrowerDaiToSDaiWithPermit2() public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _initMarket(S_DAI, WETH);
         _provideLiquidity(borrowed);
@@ -139,7 +141,8 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateStEthPositionWithPermit2() public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _initMarket(WST_ETH, marketParams.loanToken);
         _provideLiquidity(borrowed);
@@ -184,7 +187,8 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
@@ -212,7 +216,8 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
