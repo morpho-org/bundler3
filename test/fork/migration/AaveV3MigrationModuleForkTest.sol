@@ -26,7 +26,7 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         super.setUp();
 
         if (block.chainid == 1) {
-            _initMarket(DAI, WETH);
+            _initMarket(WST_ETH, WETH);
             collateralSupplied = 10_000 ether;
         }
         if (block.chainid == 8453) {
