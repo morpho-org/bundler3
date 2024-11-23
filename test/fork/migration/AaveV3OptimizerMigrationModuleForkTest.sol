@@ -56,9 +56,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testAaveV3OtimizerAuthorizationWithSigRevert(uint256 privateKey, address owner) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testAaveV3OtimizerAuthorizationWithSigRevert(address owner) public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
 
         vm.assume(owner != user);
 
@@ -84,9 +83,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithOptimizerPermit(uint256 privateKey) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateBorrowerWithOptimizerPermit() public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
 
         _provideLiquidity(borrowed);
 
@@ -119,14 +117,12 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateUSDTBorrowerWithOptimizerPermit(uint256 privateKey) public onlyEthereum {
+    function testMigrateUSDTBorrowerWithOptimizerPermit() public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         vm.startPrank(getAddress("MORPHO_SAFE_OWNER"));
         IMorphoSettersPartial(AAVE_V3_OPTIMIZER).setIsSupplyCollateralPaused(USDT, false);
         IMorphoSettersPartial(AAVE_V3_OPTIMIZER).setAssetIsCollateral(USDT, true);
         vm.stopPrank();
-
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
 
         uint256 amountUsdt = collateralSupplied / 1e10;
 
@@ -160,9 +156,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(amountUsdt, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithOptimizerPermit(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithOptimizerPermit(uint256 supplied) public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 2);
@@ -183,9 +178,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithOptimizerPermit(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithOptimizerPermit(uint256 supplied) public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 2);

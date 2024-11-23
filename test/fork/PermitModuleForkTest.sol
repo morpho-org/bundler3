@@ -28,12 +28,11 @@ contract PermitModuleForkTest is ForkTest {
         permitToken = new ERC20PermitMock("Permit Token", "PT");
     }
 
-    function testPermitDai(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {
+    function testPermitDai(address spender, uint256 expiry) public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+
         vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
-        privateKey = bound(privateKey, 1, type(uint160).max);
-
-        address user = vm.addr(privateKey);
 
         bundle.push(_permitDai(privateKey, spender, expiry, true, false));
         bundle.push(_permitDai(privateKey, spender, expiry, true, true));
@@ -49,12 +48,10 @@ contract PermitModuleForkTest is ForkTest {
         ethereumModule1.permitDai(receiver, 0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
     }
 
-    function testPermitDaiRevert(uint256 privateKey, address spender, uint256 expiry) public onlyEthereum {
+    function testPermitDaiRevert(address spender, uint256 expiry) public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
-        privateKey = bound(privateKey, 1, type(uint160).max);
-
-        address user = vm.addr(privateKey);
 
         bundle.push(_permitDai(privateKey, spender, expiry, true, false));
         bundle.push(_permitDai(privateKey, spender, expiry, true, false));
@@ -89,13 +86,11 @@ contract PermitModuleForkTest is ForkTest {
         return _call(ethereumModule1, callData);
     }
 
-    function testPermit(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+    function testPermit(uint256 amount, address spender, uint256 deadline) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
-        privateKey = bound(privateKey, 1, type(uint160).max);
-
-        address user = vm.addr(privateKey);
 
         bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
         bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, true));
@@ -114,13 +109,11 @@ contract PermitModuleForkTest is ForkTest {
         genericModule1.permit(address(USDC), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 
-    function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
+    function testPermitRevert(uint256 amount, address spender, uint256 deadline) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
-        privateKey = bound(privateKey, 1, type(uint160).max);
-
-        address user = vm.addr(privateKey);
 
         bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
         bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
@@ -130,12 +123,10 @@ contract PermitModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testTransferFrom(uint256 amount, uint256 privateKey, uint256 deadline) public {
+    function testTransferFrom(uint256 amount, uint256 deadline) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
-        privateKey = bound(privateKey, 1, type(uint160).max);
-
-        address user = vm.addr(privateKey);
 
         bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
 

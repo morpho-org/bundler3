@@ -68,9 +68,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithATokenPermit(uint256 privateKey) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateBorrowerWithATokenPermit() public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
 
         _provideLiquidity(borrowed);
 
@@ -102,9 +101,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateBorrowerWithPermit2() public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
 
         _provideLiquidity(borrowed);
 
@@ -139,9 +137,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateUSDTPositionWithPermit2(uint256 privateKey) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateUSDTPositionWithPermit2() public onlyEthereum {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
 
         uint256 amountUsdt = collateralSupplied / 1e10;
 
@@ -180,9 +177,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(amountUsdt, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithATokenPermit(uint256 privateKey, uint256 supplied) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithATokenPermit(uint256 supplied) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
@@ -206,9 +202,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithPermit2(uint256 privateKey, uint256 supplied) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithPermit2(uint256 supplied) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
@@ -235,9 +230,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithATokenPermit(uint256 privateKey, uint256 supplied) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithATokenPermit(uint256 supplied) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
@@ -261,9 +255,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         _assertVaultSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithPermit2(uint256 privateKey, uint256 supplied) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public {
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);

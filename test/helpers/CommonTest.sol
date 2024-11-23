@@ -106,6 +106,15 @@ abstract contract CommonTest is Test {
         require(success, "Function mocker call failed");
     }
 
+    // Pick a uint stable by timestamp.
+    /// The environment variable PICK_UINT can be used to force a specific uint.
+    // Used to make fork tests faster.
+    function pickUint() internal view returns (uint256) {
+        bytes32 _hash = keccak256(bytes.concat("pickUint", bytes32(block.timestamp)));
+        uint256 num = uint256(_hash);
+        return vm.envOr("PICK_UINT", num);
+    }
+
     /* GENERIC MODULE CALL */
     function _call(BaseModule module, bytes memory data) internal pure returns (Call memory) {
         return _call(module, data, 0);

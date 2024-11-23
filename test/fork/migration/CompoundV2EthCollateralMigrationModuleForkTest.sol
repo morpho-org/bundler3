@@ -50,12 +50,11 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public onlyEthereum {
+    function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10 ether;
         uint256 borrowed = 1 ether;
 
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
 
         _provideLiquidity(borrowed);
 
