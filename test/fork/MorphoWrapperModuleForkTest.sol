@@ -13,6 +13,10 @@ interface SemiTransferableToken {
 }
 
 contract MorphoWrapperModuleForkTest is ForkTest {
+    address internal MORPHO_WRAPPER = getAddress("MORPHO_WRAPPER");
+    address internal MORPHO_TOKEN_LEGACY = getAddress("MORPHO_TOKEN_LEGACY");
+    address internal MORPHO_TOKEN = getAddress("MORPHO_TOKEN");
+
     function setUp() public override {
         super.setUp();
         if (block.chainid != 1) return;

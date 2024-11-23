@@ -14,6 +14,12 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
+    address internal C_ETH_V2 = getAddress("C_ETH_V2");
+    address internal C_DAI_V2 = getAddress("C_DAI_V2");
+    address internal COMPTROLLER = getAddress("COMPTROLLER");
+    address internal DAI = getAddress("DAI");
+    address internal WETH = getAddress("WETH");
+
     address[] internal enteredMarkets;
 
     CompoundV2MigrationModule public migrationModule;

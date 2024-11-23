@@ -9,47 +9,50 @@ import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
 import {EthereumModule1} from "../../../src/ethereum/EthereumModule1.sol";
 
-import "../../../config/Configured.sol";
+import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";
 
-abstract contract ForkTest is CommonTest, Configured {
-    using ConfigLib for Config;
+abstract contract ForkTest is CommonTest, NetworkConfig {
     using SafeTransferLib for ERC20;
 
     EthereumModule1 internal ethereumModule1;
-
-    uint256 internal forkId;
-
-    uint256 internal snapshotId = type(uint256).max;
-
     MarketParams[] allMarketParams;
 
-    function setUp() public virtual override {
-        // Run fork tests on Ethereum by default.
+    function initializeConfig() internal override returns (bool) {
+        // Run tests on Ethereum by default
         if (block.chainid == 31337) vm.chainId(1);
+        return super.initializeConfig();
+    }
 
-        _loadConfig();
+    function setUp() public virtual override {
+        string memory rpc = vm.rpcUrl(config.network);
 
-        _fork();
-        _label();
+        if (config.blockNumber == 0) vm.createSelectFork(rpc);
+        else vm.createSelectFork(rpc, config.blockNumber);
 
         super.setUp();
 
-        if (block.chainid == 1) {
+        if (checkEq(config.network, "ethereum")) {
             ethereumModule1 = new EthereumModule1(
-                address(bundler), address(morpho), address(WETH), DAI, WST_ETH, MORPHO_TOKEN, MORPHO_WRAPPER
+                address(bundler),
+                address(morpho),
+                getAddress("WETH"),
+                getAddress("DAI"),
+                getAddress("WST_ETH"),
+                getAddress("MORPHO_TOKEN"),
+                getAddress("MORPHO_WRAPPER")
             );
             genericModule1 = GenericModule1(ethereumModule1);
         } else {
-            genericModule1 = new GenericModule1(address(bundler), address(morpho), address(WETH));
+            genericModule1 = new GenericModule1(address(bundler), address(morpho), getAddress("WETH"));
         }
 
-        for (uint256 i; i < configMarkets.length; ++i) {
-            ConfigMarket memory configMarket = configMarkets[i];
+        for (uint256 i; i < config.markets.length; ++i) {
+            ConfigMarket memory configMarket = config.markets[i];
 
             MarketParams memory marketParams = MarketParams({
-                collateralToken: configMarket.collateralToken,
-                loanToken: configMarket.loanToken,
+                collateralToken: getAddress(configMarket.collateralToken),
+                loanToken: getAddress(configMarket.loanToken),
                 oracle: address(oracle),
                 irm: address(irm),
                 lltv: configMarket.lltv
@@ -67,38 +70,26 @@ abstract contract ForkTest is CommonTest, Configured {
         morpho.setAuthorization(address(genericModule1), true);
     }
 
-    function _fork() internal virtual {
-        string memory rpcUrl = vm.rpcUrl(network);
-        uint256 forkBlockNumber = CONFIG.getForkBlockNumber();
-
-        forkId = forkBlockNumber == 0 ? vm.createSelectFork(rpcUrl) : vm.createSelectFork(rpcUrl, forkBlockNumber);
-
-        vm.chainId(CONFIG.getChainId());
-    }
-
-    function _label() internal virtual {
-        for (uint256 i; i < allAssets.length; ++i) {
-            address asset = allAssets[i];
-            if (asset != address(0)) {
-                string memory symbol = ERC20(asset).symbol();
-
-                vm.label(asset, symbol);
-            }
-        }
+    // Checks that two `string` values are equal.
+    function checkEq(string memory a, string memory b) internal pure returns (bool) {
+        return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     function deal(address asset, address recipient, uint256 amount) internal virtual override {
+        address _WETH = getAddress("WETH");
+        address _ST_ETH = getAddress("ST_ETH");
+
         if (amount == 0) return;
 
-        if (asset == WETH) super.deal(WETH, WETH.balance + amount); // Refill wrapped Ether.
+        if (asset == _WETH) super.deal(_WETH, _WETH.balance + amount); // Refill wrapped Ether.
 
-        if (asset == ST_ETH) {
+        if (asset == _ST_ETH) {
             if (amount == 0) return;
 
             deal(recipient, amount);
 
             vm.prank(recipient);
-            uint256 stEthAmount = IStEth(ST_ETH).submit{value: amount}(address(0));
+            uint256 stEthAmount = IStEth(_ST_ETH).submit{value: amount}(address(0));
 
             vm.assume(stEthAmount != 0);
 
@@ -111,22 +102,6 @@ abstract contract ForkTest is CommonTest, Configured {
     modifier onlyEthereum() {
         vm.skip(block.chainid != 1);
         _;
-    }
-
-    /// @dev Reverts the fork to its initial fork state.
-    function _revert() internal {
-        if (snapshotId < type(uint256).max) vm.revertTo(snapshotId);
-        snapshotId = vm.snapshot();
-    }
-
-    function _assumeNotAsset(address input) internal view {
-        for (uint256 i; i < allAssets.length; ++i) {
-            vm.assume(input != allAssets[i]);
-        }
-    }
-
-    function _randomAsset(uint256 seed) internal view returns (address) {
-        return allAssets[seed % allAssets.length];
     }
 
     function _randomMarketParams(uint256 seed) internal view returns (MarketParams memory) {

@@ -26,7 +26,7 @@ import {
 
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
-import {WETH} from "../../lib/solmate/src/tokens/WETH.sol";
+import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
@@ -73,7 +73,7 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
-        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WETH()));
+        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
 
         irm = new IrmMock();
 

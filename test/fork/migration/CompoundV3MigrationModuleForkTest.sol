@@ -13,6 +13,10 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
+    address internal C_WETH_V3 = getAddress("C_WETH_V3");
+    address internal CB_ETH = getAddress("CB_ETH");
+    address internal WETH = getAddress("WETH");
+
     uint256 collateralSupplied = 10 ether;
     uint256 borrowed = 1 ether;
 
