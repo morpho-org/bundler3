@@ -5,13 +5,15 @@ import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-
-import {SafeTransferLib} from "../BaseModule.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
-
-import {GenericModule1} from "../GenericModule1.sol";
+import {
+    GenericModule1,
+    BaseModule,
+    ErrorsLib,
+    ERC20Wrapper,
+    ModuleLib,
+    SafeTransferLib,
+    ERC20
+} from "../GenericModule1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @title EthereumModule1
@@ -29,27 +31,64 @@ contract EthereumModule1 is GenericModule1 {
     /// @dev The address of the stETH contract.
     address public immutable ST_ETH;
 
-    /// @dev The address of the wstETH contract.
+    /// @dev The address of the wStETH contract.
     address public immutable WST_ETH;
+
+    /// @notice The address of the Morpho token.
+    address public immutable MORPHO_TOKEN;
+
+    /// @notice The address of the wrapper.
+    address public immutable MORPHO_WRAPPER;
 
     /* CONSTRUCTOR */
 
     /// @param bundler The address of the bundler.
-    /// @param morpho The address of the morpho protocol.
-    /// @param weth The address of the wrapped ether token.
+    /// @param morpho The address of Morpho.
+    /// @param weth The address of the weth.
     /// @param dai The address of the dai.
     /// @param wStEth The address of the wStEth.
-    constructor(address bundler, address morpho, address weth, address dai, address wStEth)
-        GenericModule1(bundler, morpho, weth)
-    {
+    /// @param morphoToken The address of the morpho token.
+    /// @param morphoWrapper The address of the morpho token wrapper.
+    constructor(
+        address bundler,
+        address morpho,
+        address weth,
+        address dai,
+        address wStEth,
+        address morphoToken,
+        address morphoWrapper
+    ) GenericModule1(bundler, morpho, weth) {
         require(dai != address(0), ErrorsLib.ZeroAddress());
         require(wStEth != address(0), ErrorsLib.ZeroAddress());
+        require(morphoToken != address(0), ErrorsLib.ZeroAddress());
+        require(morphoWrapper != address(0), ErrorsLib.ZeroAddress());
 
         DAI = dai;
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
+        MORPHO_TOKEN = morphoToken;
+        MORPHO_WRAPPER = morphoWrapper;
 
         ModuleLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
+        ModuleLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
+    }
+
+    /* MORPHO TOKEN WRAPPER ACTIONS */
+
+    /// @notice Unwraps Morpho tokens.
+    /// @dev Separated from the erc20WrapperWithdrawTo function because the Morpho wrapper is separated from the
+    /// wrapped token, so it does not have a balanceOf function, and the wrapped token needs to be approved before
+    /// withdrawTo.
+    /// @param receiver The address to send the tokens to.
+    /// @param amount The amount of tokens to unwrap.
+    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+
+        if (amount == type(uint256).max) amount = ERC20(MORPHO_TOKEN).balanceOf(address(this));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
 
     /* DAI PERMIT ACTIONS */
@@ -102,10 +141,10 @@ contract EthereumModule1 is GenericModule1 {
         SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }
 
-    /// @notice Wraps stETH to wstETH.
+    /// @notice Wraps stETH to wStETH.
     /// @dev stETH must have been previously sent to the module.
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the module's balance.
-    /// @param receiver The account receiving the wstETH tokens.
+    /// @param receiver The account receiving the wStETH tokens.
     function wrapStEth(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
 
@@ -115,8 +154,8 @@ contract EthereumModule1 is GenericModule1 {
         if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
     }
 
-    /// @notice Unwraps wstETH to stETH.
-    /// @dev wstETH must have been previously sent to the module.
+    /// @notice Unwraps wStETH to stETH.
+    /// @dev wStETH must have been previously sent to the module.
     /// @param amount The amount of wStEth to unwrap. Pass `type(uint).max` to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external onlyBundler {

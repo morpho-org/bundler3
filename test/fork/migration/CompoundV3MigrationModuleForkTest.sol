@@ -100,7 +100,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         );
         callbackBundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), false, 1, false));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -126,7 +126,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), true, 0, false));
         bundle.push(_compoundV3WithdrawFrom(C_WETH_V3, marketParams.loanToken, supplied, address(genericModule1)));
         bundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), false, 1, false));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);

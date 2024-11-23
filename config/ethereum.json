@@ -1,6 +1,6 @@
 {
     "chainId": 1,
-    "forkBlockNumber": 18500000,
+    "forkBlockNumber": 21230000,
     "markets": [
         {
             "loanToken": "WETH",
@@ -27,5 +27,10 @@
     "cDAIv2": "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
     "cETHv2": "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5",
     "cUSDCv2": "0x39AA39c021dfbaE8faC545936693aC917d5E7563",
-    "cWETHv3": "0xA17581A9E3356d9A858b789D68B4d866e593aE94"
+    "cWETHv3": "0xA17581A9E3356d9A858b789D68B4d866e593aE94",
+    "morphoSafeOwner": "0x0b9915C13e8E184951Df0d9C0b104f8f1277648B",
+    "morphoWrapper": "0x9D03bb2092270648d7480049d0E58d2FcF0E5123",
+    "morphoTokenLegacy": "0x9994E35Db50125E0DF82e4c2dde62496CE330999",
+    "morphoDao": "0xcBa28b38103307Ec8dA98377ffF9816C164f9AFa",
+    "morphoToken": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2"
 }
