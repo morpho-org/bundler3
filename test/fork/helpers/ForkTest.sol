@@ -18,12 +18,6 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     EthereumModule1 internal ethereumModule1;
     MarketParams[] allMarketParams;
 
-    function initializeConfig() internal override returns (bool) {
-        // Run tests on Ethereum by default
-        if (block.chainid == 31337) vm.chainId(1);
-        return super.initializeConfig();
-    }
-
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);
 

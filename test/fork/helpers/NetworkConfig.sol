@@ -72,6 +72,9 @@ abstract contract NetworkConfig is CommonBase {
     function initializeConfig() internal virtual returns (bool) {
         require(!initialized, "Configured: already initialized");
 
+        // Run tests on Ethereum by default
+        if (block.chainid == 31337) vm.chainId(1);
+
         _initializeConfigData();
 
         require(
