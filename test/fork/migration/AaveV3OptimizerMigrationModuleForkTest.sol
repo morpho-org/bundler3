@@ -101,7 +101,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         );
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -137,7 +137,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV3OptimizerWithdrawCollateral(USDT, amountUsdt, address(genericModule1)));
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -160,7 +160,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);

@@ -99,7 +99,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -127,7 +127,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
