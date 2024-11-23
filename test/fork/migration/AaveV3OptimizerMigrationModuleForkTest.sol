@@ -18,10 +18,10 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal AAVE_V3_OPTIMIZER = getAddress("AAVE_V3_OPTIMIZER");
-    address internal USDT = getAddress("USDT");
-    address internal WST_ETH = getAddress("WST_ETH");
-    address internal WETH = getAddress("WETH");
+    address internal AAVE_V3_OPTIMIZER = config.getAddress("AAVE_V3_OPTIMIZER");
+    address internal USDT = config.getAddress("USDT");
+    address internal WST_ETH = config.getAddress("WST_ETH");
+    address internal WETH = config.getAddress("WETH");
 
     uint256 public constant MAX_ITERATIONS = 15;
 
@@ -120,7 +120,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateUSDTBorrowerWithOptimizerPermit(uint256 privateKey) public onlyEthereum {
-        vm.startPrank(getAddress("MORPHO_SAFE_OWNER"));
+        vm.startPrank(config.getAddress("MORPHO_SAFE_OWNER"));
         IMorphoSettersPartial(AAVE_V3_OPTIMIZER).setIsSupplyCollateralPaused(USDT, false);
         IMorphoSettersPartial(AAVE_V3_OPTIMIZER).setAssetIsCollateral(USDT, true);
         vm.stopPrank();

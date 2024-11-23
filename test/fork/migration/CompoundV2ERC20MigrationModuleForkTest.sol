@@ -14,12 +14,12 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal C_USDC_V2 = getAddress("C_USDC_V2");
-    address internal C_DAI_V2 = getAddress("C_DAI_V2");
-    address internal COMPTROLLER = getAddress("COMPTROLLER");
-    address internal DAI = getAddress("DAI");
-    address internal USDC = getAddress("USDC");
-    address internal C_ETH_V2 = getAddress("C_ETH_V2");
+    address internal C_USDC_V2 = config.getAddress("C_USDC_V2");
+    address internal C_DAI_V2 = config.getAddress("C_DAI_V2");
+    address internal COMPTROLLER = config.getAddress("COMPTROLLER");
+    address internal DAI = config.getAddress("DAI");
+    address internal USDC = config.getAddress("USDC");
+    address internal C_ETH_V2 = config.getAddress("C_ETH_V2");
 
     address[] internal enteredMarkets;
 

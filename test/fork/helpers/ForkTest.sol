@@ -10,49 +10,59 @@ import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 import {EthereumModule1} from "../../../src/ethereum/EthereumModule1.sol";
 
 import "./NetworkConfig.sol";
+import {EthereumConfig} from "./EthereumConfig.sol";
+import {BaseConfig} from "./BaseConfig.sol";
 import "../../helpers/CommonTest.sol";
 
-abstract contract ForkTest is CommonTest, NetworkConfig {
+abstract contract ForkTest is CommonTest {
     using SafeTransferLib for ERC20;
 
     EthereumModule1 internal ethereumModule1;
     MarketParams[] allMarketParams;
 
-    function initializeConfig() internal override returns (bool) {
+    NetworkConfig internal config = initializeConfig();
+
+    function initializeConfig() internal returns (NetworkConfig) {
         // Run tests on Ethereum by default
         if (block.chainid == 31337) vm.chainId(1);
-        return super.initializeConfig();
+
+        if (block.chainid == 1) return new EthereumConfig();
+        if (block.chainid == 8453) return new BaseConfig();
+
+        revert(string.concat("ForkTest: unknown chain id ", vm.toString(block.chainid)));
     }
 
     function setUp() public virtual override {
-        string memory rpc = vm.rpcUrl(config.network);
+        vm.makePersistent(address(config));
 
-        if (config.blockNumber == 0) vm.createSelectFork(rpc);
-        else vm.createSelectFork(rpc, config.blockNumber);
+        string memory rpc = vm.rpcUrl(config.network());
+
+        if (config.blockNumber() == 0) vm.createSelectFork(rpc);
+        else vm.createSelectFork(rpc, config.blockNumber());
 
         super.setUp();
 
-        if (checkEq(config.network, "ethereum")) {
+        if (checkEq(config.network(), "ethereum")) {
             ethereumModule1 = new EthereumModule1(
                 address(bundler),
                 address(morpho),
-                getAddress("WETH"),
-                getAddress("DAI"),
-                getAddress("WST_ETH"),
-                getAddress("MORPHO_TOKEN"),
-                getAddress("MORPHO_WRAPPER")
+                config.getAddress("WETH"),
+                config.getAddress("DAI"),
+                config.getAddress("WST_ETH"),
+                config.getAddress("MORPHO_TOKEN"),
+                config.getAddress("MORPHO_WRAPPER")
             );
             genericModule1 = GenericModule1(ethereumModule1);
         } else {
-            genericModule1 = new GenericModule1(address(bundler), address(morpho), getAddress("WETH"));
+            genericModule1 = new GenericModule1(address(bundler), address(morpho), config.getAddress("WETH"));
         }
 
-        for (uint256 i; i < config.markets.length; ++i) {
-            ConfigMarket memory configMarket = config.markets[i];
+        for (uint256 i; i < config.marketsLength(); ++i) {
+            ConfigMarket memory configMarket = config.market(i);
 
             MarketParams memory marketParams = MarketParams({
-                collateralToken: getAddress(configMarket.collateralToken),
-                loanToken: getAddress(configMarket.loanToken),
+                collateralToken: config.getAddress(configMarket.collateralToken),
+                loanToken: config.getAddress(configMarket.loanToken),
                 oracle: address(oracle),
                 irm: address(irm),
                 lltv: configMarket.lltv
@@ -76,8 +86,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     }
 
     function deal(address asset, address recipient, uint256 amount) internal virtual override {
-        address _WETH = getAddress("WETH");
-        address _ST_ETH = getAddress("ST_ETH");
+        address _WETH = config.getAddress("WETH");
+        address _ST_ETH = config.getAddress("ST_ETH");
 
         if (amount == 0) return;
 

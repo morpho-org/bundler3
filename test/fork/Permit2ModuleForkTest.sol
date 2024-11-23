@@ -11,7 +11,7 @@ error InvalidNonce();
 contract Permit2ModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
 
-    address internal DAI = getAddress("DAI");
+    address internal DAI = config.getAddress("DAI");
 
     function testApprove2(uint256 seed, uint256 privateKey, uint256 amount) public {
         privateKey = bound(privateKey, 1, type(uint160).max);

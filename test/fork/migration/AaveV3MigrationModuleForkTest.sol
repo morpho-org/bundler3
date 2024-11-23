@@ -15,11 +15,11 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal AAVE_V3_POOL = getAddress("AAVE_V3_POOL");
-    address internal CB_ETH = getAddress("CB_ETH");
-    address internal WETH = getAddress("WETH");
-    address internal WST_ETH = getAddress("WST_ETH");
-    address internal USDT = getAddress("USDT");
+    address internal AAVE_V3_POOL = config.getAddress("AAVE_V3_POOL");
+    address internal CB_ETH = config.getAddress("CB_ETH");
+    address internal WETH = config.getAddress("WETH");
+    address internal WST_ETH = config.getAddress("WST_ETH");
+    address internal USDT = config.getAddress("USDT");
 
     uint256 public constant RATE_MODE = 2;
 
