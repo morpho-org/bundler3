@@ -15,6 +15,13 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
+    address internal AAVE_V2_POOL = getAddress("AAVE_V2_POOL");
+    address internal ST_ETH = getAddress("ST_ETH");
+    address internal WST_ETH = getAddress("WST_ETH");
+    address internal S_DAI = getAddress("S_DAI");
+    address internal DAI = getAddress("DAI");
+    address internal WETH = getAddress("WETH");
+
     uint256 public constant RATE_MODE = 2;
 
     uint256 collateralSupplied = 10_000 ether;

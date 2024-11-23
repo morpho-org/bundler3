@@ -6,6 +6,8 @@ import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import "./helpers/ForkTest.sol";
 
 contract WNativeModuleForkTest is ForkTest {
+    address internal WETH = getAddress("WETH");
+
     function setUp() public override {
         super.setUp();
 
