@@ -19,6 +19,8 @@ struct Config {
 }
 
 abstract contract NetworkConfig is CommonBase {
+    address public constant UNINITIALIZED_ADDRESS = address(bytes20(bytes32("UNINITIALIZED ADDRESS")));
+
     Config internal config;
 
     function _initializeConfigData() private {
@@ -72,6 +74,8 @@ abstract contract NetworkConfig is CommonBase {
     function initializeConfig() internal virtual returns (bool) {
         require(!initialized, "Configured: already initialized");
 
+        vm.label(UNINITIALIZED_ADDRESS, "UNINITIALIZED_ADDRESS");
+
         // Run tests on Ethereum by default
         if (block.chainid == 31337) vm.chainId(1);
 
@@ -85,11 +89,19 @@ abstract contract NetworkConfig is CommonBase {
 
     function getAddress(string memory name) internal view returns (address addr) {
         addr = config.addresses[name];
-        require(addr != address(0), string.concat("Configured: unknown address ", name));
-        return addr;
+        if (addr == address(0)) {
+            return UNINITIALIZED_ADDRESS;
+        } else {
+            return addr;
+        }
+    }
+
+    function hasAddress(string memory name) internal view returns (bool) {
+        return config.addresses[name] != address(0);
     }
 
     function setAddress(string memory name, address addr) internal {
+        require(addr != address(0), "NetworkConfig: cannot set address 0");
         config.addresses[name] = addr;
         vm.label(addr, name);
     }

@@ -70,20 +70,18 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     }
 
     function deal(address asset, address recipient, uint256 amount) internal virtual override {
-        address _WETH = getAddress("WETH");
-        address _ST_ETH = getAddress("ST_ETH");
+        address wEth = getAddress("WETH");
+        address stEth = getAddress("ST_ETH");
 
         if (amount == 0) return;
 
-        if (asset == _WETH) super.deal(_WETH, _WETH.balance + amount); // Refill wrapped Ether.
+        if (asset == wEth) super.deal(wEth, wEth.balance + amount); // Refill wrapped Ether.
 
-        if (asset == _ST_ETH) {
-            if (amount == 0) return;
-
+        if (asset == stEth) {
             deal(recipient, amount);
 
             vm.prank(recipient);
-            uint256 stEthAmount = IStEth(_ST_ETH).submit{value: amount}(address(0));
+            uint256 stEthAmount = IStEth(stEth).submit{value: amount}(address(0));
 
             vm.assume(stEthAmount != 0);
 
