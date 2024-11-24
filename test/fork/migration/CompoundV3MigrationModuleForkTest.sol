@@ -45,16 +45,16 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testCompoundV3AllowBySigUnauthorized(uint256 privateKey) public {
-        privateKey = boundPrivateKey(privateKey);
+    function testCompoundV3AllowBySigUnauthorized() public {
+        uint256 privateKey = _boundPrivateKey(pickUint());
 
         vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
     }
 
-    function testCompoundV3AuthorizationWithSigRevert(uint256 privateKey, address owner) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testCompoundV3AuthorizationWithSigRevert(address owner) public {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         vm.assume(owner != user);
 
@@ -78,9 +78,9 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithCompoundAllowance(uint256 privateKey) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateBorrowerWithCompoundAllowance() public {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -172,9 +172,9 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         }
     }
 
-    function testMigrateSupplierWithCompoundAllowance(uint256 privateKey, uint256 supplied) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithCompoundAllowance(uint256 supplied) public {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 101, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
@@ -198,9 +198,9 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithCompoundAllowance(uint256 privateKey, uint256 supplied) public {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithCompoundAllowance(uint256 supplied) public {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 101, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
@@ -216,7 +216,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), true, 0, false));
         bundle.push(_compoundV3WithdrawFrom(C_WETH_V3, marketParams.loanToken, supplied, address(genericModule1)));
         bundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), false, 1, false));
-        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, 0, user));
+        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);

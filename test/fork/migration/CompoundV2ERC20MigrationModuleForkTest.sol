@@ -78,12 +78,11 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         }
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public onlyEthereum {
+    function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10 ether;
         uint256 borrowed = 1e6;
-
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -118,9 +117,9 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateral, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
@@ -147,9 +146,9 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
@@ -168,7 +167,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(genericModule1)));
-        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, 0, user));
+        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);

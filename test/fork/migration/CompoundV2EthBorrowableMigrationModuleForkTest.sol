@@ -117,12 +117,12 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         }
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public onlyEthereum {
+    function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10_000 ether;
         uint256 borrowed = 1 ether;
 
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -159,9 +159,9 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateral, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 0.1 ether, 100 ether);
 
         deal(user, supplied);
@@ -187,9 +187,9 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 0.1 ether, 100 ether);
 
         deal(user, supplied);
@@ -207,7 +207,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
-        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, 0, user));
+        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);

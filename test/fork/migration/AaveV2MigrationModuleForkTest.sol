@@ -62,9 +62,9 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateBorrowerWithPermit2() public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -99,9 +99,9 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateBorrowerDaiToSDaiWithPermit2(uint256 privateKey) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateBorrowerDaiToSDaiWithPermit2() public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _initMarket(S_DAI, WETH);
         _provideLiquidity(borrowed);
@@ -130,7 +130,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(aToken, address(migrationModule), aTokenBalance));
         callbackBundle.push(_aaveV2Withdraw(DAI, collateralSupplied, address(genericModule1)));
-        callbackBundle.push(_erc4626Deposit(S_DAI, collateralSupplied, 0, address(genericModule1)));
+        callbackBundle.push(_erc4626Deposit(S_DAI, collateralSupplied, type(uint256).max, address(genericModule1)));
 
         bundle.push(_morphoSupplyCollateral(marketParams, sDaiAmount, user, abi.encode(callbackBundle)));
 
@@ -140,9 +140,9 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(sDaiAmount, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateStEthPositionWithPermit2(uint256 privateKey) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateStEthPositionWithPermit2() public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _initMarket(WST_ETH, marketParams.loanToken);
         _provideLiquidity(borrowed);
@@ -186,9 +186,9 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(wstEthAmount, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
@@ -215,9 +215,9 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 100, 100 ether);
 
         deal(marketParams.loanToken, user, supplied + 1);
@@ -236,7 +236,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
         bundle.push(_transferFrom2(aToken, address(migrationModule), aTokenBalance));
         bundle.push(_aaveV2Withdraw(marketParams.loanToken, supplied, address(genericModule1)));
-        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, 0, user));
+        bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);

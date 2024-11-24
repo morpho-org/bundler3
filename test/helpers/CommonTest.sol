@@ -91,19 +91,28 @@ abstract contract CommonTest is Test {
         morpho.setAuthorization(address(this), true);
     }
 
-    function _boundPrivateKey(uint256 privateKey) internal returns (uint256, address) {
+    function _boundPrivateKey(uint256 privateKey) internal returns (uint256) {
         privateKey = bound(privateKey, 1, type(uint160).max);
 
         address user = vm.addr(privateKey);
-        vm.label(user, "User");
+        vm.label(user, "address of generated private key");
 
-        return (privateKey, user);
+        return privateKey;
     }
 
     function _delegatePrank(address target, bytes memory callData) internal {
         vm.mockFunction(target, address(functionMocker), callData);
         (bool success,) = target.call(callData);
         require(success, "Function mocker call failed");
+    }
+
+    // Pick a uint stable by timestamp.
+    /// The environment variable PICK_UINT can be used to force a specific uint.
+    // Used to make fork tests faster.
+    function pickUint() internal view returns (uint256) {
+        bytes32 _hash = keccak256(bytes.concat("pickUint", bytes32(block.timestamp)));
+        uint256 num = uint256(_hash);
+        return vm.envOr("PICK_UINT", num);
     }
 
     /* GENERIC MODULE CALL */
@@ -172,40 +181,45 @@ abstract contract CommonTest is Test {
 
     /* ERC4626 ACTIONS */
 
-    function _erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver)
-        internal
-        view
-        returns (Call memory)
-    {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxAssets, receiver)));
-    }
-
-    function _erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver)
-        internal
-        view
-        returns (Call memory)
-    {
-        return
-            _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, minShares, receiver)));
-    }
-
-    function _erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
+    function _erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, maxShares, receiver, owner))
+            genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
         );
     }
 
-    function _erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
+    function _erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minAssets, receiver, owner))
+            genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
+        );
+    }
+
+    function _erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            genericModule1,
+            abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
+        );
+    }
+
+    function _erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            genericModule1,
+            abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
         );
     }
 
