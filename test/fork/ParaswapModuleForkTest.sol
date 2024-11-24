@@ -11,7 +11,7 @@ contract ParaswapModuleForkTest is ForkTest {
     address internal WETH = getAddress("WETH");
 
     function setUp() public override {
-        if (block.chainid != 1) return;
+        if (config.chainid != 1) return; // block.chainid is only available after super.setUp
         config.blockNumber = 20842056;
         super.setUp();
     }
