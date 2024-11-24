@@ -546,7 +546,6 @@ contract GenericModule1 is BaseModule {
     /* INTERNAL FUNCTIONS */
 
     /// @dev Triggers `_multicall` logic during a callback.
-    /// @dev Does not call back if data is empty.
     function _morphoCallback(bytes calldata data) internal {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender(msg.sender));
         // No need to approve Morpho to pull tokens because it should already be approved max.
