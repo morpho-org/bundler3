@@ -6,7 +6,7 @@ The Bundler executes a sequence of calls atomically. EOAs should use the Bundler
 
 ## Structure
 
-![bundler structure](https://private-user-images.githubusercontent.com/2977/380153731-d299bd59-a564-4a99-be00-a16a3b5c38f1.png)
+<img width="571" alt="image" src="https://github.com/user-attachments/assets/9433cd07-c72a-4c5a-a194-dc8da21ef747">
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`. A bundle is a sequence of calls, and each call specifies an arbitrary address and arbitrary calldata.
 
