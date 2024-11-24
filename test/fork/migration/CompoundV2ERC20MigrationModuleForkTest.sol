@@ -58,6 +58,26 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
+    function testCompoundV2RedeemErc20NotMax(uint256 supplied, uint256 redeemFactor) public onlyEthereum {
+        supplied = bound(supplied, MIN_AMOUNT, MAX_AMOUNT);
+        redeemFactor = bound(redeemFactor, 0.1 ether, 100 ether);
+        deal(USDC, address(this), supplied);
+        ERC20(USDC).safeApprove(C_USDC_V2, supplied);
+        require(ICToken(C_USDC_V2).mint(supplied) == 0, "mint error");
+        uint256 minted = ICToken(C_USDC_V2).balanceOf(address(this));
+        ERC20(C_USDC_V2).safeTransfer(address(migrationModule), minted);
+
+        uint256 toRedeem = minted.wMulDown(redeemFactor);
+        bundle.push(_compoundV2RedeemErc20(C_USDC_V2, toRedeem, address(this)));
+        bundler.multicall(bundle);
+
+        if (redeemFactor < 1 ether) {
+            assertEq(ERC20(C_USDC_V2).balanceOf(address(migrationModule)), minted - toRedeem);
+        } else {
+            assertEq(ERC20(C_USDC_V2).balanceOf(address(this)), 0);
+        }
+    }
+
     function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10 ether;
         uint256 borrowed = 1e6;

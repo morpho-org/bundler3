@@ -16,6 +16,7 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
 
     address internal C_ETH_V2 = getAddress("C_ETH_V2");
     address internal C_DAI_V2 = getAddress("C_DAI_V2");
+    address internal C_USDC_V2 = getAddress("C_USDC_V2");
     address internal COMPTROLLER = getAddress("COMPTROLLER");
     address internal DAI = getAddress("DAI");
     address internal WETH = getAddress("WETH");
@@ -48,6 +49,69 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
+    }
+
+    function testCompoundV2RepayErc20Max(uint256 borrowed, uint256 repayFactor) public onlyEthereum {
+        uint256 collateral = 10_000 ether;
+        borrowed = bound(borrowed, 0.1 ether, 10 ether);
+        repayFactor = bound(repayFactor, 0.01 ether, 0.99 ether);
+        uint256 toRepay = borrowed.wMulDown(repayFactor);
+
+        deal(address(this), collateral);
+
+        ICEth(C_ETH_V2).mint{value: collateral}();
+        require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
+        require(ICToken(C_DAI_V2).borrow(borrowed) == 0, "borrow error");
+
+        ERC20(DAI).safeTransfer(address(migrationModule), toRepay);
+
+        bundle.push(_compoundV2RepayErc20(C_DAI_V2, type(uint256).max));
+        bundler.multicall(bundle);
+
+        assertEq(ICToken(C_DAI_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
+    }
+
+    function testCompoundV2RepayErc20NotMax(uint256 borrowed, uint256 repayFactor) public onlyEthereum {
+        uint256 collateral = 10_000 ether;
+        borrowed = bound(borrowed, 0.1 ether, 10 ether);
+        repayFactor = bound(repayFactor, 0.01 ether, 10 ether);
+        uint256 toRepay = borrowed.wMulDown(repayFactor);
+
+        deal(address(this), collateral);
+
+        ICEth(C_ETH_V2).mint{value: collateral}();
+        require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
+        require(ICToken(C_DAI_V2).borrow(borrowed) == 0, "borrow error");
+
+        deal(DAI, address(this), toRepay);
+        ERC20(DAI).safeTransfer(address(migrationModule), toRepay);
+
+        bundle.push(_compoundV2RepayErc20(C_DAI_V2, toRepay));
+        bundler.multicall(bundle);
+
+        if (repayFactor < 1 ether) {
+            assertEq(ICToken(C_DAI_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
+        } else {
+            assertEq(ICToken(C_DAI_V2).borrowBalanceCurrent(address(this)), 0);
+        }
+    }
+
+    function testCompoundV2RedeemEthNotMax(uint256 supplied, uint256 redeemFactor) public onlyEthereum {
+        supplied = bound(supplied, 0.1 ether, 100 ether);
+        redeemFactor = bound(redeemFactor, 0.1 ether, 100 ether);
+        deal(address(this), supplied);
+        ICEth(C_ETH_V2).mint{value: supplied}();
+        uint256 minted = ICToken(C_ETH_V2).balanceOf(address(this));
+        ERC20(C_ETH_V2).safeTransfer(address(migrationModule), minted);
+        uint256 toRedeem = minted.wMulDown(redeemFactor);
+        bundle.push(_compoundV2RedeemEth(toRedeem, address(migrationModule)));
+        bundler.multicall(bundle);
+
+        if (redeemFactor < 1 ether) {
+            assertEq(ERC20(C_ETH_V2).balanceOf(address(migrationModule)), minted - toRedeem);
+        } else {
+            assertEq(ERC20(C_ETH_V2).balanceOf(address(this)), 0);
+        }
     }
 
     function testMigrateBorrowerWithPermit2() public onlyEthereum {
