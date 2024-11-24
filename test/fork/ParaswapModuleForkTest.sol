@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
+import {MockERC20} from "../../lib/permit2/test/mocks/MockERC20.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -11,8 +12,12 @@ contract ParaswapModuleForkTest is ForkTest {
     address internal WETH = getAddress("WETH");
 
     function setUp() public override {
-        if (config.chainid != 1) return; // block.chainid is only available after super.setUp
+        // block.chainid is only available after super.setUp
+        if (config.chainid != 1) return;
+
         config.blockNumber = 20842056;
+        // Morpho token does not exist at this block and test setup needs it.
+        setAddress("MORPHO_TOKEN", address(new MockERC20("Mock Morpho Token", "MMT", 18)));
         super.setUp();
     }
 
