@@ -12,6 +12,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
+    using MathLib for uint256;
 
     address internal C_WETH_V3 = getAddress("C_WETH_V3");
     address internal CB_ETH = getAddress("CB_ETH");
@@ -51,7 +52,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
     }
 
-    function testCompoundVAuthorizationWithSigRevert(uint256 privateKey, address owner) public {
+    function testCompoundV3AuthorizationWithSigRevert(uint256 privateKey, address owner) public {
         address user;
         (privateKey, user) = _boundPrivateKey(privateKey);
 
@@ -110,6 +111,65 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
 
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericModule1));
+    }
+
+    function testCompoundV3RepayMax(uint256 fractionRepaid) public {
+        fractionRepaid = bound(fractionRepaid, 0.01 ether, 0.99 ether);
+
+        deal(CB_ETH, address(this), collateralSupplied);
+
+        ERC20(CB_ETH).safeApprove(C_WETH_V3, collateralSupplied);
+        ICompoundV3(C_WETH_V3).supply(CB_ETH, collateralSupplied);
+        ICompoundV3(C_WETH_V3).withdraw(WETH, borrowed);
+
+        uint256 repaid = borrowed.wMulDown(fractionRepaid);
+        ERC20(WETH).safeTransfer(address(migrationModule), repaid);
+        bundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max));
+        bundler.multicall(bundle);
+
+        assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), borrowed - repaid, 1);
+    }
+
+    function testCompoundV3RepayNotMax(uint256 repayFactor) public {
+        repayFactor = bound(repayFactor, 0.1 ether, 10 ether);
+        deal(CB_ETH, address(this), collateralSupplied);
+
+        ERC20(CB_ETH).safeApprove(C_WETH_V3, collateralSupplied);
+        ICompoundV3(C_WETH_V3).supply(CB_ETH, collateralSupplied);
+        ICompoundV3(C_WETH_V3).withdraw(WETH, borrowed);
+
+        uint256 toRepay = borrowed.wMulDown(repayFactor);
+        deal(WETH, address(this), toRepay);
+        ERC20(WETH).safeTransfer(address(migrationModule), toRepay);
+        bundle.push(_compoundV3Repay(C_WETH_V3, toRepay));
+        bundler.multicall(bundle);
+
+        if (repayFactor < 1 ether) {
+            assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), borrowed - toRepay, 1);
+        } else {
+            assertEq(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), 0);
+        }
+    }
+
+    function testCompoundV3WithdrawNotMax(uint256 supplied, uint256 withdrawFactor) public {
+        supplied = bound(supplied, 1 ether, 100 ether);
+        withdrawFactor = bound(withdrawFactor, 0.1 ether, 10 ether);
+        uint256 toWithdraw = supplied.wMulDown(withdrawFactor);
+
+        deal(marketParams.loanToken, address(this), supplied);
+
+        ERC20(WETH).safeApprove(C_WETH_V3, supplied);
+        ICompoundV3(C_WETH_V3).supply(WETH, supplied);
+        ICompoundV3(C_WETH_V3).allow(address(migrationModule), true);
+
+        bundle.push(_compoundV3WithdrawFrom(C_WETH_V3, WETH, toWithdraw, address(genericModule1)));
+        bundler.multicall(bundle);
+
+        if (withdrawFactor < 1 ether) {
+            assertApproxEqAbs(ERC20(WETH).balanceOf(address(genericModule1)), toWithdraw, 10);
+        } else {
+            assertApproxEqAbs(ERC20(WETH).balanceOf(address(genericModule1)), supplied, 10);
+        }
     }
 
     function testMigrateSupplierWithCompoundAllowance(uint256 privateKey, uint256 supplied) public {
