@@ -31,13 +31,13 @@ contract TransferModuleLocalTest is LocalTest {
         genericModule1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
     }
 
-    function testTranferFromZeroAddress(uint256 amount) public {
+    function testTranferFromTokenZero(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20TransferFrom(address(0), amount));
 
         vm.prank(USER);
-        vm.expectRevert();
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
     }
 

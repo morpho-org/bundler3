@@ -7,47 +7,46 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {StEthModule} from "../../../src/ethereum/StEthModule.sol";
 import {EthereumModule1} from "../../../src/ethereum/EthereumModule1.sol";
 
-import "../../../config/Configured.sol";
+import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";
 
-abstract contract ForkTest is CommonTest, Configured {
-    using ConfigLib for Config;
+abstract contract ForkTest is CommonTest, NetworkConfig {
     using SafeTransferLib for ERC20;
 
     EthereumModule1 internal ethereumModule1;
-
-    uint256 internal forkId;
-
-    uint256 internal snapshotId = type(uint256).max;
-
     MarketParams[] allMarketParams;
 
     function setUp() public virtual override {
-        // Run fork tests on Ethereum by default.
-        if (block.chainid == 31337) vm.chainId(1);
+        string memory rpc = vm.rpcUrl(config.network);
 
-        _loadConfig();
-
-        _fork();
-        _label();
+        if (config.blockNumber == 0) vm.createSelectFork(rpc);
+        else vm.createSelectFork(rpc, config.blockNumber);
 
         super.setUp();
 
-        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(WETH));
-
-        if (block.chainid == 1) {
-            ethereumModule1 = new EthereumModule1(address(bundler), DAI, WST_ETH);
+        if (isEq(config.network, "ethereum")) {
+            ethereumModule1 = new EthereumModule1(
+                address(bundler),
+                address(morpho),
+                getAddress("WETH"),
+                getAddress("DAI"),
+                getAddress("WST_ETH"),
+                getAddress("MORPHO_TOKEN"),
+                getAddress("MORPHO_WRAPPER")
+            );
+            genericModule1 = GenericModule1(ethereumModule1);
+        } else {
+            genericModule1 = new GenericModule1(address(bundler), address(morpho), getAddress("WETH"));
         }
 
-        for (uint256 i; i < configMarkets.length; ++i) {
-            ConfigMarket memory configMarket = configMarkets[i];
+        for (uint256 i; i < config.markets.length; ++i) {
+            ConfigMarket memory configMarket = config.markets[i];
 
             MarketParams memory marketParams = MarketParams({
-                collateralToken: configMarket.collateralToken,
-                loanToken: configMarket.loanToken,
+                collateralToken: getAddress(configMarket.collateralToken),
+                loanToken: getAddress(configMarket.loanToken),
                 oracle: address(oracle),
                 irm: address(irm),
                 lltv: configMarket.lltv
@@ -65,38 +64,24 @@ abstract contract ForkTest is CommonTest, Configured {
         morpho.setAuthorization(address(genericModule1), true);
     }
 
-    function _fork() internal virtual {
-        string memory rpcUrl = vm.rpcUrl(network);
-        uint256 forkBlockNumber = CONFIG.getForkBlockNumber();
-
-        forkId = forkBlockNumber == 0 ? vm.createSelectFork(rpcUrl) : vm.createSelectFork(rpcUrl, forkBlockNumber);
-
-        vm.chainId(CONFIG.getChainId());
-    }
-
-    function _label() internal virtual {
-        for (uint256 i; i < allAssets.length; ++i) {
-            address asset = allAssets[i];
-            if (asset != address(0)) {
-                string memory symbol = ERC20(asset).symbol();
-
-                vm.label(asset, symbol);
-            }
-        }
+    // Checks that two `string` values are equal.
+    function isEq(string memory a, string memory b) internal pure returns (bool) {
+        return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
     function deal(address asset, address recipient, uint256 amount) internal virtual override {
+        address wEth = getAddress("WETH");
+        address stEth = getAddress("ST_ETH");
+
         if (amount == 0) return;
 
-        if (asset == WETH) super.deal(WETH, WETH.balance + amount); // Refill wrapped Ether.
+        if (asset == wEth) super.deal(wEth, wEth.balance + amount); // Refill wrapped Ether.
 
-        if (asset == ST_ETH) {
-            if (amount == 0) return;
-
+        if (asset == stEth) {
             deal(recipient, amount);
 
             vm.prank(recipient);
-            uint256 stEthAmount = IStEth(ST_ETH).submit{value: amount}(address(0));
+            uint256 stEthAmount = IStEth(stEth).submit{value: amount}(address(0));
 
             vm.assume(stEthAmount != 0);
 
@@ -109,22 +94,6 @@ abstract contract ForkTest is CommonTest, Configured {
     modifier onlyEthereum() {
         vm.skip(block.chainid != 1);
         _;
-    }
-
-    /// @dev Reverts the fork to its initial fork state.
-    function _revert() internal {
-        if (snapshotId < type(uint256).max) vm.revertTo(snapshotId);
-        snapshotId = vm.snapshot();
-    }
-
-    function _assumeNotAsset(address input) internal view {
-        for (uint256 i; i < allAssets.length; ++i) {
-            vm.assume(input != allAssets[i]);
-        }
-    }
-
-    function _randomAsset(uint256 seed) internal view returns (address) {
-        return allAssets[seed % allAssets.length];
     }
 
     function _randomMarketParams(uint256 seed) internal view returns (MarketParams memory) {
@@ -159,6 +128,40 @@ abstract contract ForkTest is CommonTest, Configured {
         );
     }
 
+    function _approve2Batch(
+        uint256 privateKey,
+        address[] memory assets,
+        uint256[] memory amounts,
+        uint256[] memory nonces,
+        bool skipRevert
+    ) internal view returns (Call memory) {
+        IAllowanceTransfer.PermitDetails[] memory details = new IAllowanceTransfer.PermitDetails[](assets.length);
+
+        for (uint256 i; i < assets.length; i++) {
+            details[i] = IAllowanceTransfer.PermitDetails({
+                token: assets[i],
+                amount: uint160(amounts[i]),
+                expiration: type(uint48).max,
+                nonce: uint48(nonces[i])
+            });
+        }
+
+        IAllowanceTransfer.PermitBatch memory permitBatch = IAllowanceTransfer.PermitBatch({
+            details: details,
+            spender: address(genericModule1),
+            sigDeadline: SIGNATURE_DEADLINE
+        });
+
+        bytes32 digest = SigUtils.toTypedDataHash(Permit2Lib.PERMIT2.DOMAIN_SEPARATOR(), permitBatch);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+
+        return _call(
+            genericModule1,
+            abi.encodeCall(GenericModule1.approve2Batch, (permitBatch, abi.encodePacked(r, s, v), skipRevert))
+        );
+    }
+
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
         return _transferFrom2(asset, address(genericModule1), amount);
     }
@@ -169,32 +172,34 @@ abstract contract ForkTest is CommonTest, Configured {
 
     /* STAKE ACTIONS */
 
-    function _stakeEth(uint256 amount, uint256 shares, address referral, address receiver)
+    function _stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver)
         internal
         view
         returns (Call memory)
     {
-        return _stakeEth(amount, shares, referral, receiver, amount);
+        return _stakeEth(amount, maxSharePriceE27, referral, receiver, amount);
     }
 
-    function _stakeEth(uint256 amount, uint256 shares, address referral, address receiver, uint256 callValue)
+    function _stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver, uint256 callValue)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            ethereumModule1, abi.encodeCall(StEthModule.stakeEth, (amount, shares, referral, receiver)), callValue
+            ethereumModule1,
+            abi.encodeCall(EthereumModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver)),
+            callValue
         );
     }
 
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(StEthModule.wrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.wrapStEth, (amount, receiver)));
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(StEthModule.unwrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */

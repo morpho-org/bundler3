@@ -12,7 +12,7 @@ event CurrentModule(address);
 contract ModuleMock is BaseModule {
     constructor(address bundler) BaseModule(bundler) {}
 
-    function isProtected() external payable bundlerOnly {
+    function isProtected() external payable onlyBundler {
         emit CurrentModule(IBundler(BUNDLER).currentModule());
     }
 
@@ -24,13 +24,13 @@ contract ModuleMock is BaseModule {
         emit Initiator(initiator());
     }
 
-    function callbackBundler(Call[] calldata calls) external bundlerOnly {
+    function callbackBundler(Call[] calldata calls) external onlyBundler {
         emit CurrentModule(IBundler(BUNDLER).currentModule());
         IBundler(BUNDLER).multicallFromModule(calls);
         emit CurrentModule(IBundler(BUNDLER).currentModule());
     }
 
-    function callbackBundlerWithMulticall() external bundlerOnly {
+    function callbackBundlerWithMulticall() external onlyBundler {
         IBundler(BUNDLER).multicall(new Call[](0), new bytes32[](0));
     }
 

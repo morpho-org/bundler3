@@ -26,7 +26,7 @@ import {
 
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
-import {WETH} from "../../lib/solmate/src/tokens/WETH.sol";
+import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
@@ -80,7 +80,7 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
-        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WETH()));
+        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
 
         irm = new IrmMock();
 
@@ -98,13 +98,13 @@ abstract contract CommonTest is Test {
         morpho.setAuthorization(address(this), true);
     }
 
-    function _boundPrivateKey(uint256 privateKey) internal returns (uint256, address) {
+    function _boundPrivateKey(uint256 privateKey) internal returns (uint256) {
         privateKey = bound(privateKey, 1, type(uint160).max);
 
         address user = vm.addr(privateKey);
-        vm.label(user, "User");
+        vm.label(user, "address of generated private key");
 
-        return (privateKey, user);
+        return privateKey;
     }
 
     function _delegatePrank(address target, bytes memory callData) internal {
@@ -124,6 +124,15 @@ abstract contract CommonTest is Test {
         hashes[0] = keccak256(abi.encode(bundle0));
         hashes[1] = keccak256(abi.encode(bundle1));
         return hashes;
+    }
+
+    // Pick a uint stable by timestamp.
+    /// The environment variable PICK_UINT can be used to force a specific uint.
+    // Used to make fork tests faster.
+    function pickUint() internal view returns (uint256) {
+        bytes32 _hash = keccak256(bytes.concat("pickUint", bytes32(block.timestamp)));
+        uint256 num = uint256(_hash);
+        return vm.envOr("PICK_UINT", num);
     }
 
     /* GENERIC MODULE CALL */
@@ -192,40 +201,45 @@ abstract contract CommonTest is Test {
 
     /* ERC4626 ACTIONS */
 
-    function _erc4626Mint(address vault, uint256 shares, uint256 maxAssets, address receiver)
-        internal
-        view
-        returns (Call memory)
-    {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxAssets, receiver)));
-    }
-
-    function _erc4626Deposit(address vault, uint256 assets, uint256 minShares, address receiver)
-        internal
-        view
-        returns (Call memory)
-    {
-        return
-            _call(genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, minShares, receiver)));
-    }
-
-    function _erc4626Withdraw(address vault, uint256 assets, uint256 maxShares, address receiver, address owner)
+    function _erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, maxShares, receiver, owner))
+            genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
         );
     }
 
-    function _erc4626Redeem(address vault, uint256 shares, uint256 minAssets, address receiver, address owner)
+    function _erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         internal
         view
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minAssets, receiver, owner))
+            genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
+        );
+    }
+
+    function _erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            genericModule1,
+            abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
+        );
+    }
+
+    function _erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            genericModule1,
+            abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
         );
     }
 
@@ -278,12 +292,9 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
-        address onBehalf
+        address onBehalf,
+        bytes memory data
     ) internal view returns (Call memory) {
-        bytes memory data;
-        if (callbackBundle.length > 0) {
-            data = abi.encode(callbackBundle);
-        }
         return _call(
             genericModule1,
             abi.encodeCall(GenericModule1.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data))
@@ -321,27 +332,21 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
-        address onBehalf
+        address onBehalf,
+        bytes memory data
     ) internal view returns (Call memory) {
-        bytes memory data;
-        if (callbackBundle.length > 0) {
-            data = abi.encode(callbackBundle);
-        }
         return _call(
             genericModule1,
             abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
-    function _morphoSupplyCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf)
-        internal
-        view
-        returns (Call memory)
-    {
-        bytes memory data;
-        if (callbackBundle.length > 0) {
-            data = abi.encode(callbackBundle);
-        }
+    function _morphoSupplyCollateral(
+        MarketParams memory marketParams,
+        uint256 assets,
+        address onBehalf,
+        bytes memory data
+    ) internal view returns (Call memory) {
         return _call(
             genericModule1,
             abi.encodeCall(GenericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
@@ -358,11 +363,7 @@ abstract contract CommonTest is Test {
         );
     }
 
-    function _morphoFlashLoan(address token, uint256 amount) internal view returns (Call memory) {
-        bytes memory data;
-        if (callbackBundle.length > 0) {
-            data = abi.encode(callbackBundle);
-        }
+    function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
         return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
     }
 

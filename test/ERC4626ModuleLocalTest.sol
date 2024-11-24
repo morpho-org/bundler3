@@ -2,13 +2,14 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
-
 import {ERC4626Mock} from "../src/mocks/ERC4626Mock.sol";
+import {MathRayLib} from "../src/libraries/MathRayLib.sol";
 
 import "./helpers/LocalTest.sol";
 
 contract ERC4626ModuleLocalTest is LocalTest {
     using BundlerLib for Bundler;
+    using MathRayLib for uint256;
 
     ERC4626Mock internal vault;
 
@@ -45,18 +46,18 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
     function test4626DepositUnauthorized(uint256 assets) public {
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
-        genericModule1.erc4626Deposit(address(vault), assets, 0, RECEIVER);
+        genericModule1.erc4626Deposit(address(vault), assets, type(uint256).max, RECEIVER);
     }
 
     function testErc4626DepositZeroAdressVault(uint256 assets) public {
-        bundle.push(_erc4626Deposit(address(0), assets, 0, RECEIVER));
+        bundle.push(_erc4626Deposit(address(0), assets, type(uint256).max, RECEIVER));
 
         vm.expectRevert();
         bundler.multicall(bundle);
     }
 
     function testErc4626DepositZeroAdress(uint256 assets) public {
-        bundle.push(_erc4626Deposit(address(vault), assets, 0, address(0)));
+        bundle.push(_erc4626Deposit(address(vault), assets, type(uint256).max, address(0)));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
@@ -68,7 +69,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function testErc4626WithdrawZeroAdressVault(uint256 assets) public {
-        bundle.push(_erc4626Withdraw(address(0), assets, type(uint256).max, RECEIVER, address(genericModule1)));
+        bundle.push(_erc4626Withdraw(address(0), assets, 0, RECEIVER, address(genericModule1)));
 
         vm.expectRevert();
         bundler.multicall(bundle);
@@ -77,14 +78,14 @@ contract ERC4626ModuleLocalTest is LocalTest {
     function testErc4626WithdrawUnexpectedOwner(uint256 assets, address owner) public {
         vm.assume(owner != address(this) && owner != address(genericModule1));
 
-        bundle.push(_erc4626Withdraw(address(vault), assets, type(uint256).max, RECEIVER, owner));
+        bundle.push(_erc4626Withdraw(address(vault), assets, 0, RECEIVER, owner));
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnexpectedOwner.selector, owner));
         bundler.multicall(bundle);
     }
 
     function testErc4626WithdrawZeroAdress(uint256 assets) public {
-        bundle.push(_erc4626Withdraw(address(vault), assets, type(uint256).max, address(0), address(genericModule1)));
+        bundle.push(_erc4626Withdraw(address(vault), assets, 0, address(0), address(genericModule1)));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
@@ -126,14 +127,14 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function testErc4626DepositZero() public {
-        bundle.push(_erc4626Deposit(address(vault), 0, 0, RECEIVER));
+        bundle.push(_erc4626Deposit(address(vault), 0, type(uint256).max, RECEIVER));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
     function testErc4626WithdrawZero() public {
-        bundle.push(_erc4626Withdraw(address(vault), 0, type(uint256).max, RECEIVER, address(genericModule1)));
+        bundle.push(_erc4626Withdraw(address(vault), 0, 0, RECEIVER, address(genericModule1)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -152,7 +153,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 assets = vault.previewMint(shares);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets * 2));
-        bundle.push(_erc4626Mint(address(vault), shares, assets, USER));
+        bundle.push(_erc4626Mint(address(vault), shares, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(address(vault), 1);
 
@@ -169,7 +170,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 assets = vault.previewMint(shares);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
-        bundle.push(_erc4626Mint(address(vault), shares, assets, USER));
+        bundle.push(_erc4626Mint(address(vault), shares, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(USER, assets);
 
@@ -182,30 +183,13 @@ contract ERC4626ModuleLocalTest is LocalTest {
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
     }
 
-    function testErc4626DepositSlippageAdapts(uint256 assets) public {
-        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
-
-        uint256 shares = vault.previewDeposit(assets);
-
-        bundle.push(_erc20TransferFrom(address(loanToken), assets / 2));
-        bundle.push(_erc4626Deposit(address(vault), assets, shares, USER));
-
-        loanToken.setBalance(USER, assets / 2);
-
-        vm.prank(USER);
-        bundler.multicall(bundle);
-
-        assertEq(vault.totalAssets(), assets / 2, "totalAssets");
-        assertEq(vault.balanceOf(USER), shares / 2, "shares");
-    }
-
     function testErc4626DepositSlippageExceeded(uint256 assets) public {
         assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
 
         uint256 shares = vault.previewDeposit(assets);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
-        bundle.push(_erc4626Deposit(address(vault), assets, shares, USER));
+        bundle.push(_erc4626Deposit(address(vault), assets, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(address(vault), 1);
 
@@ -222,7 +206,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 shares = vault.previewDeposit(assets);
 
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
-        bundle.push(_erc4626Deposit(address(vault), assets, shares, USER));
+        bundle.push(_erc4626Deposit(address(vault), assets, assets.rDivDown(shares), USER));
 
         loanToken.setBalance(USER, assets);
 
@@ -245,7 +229,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         uint256 redeemed = vault.previewWithdraw(assets);
 
-        bundle.push(_erc4626Withdraw(address(vault), assets, redeemed, RECEIVER, USER));
+        bundle.push(_erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, USER));
 
         loanToken.setBalance(address(vault), deposited - 1);
 
@@ -264,7 +248,9 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 redeemed = vault.previewWithdraw(assets);
 
         bundle.push(_erc20TransferFrom(address(vault), redeemed));
-        bundle.push(_erc4626Withdraw(address(vault), assets, redeemed, RECEIVER, address(genericModule1)));
+        bundle.push(
+            _erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, address(genericModule1))
+        );
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -276,23 +262,6 @@ contract ERC4626ModuleLocalTest is LocalTest {
         assertEq(vault.balanceOf(RECEIVER), 0, "vault.balanceOf(RECEIVER)");
     }
 
-    function testErc4626RedeemSlippageAdapts(uint256 deposited) public {
-        deposited = bound(deposited, MIN_AMOUNT, MAX_AMOUNT);
-
-        uint256 minted = _depositVault(deposited);
-
-        bundle.push(_erc4626Redeem(address(vault), minted, deposited, RECEIVER, USER));
-
-        vm.startPrank(USER);
-        vault.transfer(address(1), minted / 2);
-
-        bundler.multicall(bundle);
-        vm.stopPrank();
-
-        assertEq(vault.totalAssets(), deposited / 2, "totalAssets");
-        assertEq(vault.balanceOf(USER), 0, "shares");
-    }
-
     function testErc4626RedeemSlippageExceeded(uint256 deposited, uint256 shares) public {
         deposited = bound(deposited, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -302,7 +271,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         uint256 withdrawn = vault.previewRedeem(shares);
 
-        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn, RECEIVER, USER));
+        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, USER));
 
         loanToken.setBalance(address(vault), deposited - 1);
 
@@ -321,7 +290,9 @@ contract ERC4626ModuleLocalTest is LocalTest {
         uint256 withdrawn = vault.previewRedeem(shares);
 
         bundle.push(_erc20TransferFrom(address(vault), shares));
-        bundle.push(_erc4626Redeem(address(vault), shares, withdrawn, RECEIVER, address(genericModule1)));
+        bundle.push(
+            _erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, address(genericModule1))
+        );
 
         vm.prank(USER);
         bundler.multicall(bundle);

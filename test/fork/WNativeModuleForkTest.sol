@@ -8,6 +8,8 @@ import "./helpers/ForkTest.sol";
 contract WNativeModuleForkTest is ForkTest {
     using BundlerLib for Bundler;
 
+    address internal WETH = getAddress("WETH");
+
     function setUp() public override {
         super.setUp();
 

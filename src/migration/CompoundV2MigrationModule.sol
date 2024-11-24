@@ -22,7 +22,7 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address
+    /// @param bundler The Bundler contract address.
     /// @param cEth The address of the cETH contract.
     constructor(address bundler, address cEth) BaseModule(bundler) {
         require(cEth != address(0), ErrorsLib.ZeroAddress());
@@ -32,43 +32,59 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /* ACTIONS */
 
-    /// @notice Repays `amount` of `cToken`'s underlying asset, on behalf of the initiator.
+    /// @notice Repays an ERC20 debt on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
-    /// @param amount The amount of `cToken` to repay. Capped at the maximum repayable debt
+    /// @param amount The amount of `cToken` to repay. Unlike with `morphoRepay`, the amount is capped at the
+    /// initiator's debt. Pass `type(uint).max` to repay
+    /// the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
-    function compoundV2Repay(address cToken, uint256 amount) external bundlerOnly {
+    function compoundV2RepayErc20(address cToken, uint256 amount) external onlyBundler {
+        require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
+
         address _initiator = initiator();
 
-        if (cToken == C_ETH) {
-            amount = Math.min(amount, address(this).balance);
-            amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(_initiator));
+        address underlying = ICToken(cToken).underlying();
 
-            require(amount != 0, ErrorsLib.ZeroAmount());
-
-            ICEth(C_ETH).repayBorrowBehalf{value: amount}(_initiator);
-        } else {
-            address underlying = ICToken(cToken).underlying();
-
-            amount = Math.min(amount, ERC20(underlying).balanceOf(address(this)));
-            amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(_initiator));
-
-            require(amount != 0, ErrorsLib.ZeroAmount());
-
-            ModuleLib.approveMaxToIfAllowanceZero(underlying, cToken);
-
-            require(ICToken(cToken).repayBorrowBehalf(_initiator, amount) == 0, ErrorsLib.RepayError());
+        if (amount == type(uint256).max) {
+            amount = ERC20(underlying).balanceOf(address(this));
         }
+        amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(_initiator));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        ModuleLib.approveMaxToIfAllowanceZero(underlying, cToken);
+
+        require(ICToken(cToken).repayBorrowBehalf(_initiator, amount) == 0, ErrorsLib.RepayError());
     }
 
-    /// @notice Redeems `amount` of `cToken` from CompoundV2.
+    /// @notice Repays an ETH debt on CompoundV2.
+    /// @dev Underlying tokens must have been previously sent to the module.
+    /// @param amount The amount of cEth to repay. Unlike with `morphoRepay`, the amount is capped at the initiator's
+    /// debt. Pass `type(uint).max` to repay the maximum repayable debt (mininimum of the module's balance and the
+    /// initiator's debt).
+    function compoundV2RepayEth(uint256 amount) external onlyBundler {
+        address _initiator = initiator();
+
+        if (amount == type(uint256).max) {
+            amount = address(this).balance;
+        }
+        amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(_initiator));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        ICEth(C_ETH).repayBorrowBehalf{value: amount}(_initiator);
+    }
+
+    /// @notice Redeems cToken from CompoundV2.
     /// @dev cTokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract
-    /// @param amount The amount of `cToken` to redeem. Pass `type(uint256).max` to redeem the module's `cToken`
-    /// balance.
+    /// @param amount The amount of cToken to redeem. Unlike with `morphoWithdraw` using a shares argument, the amount
+    /// is capped at the module's max redeemable amount. Pass `type(uint).max` to always
+    /// redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
-    function compoundV2Redeem(address cToken, uint256 amount, address receiver) external bundlerOnly {
-        amount = Math.min(amount, ERC20(cToken).balanceOf(address(this)));
+    function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
+        amount = Math.min(amount, ICToken(cToken).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -76,11 +92,25 @@ contract CompoundV2MigrationModule is BaseModule {
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
         if (receiver != address(this)) {
-            if (cToken == C_ETH) {
-                SafeTransferLib.safeTransferETH(receiver, received);
-            } else {
-                SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
-            }
+            SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
+        }
+    }
+
+    /// @notice Redeems cEth from CompoundV2.
+    /// @dev cEth must have been previously sent to the module.
+    /// @param amount The amount of cEth to redeem. Unlike with `morphoWithdraw` using a shares argument, the amount is
+    /// capped at the module's max redeemable amount. Pass `type(uint).max` to redeem the module's balance.
+    /// @param receiver The account receiving the redeemed ETH.
+    function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundler {
+        amount = Math.min(amount, ICEth(C_ETH).balanceOf(address(this)));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
+        require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
+
+        if (receiver != address(this)) {
+            SafeTransferLib.safeTransferETH(receiver, received);
         }
     }
 }

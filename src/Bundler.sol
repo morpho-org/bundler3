@@ -28,7 +28,6 @@ contract Bundler is IBundler {
     /* PUBLIC */
 
     /// @notice Returns the address of the initiator of the multicall transaction.
-    /// @dev Specialized getter to prevent using `_initiator` directly.
     function initiator() public view returns (address _initiator) {
         assembly ("memory-safe") {
             _initiator := tload(INITIATOR_SLOT)
@@ -83,12 +82,12 @@ contract Bundler is IBundler {
     /* INTERNAL */
 
     /// @notice Executes a series of calls to modules.
-    function _multicall(Call[] calldata calls) internal {
-        for (uint256 i; i < calls.length; ++i) {
+    function _multicall(Call[] calldata bundle) internal {
+        for (uint256 i; i < bundle.length; ++i) {
             address previousModule = currentModule();
-            address module = calls[i].to;
+            address module = bundle[i].to;
             setCurrentModule(module);
-            (bool success, bytes memory returnData) = module.call{value: calls[i].value}(calls[i].data);
+            (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
 
             if (!success) {
                 ModuleLib.lowLevelRevert(returnData);

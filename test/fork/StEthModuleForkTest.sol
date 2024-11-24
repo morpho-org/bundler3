@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
+import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import "../../src/ethereum/EthereumModule1.sol";
 
@@ -14,15 +15,13 @@ bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972b
 contract EthereumStEthModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
     using BundlerLib for Bundler;
+    using MathRayLib for uint256;
 
-    function setUp() public override {
-        super.setUp();
-
-        if (block.chainid != 1) return;
-    }
+    address internal ST_ETH = getAddress("ST_ETH");
+    address internal WST_ETH = getAddress("WST_ETH");
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
-        bundle.push(_stakeEth(0, 0, address(0), receiver));
+        bundle.push(_stakeEth(0, type(uint256).max, address(0), receiver));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
@@ -34,7 +33,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_stakeEth(amount, shares - 2, address(0), RECEIVER));
+        bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), RECEIVER));
 
         deal(USER, amount);
 
@@ -70,7 +69,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_stakeEth(amount, shares - 2, address(0), address(ethereumModule1)));
+        bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), address(ethereumModule1)));
 
         vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
 
@@ -89,9 +88,9 @@ contract EthereumStEthModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testWrapStEth(uint256 privateKey, uint256 amount) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testWrapStEth(uint256 amount) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         deal(ST_ETH, user, amount);
@@ -127,9 +126,9 @@ contract EthereumStEthModuleForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testUnwrapWstEth(uint256 privateKey, uint256 amount) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testUnwrapWstEth(uint256 amount) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_approve2(privateKey, WST_ETH, amount, 0, false));

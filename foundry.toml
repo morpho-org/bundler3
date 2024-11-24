@@ -12,14 +12,12 @@ optimizer_runs = 999999
 ignored_error_codes = ["transient-storage"]
 
 [profile.default.fuzz]
-runs = 16
-
+runs = 64
 
 [profile.default.rpc_endpoints]
 ethereum = "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}"
 base = "https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}"
 tenderly = "https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}"
-
 
 [profile.default.fmt]
 wrap_comments = true
@@ -27,10 +25,5 @@ wrap_comments = true
 [profile.build]
 test = "/dev/null"
 script = "/dev/null"
-
-
-[profile.ethereumBundlerV2]
-optimizer_runs = 80000
-
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/crates/config

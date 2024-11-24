@@ -45,6 +45,8 @@ interface ICompoundV3 {
 
     function withdrawFrom(address src, address to, address asset, uint256 amount) external;
 
+    function allow(address manager, bool isAllowed_) external;
+
     function allowBySig(
         address owner,
         address manager,

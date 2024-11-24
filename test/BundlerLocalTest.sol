@@ -197,4 +197,36 @@ contract BundlerLocalTest is LocalTest {
         vm.expectRevert(ErrorsLib.InvalidBundle.selector);
         bundler.multicall(bundle, callbackBundlesHashes);
     }
+
+    function testProtectedFailure(address initiator, address module, address caller) public {
+        vm.assume(initiator != address(0));
+        vm.assume(caller != initiator);
+        vm.assume(caller != module);
+
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (module)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(
+            address(bundler),
+            abi.encodeCall(FunctionMocker.setBundleHashAtIndex, (keccak256(abi.encode(new Call[](0))), 0))
+        );
+
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
+        vm.prank(caller);
+        bundler.multicallFromModule(new Call[](0));
+    }
+
+    function testProtectedSuccessAsModule(address initiator, address module) public {
+        vm.assume(initiator != address(0));
+        vm.assume(initiator != module);
+
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (module)));
+        _delegatePrank(
+            address(bundler),
+            abi.encodeCall(FunctionMocker.setBundleHashAtIndex, (keccak256(abi.encode(new Call[](0))), 0))
+        );
+
+        vm.prank(module);
+        bundler.multicallFromModule(new Call[](0));
+    }
 }
