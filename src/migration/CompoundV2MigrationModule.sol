@@ -35,7 +35,8 @@ contract CompoundV2MigrationModule is BaseModule {
     /// @notice Repays an ERC20 debt on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
-    /// @param amount The amount of `cToken` to repay. Capped at the initiator's debt. Pass `type(uint).max` to repay
+    /// @param amount The amount of `cToken` to repay. Unlike with `morphoRepay`, the amount is capped at the
+    /// initiator's debt. Pass `type(uint).max` to repay
     /// the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV2RepayErc20(address cToken, uint256 amount) external onlyBundler {
@@ -59,7 +60,8 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /// @notice Repays an ETH debt on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
-    /// @param amount The amount of cEth to repay. Capped at the initiator's debt. Pass `type(uint).max` to repay the
+    /// @param amount The amount of cEth to repay. Unlike with `morphoRepay`, the amount is capped at the initiator's
+    /// debt. Pass `type(uint).max` to repay the
     /// maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV2RepayEth(uint256 amount) external onlyBundler {
@@ -78,7 +80,8 @@ contract CompoundV2MigrationModule is BaseModule {
     /// @notice Redeems cToken from CompoundV2.
     /// @dev cTokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract
-    /// @param amount The amount of cToken to redeem, capped at the module's balance. Pass `type(uint).max` to always
+    /// @param amount The amount of cToken to redeem. Unlike with `morphoWithdraw` using a shares argument, the amount
+    /// is capped at the module's max redeemable amount. Pass `type(uint).max` to always
     /// redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
     function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
@@ -96,7 +99,8 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /// @notice Redeems cEth from CompoundV2.
     /// @dev cEth must have been previously sent to the module.
-    /// @param amount The amount of cEth to redeem. Pass `type(uint).max` to redeem the module's balance.
+    /// @param amount The amount of cEth to redeem. Unlike with `morphoWithdraw` using a shares argument, the amount is
+    /// capped at the module's max redeemable amount. Pass `type(uint).max` to redeem the module's balance.
     /// @param receiver The account receiving the redeemed ETH.
     function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundler {
         amount = Math.min(amount, ICEth(C_ETH).balanceOf(address(this)));

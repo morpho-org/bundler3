@@ -34,7 +34,8 @@ contract AaveV2MigrationModule is BaseModule {
     /// @notice Repays the initiator's debt on AaveV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
-    /// @param amount The amount of `token` to repay. Capped at the initiator's debt. Pass `type(uint).max` to repay the
+    /// @param amount The amount of `token` to repay. Unlike with `morphoRepay`, the amount is capped at the initiator's
+    /// debt. Pass `type(uint).max` to repay the
     /// maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
@@ -52,7 +53,8 @@ contract AaveV2MigrationModule is BaseModule {
     /// @notice Withdraws on AaveV2.
     /// @dev aTokens must have been previously sent to the module.
     /// @param token The address of the token to withdraw.
-    /// @param amount The amount of `token` to withdraw, capped at the initiator's max withdrawable amount. Pass
+    /// @param amount The amount of `token` to withdraw. Unlike with `morphoWithdraw`, the amount is capped at the
+    /// initiator's max withdrawable amount. Pass
     /// `type(uint).max` to always withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV2Withdraw(address token, uint256 amount, address receiver) external onlyBundler {
