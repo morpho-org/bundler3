@@ -48,34 +48,34 @@ contract Bundler is IBundler {
 
     /// @notice Executes a series of calls to modules.
     /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
-    /// @param calls The ordered array of calldata to execute.
-    function multicall(Call[] calldata calls) external payable {
+    /// @param bundle The ordered array of calldata to execute.
+    function multicall(Call[] calldata bundle) external payable {
         require(initiator() == address(0), ErrorsLib.AlreadyInitiated());
 
         setInitiator(msg.sender);
 
-        _multicall(calls);
+        _multicall(bundle);
 
         setInitiator(address(0));
     }
 
-    /// @notice Responds to calls from the current module.
+    /// @notice Responds to bundle from the current module.
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current module can call this function.
-    function multicallFromModule(Call[] calldata calls) external payable {
+    function multicallFromModule(Call[] calldata bundle) external payable {
         require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender(msg.sender));
-        _multicall(calls);
+        _multicall(bundle);
     }
 
     /* INTERNAL */
 
     /// @notice Executes a series of calls to modules.
-    function _multicall(Call[] calldata calls) internal {
-        for (uint256 i; i < calls.length; ++i) {
+    function _multicall(Call[] calldata bundle) internal {
+        for (uint256 i; i < bundle.length; ++i) {
             address previousModule = currentModule();
-            address module = calls[i].to;
+            address module = bundle[i].to;
             setCurrentModule(module);
-            (bool success, bytes memory returnData) = module.call{value: calls[i].value}(calls[i].data);
+            (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
 
             if (!success) {
                 ModuleLib.lowLevelRevert(returnData);
