@@ -1,16 +1,20 @@
-# Morpho Blue Bundlers
+# Morpho Blue Bundler v3
 
-[Morpho Blue](https://github.com/morpho-org/morpho-blue) is a new lending primitive that offers better rates, high capital efficiency and extended flexibility to lenders & borrowers. `morpho-blue-bundlers` hosts the logic that builds alongside the core protocol like MetaMorpho and bundlers.
+[Morpho Blue](https://github.com/morpho-org/morpho-blue) is a new lending primitive that offers better rates, high capital efficiency and extended flexibility to lenders & borrowers. `bundlers` hosts the logic that builds alongside the core protocol like MetaMorpho and bundlers.
+
+
+The Bundler executes a sequence of calls atomically. EOAs should use the Bundler to execute multiple actions in a single transaction.
+
 
 ## Structure
 
-![bundler-3](https://github.com/morpho-org/morpho-blue-bundlers/assets/74971347/827630e1-7abc-4f9d-a494-fe3fa7aa7053)
+The Bundler's entrypoint is `multicall(Call[] calldata bundle)`. A bundle is a sequence of calls, and each call specifies an arbitrary address and arbitrary calldata.
 
-Each Bundler is a domain-specific abstract layer of contract that implements some functions that can be bundled in a single call by EOAs to a single contract. They all inherit from [`BaseBundler`](./src/BaseBundler.sol) that enables bundling multiple function calls into a single `multicall(bytes[] calldata data)` call to the end bundler contract. Each chain-specific bundler is available under their chain-specific folder (e.g. [`ethereum`](./src/ethereum/)).
+Before calling a contract, the `Bundler` stores its caller as the `initiator`. Called contracts can access the initiator's address during bundle execution. The Bundler can be called back by its most-recently-called contract using `multicallFromModule(Call[] calldata bundle)`. This is useful for callback-based flows such as flashloans.
 
-Some chain-specific domains are also scoped to the chain-specific folder, because they are not expected to be used on any other chain (e.g. DAI and its specific `permit` function is only available on Ethereum - see [`EthereumPermitBundler`](./src/ethereum/EthereumPermitBundler.sol)).
+Each call should be to a module such as [`GenericModule1`](./src/GenericModule1.sol). These modules contain domain-specific actions and may need to be approved by the initiator to e.g. transfer the initiator's assets. To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) through `GenericModule1`'s `approve2Batch` action.
 
-User-end bundlers are provided in each chain-specific folder, instantiating all the intermediary domain-specific bundlers and associated parameters (such as chain-specific protocol addresses, e.g. [`EthereumBundlerV2`](./src/ethereum/EthereumBundlerV2.sol)).
+All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
 
 ## Development
 
@@ -18,12 +22,9 @@ Install dependencies with `yarn`.
 
 Run tests with `yarn test --chain <chainid>` (chainid can be 1 or 8453).
 
-Note that the `EthereumBundlerV2` has been deployed with 80 000 optimizer runs.
-To compile contracts with the same configuration, run `FOUNDRY_PROFILE=ethereumBundlerV2 forge b`.
-
 ## Audits
 
-All audits are stored in the [audits](./audits/)' folder.
+TBA.
 
 ## License
 
@@ -31,5 +32,5 @@ Bundlers are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
 
 ## Links
 
-- [Deployments](https://docs.morpho.org/bundlers/addresses/#bundlers)
-- [SDK](https://github.com/morpho-org/sdks/tree/main/packages/bundler-sdk-ethers)
+- Deployments: TBA.
+- SDK: TBA.
