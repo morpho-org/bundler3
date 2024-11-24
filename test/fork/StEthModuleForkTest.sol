@@ -14,6 +14,9 @@ bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972b
 contract EthereumStEthModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
 
+    address internal ST_ETH = getAddress("ST_ETH");
+    address internal WST_ETH = getAddress("WST_ETH");
+
     function setUp() public override {
         super.setUp();
 

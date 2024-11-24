@@ -26,7 +26,7 @@ import {
 
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
-import {WETH} from "../../lib/solmate/src/tokens/WETH.sol";
+import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
@@ -73,7 +73,7 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
-        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WETH()));
+        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
 
         irm = new IrmMock();
 
@@ -258,14 +258,12 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
-        address onBehalf
+        address onBehalf,
+        bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(
-                GenericModule1.morphoSupply,
-                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(GenericModule1.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
@@ -300,27 +298,24 @@ abstract contract CommonTest is Test {
         uint256 assets,
         uint256 shares,
         uint256 slippageAmount,
-        address onBehalf
+        address onBehalf,
+        bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(
-                GenericModule1.morphoRepay,
-                (marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data))
         );
     }
 
-    function _morphoSupplyCollateral(MarketParams memory marketParams, uint256 assets, address onBehalf)
-        internal
-        view
-        returns (Call memory)
-    {
+    function _morphoSupplyCollateral(
+        MarketParams memory marketParams,
+        uint256 assets,
+        address onBehalf,
+        bytes memory data
+    ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(
-                GenericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, abi.encode(callbackBundle))
-            )
+            abi.encodeCall(GenericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
         );
     }
 
@@ -334,10 +329,8 @@ abstract contract CommonTest is Test {
         );
     }
 
-    function _morphoFlashLoan(address token, uint256 amount) internal view returns (Call memory) {
-        return _call(
-            genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, abi.encode(callbackBundle)))
-        );
+    function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
+        return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
     }
 
     function _reallocateTo(

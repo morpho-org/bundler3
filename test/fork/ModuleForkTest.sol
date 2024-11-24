@@ -30,7 +30,7 @@ contract EthereumModuleForkTest is ForkTest {
 
         bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
         bundle.push(_transferFrom2(marketParams.loanToken, amount));
-        bundle.push(_morphoSupply(marketParams, amount, 0, 0, onBehalf));
+        bundle.push(_morphoSupply(marketParams, amount, 0, 0, onBehalf, hex""));
 
         uint256 collateralBalanceBefore = ERC20(marketParams.collateralToken).balanceOf(onBehalf);
         uint256 loanBalanceBefore = ERC20(marketParams.loanToken).balanceOf(onBehalf);

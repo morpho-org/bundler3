@@ -15,6 +15,13 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
+    address internal AAVE_V2_POOL = getAddress("AAVE_V2_POOL");
+    address internal ST_ETH = getAddress("ST_ETH");
+    address internal WST_ETH = getAddress("WST_ETH");
+    address internal S_DAI = getAddress("S_DAI");
+    address internal DAI = getAddress("DAI");
+    address internal WETH = getAddress("WETH");
+
     uint256 public constant RATE_MODE = 2;
 
     uint256 collateralSupplied = 10_000 ether;
@@ -84,7 +91,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_transferFrom2(aToken, address(migrationModule), aTokenBalance));
         callbackBundle.push(_aaveV2Withdraw(marketParams.collateralToken, collateralSupplied, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -125,7 +132,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV2Withdraw(DAI, collateralSupplied, address(genericModule1)));
         callbackBundle.push(_erc4626Deposit(S_DAI, collateralSupplied, 0, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, sDaiAmount, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, sDaiAmount, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -171,7 +178,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV2Withdraw(ST_ETH, type(uint256).max, address(ethereumModule1)));
         callbackBundle.push(_wrapStEth(type(uint256).max, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, wstEthAmount, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, wstEthAmount, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -200,7 +207,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
         bundle.push(_transferFrom2(aToken, address(migrationModule), aTokenBalance));
         bundle.push(_aaveV2Withdraw(marketParams.loanToken, supplied, address(genericModule1)));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);

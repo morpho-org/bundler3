@@ -14,6 +14,13 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
+    address internal C_USDC_V2 = getAddress("C_USDC_V2");
+    address internal C_DAI_V2 = getAddress("C_DAI_V2");
+    address internal COMPTROLLER = getAddress("COMPTROLLER");
+    address internal DAI = getAddress("DAI");
+    address internal USDC = getAddress("USDC");
+    address internal C_ETH_V2 = getAddress("C_ETH_V2");
+
     address[] internal enteredMarkets;
 
     CompoundV2MigrationModule public migrationModule;
@@ -37,8 +44,15 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testCompoundV2RedeemZeroAmount() public onlyEthereum {
-        bundle.push(_compoundV2Redeem(C_USDC_V2, 0, address(this)));
+    function testCompoundV2RedeemErc20Unauthorized(uint256 amount, address receiver) public onlyEthereum {
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        migrationModule.compoundV2RedeemErc20(C_DAI_V2, amount, receiver);
+    }
+
+    function testCompoundV2RedeemErc20ZeroAmount() public onlyEthereum {
+        bundle.push(_compoundV2RedeemErc20(C_USDC_V2, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -72,9 +86,9 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
-        callbackBundle.push(_compoundV2Redeem(C_DAI_V2, cTokenBalance, address(genericModule1)));
+        callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.startPrank(user);
         ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
@@ -104,8 +118,8 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationModule), cTokenBalance));
-        bundle.push(_compoundV2Redeem(C_USDC_V2, cTokenBalance, address(genericModule1)));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user));
+        bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(genericModule1)));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -133,7 +147,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationModule), cTokenBalance));
-        bundle.push(_compoundV2Redeem(C_USDC_V2, cTokenBalance, address(genericModule1)));
+        bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(genericModule1)));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, 0, user));
 
         vm.prank(user);
@@ -148,7 +162,11 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayErc20, (cToken, repayAmount)));
     }
 
-    function _compoundV2Redeem(address cToken, uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2Redeem, (cToken, amount, receiver)));
+    function _compoundV2RedeemErc20(address cToken, uint256 amount, address receiver)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RedeemErc20, (cToken, amount, receiver)));
     }
 }
