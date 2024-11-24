@@ -24,6 +24,8 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
 
     CompoundV2MigrationModule public migrationModule;
 
+    receive() external payable {}
+
     function setUp() public override {
         super.setUp();
 
@@ -69,6 +71,50 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
+    }
+
+    function testCompoundV2RepayEthMax(uint256 borrowed, uint256 repayFactor) public onlyEthereum {
+        uint256 collateral = 10_000 ether;
+        borrowed = bound(borrowed, 1 ether, 2 ether);
+        repayFactor = bound(repayFactor, 0.01 ether, 0.99 ether);
+        uint256 toRepay = borrowed.wMulDown(repayFactor);
+
+        deal(DAI, address(this), collateral);
+
+        ERC20(DAI).safeApprove(C_DAI_V2, collateral);
+        require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
+        require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
+        require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
+
+        SafeTransferLib.safeTransferETH(address(migrationModule), toRepay);
+        bundle.push(_compoundV2RepayEth(type(uint256).max));
+        bundler.multicall(bundle);
+        assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
+    }
+
+    function testCompoundV2RepayEthNotMax(uint256 borrowed, uint256 repayFactor) public onlyEthereum {
+        uint256 collateral = 10_000 ether;
+        borrowed = bound(borrowed, 1 ether, 2 ether);
+        repayFactor = bound(repayFactor, 0.01 ether, 10 ether);
+        uint256 toRepay = borrowed.wMulDown(repayFactor);
+
+        deal(DAI, address(this), collateral);
+
+        ERC20(DAI).safeApprove(C_DAI_V2, collateral);
+        require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
+        require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
+        require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
+
+        deal(address(this), toRepay);
+        SafeTransferLib.safeTransferETH(address(migrationModule), toRepay);
+
+        bundle.push(_compoundV2RepayEth(toRepay));
+        bundler.multicall(bundle);
+        if (repayFactor < 1 ether) {
+            assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
+        } else {
+            assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), 0);
+        }
     }
 
     function testMigrateBorrowerWithPermit2() public onlyEthereum {

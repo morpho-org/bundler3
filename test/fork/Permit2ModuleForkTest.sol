@@ -10,8 +10,64 @@ error InvalidNonce();
 
 contract Permit2ModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
+    using MarketParamsLib for MarketParams;
+    using MorphoBalancesLib for IMorpho;
+    using MorphoLib for IMorpho;
 
     address internal DAI = getAddress("DAI");
+
+    function testSupplyWithPermit2(uint256 seed, uint256 amount, address onBehalf, uint256 deadline) public {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
+
+        vm.assume(onBehalf != address(0));
+        vm.assume(onBehalf != address(morpho));
+        vm.assume(onBehalf != address(genericModule1));
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+        privateKey = bound(privateKey, 1, type(uint160).max);
+        deadline = bound(deadline, block.timestamp, type(uint48).max);
+
+        MarketParams memory marketParams = _randomMarketParams(seed);
+
+        bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
+        bundle.push(_transferFrom2(marketParams.loanToken, amount));
+        bundle.push(_morphoSupply(marketParams, amount, 0, 0, onBehalf, hex""));
+
+        uint256 collateralBalanceBefore = ERC20(marketParams.collateralToken).balanceOf(onBehalf);
+        uint256 loanBalanceBefore = ERC20(marketParams.loanToken).balanceOf(onBehalf);
+
+        deal(marketParams.loanToken, user, amount);
+
+        vm.startPrank(user);
+        ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        ERC20(marketParams.collateralToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+
+        bundler.multicall(bundle);
+        vm.stopPrank();
+
+        assertEq(ERC20(marketParams.collateralToken).balanceOf(user), 0, "collateral.balanceOf(user)");
+        assertEq(ERC20(marketParams.loanToken).balanceOf(user), 0, "loan.balanceOf(user)");
+
+        assertEq(
+            ERC20(marketParams.collateralToken).balanceOf(onBehalf),
+            collateralBalanceBefore,
+            "collateral.balanceOf(onBehalf)"
+        );
+        assertEq(ERC20(marketParams.loanToken).balanceOf(onBehalf), loanBalanceBefore, "loan.balanceOf(onBehalf)");
+
+        Id id = marketParams.id();
+
+        assertEq(morpho.collateral(id, onBehalf), 0, "collateral(onBehalf)");
+        assertEq(morpho.supplyShares(id, onBehalf), amount * SharesMathLib.VIRTUAL_SHARES, "supplyShares(onBehalf)");
+        assertEq(morpho.borrowShares(id, onBehalf), 0, "borrowShares(onBehalf)");
+
+        if (onBehalf != user) {
+            assertEq(morpho.collateral(id, user), 0, "collateral(user)");
+            assertEq(morpho.supplyShares(id, user), 0, "supplyShares(user)");
+            assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
+        }
+    }
 
     function testApprove2(uint256 seed, uint256 amount) public {
         uint256 privateKey = _boundPrivateKey(pickUint());

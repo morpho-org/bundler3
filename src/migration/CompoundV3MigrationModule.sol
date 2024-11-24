@@ -26,15 +26,19 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
-    /// @param amount The amount of `asset` to repay. Pass `type(uint).max` to repay the maximum repayable debt
+    /// @param amount The amount of base token to repay. Unlike with `morphoRepay`, the amount is capped at the
+    /// initiator's debt. Pass `type(uint).max` to repay
+    /// the
+    /// maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV3Repay(address instance, uint256 amount) external onlyBundler {
         address _initiator = initiator();
         address asset = ICompoundV3(instance).baseToken();
 
         if (amount == type(uint256).max) {
-            amount = Math.min(ICompoundV3(instance).borrowBalanceOf(_initiator), ERC20(asset).balanceOf(address(this)));
+            amount = ERC20(asset).balanceOf(address(this));
         }
+        amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(_initiator));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -49,7 +53,9 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param asset The address of the token to withdraw.
-    /// @param amount The amount of `asset` to withdraw. Pass `type(uint).max` to withdraw the initiator's balance.
+    /// @param amount The amount of `asset` to withdraw. Unlike with `morphoWithdraw`, the amount is capped at the
+    /// initiator's max withdrawable amount. Pass
+    /// `type(uint).max` to always withdraw the initiator's balance.
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
@@ -60,7 +66,7 @@ contract CompoundV3MigrationModule is BaseModule {
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
 
-        if (amount == type(uint256).max) amount = balance;
+        amount = Math.min(amount, balance);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
