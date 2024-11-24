@@ -11,22 +11,23 @@ struct ConfigMarket {
     uint256 lltv;
 }
 
+// NetworkConfig loads config data at construction time.
+// This makes config data available to inheriting test contracts when they are constructed.
+// But `block.chainid` is not preserved between the constructor and the call to `setUp`. So we store the planned chainid
+// in the config to have it available.
 struct Config {
     string network;
+    uint256 chainid;
     uint256 blockNumber;
     mapping(string => address) addresses;
     ConfigMarket[] markets;
 }
 
 abstract contract NetworkConfig is CommonBase {
-    address public constant UNINITIALIZED_ADDRESS = address(bytes20(bytes32("UNINITIALIZED ADDRESS")));
-
-    Config internal config;
-
-    function _initializeConfigData() private {
+    function initializeConfigData() private {
         /* ETHEREUM NETWORK */
 
-        if (block.chainid == 1) {
+        if (config.chainid == 1) {
             config.network = "ethereum";
             config.blockNumber = 21230000;
             config.markets.push(ConfigMarket({collateralToken: "WETH", loanToken: "DAI", lltv: 800000000000000000}));
@@ -54,7 +55,7 @@ abstract contract NetworkConfig is CommonBase {
             setAddress("MORPHO_TOKEN", 0x58D97B57BB95320F9a05dC918Aef65434969c2B2);
 
             /* BASE NETWORK */
-        } else if (block.chainid == 8453) {
+        } else if (config.chainid == 8453) {
             config.network = "base";
             config.blockNumber = 14000000;
             config.markets.push(ConfigMarket({collateralToken: "WETH", loanToken: "WETH", lltv: 800000000000000000}));
@@ -68,6 +69,10 @@ abstract contract NetworkConfig is CommonBase {
         }
     }
 
+    address public constant UNINITIALIZED_ADDRESS = address(bytes20(bytes32("UNINITIALIZED ADDRESS")));
+
+    Config internal config;
+
     // Load known addresses before tests try to use them when initializing their state variables.
     bool private initialized = initializeConfig();
 
@@ -77,23 +82,24 @@ abstract contract NetworkConfig is CommonBase {
         vm.label(UNINITIALIZED_ADDRESS, "UNINITIALIZED_ADDRESS");
 
         // Run tests on Ethereum by default
-        if (block.chainid == 31337) vm.chainId(1);
+        if (block.chainid == 31337) {
+            config.chainid = 1;
+        } else {
+            config.chainid = block.chainid;
+        }
 
-        _initializeConfigData();
+        initializeConfigData();
 
         require(
-            bytes(config.network).length > 0, string.concat("Configured: unknown chain id ", vm.toString(block.chainid))
+            bytes(config.network).length > 0,
+            string.concat("Configured: unknown chain id ", vm.toString(config.chainid))
         );
         return true;
     }
 
     function getAddress(string memory name) internal view returns (address addr) {
         addr = config.addresses[name];
-        if (addr == address(0)) {
-            return UNINITIALIZED_ADDRESS;
-        } else {
-            return addr;
-        }
+        return addr == address(0) ? UNINITIALIZED_ADDRESS : addr;
     }
 
     function hasAddress(string memory name) internal view returns (bool) {
