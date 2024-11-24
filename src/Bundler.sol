@@ -67,7 +67,7 @@ contract Bundler is IBundler {
         setInitiator(address(0));
     }
 
-    /// @notice Responds to calls from the current module.
+    /// @notice Responds to bundle from the current module.
     /// @param bundle The actions to execute.
     /// @notice The `bundle` is checked against its hash, stored at the beginning of the initial bundle execution.
     /// @dev Triggers `_multicall` logic during a callback.
