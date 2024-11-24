@@ -19,12 +19,6 @@ contract EthereumStEthModuleForkTest is ForkTest {
     address internal ST_ETH = getAddress("ST_ETH");
     address internal WST_ETH = getAddress("WST_ETH");
 
-    function setUp() public override {
-        super.setUp();
-
-        if (block.chainid != 1) return;
-    }
-
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_stakeEth(0, type(uint256).max, address(0), receiver));
 

@@ -26,7 +26,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         super.setUp();
 
-        if (checkEq(config.network, "ethereum")) {
+        if (isEq(config.network, "ethereum")) {
             ethereumModule1 = new EthereumModule1(
                 address(bundler),
                 address(morpho),
@@ -66,7 +66,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     }
 
     // Checks that two `string` values are equal.
-    function checkEq(string memory a, string memory b) internal pure returns (bool) {
+    function isEq(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 
