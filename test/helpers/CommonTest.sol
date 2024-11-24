@@ -91,19 +91,28 @@ abstract contract CommonTest is Test {
         morpho.setAuthorization(address(this), true);
     }
 
-    function _boundPrivateKey(uint256 privateKey) internal returns (uint256, address) {
+    function _boundPrivateKey(uint256 privateKey) internal returns (uint256) {
         privateKey = bound(privateKey, 1, type(uint160).max);
 
         address user = vm.addr(privateKey);
-        vm.label(user, "User");
+        vm.label(user, "address of generated private key");
 
-        return (privateKey, user);
+        return privateKey;
     }
 
     function _delegatePrank(address target, bytes memory callData) internal {
         vm.mockFunction(target, address(functionMocker), callData);
         (bool success,) = target.call(callData);
         require(success, "Function mocker call failed");
+    }
+
+    // Pick a uint stable by timestamp.
+    /// The environment variable PICK_UINT can be used to force a specific uint.
+    // Used to make fork tests faster.
+    function pickUint() internal view returns (uint256) {
+        bytes32 _hash = keccak256(bytes.concat("pickUint", bytes32(block.timestamp)));
+        uint256 num = uint256(_hash);
+        return vm.envOr("PICK_UINT", num);
     }
 
     /* GENERIC MODULE CALL */

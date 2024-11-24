@@ -71,12 +71,12 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public onlyEthereum {
+    function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10_000 ether;
         uint256 borrowed = 1 ether;
 
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -113,9 +113,9 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         _assertBorrowerPosition(collateral, borrowed, user, address(genericModule1));
     }
 
-    function testMigrateSupplierWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 0.1 ether, 100 ether);
 
         deal(user, supplied);
@@ -141,9 +141,9 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         _assertSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testMigrateSupplierToVaultWithPermit2(uint256 privateKey, uint256 supplied) public onlyEthereum {
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+    function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 0.1 ether, 100 ether);
 
         deal(user, supplied);
