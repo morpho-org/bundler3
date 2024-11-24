@@ -54,7 +54,8 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         uint256 collateral = 10 ether;
         uint256 borrowed = 1 ether;
 
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 

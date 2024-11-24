@@ -14,7 +14,8 @@ contract Permit2ModuleForkTest is ForkTest {
     address internal DAI = getAddress("DAI");
 
     function testApprove2(uint256 seed, uint256 amount) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         MarketParams memory marketParams = _randomMarketParams(seed);
@@ -40,7 +41,8 @@ contract Permit2ModuleForkTest is ForkTest {
     }
 
     function testApprove2Batch(uint256 amount0, uint256 amount1) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount0 = bound(amount0, MIN_AMOUNT, MAX_AMOUNT);
         amount1 = bound(amount1, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -100,7 +102,8 @@ contract Permit2ModuleForkTest is ForkTest {
     }
 
     function testApprove2InvalidNonce(uint256 seed, uint256 amount) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         MarketParams memory marketParams = _randomMarketParams(seed);
@@ -114,7 +117,8 @@ contract Permit2ModuleForkTest is ForkTest {
     }
 
     function testApprove2BatchInvalidNonce(uint256 amount0, uint256 amount1) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount0 = bound(amount0, MIN_AMOUNT, MAX_AMOUNT);
         amount1 = bound(amount1, MIN_AMOUNT, MAX_AMOUNT);
 

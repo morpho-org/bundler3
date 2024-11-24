@@ -91,13 +91,13 @@ abstract contract CommonTest is Test {
         morpho.setAuthorization(address(this), true);
     }
 
-    function _boundPrivateKey(uint256 privateKey) internal returns (uint256, address) {
+    function _boundPrivateKey(uint256 privateKey) internal returns (uint256) {
         privateKey = bound(privateKey, 1, type(uint160).max);
 
         address user = vm.addr(privateKey);
-        vm.label(user, "User");
+        vm.label(user, "address of generated private key");
 
-        return (privateKey, user);
+        return privateKey;
     }
 
     function _delegatePrank(address target, bytes memory callData) internal {

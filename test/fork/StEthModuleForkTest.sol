@@ -76,7 +76,8 @@ contract EthereumStEthModuleForkTest is ForkTest {
     }
 
     function testWrapStEth(uint256 amount) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         deal(ST_ETH, user, amount);
@@ -113,7 +114,8 @@ contract EthereumStEthModuleForkTest is ForkTest {
     }
 
     function testUnwrapWstEth(uint256 amount) public onlyEthereum {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_approve2(privateKey, WST_ETH, amount, 0, false));

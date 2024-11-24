@@ -45,14 +45,15 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV3AllowBySigUnauthorized() public {
-        (uint256 privateKey,) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
 
         vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
     }
 
     function testCompoundVAuthorizationWithSigRevert(address owner) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         vm.assume(owner != user);
 
@@ -77,7 +78,8 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateBorrowerWithCompoundAllowance() public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -111,7 +113,8 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierWithCompoundAllowance(uint256 supplied) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 101, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
@@ -136,7 +139,8 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testMigrateSupplierToVaultWithCompoundAllowance(uint256 supplied) public {
-        (uint256 privateKey, address user) = _boundPrivateKey(pickUint());
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
         supplied = bound(supplied, 101, 100 ether);
 
         deal(marketParams.loanToken, user, supplied);
