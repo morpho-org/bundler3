@@ -36,9 +36,8 @@ contract AaveV3MigrationModule is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param token The address of the token to repay.
     /// @param amount The amount of `token` to repay. Unlike with `morphoRepay`, the amount is capped at the initiator's
-    /// debt. Pass `type(uint).max` to repay the
-    /// maximum repayable debt
-    /// (mininimum of the module's balance and the initiator's debt).
+    /// debt. Pass `type(uint).max` to repay the maximum repayable debt (mininimum of the module's balance and the
+    /// initiator's debt).
     /// @param interestRateMode The interest rate mode of the position.
     function aaveV3Repay(address token, uint256 amount, uint256 interestRateMode) external onlyBundler {
         // Amount will be capped to the initiator's debt by Aave.

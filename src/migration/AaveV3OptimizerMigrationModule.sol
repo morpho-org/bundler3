@@ -35,9 +35,8 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param underlying The address of the underlying asset to repay.
     /// @param amount The amount of `underlying` to repay. Unlike with `morphoRepay`, the amount is capped at the
-    /// initiator's debt. Pass `type(uint).max` to repay the
-    /// repay the maximum repayable debt
-    /// (mininimum of the module's balance and the initiator's debt).
+    /// initiator's debt. Pass `type(uint).max` to repay the repay the maximum repayable debt (mininimum of the module's
+    /// balance and the initiator's debt).
     function aaveV3OptimizerRepay(address underlying, uint256 amount) external onlyBundler {
         // Amount will be capped to the initiator's debt by the optimizer.
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));

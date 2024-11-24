@@ -61,9 +61,8 @@ contract CompoundV2MigrationModule is BaseModule {
     /// @notice Repays an ETH debt on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param amount The amount of cEth to repay. Unlike with `morphoRepay`, the amount is capped at the initiator's
-    /// debt. Pass `type(uint).max` to repay the
-    /// maximum repayable debt
-    /// (mininimum of the module's balance and the initiator's debt).
+    /// debt. Pass `type(uint).max` to repay the maximum repayable debt (mininimum of the module's balance and the
+    /// initiator's debt).
     function compoundV2RepayEth(uint256 amount) external onlyBundler {
         address _initiator = initiator();
 
