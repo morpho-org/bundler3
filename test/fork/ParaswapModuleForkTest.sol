@@ -6,8 +6,14 @@ import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTra
 import "./helpers/ForkTest.sol";
 
 contract ParaswapModuleForkTest is ForkTest {
-    function _forkBlockNumberKey() internal virtual override returns (string memory) {
-        return "paraswap";
+    address internal AUGUSTUS_V6_2 = getAddress("AUGUSTUS_V6_2");
+    address internal USDC = getAddress("USDC");
+    address internal WETH = getAddress("WETH");
+
+    function setUp() public override {
+        if (block.chainid != 1) return;
+        config.blockNumber = 20842056;
+        super.setUp();
     }
 
     uint256 constant MAX_EXACT_VALUE_CHANGE_PERCENT = 140;

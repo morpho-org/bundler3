@@ -14,6 +14,12 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
+    address internal C_ETH_V2 = getAddress("C_ETH_V2");
+    address internal C_DAI_V2 = getAddress("C_DAI_V2");
+    address internal COMPTROLLER = getAddress("COMPTROLLER");
+    address internal DAI = getAddress("DAI");
+    address internal WETH = getAddress("WETH");
+
     address[] internal enteredMarkets;
 
     CompoundV2MigrationModule public migrationModule;
@@ -44,12 +50,12 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testMigrateBorrowerWithPermit2(uint256 privateKey) public onlyEthereum {
+    function testMigrateBorrowerWithPermit2() public onlyEthereum {
         uint256 collateral = 10 ether;
         uint256 borrowed = 1 ether;
 
-        address user;
-        (privateKey, user) = _boundPrivateKey(privateKey);
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         _provideLiquidity(borrowed);
 
@@ -74,10 +80,10 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_compoundV2RepayErc20(C_DAI_V2, type(uint256).max));
         callbackBundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
-        callbackBundle.push(_compoundV2Redeem(C_ETH_V2, cTokenBalance, address(genericModule1)));
+        callbackBundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         callbackBundle.push(_wrapNativeNoFunding(collateral, address(genericModule1)));
 
-        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user));
+        bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -91,7 +97,7 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayErc20, (cToken, repayAmount)));
     }
 
-    function _compoundV2Redeem(address cToken, uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2Redeem, (cToken, amount, receiver)));
+    function _compoundV2RedeemEth(uint256 amount, address receiver) internal view returns (Call memory) {
+        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RedeemEth, (amount, receiver)));
     }
 }
