@@ -4,7 +4,7 @@ The [`Bundler`](./src/Bundler.sol) executes a sequence of calls atomically. EOAs
 
 ## Structure
 
-<img width="571" alt="image" src="https://github.com/user-attachments/assets/9433cd07-c72a-4c5a-a194-dc8da21ef747">
+<img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`. A bundle is a sequence of calls, and each call specifies an arbitrary address and arbitrary calldata.
 
