@@ -163,11 +163,24 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testExtraHash(bytes32 _hash) public {
+        vm.assume(_hash != hex"");
         callbackBundle.push(_call(moduleMock, abi.encodeCall(moduleMock.emitInitiator, ())));
 
         callbackBundlesHashes.push(_hash);
 
         vm.expectRevert(ErrorsLib.MissingBundle.selector);
+        bundler.multicall(bundle, callbackBundlesHashes);
+    }
+
+    function testNullHash(uint256 length, uint256 pos) public {
+        length = bound(length, 1, 10);
+        pos = bound(pos, 0, length - 1);
+        bytes32 h1 = hex"01";
+        bytes32 h0 = hex"";
+        for (uint256 i = 0; i < length; i++) {
+            callbackBundlesHashes.push(i == pos ? h0 : h1);
+        }
+        vm.expectRevert(ErrorsLib.NullHash.selector);
         bundler.multicall(bundle, callbackBundlesHashes);
     }
 

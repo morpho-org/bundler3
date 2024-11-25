@@ -57,7 +57,10 @@ contract Bundler is IBundler {
         setInitiator(msg.sender);
 
         for (uint256 i = 0; i < callbackBundlesHashes.length; i++) {
-            setBundleHashAtIndex(callbackBundlesHashes[i], i);
+            bytes32 bundleHash = callbackBundlesHashes[i];
+            // Null hash forbidden: it marks the end of the bundle hashes.
+            require(bundleHash != hex"", ErrorsLib.NullHash());
+            setBundleHashAtIndex(bundleHash, i);
         }
 
         _multicall(initialBundle);

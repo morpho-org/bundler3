@@ -32,6 +32,9 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted with a zero shares as input.
     error ZeroShares();
 
+    /// @dev Thrown when the null bundle hash is given to the bundler.
+    error NullHash();
+
     /// @dev Thrown when the given owner is unexpected.
     error UnexpectedOwner(address account);
 
