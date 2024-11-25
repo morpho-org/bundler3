@@ -45,8 +45,11 @@ Contains the following actions:
 - StEth staking.
 - WStEth wrap & unwrap.
 
+### Migration modules
 
+For [Aave V2](./src/migration/AaveV2MigrationModule.sol), [Aave V3](./src/migration/AaveV3MigrationModule.sol), [Compound V2](./src/migration/CompoundV2MigrationModule.sol), [Compound V3](./src/migration/CompoundV3MigrationModule.sol), and [Morpho Aave V3 Optimizer](./src/migration/AaveV3OptimizerMigrationModule.sol).
 
+Contain the actions to repay current debt and withdraw supply/collateral on these protocols.
 
 ## Development
 
