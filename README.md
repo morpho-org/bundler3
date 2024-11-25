@@ -14,11 +14,11 @@ For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains g
 
 Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
 
-Before calling a contract, the Bundler stores its own caller as the bundle's `initiator`. Modules can read the current initiator during bundle execution. This is useful to make a secure module: for instance, a module should only move funds owner by the current initiator.
+Before calling a contract, the Bundler stores its own caller as the bundle's `initiator`. Modules can read the current initiator during bundle execution. This is useful to make a secure module: for instance, a module should only move funds owned by the current initiator.
 
-The Bundler can be called back by its most-recently-called module using `multicallFromModule(Call[] calldata bundle)`. This is useful for callback-based flows such as flashloans.
+When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`. This is useful for callback-based flows such as flashloans.
 
-To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) through `GenericModule1`'s `approve2Batch` action.
+To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GenericModule1.approve2Batch`](./src/GenericModule1.sol).
 
 All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
 
