@@ -8,13 +8,15 @@ The [`Bundler`](./src/Bundler.sol) executes a sequence of calls atomically. EOAs
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`. A bundle is a sequence of calls, and each call specifies an arbitrary address and arbitrary calldata.
 
-A contract called by the Bundler is called a Module.
+A contract called by the Bundler is called a module.
 
-Before calling a contract, the `Bundler` stores its own caller as the `initiator`. Modules can access the initiator's address during bundle execution. The Bundler can be called back by its most-recently-called module using `multicallFromModule(Call[] calldata bundle)`. This is useful for callback-based flows such as flashloans.
+For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains generic as well as ethereum-specific actions. It must be approved by the user to e.g. transfer the initiator's assets.
 
-Users should not call untrusted modules, just like they should not sign transactions to untrusted contracts.
+Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
 
-Modules such as [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contain domain-specific actions and may need to be approved by the initiator to e.g. transfer the initiator's assets.
+Before calling a contract, the Bundler stores its own caller as the bundle's `initiator`. Modules can read the current initiator during bundle execution. This is useful to make a secure module: for instance, a module should only move funds owner by the current initiator.
+
+The Bundler can be called back by its most-recently-called module using `multicallFromModule(Call[] calldata bundle)`. This is useful for callback-based flows such as flashloans.
 
 To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) through `GenericModule1`'s `approve2Batch` action.
 
