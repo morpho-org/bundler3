@@ -55,7 +55,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 
 * Use transient storage where it makes sense.
 * Bundler is now a call dispatcher that holds no approvals. Useful to freely add bundlers over time without additional risk to users of existing bundlers.
-* All generic features are in `GenericModule1`, instead of being in separate contracts that are then all inherited by a single contract.
+* All generic features are in `GenericModule1`, instead of being in separate files that are then all inherited by a single contract.
 * All ethereum features are in `EthereumModule1` which inherits `GenericModule1`.
 * The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`. Existing modules will still be used.
 * There is a new action `permit2Batch` to allow multiple contracts to move multiple tokens using a single signature.
