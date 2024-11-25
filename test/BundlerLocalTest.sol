@@ -143,6 +143,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testWrongHash(bytes32 wrongHash) public {
+        vm.assume(wrongHash != hex"");
         callbackBundle.push(_call(moduleMock, abi.encodeCall(moduleMock.emitInitiator, ())));
 
         bundle.push(_call(moduleMock, abi.encodeCall(moduleMock.callbackBundler, (callbackBundle))));

@@ -119,9 +119,8 @@ contract Bundler is IBundler {
     /// @notice Return the current hash in the sequence and move to the next index.
     /// @dev The current index starts at 0 and is stored in transient storage.
     function useBundleHash() internal returns (bytes32 bundleHash) {
-        uint256 index;
         assembly ("memory-safe") {
-            index := tload(CURRENT_BUNDLE_HASH_INDEX_SLOT)
+            let index := tload(CURRENT_BUNDLE_HASH_INDEX_SLOT)
             tstore(CURRENT_BUNDLE_HASH_INDEX_SLOT, add(index, 1))
             bundleHash := tload(add(BUNDLE_HASH_0_SLOT, index))
         }
