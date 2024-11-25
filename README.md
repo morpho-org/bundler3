@@ -22,6 +22,32 @@ To minimize the number of transactions and signatures, it is preferable to use P
 
 All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
 
+## Modules
+
+### [`GenericModule1`](./src/GenericModule1.sol)
+
+Contains the following actions:
+- ERC20 transfers, permit, wrap & unwrap.
+- Native token (e.g. WETH) wrap & unwrap.
+- ERC4626 mint,deposit, withdraw & redeem.
+- Morpho interactions.
+- Morpho public reallocation.
+- Permit2 approvals.
+- URD claim.
+
+### [`EthereumModule1`](./src/ethereum/EthereumModule1.sol)
+
+Contains the following actions:
+
+- Actions of `GenericModule1`.
+- Morpho token wrapper withdrawal.
+- Dai permit.
+- StEth staking.
+- WStEth wrap & unwrap.
+
+
+
+
 ## Development
 
 Run tests with `yarn test --chain <chainid>` (chainid can be 1 or 8453).
