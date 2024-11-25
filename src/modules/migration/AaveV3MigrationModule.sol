@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IAaveV3} from "./interfaces/IAaveV3.sol";
+import {IAaveV3} from "../../interfaces/IAaveV3.sol";
 
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ModuleLib} from "../../libraries/ModuleLib.sol";
 
 /// @title AaveV3MigrationModule
 /// @author Morpho Labs

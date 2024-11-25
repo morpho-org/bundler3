@@ -3,26 +3,26 @@ pragma solidity ^0.8.27;
 
 import {BaseModule} from "./BaseModule.sol";
 
-import {IMorphoModule} from "./interfaces/IMorphoModule.sol";
-import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
-import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IMorphoModule} from "../interfaces/IMorphoModule.sol";
+import {IPublicAllocator, Withdrawal} from "../interfaces/IPublicAllocator.sol";
+import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {Call} from "./interfaces/Call.sol";
-import {IBundler} from "./interfaces/IBundler.sol";
-import {ModuleLib} from "./libraries/ModuleLib.sol";
-import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
+import {Call} from "../interfaces/Call.sol";
+import {IBundler} from "../interfaces/IBundler.sol";
+import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {IUniversalRewardsDistributor} from
-    "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
-import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
-import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
-import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-import {IWNative} from "./interfaces/IWNative.sol";
-import {MathRayLib} from "./libraries/MathRayLib.sol";
+    "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
+import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
+import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+import {IWNative} from "../interfaces/IWNative.sol";
+import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @title GenericModule1
 /// @author Morpho Labs
