@@ -51,6 +51,18 @@ For [Aave V2](./src/migration/AaveV2MigrationModule.sol), [Aave V3](./src/migrat
 
 Contain the actions to repay current debt and withdraw supply/collateral on these protocols.
 
+## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
+
+* Use transient storage where it makes sense.
+* Bundler is now a call dispatcher that holds no approvals. Useful to freely add bundlers over time without additional risk to users of existing bundlers.
+* All generic features are in `GenericModule1`, instead of being in separate contracts that are then all inherited by a single contract.
+* All ethereum features are in `EthereumModule1` which inherits `GenericModule1`.
+* The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`. Existing modules will still be used.
+* There is a new action `permit2Batch` to allow multiple contracts to move multiple tokens using a single signature.
+* Many adjustments such as:
+  * `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
+  * slippage checks are done with a price argument instead of a limit amount.
+
 ## Development
 
 Run tests with `yarn test --chain <chainid>` (chainid can be 1 or 8453).
