@@ -22,7 +22,7 @@ To minimize the number of transactions and signatures, it is preferable to use P
 
 All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
 
-## Modules
+## Modules
 
 ### [`GenericModule1`](./src/GenericModule1.sol)
 
