@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {BaseModule} from "../BaseModule.sol";
-import {IBundler} from "../interfaces/IBundler.sol";
-import {Call} from "../interfaces/Call.sol";
+import {IBundler, Call} from "../interfaces/IBundler.sol";
 
 event Initiator(address);
 

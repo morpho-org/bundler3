@@ -11,8 +11,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {Call} from "./interfaces/Call.sol";
-import {IBundler} from "./interfaces/IBundler.sol";
+import {IBundler, Call} from "./interfaces/IBundler.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
 import {IUniversalRewardsDistributor} from

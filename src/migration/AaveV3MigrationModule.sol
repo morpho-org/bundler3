@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IAaveV3} from "./interfaces/IAaveV3.sol";
+import {IAaveV3} from "../interfaces/IAaveV3.sol";
 
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
