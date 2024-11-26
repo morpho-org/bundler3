@@ -351,7 +351,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Initiator must have previously authorized the maodule to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to withdraw assets from.
     /// @param assets The amount of assets to withdraw.
-    /// @param shares The amount of shares to burn.
+    /// @param shares The amount of shares to burn. Pass `type(uint).max` to burn all the initiator's supply shares.
     /// @param slippageAmount The maximum amount of supply shares to burn in exchange for `assets` when it is used.
     /// The minimum amount of assets to withdraw in exchange for `shares` otherwise.
     /// @param receiver The address that will receive the withdrawn assets.
@@ -362,6 +362,8 @@ contract GenericModule1 is BaseModule {
         uint256 slippageAmount,
         address receiver
     ) external onlyBundler {
+        if (shares == type(uint256).max) shares = MORPHO.supplyShares(marketParams.id(), initiator());
+
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
             MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 

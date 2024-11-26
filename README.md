@@ -62,6 +62,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 * Many adjustments such as:
   * `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
   * slippage checks are done with a price argument instead of a limit amount.
+  * In `morphoWithdraw` and `morphoRepay`, `shares == type(uint).max` respectively withdraws all supply & repays all debt.
 
 ## Development
 

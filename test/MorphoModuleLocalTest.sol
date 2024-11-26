@@ -257,6 +257,34 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
     }
 
+    function testWithdrawMax(uint256 privateKey, uint256 amount) public {
+        address user;
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
+        approveERC20ToMorphoAndModule(user);
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
+        bundle.push(_morphoWithdraw(marketParams, 0, type(uint256).max, 0, user));
+
+        loanToken.setBalance(user, amount);
+
+        vm.startPrank(user);
+        morpho.supply(marketParams, amount, 0, user, hex"");
+
+        bundler.multicall(bundle);
+        vm.stopPrank();
+
+        assertEq(loanToken.balanceOf(user), amount, "loan.balanceOf(user)");
+        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(address(genericModule1)");
+        assertEq(loanToken.balanceOf(address(morpho)), 0, "loan.balanceOf(address(morpho))");
+
+        assertEq(morpho.collateral(id, user), 0, "collateral(user)");
+        assertEq(morpho.supplyShares(id, user), 0, "supplyShares(user)");
+        assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
+    }
+
     function testBorrowUnauthorized(uint256 borrowedAssets) public {
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericModule1.morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
