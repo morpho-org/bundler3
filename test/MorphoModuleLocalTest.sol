@@ -257,7 +257,64 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
     }
 
-    function testWithdrawMax(uint256 privateKey, uint256 amount) public {
+    function testMorphoSupplyMaxAssetsZero() public {
+        bundle.push(_morphoSupply(marketParams, type(uint256).max, 0, 0, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoSupplyCollateralMaxZero() public {
+        bundle.push(_morphoSupplyCollateral(marketParams, type(uint256).max, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoSupplyCollateralZero(uint256 amount) public {
+        collateralToken.setBalance(address(genericModule1), amount);
+        bundle.push(_morphoSupplyCollateral(marketParams, 0, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoRepayMaxAssetsZero() public {
+        bundle.push(_morphoRepay(marketParams, type(uint256).max, 0, 0, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoRepayMaxSharesZero() public {
+        bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, 0, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testWithdrawZeroMaxSupply() public {
+        bundle.push(_morphoWithdraw(marketParams, 0, type(uint256).max, 0, RECEIVER));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testWithdrawCollateralZero() public {
+        bundle.push(_morphoWithdrawCollateral(marketParams, type(uint256).max, RECEIVER));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testFlashLoanZero() public {
+        bundle.push(_morphoFlashLoan(address(0), 0, hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testWithdrawMaxSupply(uint256 privateKey, uint256 amount) public {
         address user;
         privateKey = _boundPrivateKey(privateKey);
         user = vm.addr(privateKey);
