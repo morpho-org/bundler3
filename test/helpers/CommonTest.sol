@@ -85,7 +85,7 @@ abstract contract CommonTest is Test {
 
         bundler = new Bundler();
         genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
-        paraswapModule = new ParaswapModule(address(bundler), address(morpho), address(augustusRegistryMock));
+        paraswapModule = new ParaswapModule(address(augustusRegistryMock));
 
         irm = new IrmMock();
 
@@ -147,13 +147,21 @@ abstract contract CommonTest is Test {
     }
 
     /* GENERIC MODULE CALL */
+    function _call(address module, bytes memory data) internal pure returns (Call memory) {
+        return _call(module, data, 0);
+    }
+
     function _call(BaseModule module, bytes memory data) internal pure returns (Call memory) {
         return _call(module, data, 0);
     }
 
     function _call(BaseModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        require(address(module) != address(0), "Module address is zero");
-        return Call({to: address(module), data: data, value: value});
+        return _call(address(module), data, value);
+    }
+
+    function _call(address module, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        require(module != address(0), "Module address is zero");
+        return Call({to: module, data: data, value: value});
     }
 
     /* TRANSFER */
@@ -445,7 +453,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            paraswapModule,
+            BaseModule(payable(address(paraswapModule))),
             _paraswapSell(
                 address(augustus),
                 abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
@@ -469,7 +477,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            paraswapModule,
+            BaseModule(payable(address(paraswapModule))),
             _paraswapBuy(
                 address(augustus),
                 abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),

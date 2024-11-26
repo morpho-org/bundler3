@@ -6,7 +6,6 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {IAugustusRegistry} from "../src/interfaces/IAugustusRegistry.sol";
 import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
-import {EventsLib} from "../src/libraries/EventsLib.sol";
 
 contract ParaswapModuleLocalTest is LocalTest {
     using MathLib for uint256;
@@ -111,7 +110,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         // adjustedData);
         bundle.push(
             _call(
-                paraswapModule,
+                BaseModule(payable(address(paraswapModule))),
                 _paraswapSell(
                     _augustus,
                     _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
@@ -185,7 +184,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         bundle.push(
             _call(
-                paraswapModule,
+                BaseModule(payable(address(paraswapModule))),
                 _paraswapBuy(
                     _augustus,
                     _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
@@ -243,46 +242,6 @@ contract ParaswapModuleLocalTest is LocalTest {
         augustus.setToTake(supAmount);
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.SellAmountTooHigh.selector, supAmount));
         bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, address(this)));
-        bundler.multicall(bundle);
-    }
-
-    function testSwapEventSell(bytes32 salt, uint256 srcAmount, uint256 destAmount, address receiver) public {
-        _receiver(receiver);
-        srcAmount = bound(srcAmount, 0, type(uint128).max);
-        destAmount = bound(destAmount, 0, type(uint128).max);
-
-        augustus.setToTake(srcAmount);
-        augustus.setToGive(destAmount);
-
-        ERC20Mock srcToken = new ERC20Mock{salt: salt}("src", "SRC");
-        ERC20Mock destToken = new ERC20Mock{salt: salt}("dest", "DEST");
-
-        srcToken.setBalance(address(paraswapModule), srcAmount);
-
-        vm.expectEmit(true, true, true, true, address(paraswapModule));
-        emit EventsLib.ParaswapModuleSwap(address(srcToken), address(destToken), receiver, srcAmount, destAmount);
-
-        bundle.push(_sell(address(srcToken), address(destToken), srcAmount, destAmount, false, receiver));
-        bundler.multicall(bundle);
-    }
-
-    function testSwapEventBuy(bytes32 salt, uint256 srcAmount, uint256 destAmount, address receiver) public {
-        _receiver(receiver);
-        srcAmount = bound(srcAmount, 0, type(uint128).max);
-        destAmount = bound(destAmount, 0, type(uint128).max);
-
-        augustus.setToTake(srcAmount);
-        augustus.setToGive(destAmount);
-
-        ERC20Mock srcToken = new ERC20Mock{salt: salt}("src", "SRC");
-        ERC20Mock destToken = new ERC20Mock{salt: salt}("dest", "DEST");
-
-        srcToken.setBalance(address(paraswapModule), srcAmount);
-
-        vm.expectEmit(true, true, true, true, address(paraswapModule));
-        emit EventsLib.ParaswapModuleSwap(address(srcToken), address(destToken), receiver, srcAmount, destAmount);
-
-        bundle.push(_buy(address(srcToken), address(destToken), srcAmount, destAmount, 0, receiver));
         bundler.multicall(bundle);
     }
 
@@ -402,19 +361,5 @@ contract ParaswapModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(receiver), actualDestAmount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "paraswap module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "paraswap module loan token");
-    }
-
-    function testApprovalResetSell(uint256 amount) public {
-        collateralToken.setBalance(address(paraswapModule), amount);
-        bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, address(this)));
-        bundler.multicall(bundle);
-        assertEq(collateralToken.allowance(address(paraswapModule), address(augustus)), 0);
-    }
-
-    function testApprovalResetBuy(uint256 amount) public {
-        collateralToken.setBalance(address(paraswapModule), amount);
-        bundle.push(_buy(address(collateralToken), address(loanToken), amount, amount, 0, address(this)));
-        bundler.multicall(bundle);
-        assertEq(collateralToken.allowance(address(paraswapModule), address(augustus)), 0);
     }
 }

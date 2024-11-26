@@ -3,20 +3,17 @@ pragma solidity ^0.8.27;
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
-import {IMorpho, MarketParams} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {BaseModule} from "./BaseModule.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
-import {EventsLib} from "./libraries/EventsLib.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
 /// @title ParaswapModule
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is BaseModule, IParaswapModule {
+contract ParaswapModule is IParaswapModule {
     using Math for uint256;
     using SafeTransferLib for ERC20;
     using BytesLib for bytes;
@@ -24,13 +21,11 @@ contract ParaswapModule is BaseModule, IParaswapModule {
     /* IMMUTABLES */
 
     IAugustusRegistry public immutable AUGUSTUS_REGISTRY;
-    IMorpho public immutable MORPHO;
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address augustusRegistry) BaseModule(bundler) {
+    constructor(address augustusRegistry) {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
-        MORPHO = IMorpho(morpho);
     }
 
     /* MODIFIERS */
@@ -66,7 +61,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
             updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
         }
 
-        swapAndSkim(
+        _swapAndSkim(
             augustus,
             callData,
             srcToken,
@@ -102,7 +97,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
             updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
 
-        swapAndSkim(
+        _swapAndSkim(
             augustus,
             callData,
             srcToken,
@@ -116,7 +111,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
     /* INTERNAL FUNCTIONS */
 
     /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
-    function swapAndSkim(
+    function _swapAndSkim(
         address augustus,
         bytes memory callData,
         address srcToken,
@@ -131,7 +126,6 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         ERC20(srcToken).safeApprove(augustus, type(uint256).max);
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) ModuleLib.lowLevelRevert(returnData);
-        ERC20(srcToken).safeApprove(augustus, 0);
 
         uint256 srcFinal = ERC20(srcToken).balanceOf(address(this));
         uint256 destFinal = ERC20(destToken).balanceOf(address(this));
@@ -141,8 +135,6 @@ contract ParaswapModule is BaseModule, IParaswapModule {
 
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh(srcAmount));
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow(destAmount));
-
-        emit EventsLib.ParaswapModuleSwap(srcToken, destToken, receiver, srcAmount, destAmount);
 
         if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
         if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);

@@ -6,7 +6,6 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {IAugustusRegistry} from "../src/interfaces/IAugustusRegistry.sol";
 import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
-import {EventsLib} from "../src/libraries/EventsLib.sol";
 
 contract ParaswapMorphoBundlesLocalTest is LocalTest {
     using MarketParamsLib for MarketParams;
