@@ -22,7 +22,11 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
+import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
+import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @title GenericModule1
 /// @author Morpho Labs
@@ -31,6 +35,9 @@ import {MathRayLib} from "./libraries/MathRayLib.sol";
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
     using SafeTransferLib for ERC20;
+    using MorphoBalancesLib for IMorpho;
+    using MorphoLib for IMorpho;
+    using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
 
     /* IMMUTABLES */
@@ -323,7 +330,11 @@ contract GenericModule1 is BaseModule {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
 
+        require(UtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
+
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+
+        if (shares == type(uint256).max) shares = MORPHO.borrowShares(marketParams.id(), initiator());
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 

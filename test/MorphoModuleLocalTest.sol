@@ -447,6 +447,36 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
 
+    function testRepayMaxShares(uint256 privateKey, uint256 amount) public {
+        address user;
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
+        approveERC20ToMorphoAndModule(user);
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        loanToken.setBalance(address(this), amount);
+        morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
+
+        uint256 collateralAmount = amount.wDivUp(LLTV);
+
+        collateralToken.setBalance(user, collateralAmount);
+        vm.startPrank(user);
+        morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
+        morpho.borrow(marketParams, amount, 0, user, user);
+        ERC20(marketParams.loanToken).transfer(address(genericModule1), amount);
+        vm.stopPrank();
+
+        bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, user, hex""));
+
+        vm.prank(user);
+        bundler.multicall(bundle);
+
+        assertEq(loanToken.balanceOf(user), 0, "loan.balanceOf(user)");
+        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(address(genericModule1)");
+        assertEq(loanToken.balanceOf(address(morpho)), amount, "loan.balanceOf(address(morpho))");
+    }
+
     struct BundleTransactionsVars {
         uint256 expectedSupplyShares;
         uint256 expectedBorrowShares;
