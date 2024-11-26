@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IBundler} from "./interfaces/IBundler.sol";
+import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
 import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
-import {Call} from "./interfaces/Call.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
 /// @title Bundler

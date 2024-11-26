@@ -31,8 +31,7 @@ import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GenericModule1, Withdrawal} from "../../src/GenericModule1.sol";
-import {Bundler} from "../../src/Bundler.sol";
-import {Call} from "../../src/interfaces/Call.sol";
+import {Bundler, Call} from "../../src/Bundler.sol";
 
 import "../../lib/forge-std/src/Test.sol";
 import "../../lib/forge-std/src/console2.sol";
