@@ -142,7 +142,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(genericModule1)));
+        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(genericModule1)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_unwrapNative(borrowed, address(migrationModule)));
         callbackBundle.push(_compoundV2RepayEth(borrowed / 2));
@@ -179,7 +179,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
