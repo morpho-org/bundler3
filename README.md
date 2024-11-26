@@ -60,8 +60,9 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 * The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`. Existing modules will still be used.
 * There is a new action `permit2Batch` to allow multiple contracts to move multiple tokens using a single signature.
 * Many adjustments such as:
-  * `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
-  * slippage checks are done with a price argument instead of a limit amount.
+  * A value `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
+  * Slippage checks are done with a price argument instead of a limit amount.
+  * There are receiver arguments in all functions that give tokens to the module so the module can pass along those tokens.
 
 ## Development
 
