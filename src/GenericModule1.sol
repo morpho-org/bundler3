@@ -332,7 +332,6 @@ contract GenericModule1 is BaseModule {
         require(UtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
 
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
-
         if (shares == type(uint256).max) shares = MORPHO.borrowShares(marketParams.id(), initiator());
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
