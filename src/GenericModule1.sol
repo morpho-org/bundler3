@@ -374,12 +374,14 @@ contract GenericModule1 is BaseModule {
     /// @notice Withdraws collateral from Morpho.
     /// @dev Initiator must have previously authorized the module to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to withdraw collateral from.
-    /// @param assets The amount of collateral to withdraw.
+    /// @param assets The amount of collateral to withdraw. Pass `type(uint).max` to withdraw the initiator's collateral
+    /// balance.
     /// @param receiver The address that will receive the collateral assets.
     function morphoWithdrawCollateral(MarketParams calldata marketParams, uint256 assets, address receiver)
         external
         onlyBundler
     {
+        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), initiator());
         MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
     }
 

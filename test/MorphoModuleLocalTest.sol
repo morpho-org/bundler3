@@ -444,6 +444,27 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
 
+    function testWithdrawMaxCollateral(uint256 privateKey, uint256 collateralAmount) public {
+        address user;
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
+        approveERC20ToMorphoAndModule(user);
+
+        collateralAmount = bound(collateralAmount, MIN_AMOUNT, MAX_AMOUNT);
+
+        collateralToken.setBalance(user, collateralAmount);
+        vm.prank(user);
+        morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
+
+        bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
+        bundle.push(_morphoWithdrawCollateral(marketParams, type(uint256).max, RECEIVER));
+
+        vm.prank(user);
+        bundler.multicall(bundle);
+
+        assertEq(collateralToken.balanceOf(RECEIVER), collateralAmount, "collateral.balanceOf(RECEIVER)");
+    }
+
     function testRepayWithdrawCollateralViaCallback(uint256 privateKey, uint256 amount) public {
         address user;
         privateKey = _boundPrivateKey(privateKey);
