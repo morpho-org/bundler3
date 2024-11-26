@@ -31,7 +31,6 @@ Contains the following actions:
 - Native token (e.g. WETH) wrap & unwrap.
 - ERC4626 mint,deposit, withdraw & redeem.
 - Morpho interactions.
-- Morpho public reallocation.
 - Permit2 approvals.
 - URD claim.
 

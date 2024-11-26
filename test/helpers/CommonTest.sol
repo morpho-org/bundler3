@@ -8,7 +8,6 @@ import {
     Authorization as MorphoBlueAuthorization,
     Signature as MorphoBlueSignature
 } from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {IPublicAllocatorBase} from "../../lib/public-allocator/src/interfaces/IPublicAllocator.sol";
 
 import {SigUtils} from "./SigUtils.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
@@ -30,7 +29,7 @@ import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
-import {GenericModule1, Withdrawal} from "../../src/GenericModule1.sol";
+import {GenericModule1} from "../../src/GenericModule1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
 
 import "../../lib/forge-std/src/Test.sol";
@@ -344,21 +343,5 @@ abstract contract CommonTest is Test {
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
         return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
-    }
-
-    function _reallocateTo(
-        address publicAllocator,
-        address vault,
-        uint256 value,
-        Withdrawal[] memory withdrawals,
-        MarketParams memory supplyMarketParams
-    ) internal view returns (Call memory) {
-        return _call(
-            genericModule1,
-            abi.encodeCall(
-                GenericModule1.reallocateTo, (publicAllocator, vault, value, withdrawals, supplyMarketParams)
-            ),
-            value
-        );
     }
 }

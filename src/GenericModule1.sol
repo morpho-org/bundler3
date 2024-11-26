@@ -4,7 +4,6 @@ pragma solidity ^0.8.27;
 import {BaseModule} from "./BaseModule.sol";
 
 import {IMorphoModule} from "./interfaces/IMorphoModule.sol";
-import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
@@ -377,22 +376,6 @@ contract GenericModule1 is BaseModule {
         ModuleLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
-    }
-
-    /// @notice Reallocates funds using the public allocator.
-    /// @param publicAllocator The address of the public allocator.
-    /// @param vault The address of the vault.
-    /// @param value The value in ETH to pay for the reallocate fee.
-    /// @param withdrawals The list of markets and corresponding amounts to withdraw.
-    /// @param supplyMarketParams The market receiving the funds.
-    function reallocateTo(
-        address publicAllocator,
-        address vault,
-        uint256 value,
-        Withdrawal[] calldata withdrawals,
-        MarketParams calldata supplyMarketParams
-    ) external payable onlyBundler {
-        IPublicAllocator(publicAllocator).reallocateTo{value: value}(vault, withdrawals, supplyMarketParams);
     }
 
     /* PERMIT2 ACTIONS */
