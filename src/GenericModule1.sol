@@ -314,7 +314,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param marketParams The Morpho market to repay assets to.
     /// @param assets The amount of assets to repay. Pass `type(uint).max` to repay the module's loan asset balance.
-    /// @param shares The amount of shares to burn.
+    /// @param shares The amount of shares to burn. Pass `type(uint).max` to repay the initiator's entire debt.
     /// @param slippageAmount The minimum amount of borrow shares to burn in exchange for `assets` when it is used.
     /// The maximum amount of assets to deposit in exchange for `shares` otherwise.
     /// @param onBehalf The address of the owner of the debt position.
