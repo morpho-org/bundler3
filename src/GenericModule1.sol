@@ -329,7 +329,6 @@ contract GenericModule1 is BaseModule {
     ) external onlyBundler {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
-
         require(UtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
 
         if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
