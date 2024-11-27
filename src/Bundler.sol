@@ -62,7 +62,7 @@ contract Bundler is IBundler {
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current module can call this function.
     function multicallFromModule(Call[] calldata bundle) external payable {
-        require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender(msg.sender));
+        require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
 

@@ -45,7 +45,7 @@ contract PermitModuleForkTest is ForkTest {
     }
 
     function testPermitDaiUnauthorized(address receiver) public onlyEthereum {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         ethereumModule1.permitDai(receiver, 0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
     }
 
@@ -108,7 +108,7 @@ contract PermitModuleForkTest is ForkTest {
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.permit(address(USDC), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 

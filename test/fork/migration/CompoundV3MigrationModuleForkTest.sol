@@ -34,7 +34,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     function testCompoundV3RepayUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3Repay(C_WETH_V3, amount);
     }
 
@@ -46,7 +46,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV3AllowBySigUnauthorized() public {
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
     }
 
@@ -223,14 +223,14 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV3AllowUnauthorized() public {
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
     }
 
     function testCompoundV3WithdrawFromUnauthorized(uint256 amount, address receiver) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3WithdrawFrom(C_WETH_V3, marketParams.loanToken, amount, receiver);
     }
 

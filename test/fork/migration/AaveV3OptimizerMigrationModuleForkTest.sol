@@ -45,7 +45,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     function testAaveV3OptimizerRepayUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3OptimizerRepay(marketParams.loanToken, amount);
     }
 
@@ -210,21 +210,21 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         Signature memory sig;
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3OptimizerApproveManagerWithSig(true, 0, SIGNATURE_DEADLINE, sig, false);
     }
 
     function testAaveV3OptimizerWithdrawUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3OptimizerWithdraw(marketParams.loanToken, amount, MAX_ITERATIONS, address(this));
     }
 
     function testAaveV3OptimizerWithdrawCollateralUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3OptimizerWithdrawCollateral(marketParams.loanToken, amount, address(this));
     }
 

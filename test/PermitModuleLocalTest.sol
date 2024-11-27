@@ -40,7 +40,7 @@ contract PermitModuleLocalTest is LocalTest {
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.permit(address(loanToken), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 

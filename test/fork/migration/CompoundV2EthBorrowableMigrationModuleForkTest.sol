@@ -48,14 +48,14 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
     function testCompoundV2RepayEthUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV2RepayEth(amount);
     }
 
     function testCompoundV2RedeemEth(uint256 amount, address receiver) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV2RedeemEth(amount, receiver);
     }
 

@@ -47,7 +47,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     function testCompoundV2RedeemErc20Unauthorized(uint256 amount, address receiver) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV2RedeemErc20(C_DAI_V2, amount, receiver);
     }
 

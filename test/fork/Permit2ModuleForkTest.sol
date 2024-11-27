@@ -145,7 +145,7 @@ contract Permit2ModuleForkTest is ForkTest {
         IAllowanceTransfer.PermitSingle memory permitSingle;
         bytes memory signature;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.approve2(permitSingle, signature, false);
     }
 
@@ -153,7 +153,7 @@ contract Permit2ModuleForkTest is ForkTest {
         IAllowanceTransfer.PermitBatch memory permitBatch;
         bytes memory signature;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, (address(this))));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.approve2Batch(permitBatch, signature, false);
     }
 
@@ -209,7 +209,7 @@ contract Permit2ModuleForkTest is ForkTest {
     }
 
     function testTransferFrom2Unauthorized() public {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.transferFrom2(address(0), address(0), 0);
     }
 }

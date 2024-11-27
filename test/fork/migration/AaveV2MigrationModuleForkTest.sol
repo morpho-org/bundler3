@@ -44,14 +44,14 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     function testAaveV2RepayUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV2Repay(marketParams.loanToken, amount, 1);
     }
 
     function testAaveV2WithdrawUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV2Withdraw(marketParams.loanToken, amount, address(this));
     }
 
