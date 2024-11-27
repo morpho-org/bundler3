@@ -373,7 +373,7 @@ contract GenericModule1 is BaseModule {
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
             MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 
-        require(withdrawnAssets.rDivUp(withdrawnShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
+        require(withdrawnAssets.rDivDown(withdrawnShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws collateral from Morpho.
