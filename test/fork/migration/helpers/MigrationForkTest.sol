@@ -10,7 +10,7 @@ import {MorphoBalancesLib} from "../../../../lib/morpho-blue/src/libraries/perip
 
 import "../../helpers/ForkTest.sol";
 import {BaseModule} from "../../../../src/BaseModule.sol";
-import {ERC4626Mock} from "../../../../src/mocks/ERC4626Mock.sol";
+import {ERC4626Mock} from "../../../helpers/mocks/ERC4626Mock.sol";
 
 contract MigrationForkTest is ForkTest {
     using SafeTransferLib for ERC20;

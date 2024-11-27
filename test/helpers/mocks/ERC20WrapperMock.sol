@@ -5,7 +5,7 @@ import {
     IERC20,
     ERC20Wrapper,
     ERC20
-} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 
 contract ERC20WrapperMock is ERC20Wrapper {
     constructor(IERC20 token, string memory _name, string memory _symbol) ERC20Wrapper(token) ERC20(_name, _symbol) {}

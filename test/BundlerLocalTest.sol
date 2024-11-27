@@ -5,7 +5,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
-import {ModuleMock, Initiator} from "../src/mocks/ModuleMock.sol";
+import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
 import {CURRENT_MODULE_SLOT} from "../src/libraries/ConstantsLib.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
-import {ERC4626Mock} from "../src/mocks/ERC4626Mock.sol";
+import {ERC4626Mock} from "./helpers/mocks/ERC4626Mock.sol";
 import {MathRayLib} from "../src/libraries/MathRayLib.sol";
 
 import "./helpers/LocalTest.sol";
