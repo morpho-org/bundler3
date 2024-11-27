@@ -9,6 +9,7 @@ import {SigUtils} from "./helpers/SigUtils.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {ErrorsLib as MorphoErrorsLib} from "../lib/morpho-blue/src/libraries/ErrorsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {MathRayLib} from "../src/libraries/MathRayLib.sol";
 
 import "./helpers/MetaMorphoLocalTest.sol";
 
@@ -18,6 +19,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
     using MorphoBalancesLib for IMorpho;
     using SharesMathLib for uint256;
     using MarketParamsLib for MarketParams;
+    using MathRayLib for uint256;
 
     function setUp() public override {
         super.setUp();
@@ -846,5 +848,121 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         assertEq(morpho.expectedSupplyAssets(idleMarketParams, address(vault)), 0, "final idle");
         assertEq(morpho.expectedSupplyAssets(marketParams, address(vault)), amount, "final market");
+    }
+
+    function testSlippageSupplyOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivUp(shares), type(uint256).max);
+
+        deal(marketParams.loanToken, address(genericModule1), assets);
+
+        bundle.push(_morphoSupply(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageSupplyKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivUp(shares) - 1);
+
+        deal(marketParams.loanToken, address(genericModule1), assets);
+
+        bundle.push(_morphoSupply(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageWithdrawOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivUp(shares));
+
+        deal(marketParams.loanToken, address(this), assets);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        bundle.push(_morphoWithdraw(marketParams, assets, 0, sharePriceE27, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageWithdrawKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivDown(shares) + 1, type(uint256).max);
+
+        deal(marketParams.loanToken, address(this), assets);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        bundle.push(_morphoWithdraw(marketParams, assets, 0, sharePriceE27, address(this)));
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageBorrowOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivDown(shares));
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        bundle.push(_morphoBorrow(marketParams, assets, 0, sharePriceE27, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageBorrowKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivDown(shares) + 1, type(uint256).max);
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundle.push(_morphoBorrow(marketParams, assets, 0, sharePriceE27, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageRepayOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivUp(shares), type(uint256).max);
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.borrow(marketParams, assets, 0, address(this), address(genericModule1));
+
+        bundle.push(_morphoRepay(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageRepayKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivUp(shares) - 1);
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.borrow(marketParams, assets, 0, address(this), address(genericModule1));
+
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundle.push(_morphoRepay(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        bundler.multicall(bundle);
     }
 }
