@@ -97,7 +97,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to mint.
-    /// @param maxSharePriceE27 The maximum amount of assets to pay for minting 1 share, scaled by 1e27.
+    /// @param maxSharePriceE27 The maximum amount of assets to pay to get 1 share, scaled by 1e27.
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         external
@@ -399,7 +399,7 @@ contract GenericModule1 is BaseModule {
     /// @param permitSingle The `PermitSingle` struct.
     /// @param signature The signature, serialized.
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-        function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
+    function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
         external
         onlyBundler
     {
