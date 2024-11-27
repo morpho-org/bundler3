@@ -31,7 +31,6 @@ Contains the following actions:
 - Native token (e.g. WETH) wrap & unwrap.
 - ERC4626 mint,deposit, withdraw & redeem.
 - Morpho interactions.
-- Morpho public reallocation.
 - Permit2 approvals.
 - URD claim.
 
@@ -62,6 +61,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 * Many adjustments such as:
   * A value `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
   * Slippage checks are done with a price argument instead of a limit amount.
+  * When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
   * There are receiver arguments in all functions that give tokens to the module so the module can pass along those tokens.
 
 ## Development

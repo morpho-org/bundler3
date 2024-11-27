@@ -3,7 +3,6 @@ pragma solidity ^0.8.27;
 
 import {BaseModule} from "./BaseModule.sol";
 
-import {IPublicAllocator, Withdrawal} from "./interfaces/IPublicAllocator.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
@@ -19,7 +18,11 @@ import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
 import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {IWNative} from "./interfaces/IWNative.sol";
+import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
+import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @title GenericModule1
 /// @author Morpho Labs
@@ -28,6 +31,9 @@ import {MathRayLib} from "./libraries/MathRayLib.sol";
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
     using SafeTransferLib for ERC20;
+    using MorphoBalancesLib for IMorpho;
+    using MorphoLib for IMorpho;
+    using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
 
     /* IMMUTABLES */
@@ -239,7 +245,10 @@ contract GenericModule1 is BaseModule {
         // Do not check `onBehalf` against the zero address as it's done in Morpho.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
 
-        if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+        if (assets == type(uint256).max) {
+            assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+            require(assets != 0, ErrorsLib.ZeroAmount());
+        }
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 
@@ -265,7 +274,10 @@ contract GenericModule1 is BaseModule {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
 
-        if (assets == type(uint256).max) assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
+        if (assets == type(uint256).max) {
+            assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
+        }
+        require(assets != 0, ErrorsLib.ZeroAmount());
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
 
@@ -304,7 +316,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param marketParams The Morpho market to repay assets to.
     /// @param assets The amount of assets to repay. Pass `type(uint).max` to repay the module's loan asset balance.
-    /// @param shares The amount of shares to burn.
+    /// @param shares The amount of shares to burn. Pass `type(uint).max` to repay the initiator's entire debt.
     /// @param slippageAmount The minimum amount of borrow shares to burn in exchange for `assets` when it is used.
     /// The maximum amount of assets to deposit in exchange for `shares` otherwise.
     /// @param onBehalf The address of the owner of the debt position.
@@ -319,8 +331,17 @@ contract GenericModule1 is BaseModule {
     ) external onlyBundler {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
+        require(UtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
 
-        if (assets == type(uint256).max) assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+        if (assets == type(uint256).max) {
+            assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+            require(assets != 0, ErrorsLib.ZeroAmount());
+        }
+
+        if (shares == type(uint256).max) {
+            shares = MORPHO.borrowShares(marketParams.id(), initiator());
+            require(shares != 0, ErrorsLib.ZeroAmount());
+        }
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 
@@ -337,7 +358,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Initiator must have previously authorized the maodule to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to withdraw assets from.
     /// @param assets The amount of assets to withdraw.
-    /// @param shares The amount of shares to burn.
+    /// @param shares The amount of shares to burn. Pass `type(uint).max` to burn all the initiator's supply shares.
     /// @param slippageAmount The maximum amount of supply shares to burn in exchange for `assets` when it is used.
     /// The minimum amount of assets to withdraw in exchange for `shares` otherwise.
     /// @param receiver The address that will receive the withdrawn assets.
@@ -348,6 +369,11 @@ contract GenericModule1 is BaseModule {
         uint256 slippageAmount,
         address receiver
     ) external onlyBundler {
+        if (shares == type(uint256).max) {
+            shares = MORPHO.supplyShares(marketParams.id(), initiator());
+            require(shares != 0, ErrorsLib.ZeroAmount());
+        }
+
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
             MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 
@@ -358,12 +384,15 @@ contract GenericModule1 is BaseModule {
     /// @notice Withdraws collateral from Morpho.
     /// @dev Initiator must have previously authorized the module to act on their behalf on Morpho.
     /// @param marketParams The Morpho market to withdraw collateral from.
-    /// @param assets The amount of collateral to withdraw.
+    /// @param assets The amount of collateral to withdraw. Pass `type(uint).max` to withdraw the initiator's collateral
+    /// balance.
     /// @param receiver The address that will receive the collateral assets.
     function morphoWithdrawCollateral(MarketParams calldata marketParams, uint256 assets, address receiver)
         external
         onlyBundler
     {
+        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), initiator());
+        require(assets != 0, ErrorsLib.ZeroAmount());
         MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
     }
 
@@ -372,25 +401,10 @@ contract GenericModule1 is BaseModule {
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
+        require(assets != 0, ErrorsLib.ZeroAmount());
         ModuleLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
-    }
-
-    /// @notice Reallocates funds using the public allocator.
-    /// @param publicAllocator The address of the public allocator.
-    /// @param vault The address of the vault.
-    /// @param value The value in ETH to pay for the reallocate fee.
-    /// @param withdrawals The list of markets and corresponding amounts to withdraw.
-    /// @param supplyMarketParams The market receiving the funds.
-    function reallocateTo(
-        address publicAllocator,
-        address vault,
-        uint256 value,
-        Withdrawal[] calldata withdrawals,
-        MarketParams calldata supplyMarketParams
-    ) external payable onlyBundler {
-        IPublicAllocator(publicAllocator).reallocateTo{value: value}(vault, withdrawals, supplyMarketParams);
     }
 
     /* PERMIT2 ACTIONS */

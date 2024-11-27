@@ -46,8 +46,6 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV3AllowBySigUnauthorized() public {
-        uint256 privateKey = _boundPrivateKey(pickUint());
-
         vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
     }

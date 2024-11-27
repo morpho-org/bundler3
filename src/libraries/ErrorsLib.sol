@@ -41,6 +41,9 @@ library ErrorsLib {
     /// @dev Thrown when trying to repay ETH on CompoundV2 with the wrong function.
     error CTokenIsCETH();
 
+    /// @notice Thrown when not exactly one of the input amounts is zero.
+    error InconsistentInput();
+
     /* MIGRATION MODULES */
 
     /// @dev Thrown when repaying a CompoundV2 debt returns an error code.
