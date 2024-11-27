@@ -154,9 +154,9 @@ contract ERC4626ModuleLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), assets * 2));
         bundle.push(_erc4626Mint(address(vault), shares, assets.rDivDown(shares), USER));
 
-        loanToken.setBalance(address(vault), 1);
+        deal(address(loanToken), address(vault), 1);
 
-        loanToken.setBalance(USER, assets * 2);
+        deal(address(loanToken), USER, assets * 2);
 
         vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
         vm.prank(USER);
@@ -171,7 +171,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
         bundle.push(_erc4626Mint(address(vault), shares, assets.rDivDown(shares), USER));
 
-        loanToken.setBalance(USER, assets);
+        deal(address(loanToken), USER, assets);
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -190,9 +190,9 @@ contract ERC4626ModuleLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
         bundle.push(_erc4626Deposit(address(vault), assets, assets.rDivDown(shares), USER));
 
-        loanToken.setBalance(address(vault), 1);
+        deal(address(loanToken), address(vault), 1);
 
-        loanToken.setBalance(USER, assets);
+        deal(address(loanToken), USER, assets);
 
         vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
         vm.prank(USER);
@@ -207,7 +207,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), assets));
         bundle.push(_erc4626Deposit(address(vault), assets, assets.rDivDown(shares), USER));
 
-        loanToken.setBalance(USER, assets);
+        deal(address(loanToken), USER, assets);
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -230,7 +230,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         bundle.push(_erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, USER));
 
-        loanToken.setBalance(address(vault), deposited - 1);
+        deal(address(loanToken), address(vault), deposited - 1);
 
         vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
         vm.prank(USER);
@@ -272,7 +272,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         bundle.push(_erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, USER));
 
-        loanToken.setBalance(address(vault), deposited - 1);
+        deal(address(loanToken), address(vault), deposited - 1);
 
         vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
         vm.prank(USER);
@@ -304,7 +304,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function _depositVault(uint256 assets) internal returns (uint256 shares) {
-        loanToken.setBalance(USER, assets);
+        deal(address(loanToken), USER, assets);
 
         vm.prank(USER);
         shares = vault.deposit(assets, USER);

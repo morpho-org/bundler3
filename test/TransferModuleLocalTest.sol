@@ -11,7 +11,7 @@ contract TransferModuleLocalTest is LocalTest {
 
         bundle.push(_erc20TransferFrom(address(loanToken), amount));
 
-        loanToken.setBalance(USER, amount);
+        deal(address(loanToken), USER, amount);
 
         vm.startPrank(USER);
         loanToken.approve(address(genericModule1), type(uint256).max);

@@ -9,9 +9,4 @@ import {
 
 contract ERC20WrapperMock is ERC20Wrapper {
     constructor(IERC20 token, string memory _name, string memory _symbol) ERC20Wrapper(token) ERC20(_name, _symbol) {}
-
-    function setBalance(address account, uint256 amount) external {
-        _burn(account, balanceOf(account));
-        _mint(account, amount);
-    }
 }

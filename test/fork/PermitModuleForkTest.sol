@@ -137,7 +137,7 @@ contract PermitModuleForkTest is ForkTest {
 
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
-        permitToken.setBalance(user, amount);
+        deal(address(permitToken), user, amount);
 
         vm.prank(user);
         bundler.multicall(bundle);

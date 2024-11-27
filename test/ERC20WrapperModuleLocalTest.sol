@@ -23,7 +23,7 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
 
-        loanToken.setBalance(address(genericModule1), amount);
+        deal(address(loanToken), address(genericModule1), amount);
 
         bundler.multicall(bundle);
 
@@ -41,8 +41,8 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperWithdrawTo(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanWrapper.setBalance(address(genericModule1), amount);
-        loanToken.setBalance(address(loanWrapper), amount);
+        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
@@ -55,8 +55,8 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperWithdrawToAll(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanWrapper.setBalance(address(genericModule1), amount);
-        loanToken.setBalance(address(loanWrapper), amount);
+        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, type(uint256).max));
 
@@ -98,7 +98,7 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
     function testErc20WrapperDepositToFailed(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        loanToken.setBalance(address(genericModule1), amount);
+        deal(address(loanToken), address(genericModule1), amount);
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount));
 
@@ -110,8 +110,8 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
     function testErc20WrapperWithdrawToFailed(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        loanWrapper.setBalance(address(genericModule1), amount);
-        loanToken.setBalance(address(loanWrapper), amount);
+        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 

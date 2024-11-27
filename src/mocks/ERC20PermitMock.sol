@@ -6,9 +6,4 @@ import {ERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/ERC2
 
 contract ERC20PermitMock is ERC20Permit {
     constructor(string memory _name, string memory _symbol) ERC20Permit(_name) ERC20(_name, _symbol) {}
-
-    function setBalance(address account, uint256 amount) external {
-        _burn(account, balanceOf(account));
-        _mint(account, amount);
-    }
 }

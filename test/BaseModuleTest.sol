@@ -18,7 +18,7 @@ contract BaseModuleLocalTest is LocalTest {
 
         bundle.push(_erc20Transfer(address(loanToken), RECEIVER, amount, baseModule));
 
-        loanToken.setBalance(address(baseModule), amount);
+        deal(address(loanToken), address(baseModule), amount);
 
         bundler.multicall(bundle);
 

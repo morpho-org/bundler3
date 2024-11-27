@@ -70,7 +70,7 @@ contract PermitModuleLocalTest is LocalTest {
         bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
-        permitToken.setBalance(user, amount);
+        deal(address(permitToken), user, amount);
 
         vm.prank(user);
         bundler.multicall(bundle);
