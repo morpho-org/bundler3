@@ -139,7 +139,7 @@ contract EthereumModule1 is GenericModule1 {
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
         require(amount.rDivUp(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
-        ERC20(ST_ETH).safeTransfer(receiver, amount);
+        if (receiver != address(this)) ERC20(ST_ETH).safeTransfer(receiver, amount);
     }
 
     /// @notice Wraps stETH to wStETH.
