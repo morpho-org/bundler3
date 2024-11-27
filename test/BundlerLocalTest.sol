@@ -28,7 +28,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testInitiatorSlot() public pure {
-        assertEq(ConstantsLib.INITIATOR_SLOT, keccak256("Morpho Bundler Initiator Slot"));
+        assertEq(ConstantsLib.INITIATOR_SLOT, bytes32(uint256(keccak256("Morpho Bundler Initiator Slot")) - 1));
     }
 
     function testAlreadyInitiated(address initiator) public {
@@ -88,7 +88,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testCurrentModuleSlot() public pure {
-        assertEq(CURRENT_MODULE_SLOT, keccak256("Morpho Bundler Current Module Slot"));
+        assertEq(CURRENT_MODULE_SLOT, bytes32(uint256(keccak256("Morpho Bundler Current Module Slot")) - 1));
     }
 
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
