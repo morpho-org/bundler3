@@ -74,10 +74,7 @@ contract Bundler is IBundler {
             address module = bundle[i].to;
             setCurrentModule(module);
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
-
-            if (!success) {
-                ModuleLib.lowLevelRevert(returnData);
-            }
+            if (!success) ModuleLib.lowLevelRevert(returnData);
         }
         setCurrentModule(previousModule);
     }
