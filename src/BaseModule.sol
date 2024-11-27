@@ -66,7 +66,7 @@ contract BaseModule {
     /* INTERNAL */
 
     /// @notice Returns the current initiator stored in the module.
-    /// @dev The initiator value being non-zero indicates that a bundle is being processed
+    /// @dev The initiator value being non-zero indicates that a bundle is being processed.
     function initiator() internal view returns (address) {
         return IBundler(BUNDLER).initiator();
     }
