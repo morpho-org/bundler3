@@ -31,7 +31,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// the
     /// maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
-    function compoundV3Repay(address instance, uint256 amount) external onlyBundler {
+    function compoundV3Repay(address instance, uint256 amount) external payable onlyBundler {
         address _initiator = initiator();
         address asset = ICompoundV3(instance).baseToken();
 

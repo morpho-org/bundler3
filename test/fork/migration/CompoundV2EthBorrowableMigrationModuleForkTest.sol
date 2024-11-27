@@ -86,9 +86,8 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
 
-        SafeTransferLib.safeTransferETH(address(migrationModule), toRepay);
-        bundle.push(_compoundV2RepayEth(type(uint256).max));
-        bundler.multicall(bundle);
+        bundle.push(_compoundV2RepayEth(type(uint256).max, toRepay));
+        bundler.multicall{value: toRepay}(bundle);
         assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
     }
 
@@ -106,10 +105,8 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
 
         deal(address(this), toRepay);
-        SafeTransferLib.safeTransferETH(address(migrationModule), toRepay);
-
         bundle.push(_compoundV2RepayEth(toRepay));
-        bundler.multicall(bundle);
+        bundler.multicall{value: toRepay}(bundle);
         if (repayFactor < 1 ether) {
             assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
         } else {
@@ -145,8 +142,8 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(genericModule1)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_unwrapNative(borrowed, address(migrationModule)));
-        callbackBundle.push(_compoundV2RepayEth(borrowed / 2));
-        callbackBundle.push(_compoundV2RepayEth(type(uint256).max));
+        callbackBundle.push(_compoundV2RepayEth(borrowed / 2, 0));
+        callbackBundle.push(_compoundV2RepayEth(type(uint256).max, 0));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
@@ -218,7 +215,12 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
     /* ACTIONS */
 
     function _compoundV2RepayEth(uint256 repayAmount) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayEth, (repayAmount)));
+        return _compoundV2RepayEth(repayAmount, repayAmount);
+    }
+
+    function _compoundV2RepayEth(uint256 repayAmount, uint256 valueTransferred) internal view returns (Call memory) {
+        return
+            _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayEth, (repayAmount)), valueTransferred);
     }
 
     function _compoundV2RedeemErc20(address cToken, uint256 amount, address receiver)
