@@ -31,7 +31,7 @@ contract ParaswapModule is IParaswapModule {
     /* MODIFIERS */
 
     modifier inAugustusRegistry(address augustus) {
-        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry(augustus));
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
         _;
     }
 
@@ -133,8 +133,8 @@ contract ParaswapModule is IParaswapModule {
         uint256 srcAmount = srcInitial - srcFinal;
         uint256 destAmount = destFinal - destInitial;
 
-        require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh(srcAmount));
-        require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow(destAmount));
+        require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
+        require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
         if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
         if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);

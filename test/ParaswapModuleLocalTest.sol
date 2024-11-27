@@ -37,7 +37,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         vm.prank(address(bundler));
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.AugustusNotInRegistry.selector, _augustus));
+        vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
         paraswapModule.sell(_augustus, hex"", address(0), address(0), true, Offsets(0, 0, 0), address(0));
     }
 
@@ -46,7 +46,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         vm.prank(address(bundler));
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.AugustusNotInRegistry.selector, _augustus));
+        vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
         paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, Offsets(0, 0, 0), address(0));
     }
 
@@ -104,7 +104,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         collateralToken.setBalance(address(paraswapModule), adjustedExact);
 
         if (adjustedLimit > 0) {
-            vm.expectPartialRevert(ErrorsLib.BuyAmountTooLow.selector);
+            vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
         }
         vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         // adjustedData);
@@ -180,7 +180,7 @@ contract ParaswapModuleLocalTest is LocalTest {
             quotedOffset = 0;
         }
 
-        vm.expectPartialRevert(ErrorsLib.BuyAmountTooLow.selector);
+        vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
         vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         bundle.push(
             _call(
@@ -228,7 +228,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         collateralToken.setBalance(address(paraswapModule), amount);
 
         augustus.setToGive(subAmount);
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.BuyAmountTooLow.selector, subAmount));
+        vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
         bundle.push(_buy(address(collateralToken), address(loanToken), amount, amount, 0, address(this)));
         bundler.multicall(bundle);
     }
@@ -240,7 +240,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         collateralToken.setBalance(address(paraswapModule), supAmount);
 
         augustus.setToTake(supAmount);
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.SellAmountTooHigh.selector, supAmount));
+        vm.expectRevert(ErrorsLib.SellAmountTooHigh.selector);
         bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, address(this)));
         bundler.multicall(bundle);
     }
@@ -252,7 +252,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), srcAmount);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.BuyAmountTooLow.selector, srcAmount));
+        vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
         bundle.push(_sell(address(collateralToken), address(loanToken), srcAmount, minDestAmount, false, address(this)));
         bundler.multicall(bundle);
     }
@@ -264,7 +264,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), destAmount); // price is 1
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.SellAmountTooHigh.selector, destAmount));
+        vm.expectRevert(ErrorsLib.SellAmountTooHigh.selector);
         bundle.push(_buy(address(collateralToken), address(loanToken), maxSrcAmount, destAmount, 0, address(this)));
         bundler.multicall(bundle);
     }
@@ -277,7 +277,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), srcAmount.mulDivUp(percent, 100));
 
-        vm.expectPartialRevert(ErrorsLib.BuyAmountTooLow.selector);
+        vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
         bundle.push(_sell(address(collateralToken), address(loanToken), srcAmount, minDestAmount, true, address(this)));
         bundler.multicall(bundle);
     }
@@ -291,7 +291,7 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         collateralToken.setBalance(address(paraswapModule), type(uint128).max);
 
-        vm.expectPartialRevert(ErrorsLib.SellAmountTooHigh.selector);
+        vm.expectRevert(ErrorsLib.SellAmountTooHigh.selector);
         bundle.push(
             _buy(address(collateralToken), address(loanToken), maxSrcAmount, destAmount, newDestAmount, address(this))
         );

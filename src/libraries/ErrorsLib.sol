@@ -52,14 +52,14 @@ library ErrorsLib {
     /* PARASWAP MODULE */
 
     /// @dev Thrown when contract used to trade is not in the paraswap registry.
-    error AugustusNotInRegistry(address account);
+    error AugustusNotInRegistry();
 
     /// @dev Thrown when a data offset is invalid.
-    error InvalidOffset(uint256 offset);
+    error InvalidOffset();
 
     /// @dev Thrown when a swap has spent too many source tokens.
-    error SellAmountTooHigh(uint256 amount);
+    error SellAmountTooHigh();
 
     /// @dev Thrown when a swap has bought too few destination tokens.
-    error BuyAmountTooLow(uint256 amount);
+    error BuyAmountTooLow();
 }
