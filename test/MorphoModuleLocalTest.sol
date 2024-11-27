@@ -136,6 +136,22 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         _testSupply(amount, onBehalf);
     }
 
+    function testSupplyShares(uint256 shares, address onBehalf) public {
+        assumeOnBehalf(onBehalf);
+
+        shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_erc20TransferFrom(address(loanToken), type(uint128).max));
+        bundle.push(_morphoSupply(marketParams, 0, shares, type(uint256).max, onBehalf, hex""));
+
+        loanToken.setBalance(USER, type(uint128).max);
+
+        vm.prank(USER);
+        bundler.multicall(bundle);
+
+        assertEq(morpho.supplyShares(id, onBehalf), shares);
+    }
+
     function testSupplyMax(uint256 amount, address onBehalf) public {
         assumeOnBehalf(onBehalf);
 
