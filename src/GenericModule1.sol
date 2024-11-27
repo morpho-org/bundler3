@@ -429,7 +429,6 @@ contract GenericModule1 is BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
     function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
-        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = initiator();
@@ -476,7 +475,6 @@ contract GenericModule1 is BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
     function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
-        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = initiator();

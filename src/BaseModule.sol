@@ -55,7 +55,6 @@ contract BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
     function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
-        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
