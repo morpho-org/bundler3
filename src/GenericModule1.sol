@@ -305,7 +305,7 @@ contract GenericModule1 is BaseModule {
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
-        require(borrowedAssets.rDivUp(borrowedShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
+        require(borrowedAssets.rDivDown(borrowedShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Repays assets on Morpho.
