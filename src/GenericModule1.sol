@@ -399,6 +399,20 @@ contract GenericModule1 is BaseModule {
     /// @param permitSingle The `PermitSingle` struct.
     /// @param signature The signature, serialized.
     /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
+        function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
+        external
+        onlyBundler
+    {
+        try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
+        catch (bytes memory returnData) {
+            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
+        }
+    }
+
+    /// @notice Batch approves with Permit2.
+    /// @param permitBatch The `PermitBatch` struct.
+    /// @param signature The signature, serialized.
+    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
     function approve2Batch(
         IAllowanceTransfer.PermitBatch calldata permitBatch,
         bytes calldata signature,
