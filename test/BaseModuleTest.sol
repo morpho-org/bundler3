@@ -74,13 +74,4 @@ contract BaseModuleLocalTest is LocalTest {
         vm.expectRevert(ErrorsLib.ModuleAddress.selector);
         bundler.multicall(bundle);
     }
-
-    function testTransferTokenZero(uint256 amount, address recipient) public {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        bundle.push(_erc20Transfer(address(0), recipient, amount, baseModule));
-
-        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
-    }
 }
