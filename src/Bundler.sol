@@ -17,13 +17,13 @@ contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
     
     /// @notice The address of the initiator of the multicall transaction.
-    address public initiator;
+    address public transient initiator;
 
     /// @notice Returns the current module.
     /// @notice A module takes the 'current' status when called.
     /// @notice A module gives back the 'current' status to the previously current module when it returns from a call.
     /// @notice The initial current module is address(0).
-    address public currentModule;
+    address public transient currentModule;
 
     /* EXTERNAL */
 
