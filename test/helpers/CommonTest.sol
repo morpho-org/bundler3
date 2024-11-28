@@ -116,12 +116,21 @@ abstract contract CommonTest is Test {
 
     /* GENERIC MODULE CALL */
     function _call(BaseModule module, bytes memory data) internal pure returns (Call memory) {
-        return _call(module, data, 0);
+        return _call(false, module, data, 0);
     }
 
     function _call(BaseModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        return _call(false, module, data, value);
+    }
+
+    function _call(bool skipRevert, BaseModule module, bytes memory data, uint256 value)
+        internal
+        pure
+        returns (Call memory)
+    {
         require(address(module) != address(0), "Module address is zero");
-        return Call({to: address(module), data: data, value: value});
+        address to = address(module);
+        return Call(skipRevert, to, data, value);
     }
 
     /* TRANSFER */
