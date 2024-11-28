@@ -72,10 +72,12 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                migrationModule,
+                BaseModule(payable(address(AAVE_V3_OPTIMIZER))),
                 abi.encodeCall(
-                    migrationModule.aaveV3OptimizerApproveManagerWithSig, (true, 0, SIGNATURE_DEADLINE, sig, false)
-                )
+                    IAaveV3Optimizer.approveManagerWithSig, (user, address(this), true, 0, SIGNATURE_DEADLINE, sig)
+                ),
+                0,
+                false
             )
         );
 
@@ -103,13 +105,13 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max));
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
         callbackBundle.push(
             _aaveV3OptimizerWithdrawCollateral(
                 marketParams.collateralToken, collateralSupplied, address(genericModule1)
             )
         );
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
@@ -147,9 +149,9 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max));
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
         callbackBundle.push(_aaveV3OptimizerWithdrawCollateral(USDT, amountUsdt, address(genericModule1)));
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
 
         bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user, abi.encode(callbackBundle)));
 
@@ -171,9 +173,9 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
         bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
@@ -194,24 +196,15 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
         bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
         _assertVaultSupplierPosition(supplied, user, address(genericModule1));
-    }
-
-    function testAaveV3OptimizerApproveManagerUnauthorized(uint256 amount) public onlyEthereum {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        Signature memory sig;
-
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.aaveV3OptimizerApproveManagerWithSig(true, 0, SIGNATURE_DEADLINE, sig, false);
     }
 
     function testAaveV3OptimizerWithdrawUnauthorized(uint256 amount) public onlyEthereum {
@@ -232,6 +225,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
     function _aaveV3OptimizerApproveManager(
         uint256 privateKey,
+        address owner,
         address manager,
         bool isAllowed,
         uint256 nonce,
@@ -246,11 +240,12 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         (sig.v, sig.r, sig.s) = vm.sign(privateKey, digest);
 
         return _call(
-            migrationModule,
+            BaseModule(payable(AAVE_V3_OPTIMIZER)),
             abi.encodeCall(
-                migrationModule.aaveV3OptimizerApproveManagerWithSig,
-                (isAllowed, nonce, SIGNATURE_DEADLINE, sig, skipRevert)
-            )
+                IAaveV3Optimizer.approveManagerWithSig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, sig)
+            ),
+            0,
+            skipRevert
         );
     }
 

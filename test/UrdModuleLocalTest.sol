@@ -31,43 +31,6 @@ contract UrdModuleLocalTest is LocalTest {
         distributor = address(urdFactory.createUrd(OWNER, 0, bytes32(0), hex"", hex""));
     }
 
-    function testClaimRewardsZeroAddressDistributor(uint256 claimable, address account) public {
-        vm.assume(account != address(0));
-        claimable = bound(claimable, MIN_AMOUNT, MAX_AMOUNT);
-
-        bytes32[] memory proof;
-
-        bundle.push(_urdClaim(address(0), account, address(loanToken), claimable, proof, false));
-
-        vm.prank(USER);
-        vm.expectRevert();
-        bundler.multicall(bundle);
-    }
-
-    function testClaimRewardsZeroAddressAccount(uint256 claimable) public {
-        claimable = bound(claimable, MIN_AMOUNT, MAX_AMOUNT);
-
-        bytes32[] memory proof;
-
-        bundle.push(_urdClaim(distributor, address(0), address(loanToken), claimable, proof, false));
-
-        vm.prank(USER);
-        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
-    }
-
-    function testClaimRewardsModuleAddress(uint256 claimable) public {
-        claimable = bound(claimable, MIN_AMOUNT, MAX_AMOUNT);
-
-        bytes32[] memory proof;
-
-        bundle.push(_urdClaim(distributor, address(genericModule1), address(loanToken), claimable, proof, false));
-
-        vm.prank(USER);
-        vm.expectRevert(ErrorsLib.ModuleAddress.selector);
-        bundler.multicall(bundle);
-    }
-
     function testClaimRewards(uint256 claimable, uint256 size) public {
         claimable = bound(claimable, 1 ether, 1000 ether);
         size = bound(size, 2, 20);

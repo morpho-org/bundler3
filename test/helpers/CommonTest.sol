@@ -26,6 +26,10 @@ import {
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
+import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {Permit} from "../helpers/SigUtils.sol";
+import {IUniversalRewardsDistributorBase} from
+    "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
@@ -33,7 +37,7 @@ import {GenericModule1} from "../../src/GenericModule1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
 
 import "../../lib/forge-std/src/Test.sol";
-import "../../lib/forge-std/src/console2.sol";
+import "../../lib/forge-std/src/console.sol";
 
 uint256 constant MIN_AMOUNT = 1000;
 uint256 constant MAX_AMOUNT = 2 ** 64; // Must be less than or equal to type(uint160).max.
@@ -237,13 +241,15 @@ abstract contract CommonTest is Test {
         address distributor,
         address account,
         address reward,
-        uint256 amount,
+        uint256 claimable,
         bytes32[] memory proof,
         bool skipRevert
     ) internal view returns (Call memory) {
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.urdClaim, (distributor, account, reward, amount, proof, skipRevert))
+            BaseModule(payable(address(distributor))),
+            abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
+            0,
+            skipRevert
         );
     }
 
@@ -270,8 +276,10 @@ abstract contract CommonTest is Test {
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.morphoSetAuthorizationWithSig, (authorization, signature, skipRevert))
+            BaseModule(payable(address(morpho))),
+            abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)),
+            0,
+            skipRevert
         );
     }
 
@@ -355,5 +363,25 @@ abstract contract CommonTest is Test {
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
         return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
+    }
+
+    function _permit(
+        IERC20Permit token,
+        uint256 privateKey,
+        address owner,
+        address spender,
+        uint256 amount,
+        uint256 deadline,
+        bool skipRevert
+    ) internal view returns (Call memory) {
+        address user = vm.addr(privateKey);
+
+        Permit memory permit = Permit(user, spender, amount, token.nonces(user), deadline);
+
+        bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
+
+        bytes memory callData = abi.encodeCall(IERC20Permit.permit, (owner, spender, amount, deadline, v, r, s));
+        return _call(BaseModule(payable(address(token))), callData, 0, skipRevert);
     }
 }

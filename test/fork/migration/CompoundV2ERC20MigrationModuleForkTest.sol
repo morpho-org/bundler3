@@ -103,7 +103,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, borrowed / 2));
         callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max));
-        callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
+        callbackBundle.push(_approve2(privateKey, user, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
 
@@ -135,7 +135,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         vm.prank(user);
         ERC20(C_USDC_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
-        bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
+        bundle.push(_approve2(privateKey, user, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(genericModule1)));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
@@ -164,7 +164,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         vm.prank(user);
         ERC20(C_USDC_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
-        bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
+        bundle.push(_approve2(privateKey, user, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(genericModule1)));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));

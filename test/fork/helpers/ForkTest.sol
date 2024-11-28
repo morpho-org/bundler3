@@ -17,6 +17,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
     EthereumModule1 internal ethereumModule1;
     MarketParams[] allMarketParams;
+    bytes4 constant permitSingleSelector = 0x2b67b570;
+    bytes4 constant permitBatchSelector = 0x2a2d80d1;
 
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);
@@ -102,7 +104,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
     /* PERMIT2 ACTIONS */
 
-    function _approve2(uint256 privateKey, address asset, uint256 amount, uint256 nonce, bool skipRevert)
+    function _approve2(uint256 privateKey, address owner, address asset, uint256 amount, uint256 nonce, bool skipRevert)
         internal
         view
         returns (Call memory)
@@ -123,13 +125,16 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
+            BaseModule(payable(address(Permit2Lib.PERMIT2))),
+            abi.encodeWithSelector(permitSingleSelector, owner, permitSingle, abi.encodePacked(r, s, v)),
+            0,
+            skipRevert
         );
     }
 
     function _approve2Batch(
         uint256 privateKey,
+        address owner,
         address[] memory assets,
         uint256[] memory amounts,
         uint256[] memory nonces,
@@ -157,8 +162,10 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.approve2Batch, (permitBatch, abi.encodePacked(r, s, v), skipRevert))
+            BaseModule(payable(address(Permit2Lib.PERMIT2))),
+            abi.encodeWithSelector(permitBatchSelector, owner, permitBatch, abi.encodePacked(r, s, v)),
+            0,
+            skipRevert
         );
     }
 

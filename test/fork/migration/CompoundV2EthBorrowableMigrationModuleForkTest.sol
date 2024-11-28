@@ -144,7 +144,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_unwrapNative(borrowed, address(migrationModule)));
         callbackBundle.push(_compoundV2RepayEth(borrowed / 2, 0));
         callbackBundle.push(_compoundV2RepayEth(type(uint256).max, 0));
-        callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
+        callbackBundle.push(_approve2(privateKey, user, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
 
@@ -172,7 +172,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         vm.prank(user);
         ERC20(C_ETH_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
-        bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
+        bundle.push(_approve2(privateKey, user, C_ETH_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
@@ -200,7 +200,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         vm.prank(user);
         ERC20(C_ETH_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
-        bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
+        bundle.push(_approve2(privateKey, user, C_ETH_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
