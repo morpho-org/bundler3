@@ -23,6 +23,13 @@ contract Bundler is IBundler {
         }
     }
 
+    /// @notice Set the module that is about to be called.
+    function setCurrentModule(address module) internal {
+        assembly ("memory-safe") {
+            tstore(CURRENT_MODULE_SLOT, module)
+        }
+    }
+
     /* PUBLIC */
 
     /// @notice Returns the address of the initiator of the multicall transaction.
@@ -61,7 +68,7 @@ contract Bundler is IBundler {
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current module can call this function.
     function multicallFromModule(Call[] calldata bundle) external {
-        require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender(msg.sender));
+        require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
 
@@ -78,12 +85,5 @@ contract Bundler is IBundler {
             if (!success && !bundle[i].skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
         setCurrentModule(previousModule);
-    }
-
-    /// @notice Set the module that is about to be called.
-    function setCurrentModule(address module) internal {
-        assembly ("memory-safe") {
-            tstore(CURRENT_MODULE_SLOT, module)
-        }
     }
 }

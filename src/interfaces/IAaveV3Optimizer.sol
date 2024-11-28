@@ -84,4 +84,6 @@ interface IAaveV3Optimizer {
     function claimRewards(address[] calldata assets, address onBehalf)
         external
         returns (address[] memory rewardTokens, uint256[] memory claimedAmounts);
+
+    function borrowBalance(address underlying, address user) external view returns (uint256);
 }

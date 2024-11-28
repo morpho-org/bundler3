@@ -85,14 +85,14 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperDepositForUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
     function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount);
     }
 

@@ -45,12 +45,12 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     function testAaveV3OptimizerRepayUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.aaveV3OptimizerRepay(marketParams.loanToken, amount);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        migrationModule.aaveV3OptimizerRepay(marketParams.loanToken, amount, address(this));
     }
 
     function testAaveV3Optimizer3RepayZeroAmount() public onlyEthereum {
-        bundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, 0));
+        bundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -86,6 +86,26 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
+    function testAaveV3OptimizerRepayOnBehalf() public onlyEthereum {
+        deal(marketParams.collateralToken, USER, collateralSupplied + 1);
+
+        vm.startPrank(USER);
+        ERC20(marketParams.collateralToken).safeApprove(AAVE_V3_OPTIMIZER, collateralSupplied + 1);
+        IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supplyCollateral(marketParams.collateralToken, collateralSupplied + 1, USER);
+        IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrow(marketParams.loanToken, borrowed, USER, USER, MAX_ITERATIONS);
+        vm.stopPrank();
+
+        uint256 debt = IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrowBalance(marketParams.loanToken, USER);
+        assertGe(debt, borrowed);
+
+        deal(marketParams.loanToken, address(migrationModule), borrowed);
+        bundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed, USER));
+        bundler.multicall(bundle);
+
+        debt = IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrowBalance(marketParams.loanToken, USER);
+        assertEq(debt, 0);
+    }
+
     function testMigrateBorrowerWithOptimizerPermit() public onlyEthereum {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);
@@ -103,8 +123,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationModule)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
-        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2));
-        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max));
+        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2, user));
+        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max, user));
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         callbackBundle.push(
             _aaveV3OptimizerWithdrawCollateral(
@@ -147,8 +167,8 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationModule)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
-        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2));
-        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max));
+        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2, user));
+        callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max, user));
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         callbackBundle.push(_aaveV3OptimizerWithdrawCollateral(USDT, amountUsdt, address(genericModule1)));
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
@@ -210,14 +230,14 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     function testAaveV3OptimizerWithdrawUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3OptimizerWithdraw(marketParams.loanToken, amount, MAX_ITERATIONS, address(this));
     }
 
     function testAaveV3OptimizerWithdrawCollateralUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3OptimizerWithdrawCollateral(marketParams.loanToken, amount, address(this));
     }
 
@@ -249,8 +269,13 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         );
     }
 
-    function _aaveV3OptimizerRepay(address underlying, uint256 amount) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.aaveV3OptimizerRepay, (underlying, amount)));
+    function _aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf)
+        internal
+        view
+        returns (Call memory)
+    {
+        return
+            _call(migrationModule, abi.encodeCall(migrationModule.aaveV3OptimizerRepay, (underlying, amount, onBehalf)));
     }
 
     function _aaveV3OptimizerWithdraw(address underlying, uint256 amount, address receiver)

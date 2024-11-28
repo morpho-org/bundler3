@@ -193,7 +193,7 @@ contract Permit2ModuleForkTest is ForkTest {
     }
 
     function testTransferFrom2Unauthorized() public {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.transferFrom2(address(0), address(0), 0);
     }
 }
