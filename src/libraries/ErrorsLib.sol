@@ -12,7 +12,7 @@ library ErrorsLib {
     error AlreadyInitiated();
 
     /// @dev Thrown when a call is attempted from an unauthorized sender.
-    error UnauthorizedSender(address sender);
+    error UnauthorizedSender();
 
     /// @dev Thrown when a call is attempted with a zero address as input.
     error ZeroAddress();
@@ -27,7 +27,7 @@ library ErrorsLib {
     error ZeroShares();
 
     /// @dev Thrown when the given owner is unexpected.
-    error UnexpectedOwner(address account);
+    error UnexpectedOwner();
 
     /// @dev Thrown when an action ends up minting/burning more shares than a given slippage.
     error SlippageExceeded();
@@ -40,6 +40,9 @@ library ErrorsLib {
 
     /// @dev Thrown when trying to repay ETH on CompoundV2 with the wrong function.
     error CTokenIsCETH();
+
+    /// @notice Thrown when not exactly one of the input amounts is zero.
+    error InconsistentInput();
 
     /* MIGRATION MODULES */
 

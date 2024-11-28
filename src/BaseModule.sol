@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IBundler} from "./interfaces/IBundler.sol";
-import {Math} from "../lib/morpho-utils/src/math/Math.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
 /// @title BaseModule
@@ -25,7 +24,7 @@ contract BaseModule {
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
     modifier onlyBundler() {
-        require(msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender(msg.sender));
+        require(msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender());
         _;
     }
 
@@ -56,7 +55,6 @@ contract BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
     function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
-        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
@@ -68,7 +66,7 @@ contract BaseModule {
     /* INTERNAL */
 
     /// @notice Returns the current initiator stored in the module.
-    /// @dev If the caller is not the bundler, the initiator value may be 0.
+    /// @dev The initiator value being non-zero indicates that a bundle is being processed.
     function initiator() internal view returns (address) {
         return IBundler(BUNDLER).initiator();
     }

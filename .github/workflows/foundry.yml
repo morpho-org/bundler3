@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -26,7 +26,9 @@ jobs:
       - name: Build contracts via IR & check sizes
         # don't use compilation cache
         # skip import files, because we don't care if contracts are too big
-        run: yarn build --force --sizes --skip Import
+        run: forge build --force --sizes --skip Import
+        env:
+          FOUNDRY_PROFILE: build
 
 
   test-local:
@@ -56,11 +58,12 @@ jobs:
       - uses: ./.github/actions/install-cache
 
       - name: Run local tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:local
+        run: forge test
         env:
           FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
           FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
           FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
+          FOUNDRY_MATCH_CONTRACT: LocalTest
 
   test-fork:
     needs: build-via-ir
@@ -90,9 +93,10 @@ jobs:
       - uses: ./.github/actions/install-cache
 
       - name: Run fork tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:fork --chain ${{ matrix.chain }}
+        run: forge test --chain ${{ matrix.chain }}
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
           FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
           FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
           FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
+          FOUNDRY_MATCH_CONTRACT: ForkTest

@@ -273,7 +273,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, USER);
 
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         ratio = bound(ratio, MIN_RATIO, MAX_RATIO);
         uint256 borrowAssetsToTransfer = borrowAmount * ratio / WAD;
@@ -332,7 +332,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
 
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         _createFullCollateralSwapBundle(USER, marketParams, marketParamsCollateral2);
 
@@ -398,7 +398,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supply(marketParamsLoan2, borrowAmount * 2, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         ratio = bound(ratio, MIN_RATIO, MAX_RATIO);
         uint256 debtToRepay = borrowAmount * ratio / WAD;
@@ -450,7 +450,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supply(marketParamsLoan2, borrowAmount * 2, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         _createFullDebtSwapBundle(USER, marketParams, marketParamsLoan2);
 
@@ -501,7 +501,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
 
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         _createFullDebtAndCollateralSwapBundle(USER, marketParams, marketParamsAll2);
 
@@ -582,7 +582,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
 
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         ratio = bound(ratio, MIN_RATIO, MAX_RATIO);
         uint256 assetsToRepay = borrowAmount * ratio / WAD;
@@ -639,7 +639,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
 
-        loanToken.setBalance(USER, 0);
+        deal(address(loanToken), USER, 0);
 
         _createFullRepayWithCollateralBundle(USER, marketParams);
 

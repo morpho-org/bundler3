@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
-import {ERC20WrapperMock, ERC20Wrapper} from "../src/mocks/ERC20WrapperMock.sol";
+import {ERC20WrapperMock, ERC20Wrapper} from "./helpers/mocks/ERC20WrapperMock.sol";
 
 import "./helpers/LocalTest.sol";
 
@@ -23,7 +23,7 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
 
-        loanToken.setBalance(address(genericModule1), amount);
+        deal(address(loanToken), address(genericModule1), amount);
 
         bundler.multicall(bundle);
 
@@ -41,8 +41,8 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperWithdrawTo(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanWrapper.setBalance(address(genericModule1), amount);
-        loanToken.setBalance(address(loanWrapper), amount);
+        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
@@ -55,8 +55,8 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperWithdrawToAll(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanWrapper.setBalance(address(genericModule1), amount);
-        loanToken.setBalance(address(loanWrapper), amount);
+        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, type(uint256).max));
 
@@ -85,20 +85,20 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperDepositForUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
     function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount);
     }
 
     function testErc20WrapperDepositToFailed(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        loanToken.setBalance(address(genericModule1), amount);
+        deal(address(loanToken), address(genericModule1), amount);
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount));
 
@@ -110,8 +110,8 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
     function testErc20WrapperWithdrawToFailed(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        loanWrapper.setBalance(address(genericModule1), amount);
-        loanToken.setBalance(address(loanWrapper), amount);
+        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
