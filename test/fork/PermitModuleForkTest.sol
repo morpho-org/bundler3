@@ -8,7 +8,7 @@ import {DaiPermit, Permit} from "../helpers/SigUtils.sol";
 
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {ERC20PermitMock} from "../../src/mocks/ERC20PermitMock.sol";
+import {ERC20PermitMock} from "../helpers/mocks/ERC20PermitMock.sol";
 import {EthereumModule1} from "../../src/EthereumModule1.sol";
 
 import "./helpers/ForkTest.sol";
@@ -137,7 +137,7 @@ contract PermitModuleForkTest is ForkTest {
 
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
-        permitToken.setBalance(user, amount);
+        deal(address(permitToken), user, amount);
 
         vm.prank(user);
         bundler.multicall(bundle);

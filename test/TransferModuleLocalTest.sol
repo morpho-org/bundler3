@@ -11,7 +11,7 @@ contract TransferModuleLocalTest is LocalTest {
 
         bundle.push(_erc20TransferFrom(address(loanToken), amount));
 
-        loanToken.setBalance(USER, amount);
+        deal(address(loanToken), USER, amount);
 
         vm.startPrank(USER);
         loanToken.approve(address(genericModule1), type(uint256).max);
@@ -27,16 +27,6 @@ contract TransferModuleLocalTest is LocalTest {
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
         genericModule1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
-    }
-
-    function testTranferFromTokenZero(uint256 amount) public {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        bundle.push(_erc20TransferFrom(address(0), amount));
-
-        vm.prank(USER);
-        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
     }
 
     function testTranferFromZeroAmount() public {

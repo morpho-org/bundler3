@@ -39,7 +39,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV2RepayEthZeroAmount() public onlyEthereum {
-        bundle.push(_compoundV2RepayEth(0, address(this)));
+        bundle.push(_compoundV2RepayEth(0, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -67,7 +67,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV2RepayCEthZeroAmount() public onlyEthereum {
-        bundle.push(_compoundV2RepayEth(0, address(this)));
+        bundle.push(_compoundV2RepayEth(0, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -86,9 +86,8 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
 
-        SafeTransferLib.safeTransferETH(address(migrationModule), toRepay);
-        bundle.push(_compoundV2RepayEth(type(uint256).max, address(this)));
-        bundler.multicall(bundle);
+        bundle.push(_compoundV2RepayEth(type(uint256).max, toRepay, address(this)));
+        bundler.multicall{value: toRepay}(bundle);
         assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
     }
 
@@ -110,7 +109,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         deal(address(this), toRepay);
         SafeTransferLib.safeTransferETH(address(migrationModule), toRepay);
 
-        bundle.push(_compoundV2RepayEth(toRepay, USER));
+        bundle.push(_compoundV2RepayEth(toRepay, 0, USER));
         bundler.multicall(bundle);
         if (repayFactor < 1 ether) {
             assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(USER), borrowed - toRepay);
@@ -144,11 +143,11 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(genericModule1)));
+        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(genericModule1)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_unwrapNative(borrowed, address(migrationModule)));
-        callbackBundle.push(_compoundV2RepayEth(borrowed / 2, user));
-        callbackBundle.push(_compoundV2RepayEth(type(uint256).max, user));
+        callbackBundle.push(_compoundV2RepayEth(borrowed / 2, 0, user));
+        callbackBundle.push(_compoundV2RepayEth(type(uint256).max, 0, user));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
@@ -181,7 +180,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -219,8 +218,16 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
 
     /* ACTIONS */
 
-    function _compoundV2RepayEth(uint256 repayAmount, address onBehalf) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayEth, (repayAmount, onBehalf)));
+    function _compoundV2RepayEth(uint256 repayAmount, uint256 valueTransferred, address onBehalf)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            migrationModule,
+            abi.encodeCall(migrationModule.compoundV2RepayEth, (repayAmount, onBehalf)),
+            valueTransferred
+        );
     }
 
     function _compoundV2RedeemErc20(address cToken, uint256 amount, address receiver)

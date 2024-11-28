@@ -52,8 +52,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param asset The address of the token to withdraw.
     /// @param amount The amount of `asset` to withdraw. Unlike with `morphoWithdraw`, the amount is capped at the
-    /// initiator's max withdrawable amount. Pass
-    /// `type(uint).max` to always withdraw the initiator's balance.
+    /// initiator's max withdrawable amount. Pass `type(uint).max` to always withdraw the initiator's balance.
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
