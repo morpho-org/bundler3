@@ -28,13 +28,6 @@ contract ParaswapModule is IParaswapModule {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
     }
 
-    /* MODIFIERS */
-
-    modifier inAugustusRegistry(address augustus) {
-        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
-        _;
-    }
-
     /* SWAP ACTIONS */
 
     /// @notice Sell an exact amount. Can check for a minimum purchased amount.
@@ -55,7 +48,9 @@ contract ParaswapModule is IParaswapModule {
         bool sellEntireBalance,
         Offsets calldata offsets,
         address receiver
-    ) external inAugustusRegistry(augustus) {
+    ) external {
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+
         if (sellEntireBalance) {
             uint256 newSrcAmount = ERC20(srcToken).balanceOf(address(this));
             updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
@@ -92,7 +87,9 @@ contract ParaswapModule is IParaswapModule {
         uint256 newDestAmount,
         Offsets calldata offsets,
         address receiver
-    ) external inAugustusRegistry(augustus) {
+    ) external {
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+
         if (newDestAmount != 0) {
             updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
@@ -123,7 +120,10 @@ contract ParaswapModule is IParaswapModule {
         uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = ERC20(destToken).balanceOf(address(this));
 
-        ERC20(srcToken).safeApprove(augustus, type(uint256).max);
+        if (ERC20(srcToken).allowance(address(this), augustus) == 0) {
+            ERC20(srcToken).safeApprove(augustus, type(uint256).max);
+        }
+
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) ModuleLib.lowLevelRevert(returnData);
 
