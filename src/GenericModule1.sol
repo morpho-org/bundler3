@@ -30,7 +30,6 @@ import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 /// @notice Chain agnostic module contract n°1.
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
-    using SafeTransferLib for ERC20;
     using MorphoBalancesLib for IMorpho;
     using MorphoLib for IMorpho;
     using MarketParamsLib for MarketParams;
@@ -488,7 +487,7 @@ contract GenericModule1 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ERC20(token).safeTransferFrom(_initiator, receiver, amount);
+        SafeTransferLib.safeTransferFrom(ERC20(token), _initiator, receiver, amount);
     }
 
     /* WRAPPED NATIVE TOKEN ACTIONS */
@@ -503,7 +502,7 @@ contract GenericModule1 is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         WRAPPED_NATIVE.deposit{value: amount}();
-        if (receiver != address(this)) ERC20(address(WRAPPED_NATIVE)).safeTransfer(receiver, amount);
+        if (receiver != address(this)) SafeTransferLib.safeTransfer(ERC20(address(WRAPPED_NATIVE)), receiver, amount);
     }
 
     /// @notice Unwraps wNative tokens to the native token.
