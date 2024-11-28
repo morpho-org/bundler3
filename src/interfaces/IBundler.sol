@@ -8,8 +8,6 @@ struct Call {
     uint256 value;
 }
 
-/// @title IBundler
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Interface of Bundler.
 interface IBundler {

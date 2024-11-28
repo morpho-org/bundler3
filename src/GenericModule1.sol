@@ -24,8 +24,6 @@ import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.so
 import {MathRayLib} from "./libraries/MathRayLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
-/// @title GenericModule1
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
 contract GenericModule1 is BaseModule {
