@@ -3,10 +3,10 @@ pragma solidity >=0.8.0;
 
 /// @notice Struct containing all the data needed to make a call.
 struct Call {
-    bool skipRevert;
     address to;
     bytes data;
     uint256 value;
+    bool skipRevert;
 }
 
 /// @title IBundler
