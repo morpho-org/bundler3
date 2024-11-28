@@ -26,24 +26,24 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
-    /// @param amount The amount of base token to repay. Unlike with `morphoRepay`, the amount is capped at the
-    /// initiator's debt. Pass `type(uint).max` to repay the maximum repayable debt (mininimum of the module's balance
-    /// and the initiator's debt).
-    function compoundV3Repay(address instance, uint256 amount) external onlyBundler {
-        address _initiator = initiator();
+    /// @param amount The amount of base token to repay. Unlike with `morphoRepay`, the amount is capped at `onBehalf`'s
+    /// debt. Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and
+    /// `onBehalf`'s debt).
+    /// @param onBehalf The account on behalf of which the debt is repaid.
+    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
         address asset = ICompoundV3(instance).baseToken();
 
         if (amount == type(uint256).max) {
             amount = ERC20(asset).balanceOf(address(this));
         }
-        amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(_initiator));
+        amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         ModuleLib.approveMaxToIfAllowanceZero(asset, instance);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
-        ICompoundV3(instance).supplyTo(_initiator, asset, amount);
+        ICompoundV3(instance).supplyTo(onBehalf, asset, amount);
     }
 
     /// @notice Withdraws from a CompoundV3 instance.
