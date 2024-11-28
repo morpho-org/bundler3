@@ -23,6 +23,13 @@ contract Bundler is IBundler {
         }
     }
 
+    /// @notice Set the module that is about to be called.
+    function setCurrentModule(address module) internal {
+        assembly ("memory-safe") {
+            tstore(CURRENT_MODULE_SLOT, module)
+        }
+    }
+
     /* PUBLIC */
 
     /// @notice Returns the address of the initiator of the multicall transaction.
@@ -77,12 +84,5 @@ contract Bundler is IBundler {
             if (!success) ModuleLib.lowLevelRevert(returnData);
         }
         setCurrentModule(previousModule);
-    }
-
-    /// @notice Set the module that is about to be called.
-    function setCurrentModule(address module) internal {
-        assembly ("memory-safe") {
-            tstore(CURRENT_MODULE_SLOT, module)
-        }
     }
 }
