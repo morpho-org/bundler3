@@ -39,7 +39,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
     /// balance and `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyBundler {
-        // Amount will be capped to `onBehalf`'s debt by the optimizer.
+        // Amount will be capped at `onBehalf`'s debt by the optimizer.
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

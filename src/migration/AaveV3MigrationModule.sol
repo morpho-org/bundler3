@@ -44,7 +44,7 @@ contract AaveV3MigrationModule is BaseModule {
         external
         onlyBundler
     {
-        // Amount will be capped `onBehalf`'s debt by Aave.
+        // Amount will be capped at `onBehalf`'s debt by Aave.
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
