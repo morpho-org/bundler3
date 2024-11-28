@@ -4,8 +4,7 @@ pragma solidity 0.8.27;
 import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
-import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
+import {INITIATOR_SLOT, CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
 /// @title Bundler
@@ -52,8 +51,8 @@ contract Bundler is IBundler {
     /// @notice Responds to bundle from the current module.
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current module can call this function.
-    function multicallFromModule(Call[] calldata bundle) external payable {
-        require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender(msg.sender));
+    function multicallFromModule(Call[] calldata bundle) external {
+        require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
 
@@ -61,33 +60,29 @@ contract Bundler is IBundler {
 
     /// @notice Executes a series of calls to modules.
     function _multicall(Call[] calldata bundle) internal {
+        address previousModule = currentModule();
         for (uint256 i; i < bundle.length; ++i) {
-            address previousModule = currentModule();
             address module = bundle[i].to;
             _setCurrentModule(module);
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
-
-            if (!success) {
-                ModuleLib.lowLevelRevert(returnData);
-            }
-
-            _setCurrentModule(previousModule);
+            if (!success) ModuleLib.lowLevelRevert(returnData);
         }
+        _setCurrentModule(previousModule);
     }
 
     /* TRANSIENT STORAGE SETTERS */
 
     /// @notice Set the initiator value in transient storage.
-    function _setInitiator(address _initiator) internal {
+    function _setInitiator(address newInitiator) internal {
         assembly ("memory-safe") {
-            tstore(INITIATOR_SLOT, _initiator)
+            tstore(INITIATOR_SLOT, newInitiator)
         }
     }
 
     /// @notice Set the module that is about to be called.
-    function _setCurrentModule(address module) internal {
+    function _setCurrentModule(address newCurrentModule) internal {
         assembly ("memory-safe") {
-            tstore(CURRENT_MODULE_SLOT, module)
+            tstore(CURRENT_MODULE_SLOT, newCurrentModule)
         }
     }
 }

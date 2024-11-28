@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
-import {ERC20WrapperMock, ERC20Wrapper} from "../../src/mocks/ERC20WrapperMock.sol";
+import {ERC20WrapperMock, ERC20Wrapper} from "../helpers/mocks/ERC20WrapperMock.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -44,7 +44,7 @@ contract MorphoWrapperModuleForkTest is ForkTest {
     function testMorphoWrapperWithdrawToUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         ethereumModule1.morphoWrapperWithdrawTo(RECEIVER, amount);
     }
 

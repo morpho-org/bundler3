@@ -66,6 +66,7 @@ abstract contract CommonTest is Test {
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
+        console.log("OK?");
         vm.label(address(morpho), "Morpho");
 
         functionMocker = new FunctionMocker();
@@ -269,13 +270,15 @@ abstract contract CommonTest is Test {
         MarketParams memory marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 maxSharePriceE27,
         address onBehalf,
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data))
+            abi.encodeCall(
+                GenericModule1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
+            )
         );
     }
 
@@ -283,12 +286,12 @@ abstract contract CommonTest is Test {
         MarketParams memory marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 minSharePriceE27,
         address receiver
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoBorrow, (marketParams, assets, shares, slippageAmount, receiver))
+            abi.encodeCall(GenericModule1.morphoBorrow, (marketParams, assets, shares, minSharePriceE27, receiver))
         );
     }
 
@@ -309,13 +312,13 @@ abstract contract CommonTest is Test {
         MarketParams memory marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 maxSharePriceE27,
         address onBehalf,
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data))
+            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data))
         );
     }
 

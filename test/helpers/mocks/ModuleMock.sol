@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {BaseModule} from "../BaseModule.sol";
-import {IBundler, Call} from "../interfaces/IBundler.sol";
+import {BaseModule} from "../../../src/BaseModule.sol";
+import {IBundler, Call} from "../../../src/interfaces/IBundler.sol";
 
 event Initiator(address);
 
