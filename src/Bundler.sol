@@ -4,8 +4,7 @@ pragma solidity 0.8.27;
 import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {INITIATOR_SLOT} from "./libraries/ConstantsLib.sol";
-import {CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
+import {INITIATOR_SLOT, CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
 /// @title Bundler
@@ -21,6 +20,13 @@ contract Bundler is IBundler {
     function setInitiator(address _initiator) internal {
         assembly ("memory-safe") {
             tstore(INITIATOR_SLOT, _initiator)
+        }
+    }
+
+    /// @notice Set the module that is about to be called.
+    function setCurrentModule(address module) internal {
+        assembly ("memory-safe") {
+            tstore(CURRENT_MODULE_SLOT, module)
         }
     }
 
@@ -61,7 +67,7 @@ contract Bundler is IBundler {
     /// @notice Responds to bundle from the current module.
     /// @dev Triggers `_multicall` logic during a callback.
     /// @dev Only the current module can call this function.
-    function multicallFromModule(Call[] calldata bundle) external payable {
+    function multicallFromModule(Call[] calldata bundle) external {
         require(msg.sender == currentModule(), ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
@@ -70,24 +76,13 @@ contract Bundler is IBundler {
 
     /// @notice Executes a series of calls to modules.
     function _multicall(Call[] calldata bundle) internal {
+        address previousModule = currentModule();
         for (uint256 i; i < bundle.length; ++i) {
-            address previousModule = currentModule();
             address module = bundle[i].to;
             setCurrentModule(module);
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
-
-            if (!success) {
-                ModuleLib.lowLevelRevert(returnData);
-            }
-
-            setCurrentModule(previousModule);
+            if (!success) ModuleLib.lowLevelRevert(returnData);
         }
-    }
-
-    /// @notice Set the module that is about to be called.
-    function setCurrentModule(address module) internal {
-        assembly ("memory-safe") {
-            tstore(CURRENT_MODULE_SLOT, module)
-        }
+        setCurrentModule(previousModule);
     }
 }

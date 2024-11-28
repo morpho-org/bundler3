@@ -55,7 +55,6 @@ contract BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
     function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
-        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
@@ -67,7 +66,7 @@ contract BaseModule {
     /* INTERNAL */
 
     /// @notice Returns the current initiator stored in the module.
-    /// @dev If the caller is not the bundler, the initiator value may be 0.
+    /// @dev The initiator value being non-zero indicates that a bundle is being processed.
     function initiator() internal view returns (address) {
         return IBundler(BUNDLER).initiator();
     }

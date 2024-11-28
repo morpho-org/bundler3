@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
-import {ERC20WrapperMock, ERC20Wrapper} from "../../src/mocks/ERC20WrapperMock.sol";
+import {ERC20WrapperMock, ERC20Wrapper} from "../helpers/mocks/ERC20WrapperMock.sol";
 
 import "./helpers/ForkTest.sol";
 

@@ -5,6 +5,7 @@ import {SigUtils} from "./helpers/SigUtils.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {ErrorsLib as MorphoErrorsLib} from "../lib/morpho-blue/src/libraries/ErrorsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {MathRayLib} from "../src/libraries/MathRayLib.sol";
 
 import "./helpers/MetaMorphoLocalTest.sol";
 
@@ -14,6 +15,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
     using MorphoBalancesLib for IMorpho;
     using SharesMathLib for uint256;
     using MarketParamsLib for MarketParams;
+    using MathRayLib for uint256;
 
     function setUp() public override {
         super.setUp();
@@ -74,7 +76,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
     function testSupplyOnBehalfModuleAddress(uint256 assets) public {
         assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_morphoSupply(marketParams, assets, 0, 0, address(genericModule1), hex""));
+        bundle.push(_morphoSupply(marketParams, assets, 0, type(uint256).max, address(genericModule1), hex""));
 
         vm.expectRevert(ErrorsLib.ModuleAddress.selector);
         bundler.multicall(bundle);
@@ -92,7 +94,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
     function testRepayOnBehalfModuleAddress(uint256 assets) public {
         assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_morphoRepay(marketParams, assets, 0, 0, address(genericModule1), hex""));
+        bundle.push(_morphoRepay(marketParams, assets, 0, type(uint256).max, address(genericModule1), hex""));
 
         vm.expectRevert(ErrorsLib.ModuleAddress.selector);
         bundler.multicall(bundle);
@@ -122,14 +124,30 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20TransferFrom(address(loanToken), amount));
-        bundle.push(_morphoSupply(marketParams, amount, 0, 0, onBehalf, hex""));
+        bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, onBehalf, hex""));
 
-        loanToken.setBalance(USER, amount);
+        deal(address(loanToken), USER, amount);
 
         vm.prank(USER);
         bundler.multicall(bundle);
 
         _testSupply(amount, onBehalf);
+    }
+
+    function testSupplyShares(uint256 shares, address onBehalf) public {
+        assumeOnBehalf(onBehalf);
+
+        shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_erc20TransferFrom(address(loanToken), type(uint128).max));
+        bundle.push(_morphoSupply(marketParams, 0, shares, type(uint256).max, onBehalf, hex""));
+
+        deal(address(loanToken), USER, type(uint128).max);
+
+        vm.prank(USER);
+        bundler.multicall(bundle);
+
+        assertEq(morpho.supplyShares(id, onBehalf), shares);
     }
 
     function testSupplyMax(uint256 amount, address onBehalf) public {
@@ -138,9 +156,9 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20TransferFrom(address(loanToken), amount));
-        bundle.push(_morphoSupply(marketParams, type(uint256).max, 0, 0, onBehalf, hex""));
+        bundle.push(_morphoSupply(marketParams, type(uint256).max, 0, type(uint256).max, onBehalf, hex""));
 
-        loanToken.setBalance(USER, amount);
+        deal(address(loanToken), USER, amount);
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -155,9 +173,9 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         callbackBundle.push(_erc20TransferFrom(address(loanToken), amount));
 
-        bundle.push(_morphoSupply(marketParams, amount, 0, 0, onBehalf, abi.encode(callbackBundle)));
+        bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, onBehalf, abi.encode(callbackBundle)));
 
-        loanToken.setBalance(USER, amount);
+        deal(address(loanToken), USER, amount);
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -191,7 +209,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         bundle.push(_erc20TransferFrom(address(collateralToken), amount));
         bundle.push(_morphoSupplyCollateral(marketParams, amount, onBehalf, hex""));
 
-        collateralToken.setBalance(USER, amount);
+        deal(address(collateralToken), USER, amount);
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -207,7 +225,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         bundle.push(_erc20TransferFrom(address(collateralToken), amount));
         bundle.push(_morphoSupplyCollateral(marketParams, type(uint256).max, onBehalf, hex""));
 
-        collateralToken.setBalance(USER, amount);
+        deal(address(collateralToken), USER, amount);
 
         vm.prank(USER);
         bundler.multicall(bundle);
@@ -234,7 +252,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         bundle.push(_morphoWithdraw(marketParams, 0, withdrawnShares, 0, user));
 
-        loanToken.setBalance(user, amount);
+        deal(address(loanToken), user, amount);
 
         vm.startPrank(user);
         morpho.supply(marketParams, amount, 0, user, hex"");
@@ -253,9 +271,94 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
     }
 
+    function testMorphoSupplyMaxAssetsZero() public {
+        bundle.push(_morphoSupply(marketParams, type(uint256).max, 0, type(uint256).max, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoSupplyCollateralMaxZero() public {
+        bundle.push(_morphoSupplyCollateral(marketParams, type(uint256).max, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoSupplyCollateralZero(uint256 amount) public {
+        deal(address(collateralToken), address(genericModule1), amount);
+        bundle.push(_morphoSupplyCollateral(marketParams, 0, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoRepayMaxAssetsZero() public {
+        bundle.push(_morphoRepay(marketParams, type(uint256).max, 0, type(uint256).max, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMorphoRepayMaxSharesZero() public {
+        bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, address(this), hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testWithdrawZeroMaxSupply() public {
+        bundle.push(_morphoWithdraw(marketParams, 0, type(uint256).max, 0, RECEIVER));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testWithdrawCollateralZero() public {
+        bundle.push(_morphoWithdrawCollateral(marketParams, type(uint256).max, RECEIVER));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testFlashLoanZero() public {
+        bundle.push(_morphoFlashLoan(address(0), 0, hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testWithdrawMaxSupply(uint256 privateKey, uint256 amount) public {
+        address user;
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
+        approveERC20ToMorphoAndModule(user);
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
+        bundle.push(_morphoWithdraw(marketParams, 0, type(uint256).max, 0, user));
+
+        deal(address(loanToken), user, amount);
+
+        vm.startPrank(user);
+        morpho.supply(marketParams, amount, 0, user, hex"");
+
+        bundler.multicall(bundle);
+        vm.stopPrank();
+
+        assertEq(loanToken.balanceOf(user), amount, "loan.balanceOf(user)");
+        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(address(genericModule1)");
+        assertEq(loanToken.balanceOf(address(morpho)), 0, "loan.balanceOf(address(morpho))");
+
+        assertEq(morpho.collateral(id, user), 0, "collateral(user)");
+        assertEq(morpho.supplyShares(id, user), 0, "supplyShares(user)");
+        assertEq(morpho.borrowShares(id, user), 0, "borrowShares(user)");
+    }
+
     function testBorrowUnauthorized(uint256 borrowedAssets) public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.morphoBorrow(marketParams, borrowedAssets, 0, type(uint256).max, RECEIVER);
+        genericModule1.morphoBorrow(marketParams, borrowedAssets, 0, 0, RECEIVER);
     }
 
     function _testSupplyCollateralBorrow(address user, uint256 amount, uint256 collateralAmount) internal view {
@@ -284,7 +387,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanToken.setBalance(address(this), amount);
+        deal(address(loanToken), address(this), amount);
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
         uint256 collateralAmount = amount.wDivUp(LLTV);
@@ -292,9 +395,9 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         bundle.push(_erc20TransferFrom(address(collateralToken), collateralAmount));
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         bundle.push(_morphoSupplyCollateral(marketParams, collateralAmount, user, hex""));
-        bundle.push(_morphoBorrow(marketParams, amount, 0, type(uint256).max, RECEIVER));
+        bundle.push(_morphoBorrow(marketParams, amount, 0, 0, RECEIVER));
 
-        collateralToken.setBalance(user, collateralAmount);
+        deal(address(collateralToken), user, collateralAmount);
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -310,18 +413,18 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanToken.setBalance(address(this), amount);
+        deal(address(loanToken), address(this), amount);
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
         uint256 collateralAmount = amount.wDivUp(LLTV);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, amount, 0, type(uint256).max, RECEIVER));
+        callbackBundle.push(_morphoBorrow(marketParams, amount, 0, 0, RECEIVER));
         callbackBundle.push(_erc20TransferFrom(address(collateralToken), collateralAmount));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateralAmount, user, abi.encode(callbackBundle)));
 
-        collateralToken.setBalance(user, collateralAmount);
+        deal(address(collateralToken), user, collateralAmount);
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -360,12 +463,12 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanToken.setBalance(address(this), amount);
+        deal(address(loanToken), address(this), amount);
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
         uint256 collateralAmount = amount.wDivUp(LLTV);
 
-        collateralToken.setBalance(user, collateralAmount);
+        deal(address(collateralToken), user, collateralAmount);
         vm.startPrank(user);
         morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
         morpho.borrow(marketParams, amount, 0, user, user);
@@ -373,7 +476,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         bundle.push(_erc20TransferFrom(address(loanToken), amount));
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        bundle.push(_morphoRepay(marketParams, amount, 0, 0, user, hex""));
+        bundle.push(_morphoRepay(marketParams, amount, 0, type(uint256).max, user, hex""));
         bundle.push(_morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER));
 
         vm.prank(user);
@@ -390,12 +493,12 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanToken.setBalance(address(this), amount);
+        deal(address(loanToken), address(this), amount);
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
         uint256 collateralAmount = amount.wDivUp(LLTV);
 
-        collateralToken.setBalance(user, collateralAmount);
+        deal(address(collateralToken), user, collateralAmount);
         vm.startPrank(user);
         morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
         morpho.borrow(marketParams, amount, 0, user, user);
@@ -403,13 +506,34 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         bundle.push(_erc20TransferFrom(address(loanToken), amount));
         bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        bundle.push(_morphoRepay(marketParams, type(uint256).max, 0, 0, user, hex""));
+        bundle.push(_morphoRepay(marketParams, type(uint256).max, 0, type(uint256).max, user, hex""));
         bundle.push(_morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
         _testRepayWithdrawCollateral(user, collateralAmount);
+    }
+
+    function testWithdrawMaxCollateral(uint256 privateKey, uint256 collateralAmount) public {
+        address user;
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
+        approveERC20ToMorphoAndModule(user);
+
+        collateralAmount = bound(collateralAmount, MIN_AMOUNT, MAX_AMOUNT);
+
+        deal(address(collateralToken), user, collateralAmount);
+        vm.prank(user);
+        morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
+
+        bundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
+        bundle.push(_morphoWithdrawCollateral(marketParams, type(uint256).max, RECEIVER));
+
+        vm.prank(user);
+        bundler.multicall(bundle);
+
+        assertEq(collateralToken.balanceOf(RECEIVER), collateralAmount, "collateral.balanceOf(RECEIVER)");
     }
 
     function testRepayWithdrawCollateralViaCallback(uint256 privateKey, uint256 amount) public {
@@ -420,12 +544,12 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanToken.setBalance(address(this), amount);
+        deal(address(loanToken), address(this), amount);
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
         uint256 collateralAmount = amount.wDivUp(LLTV);
 
-        collateralToken.setBalance(user, collateralAmount);
+        deal(address(collateralToken), user, collateralAmount);
         vm.startPrank(user);
         morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
         morpho.borrow(marketParams, amount, 0, user, user);
@@ -435,12 +559,42 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         callbackBundle.push(_morphoWithdrawCollateral(marketParams, collateralAmount, RECEIVER));
         callbackBundle.push(_erc20TransferFrom(address(loanToken), amount));
 
-        bundle.push(_morphoRepay(marketParams, amount, 0, 0, user, abi.encode(callbackBundle)));
+        bundle.push(_morphoRepay(marketParams, amount, 0, type(uint256).max, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
         _testRepayWithdrawCollateral(user, collateralAmount);
+    }
+
+    function testRepayMaxShares(uint256 privateKey, uint256 amount) public {
+        address user;
+        privateKey = _boundPrivateKey(privateKey);
+        user = vm.addr(privateKey);
+        approveERC20ToMorphoAndModule(user);
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        deal(address(loanToken), address(this), amount);
+        morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
+
+        uint256 collateralAmount = amount.wDivUp(LLTV);
+
+        deal(address(collateralToken), user, collateralAmount);
+        vm.startPrank(user);
+        morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
+        morpho.borrow(marketParams, amount, 0, user, user);
+        ERC20(marketParams.loanToken).transfer(address(genericModule1), amount);
+        vm.stopPrank();
+
+        bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, user, hex""));
+
+        vm.prank(user);
+        bundler.multicall(bundle);
+
+        assertEq(loanToken.balanceOf(user), 0, "loan.balanceOf(user)");
+        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(address(genericModule1)");
+        assertEq(loanToken.balanceOf(address(morpho)), amount, "loan.balanceOf(address(morpho))");
     }
 
     struct BundleTransactionsVars {
@@ -479,8 +633,8 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
             else if (actionId == 10) _addWithdrawCollateralData(vars, amount);
         }
 
-        loanToken.setBalance(user, vars.initialUserLoanBalance);
-        collateralToken.setBalance(user, vars.initialUserCollateralBalance);
+        deal(address(loanToken), user, vars.initialUserLoanBalance);
+        deal(address(collateralToken), user, vars.initialUserCollateralBalance);
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -516,7 +670,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         _transferMissingLoan(vars, amount);
 
-        bundle.push(_morphoSupply(marketParams, amount, 0, 0, user, hex""));
+        bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, user, hex""));
         vars.expectedModuleLoanBalance -= amount;
 
         uint256 expectedAddedSupplyShares = amount.toSharesDown(vars.expectedTotalSupply, vars.expectedSupplyShares);
@@ -545,7 +699,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         uint256 maxAmount = UtilsLib.min(supplyBalance, availableLiquidity);
         amount = bound(amount % maxAmount, 1, maxAmount);
 
-        bundle.push(_morphoWithdraw(marketParams, amount, 0, type(uint256).max, address(genericModule1)));
+        bundle.push(_morphoWithdraw(marketParams, amount, 0, 0, address(genericModule1)));
         vars.expectedModuleLoanBalance += amount;
 
         uint256 expectedDecreasedSupplyShares = amount.toSharesUp(vars.expectedTotalSupply, vars.expectedSupplyShares);
@@ -588,7 +742,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
 
         _transferMissingLoan(vars, amount);
 
-        bundle.push(_morphoRepay(marketParams, amount, 0, 0, user, hex""));
+        bundle.push(_morphoRepay(marketParams, amount, 0, type(uint256).max, user, hex""));
         vars.expectedModuleLoanBalance -= amount;
 
         uint256 expectedDecreasedBorrowShares = amount.toSharesDown(vars.expectedTotalBorrow, vars.expectedBorrowShares);
@@ -634,7 +788,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
     function testFlashLoan(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        loanToken.setBalance(address(this), amount);
+        deal(address(loanToken), address(this), amount);
 
         morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
 
@@ -649,5 +803,121 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         assertEq(loanToken.balanceOf(USER), 0, "User's loan token balance");
         assertEq(loanToken.balanceOf(address(genericModule1)), 0, "Module's loan token balance");
         assertEq(loanToken.balanceOf(address(morpho)), amount, "Morpho's loan token balance");
+    }
+
+    function testSlippageSupplyOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivUp(shares), type(uint256).max);
+
+        deal(marketParams.loanToken, address(genericModule1), assets);
+
+        bundle.push(_morphoSupply(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageSupplyKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivUp(shares) - 1);
+
+        deal(marketParams.loanToken, address(genericModule1), assets);
+
+        bundle.push(_morphoSupply(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageWithdrawOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivUp(shares));
+
+        deal(marketParams.loanToken, address(this), assets);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        bundle.push(_morphoWithdraw(marketParams, assets, 0, sharePriceE27, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageWithdrawKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivDown(shares) + 1, type(uint256).max);
+
+        deal(marketParams.loanToken, address(this), assets);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        bundle.push(_morphoWithdraw(marketParams, assets, 0, sharePriceE27, address(this)));
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageBorrowOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivDown(shares));
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        bundle.push(_morphoBorrow(marketParams, assets, 0, sharePriceE27, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageBorrowKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivDown(shares) + 1, type(uint256).max);
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.setAuthorization(address(genericModule1), true);
+
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundle.push(_morphoBorrow(marketParams, assets, 0, sharePriceE27, address(this)));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageRepayOK(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, assets.rDivUp(shares), type(uint256).max);
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.borrow(marketParams, assets, 0, address(this), address(genericModule1));
+
+        bundle.push(_morphoRepay(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        bundler.multicall(bundle);
+    }
+
+    function testSlippageRepayKO(uint256 assets, uint256 sharePriceE27) public {
+        assets = bound(assets, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 shares = assets.toSharesUp(0, 0);
+        sharePriceE27 = bound(sharePriceE27, 0, assets.rDivUp(shares) - 1);
+        uint256 collateral = assets.wDivUp(LLTV);
+
+        deal(marketParams.loanToken, address(this), assets);
+        deal(marketParams.collateralToken, address(this), collateral);
+        morpho.supply(marketParams, assets, 0, address(this), hex"");
+        morpho.supplyCollateral(marketParams, collateral, address(this), hex"");
+        morpho.borrow(marketParams, assets, 0, address(this), address(genericModule1));
+
+        vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
+        bundle.push(_morphoRepay(marketParams, assets, 0, sharePriceE27, address(this), hex""));
+        bundler.multicall(bundle);
     }
 }

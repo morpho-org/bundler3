@@ -35,11 +35,11 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.compoundV3Repay(C_WETH_V3, amount);
+        migrationModule.compoundV3Repay(C_WETH_V3, amount, address(this));
     }
 
     function testCompoundV3RepayZeroAmount() public {
-        bundle.push(_compoundV3Repay(C_WETH_V3, 0));
+        bundle.push(_compoundV3Repay(C_WETH_V3, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -91,10 +91,10 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         vm.stopPrank();
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(migrationModule)));
+        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationModule)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
-        callbackBundle.push(_compoundV3Repay(C_WETH_V3, borrowed / 2));
-        callbackBundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max));
+        callbackBundle.push(_compoundV3Repay(C_WETH_V3, borrowed / 2, user));
+        callbackBundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max, user));
         callbackBundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), true, 0, false));
         callbackBundle.push(
             _compoundV3WithdrawFrom(
@@ -122,7 +122,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
 
         uint256 repaid = borrowed.wMulDown(fractionRepaid);
         ERC20(WETH).safeTransfer(address(migrationModule), repaid);
-        bundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max));
+        bundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max, address(this)));
         bundler.multicall(bundle);
 
         assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), borrowed - repaid, 1);
@@ -130,22 +130,25 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
 
     function testCompoundV3RepayNotMax(uint256 repayFactor) public {
         repayFactor = bound(repayFactor, 0.1 ether, 10 ether);
-        deal(CB_ETH, address(this), collateralSupplied);
 
+        deal(CB_ETH, USER, collateralSupplied);
+
+        vm.startPrank(USER);
         ERC20(CB_ETH).safeApprove(C_WETH_V3, collateralSupplied);
         ICompoundV3(C_WETH_V3).supply(CB_ETH, collateralSupplied);
         ICompoundV3(C_WETH_V3).withdraw(WETH, borrowed);
+        vm.stopPrank();
 
         uint256 toRepay = borrowed.wMulDown(repayFactor);
         deal(WETH, address(this), toRepay);
         ERC20(WETH).safeTransfer(address(migrationModule), toRepay);
-        bundle.push(_compoundV3Repay(C_WETH_V3, toRepay));
+        bundle.push(_compoundV3Repay(C_WETH_V3, toRepay, USER));
         bundler.multicall(bundle);
 
         if (repayFactor < 1 ether) {
-            assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), borrowed - toRepay, 1);
+            assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(USER), borrowed - toRepay, 1);
         } else {
-            assertEq(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), 0);
+            assertEq(ICompoundV3(C_WETH_V3).borrowBalanceOf(USER), 0);
         }
     }
 
@@ -188,7 +191,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), true, 0, false));
         bundle.push(_compoundV3WithdrawFrom(C_WETH_V3, marketParams.loanToken, supplied, address(genericModule1)));
         bundle.push(_compoundV3Allow(privateKey, C_WETH_V3, address(migrationModule), false, 1, false));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -259,8 +262,8 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         );
     }
 
-    function _compoundV3Repay(address instance, uint256 amount) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV3Repay, (instance, amount)));
+    function _compoundV3Repay(address instance, uint256 amount, address onBehalf) internal view returns (Call memory) {
+        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV3Repay, (instance, amount, onBehalf)));
     }
 
     function _compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)

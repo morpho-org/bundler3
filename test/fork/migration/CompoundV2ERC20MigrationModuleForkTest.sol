@@ -38,7 +38,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     }
 
     function testCompoundV2RepayCeth() public onlyEthereum {
-        bundle.push(_compoundV2RepayErc20(C_ETH_V2, 1));
+        bundle.push(_compoundV2RepayErc20(C_ETH_V2, 1, address(this)));
 
         vm.expectRevert(ErrorsLib.CTokenIsCETH.selector);
         bundler.multicall(bundle);
@@ -99,10 +99,10 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         collateral = cTokenBalance.wMulDown(ICToken(C_DAI_V2).exchangeRateStored());
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(migrationModule)));
+        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationModule)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
-        callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, borrowed / 2));
-        callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max));
+        callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, borrowed / 2, user));
+        callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
@@ -138,7 +138,7 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationModule), cTokenBalance));
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(genericModule1)));
-        bundle.push(_morphoSupply(marketParams, supplied, 0, 0, user, hex""));
+        bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -177,8 +177,14 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
 
     /* ACTIONS */
 
-    function _compoundV2RepayErc20(address cToken, uint256 repayAmount) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayErc20, (cToken, repayAmount)));
+    function _compoundV2RepayErc20(address cToken, uint256 repayAmount, address onBehalf)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            migrationModule, abi.encodeCall(migrationModule.compoundV2RepayErc20, (cToken, repayAmount, onBehalf))
+        );
     }
 
     function _compoundV2RedeemErc20(address cToken, uint256 amount, address receiver)
