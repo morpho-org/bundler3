@@ -66,7 +66,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 
 ## Development
 
-Run tests with `yarn test --chain <chainid>` (chainid can be 1 or 8453).
+Run tests with `forge test --chain <chainid>` (chainid can be 1 or 8453, 1 by default).
 
 ## Audits
 

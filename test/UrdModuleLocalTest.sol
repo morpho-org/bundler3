@@ -74,8 +74,8 @@ contract UrdModuleLocalTest is LocalTest {
 
         bytes32[] memory tree = _setupRewards(claimable, size);
 
-        loanToken.setBalance(distributor, claimable);
-        collateralToken.setBalance(distributor, claimable);
+        deal(address(loanToken), distributor, claimable);
+        deal(address(collateralToken), distributor, claimable);
 
         bytes32[] memory loanTokenProof = merkle.getProof(tree, 0);
         bytes32[] memory collateralTokenProof = merkle.getProof(tree, 1);
@@ -98,8 +98,8 @@ contract UrdModuleLocalTest is LocalTest {
 
         bytes32[] memory tree = _setupRewards(claimable, size);
 
-        loanToken.setBalance(distributor, claimable);
-        collateralToken.setBalance(distributor, claimable);
+        deal(address(loanToken), distributor, claimable);
+        deal(address(collateralToken), distributor, claimable);
 
         bytes32[] memory loanTokenProof = merkle.getProof(tree, 0);
         bytes32[] memory collateralTokenProof = merkle.getProof(tree, 1);

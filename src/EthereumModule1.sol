@@ -22,6 +22,7 @@ import {MathRayLib} from "./libraries/MathRayLib.sol";
 /// @notice Module contract specific to Ethereum n°1.
 contract EthereumModule1 is GenericModule1 {
     using MathRayLib for uint256;
+    using SafeTransferLib for ERC20;
 
     /* IMMUTABLES */
 
@@ -138,7 +139,7 @@ contract EthereumModule1 is GenericModule1 {
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
         require(amount.rDivUp(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
-        SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
+        if (receiver != address(this)) ERC20(ST_ETH).safeTransfer(receiver, amount);
     }
 
     /// @notice Wraps stETH to wStETH.
@@ -151,7 +152,7 @@ contract EthereumModule1 is GenericModule1 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
-        if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
+        if (receiver != address(this) && received > 0) ERC20(WST_ETH).safeTransfer(receiver, received);
     }
 
     /// @notice Unwraps wStETH to stETH.
@@ -164,6 +165,6 @@ contract EthereumModule1 is GenericModule1 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
-        if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, received);
+        if (receiver != address(this) && received > 0) ERC20(ST_ETH).safeTransfer(receiver, received);
     }
 }

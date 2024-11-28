@@ -3,14 +3,12 @@ pragma solidity ^0.8.27;
 
 import {BaseModule} from "./BaseModule.sol";
 
-import {IMorphoModule} from "./interfaces/IMorphoModule.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {IBundler, Call} from "./interfaces/IBundler.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
 import {IUniversalRewardsDistributor} from
@@ -105,7 +103,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to mint.
-    /// @param maxSharePriceE27 The maximum amount of assets to pay for minting 1 share, scaled by 1e27.
+    /// @param maxSharePriceE27 The maximum amount of assets to pay to get 1 share, scaled by 1e27.
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         external
@@ -125,7 +123,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to deposit. Pass `type(uint).max` to deposit the module's balance.
-    /// @param maxSharePriceE27 The maximum amount of assets to pay for minting 1 share, scaled by 1e27.
+    /// @param maxSharePriceE27 The maximum amount of assets to pay to get 1 share, scaled by 1e27.
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         external
@@ -437,6 +435,8 @@ contract GenericModule1 is BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
     function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+
         address _initiator = initiator();
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
@@ -481,7 +481,6 @@ contract GenericModule1 is BaseModule {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
     function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
-        require(token != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = initiator();

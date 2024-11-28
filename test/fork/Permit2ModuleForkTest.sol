@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import "./helpers/ForkTest.sol";
-import {ERC20Mock} from "../../src/mocks/ERC20Mock.sol";
+import {ERC20Mock} from "../helpers/mocks/ERC20Mock.sol";
 
 error InvalidNonce();
 

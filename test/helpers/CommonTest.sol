@@ -66,6 +66,7 @@ abstract contract CommonTest is Test {
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
+        console.log("OK?");
         vm.label(address(morpho), "Morpho");
 
         functionMocker = new FunctionMocker();

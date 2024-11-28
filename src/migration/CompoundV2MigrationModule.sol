@@ -63,7 +63,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// @param amount The amount of cEth to repay. Unlike with `morphoRepay`, the amount is capped at the initiator's
     /// debt. Pass `type(uint).max` to repay the maximum repayable debt (mininimum of the module's balance and the
     /// initiator's debt).
-    function compoundV2RepayEth(uint256 amount) external onlyBundler {
+    function compoundV2RepayEth(uint256 amount) external payable onlyBundler {
         address _initiator = initiator();
 
         if (amount == type(uint256).max) {
