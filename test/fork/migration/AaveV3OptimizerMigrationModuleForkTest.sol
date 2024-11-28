@@ -105,13 +105,13 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max));
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         callbackBundle.push(
             _aaveV3OptimizerWithdrawCollateral(
                 marketParams.collateralToken, collateralSupplied, address(genericModule1)
             )
         );
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
@@ -149,9 +149,9 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max));
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         callbackBundle.push(_aaveV3OptimizerWithdrawCollateral(USDT, amountUsdt, address(genericModule1)));
-        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
+        callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
 
         bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user, abi.encode(callbackBundle)));
 
@@ -173,9 +173,9 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
@@ -196,9 +196,9 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), true, 0, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
-        bundle.push(_aaveV3OptimizerApproveManager(privateKey, user, address(migrationModule), false, 1, false));
+        bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
@@ -225,15 +225,15 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
     function _aaveV3OptimizerApproveManager(
         uint256 privateKey,
-        address owner,
         address manager,
         bool isAllowed,
         uint256 nonce,
         bool skipRevert
     ) internal view returns (Call memory) {
+        address owner = vm.addr(privateKey);
         bytes32 digest = SigUtils.toTypedDataHash(
             IAaveV3Optimizer(AAVE_V3_OPTIMIZER).DOMAIN_SEPARATOR(),
-            AaveV3OptimizerAuthorization(vm.addr(privateKey), manager, isAllowed, nonce, SIGNATURE_DEADLINE)
+            AaveV3OptimizerAuthorization(owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE)
         );
 
         Signature memory sig;
