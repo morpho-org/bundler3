@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {INITIATOR_SLOT, CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
 /// @title Bundler
