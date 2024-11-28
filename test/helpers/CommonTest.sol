@@ -368,7 +368,6 @@ abstract contract CommonTest is Test {
     function _permit(
         IERC20Permit token,
         uint256 privateKey,
-        address owner,
         address spender,
         uint256 amount,
         uint256 deadline,
@@ -381,7 +380,7 @@ abstract contract CommonTest is Test {
         bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        bytes memory callData = abi.encodeCall(IERC20Permit.permit, (owner, spender, amount, deadline, v, r, s));
+        bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, spender, amount, deadline, v, r, s));
         return _call(BaseModule(payable(address(token))), callData, 0, skipRevert);
     }
 }

@@ -80,7 +80,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         amount = ERC20(ST_ETH).balanceOf(user);
 
-        bundle.push(_approve2(privateKey, user, ST_ETH, amount, 0, false));
+        bundle.push(_approve2(privateKey, ST_ETH, amount, 0, false));
         bundle.push(_transferFrom2(ST_ETH, address(ethereumModule1), amount));
         bundle.push(_wrapStEth(amount, RECEIVER));
 
@@ -114,7 +114,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
         address user = vm.addr(privateKey);
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_approve2(privateKey, user, WST_ETH, amount, 0, false));
+        bundle.push(_approve2(privateKey, WST_ETH, amount, 0, false));
         bundle.push(_transferFrom2(WST_ETH, address(ethereumModule1), amount));
         bundle.push(_unwrapStEth(amount, RECEIVER));
 

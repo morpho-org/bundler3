@@ -30,7 +30,7 @@ contract Permit2ModuleForkTest is ForkTest {
 
         MarketParams memory marketParams = _randomMarketParams(seed);
 
-        bundle.push(_approve2(privateKey, user, marketParams.loanToken, amount, 0, false));
+        bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
         bundle.push(_transferFrom2(marketParams.loanToken, amount));
         bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, onBehalf, hex""));
 
@@ -76,8 +76,8 @@ contract Permit2ModuleForkTest is ForkTest {
 
         MarketParams memory marketParams = _randomMarketParams(seed);
 
-        bundle.push(_approve2(privateKey, user, marketParams.loanToken, amount, 0, false));
-        bundle.push(_approve2(privateKey, user, marketParams.loanToken, amount, 0, true));
+        bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
+        bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, true));
 
         vm.startPrank(user);
         ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
@@ -117,8 +117,8 @@ contract Permit2ModuleForkTest is ForkTest {
         nonces[0] = 0;
         nonces[1] = 0;
 
-        bundle.push(_approve2Batch(privateKey, user, assets, amounts, nonces, false));
-        bundle.push(_approve2Batch(privateKey, user, assets, amounts, nonces, true));
+        bundle.push(_approve2Batch(privateKey, assets, amounts, nonces, false));
+        bundle.push(_approve2Batch(privateKey, assets, amounts, nonces, true));
 
         vm.startPrank(user);
         ERC20(token0).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
@@ -148,8 +148,8 @@ contract Permit2ModuleForkTest is ForkTest {
 
         MarketParams memory marketParams = _randomMarketParams(seed);
 
-        bundle.push(_approve2(privateKey, user, marketParams.loanToken, amount, 0, false));
-        bundle.push(_approve2(privateKey, user, marketParams.loanToken, amount, 0, false));
+        bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
+        bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);
@@ -177,8 +177,8 @@ contract Permit2ModuleForkTest is ForkTest {
         nonces[0] = 0;
         nonces[1] = 0;
 
-        bundle.push(_approve2Batch(privateKey, user, assets, amounts, nonces, false));
-        bundle.push(_approve2Batch(privateKey, user, assets, amounts, nonces, false));
+        bundle.push(_approve2Batch(privateKey, assets, amounts, nonces, false));
+        bundle.push(_approve2Batch(privateKey, assets, amounts, nonces, false));
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);

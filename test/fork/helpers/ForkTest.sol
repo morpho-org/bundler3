@@ -104,7 +104,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
     /* PERMIT2 ACTIONS */
 
-    function _approve2(uint256 privateKey, address owner, address asset, uint256 amount, uint256 nonce, bool skipRevert)
+    function _approve2(uint256 privateKey, address asset, uint256 amount, uint256 nonce, bool skipRevert)
         internal
         view
         returns (Call memory)
@@ -126,7 +126,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         return _call(
             BaseModule(payable(address(Permit2Lib.PERMIT2))),
-            abi.encodeWithSelector(permitSingleSelector, owner, permitSingle, abi.encodePacked(r, s, v)),
+            abi.encodeWithSelector(permitSingleSelector, vm.addr(privateKey), permitSingle, abi.encodePacked(r, s, v)),
             0,
             skipRevert
         );
@@ -134,7 +134,6 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
     function _approve2Batch(
         uint256 privateKey,
-        address owner,
         address[] memory assets,
         uint256[] memory amounts,
         uint256[] memory nonces,
@@ -163,7 +162,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         return _call(
             BaseModule(payable(address(Permit2Lib.PERMIT2))),
-            abi.encodeWithSelector(permitBatchSelector, owner, permitBatch, abi.encodePacked(r, s, v)),
+            abi.encodeWithSelector(permitBatchSelector, vm.addr(privateKey), permitBatch, abi.encodePacked(r, s, v)),
             0,
             skipRevert
         );

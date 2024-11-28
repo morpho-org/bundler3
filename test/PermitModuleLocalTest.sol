@@ -27,8 +27,8 @@ contract PermitModuleLocalTest is LocalTest {
 
         address user = vm.addr(privateKey);
 
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, false));
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, true));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, true));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -44,8 +44,8 @@ contract PermitModuleLocalTest is LocalTest {
 
         address user = vm.addr(privateKey);
 
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, false));
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
 
         vm.prank(user);
         vm.expectPartialRevert(ERC20Permit.ERC2612InvalidSigner.selector);
@@ -59,7 +59,7 @@ contract PermitModuleLocalTest is LocalTest {
 
         address user = vm.addr(privateKey);
 
-        bundle.push(_permit(permitToken, privateKey, user, address(genericModule1), amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
         deal(address(permitToken), user, amount);

@@ -34,8 +34,8 @@ contract PermitModuleForkTest is ForkTest {
         vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
 
-        bundle.push(_permitDai(privateKey, user, spender, expiry, true, false));
-        bundle.push(_permitDai(privateKey, user, spender, expiry, true, true));
+        bundle.push(_permitDai(privateKey, spender, expiry, true, false));
+        bundle.push(_permitDai(privateKey, spender, expiry, true, true));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -49,22 +49,19 @@ contract PermitModuleForkTest is ForkTest {
         vm.assume(spender != address(0));
         expiry = bound(expiry, block.timestamp, type(uint48).max);
 
-        bundle.push(_permitDai(privateKey, user, spender, expiry, true, false));
-        bundle.push(_permitDai(privateKey, user, spender, expiry, true, false));
+        bundle.push(_permitDai(privateKey, spender, expiry, true, false));
+        bundle.push(_permitDai(privateKey, spender, expiry, true, false));
 
         vm.prank(user);
         vm.expectRevert("Dai/invalid-nonce");
         bundler.multicall(bundle);
     }
 
-    function _permitDai(
-        uint256 privateKey,
-        address holder,
-        address spender,
-        uint256 expiry,
-        bool allowed,
-        bool skipRevert
-    ) internal view returns (Call memory) {
+    function _permitDai(uint256 privateKey, address spender, uint256 expiry, bool allowed, bool skipRevert)
+        internal
+        view
+        returns (Call memory)
+    {
         address user = vm.addr(privateKey);
         uint256 nonce = IDaiPermit(DAI).nonces(user);
         require(DAI == ethereumModule1.DAI(), "not the same DAI");
@@ -80,8 +77,7 @@ contract PermitModuleForkTest is ForkTest {
             (v, r, s) = vm.sign(privateKey, digest);
         }
 
-        bytes memory callData =
-            abi.encodeCall(IDaiPermit(DAI).permit, (holder, spender, nonce, expiry, allowed, v, r, s));
+        bytes memory callData = abi.encodeCall(IDaiPermit(DAI).permit, (user, spender, nonce, expiry, allowed, v, r, s));
 
         return _call(BaseModule(payable(address(DAI))), callData, 0, skipRevert);
     }
@@ -93,8 +89,8 @@ contract PermitModuleForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
 
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, false));
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, true));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, true));
 
         vm.prank(user);
         bundler.multicall(bundle);
@@ -109,8 +105,8 @@ contract PermitModuleForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
 
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, false));
-        bundle.push(_permit(permitToken, privateKey, user, spender, amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, false));
 
         vm.prank(user);
         vm.expectPartialRevert(ERC20Permit.ERC2612InvalidSigner.selector);
@@ -123,7 +119,7 @@ contract PermitModuleForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
 
-        bundle.push(_permit(permitToken, privateKey, user, address(genericModule1), amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
 
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
