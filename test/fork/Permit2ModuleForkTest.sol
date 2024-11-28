@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import "./helpers/ForkTest.sol";
-import {ERC20Mock} from "../../src/mocks/ERC20Mock.sol";
+import {ERC20Mock} from "../helpers/mocks/ERC20Mock.sol";
 
 error InvalidNonce();
 
@@ -32,7 +32,7 @@ contract Permit2ModuleForkTest is ForkTest {
 
         bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
         bundle.push(_transferFrom2(marketParams.loanToken, amount));
-        bundle.push(_morphoSupply(marketParams, amount, 0, 0, onBehalf, hex""));
+        bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, onBehalf, hex""));
 
         uint256 collateralBalanceBefore = ERC20(marketParams.collateralToken).balanceOf(onBehalf);
         uint256 loanBalanceBefore = ERC20(marketParams.loanToken).balanceOf(onBehalf);
@@ -145,7 +145,7 @@ contract Permit2ModuleForkTest is ForkTest {
         IAllowanceTransfer.PermitSingle memory permitSingle;
         bytes memory signature;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.approve2(permitSingle, signature, false);
     }
 
@@ -153,7 +153,7 @@ contract Permit2ModuleForkTest is ForkTest {
         IAllowanceTransfer.PermitBatch memory permitBatch;
         bytes memory signature;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, (address(this))));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.approve2Batch(permitBatch, signature, false);
     }
 
@@ -209,7 +209,7 @@ contract Permit2ModuleForkTest is ForkTest {
     }
 
     function testTransferFrom2Unauthorized() public {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.transferFrom2(address(0), address(0), 0);
     }
 }

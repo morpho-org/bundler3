@@ -8,7 +8,6 @@ import {
     Authorization as MorphoBlueAuthorization,
     Signature as MorphoBlueSignature
 } from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {IPublicAllocatorBase} from "../../lib/public-allocator/src/interfaces/IPublicAllocator.sol";
 
 import {SigUtils} from "./SigUtils.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
@@ -32,9 +31,8 @@ import {ParaswapModule} from "../../src/ParaswapModule.sol";
 
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
-import {GenericModule1, Withdrawal} from "../../src/GenericModule1.sol";
-import {Bundler} from "../../src/Bundler.sol";
-import {Call} from "../../src/interfaces/Call.sol";
+import {GenericModule1} from "../../src/GenericModule1.sol";
+import {Bundler, Call} from "../../src/Bundler.sol";
 
 import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
 import {AugustusMock} from "../../src/mocks/AugustusMock.sol";
@@ -78,6 +76,7 @@ abstract contract CommonTest is Test {
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
+        console.log("OK?");
         vm.label(address(morpho), "Morpho");
 
         augustusRegistryMock = new AugustusRegistryMock();
@@ -310,13 +309,15 @@ abstract contract CommonTest is Test {
         MarketParams memory marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 maxSharePriceE27,
         address onBehalf,
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoSupply, (marketParams, assets, shares, slippageAmount, onBehalf, data))
+            abi.encodeCall(
+                GenericModule1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
+            )
         );
     }
 
@@ -334,12 +335,12 @@ abstract contract CommonTest is Test {
         MarketParams memory marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 minSharePriceE27,
         address receiver
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoBorrow, (marketParams, assets, shares, slippageAmount, receiver))
+            abi.encodeCall(GenericModule1.morphoBorrow, (marketParams, assets, shares, minSharePriceE27, receiver))
         );
     }
 
@@ -360,13 +361,13 @@ abstract contract CommonTest is Test {
         MarketParams memory marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 maxSharePriceE27,
         address onBehalf,
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, slippageAmount, onBehalf, data))
+            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data))
         );
     }
 
@@ -394,22 +395,6 @@ abstract contract CommonTest is Test {
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
         return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
-    }
-
-    function _reallocateTo(
-        address publicAllocator,
-        address vault,
-        uint256 value,
-        Withdrawal[] memory withdrawals,
-        MarketParams memory supplyMarketParams
-    ) internal view returns (Call memory) {
-        return _call(
-            genericModule1,
-            abi.encodeCall(
-                GenericModule1.reallocateTo, (publicAllocator, vault, value, withdrawals, supplyMarketParams)
-            ),
-            value
-        );
     }
 
     /* PARASWAP MODULE ACTIONS */

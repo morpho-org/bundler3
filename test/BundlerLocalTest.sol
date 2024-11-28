@@ -5,7 +5,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
-import {ModuleMock, Initiator} from "../src/mocks/ModuleMock.sol";
+import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
 import {CURRENT_MODULE_SLOT} from "../src/libraries/ConstantsLib.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
@@ -28,7 +28,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testInitiatorSlot() public pure {
-        assertEq(ConstantsLib.INITIATOR_SLOT, keccak256("Morpho Bundler Initiator Slot"));
+        assertEq(ConstantsLib.INITIATOR_SLOT, bytes32(uint256(keccak256("Morpho Bundler Initiator Slot")) - 1));
     }
 
     function testAlreadyInitiated(address initiator) public {
@@ -88,7 +88,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testCurrentModuleSlot() public pure {
-        assertEq(CURRENT_MODULE_SLOT, keccak256("Morpho Bundler Current Module Slot"));
+        assertEq(CURRENT_MODULE_SLOT, bytes32(uint256(keccak256("Morpho Bundler Current Module Slot")) - 1));
     }
 
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
@@ -117,7 +117,7 @@ contract BundlerLocalTest is LocalTest {
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (module)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(caller);
         bundler.multicallFromModule(new Call[](0));
     }

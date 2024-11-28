@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ERC20Mock} from "./ERC20Mock.sol";
+import {Test} from "../../lib/forge-std/src/Test.sol";
 
-contract AugustusMock {
+contract AugustusMock is Test {
     uint256 public toGive = type(uint256).max;
     uint256 public toTake = type(uint256).max;
 
@@ -21,7 +21,7 @@ contract AugustusMock {
         uint256 fromAmount = toTake != type(uint256).max ? toTake : toAmount;
 
         ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
-        ERC20Mock(destToken).setBalance(address(this), toAmount);
+        deal(address(destToken), address(this), toAmount);
         ERC20(destToken).transfer(msg.sender, toAmount);
 
         toGive = type(uint256).max;
@@ -33,7 +33,7 @@ contract AugustusMock {
         uint256 toAmount = toGive != type(uint256).max ? toGive : fromAmount;
 
         ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
-        ERC20Mock(destToken).setBalance(address(this), toAmount);
+        deal(address(destToken), address(this), toAmount);
         ERC20(destToken).transfer(msg.sender, toAmount);
 
         toGive = type(uint256).max;

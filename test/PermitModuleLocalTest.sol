@@ -6,7 +6,7 @@ import {SigUtils, Permit} from "./helpers/SigUtils.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {ERC20PermitMock} from "../src/mocks/ERC20PermitMock.sol";
+import {ERC20PermitMock} from "./helpers/mocks/ERC20PermitMock.sol";
 
 import "./helpers/LocalTest.sol";
 
@@ -40,7 +40,7 @@ contract PermitModuleLocalTest is LocalTest {
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         genericModule1.permit(address(loanToken), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 
@@ -70,7 +70,7 @@ contract PermitModuleLocalTest is LocalTest {
         bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
-        permitToken.setBalance(user, amount);
+        deal(address(permitToken), user, amount);
 
         vm.prank(user);
         bundler.multicall(bundle);

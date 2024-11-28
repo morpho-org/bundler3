@@ -2,8 +2,8 @@
 pragma solidity 0.8.27;
 
 import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
-import {IWstEth} from "../interfaces/IWstEth.sol";
-import {IStEth} from "../interfaces/IStEth.sol";
+import {IWstEth} from "./interfaces/IWstEth.sol";
+import {IStEth} from "./interfaces/IStEth.sol";
 
 import {
     GenericModule1,
@@ -13,8 +13,8 @@ import {
     ModuleLib,
     SafeTransferLib,
     ERC20
-} from "../GenericModule1.sol";
-import {MathRayLib} from "../libraries/MathRayLib.sol";
+} from "./GenericModule1.sol";
+import {MathRayLib} from "./libraries/MathRayLib.sol";
 
 /// @title EthereumModule1
 /// @author Morpho Labs
@@ -138,7 +138,7 @@ contract EthereumModule1 is GenericModule1 {
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
         require(amount.rDivUp(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
-        SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
+        if (receiver != address(this)) SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
     }
 
     /// @notice Wraps stETH to wStETH.
