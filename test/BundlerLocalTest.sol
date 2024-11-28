@@ -117,7 +117,7 @@ contract BundlerLocalTest is LocalTest {
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (module)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, caller));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(caller);
         bundler.multicallFromModule(new Call[](0));
     }

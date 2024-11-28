@@ -156,7 +156,7 @@ contract GenericModule1 is BaseModule {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
@@ -177,7 +177,7 @@ contract GenericModule1 is BaseModule {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner(owner));
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
 
         if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
 
@@ -551,7 +551,7 @@ contract GenericModule1 is BaseModule {
 
     /// @dev Triggers `_multicall` logic during a callback.
     function _morphoCallback(bytes calldata data) internal {
-        require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender(msg.sender));
+        require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
         multicallBundler(data);

@@ -40,7 +40,7 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
     function testCompoundV2RepayErc20Unauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.compoundV2RepayErc20(C_DAI_V2, amount, address(this));
     }
 

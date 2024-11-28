@@ -44,7 +44,7 @@ contract MorphoWrapperModuleForkTest is ForkTest {
     function testMorphoWrapperWithdrawToUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.UnauthorizedSender.selector, address(this)));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         ethereumModule1.morphoWrapperWithdrawTo(RECEIVER, amount);
     }
 

@@ -50,14 +50,14 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
     function testAaveV3RepayUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3Repay(marketParams.loanToken, amount, 1, address(this));
     }
 
     function testAaveV3WithdrawUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         migrationModule.aaveV3Withdraw(marketParams.loanToken, amount, address(this));
     }
 
