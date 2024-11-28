@@ -42,7 +42,7 @@ contract CompoundV2MigrationModule is BaseModule {
     function compoundV2RepayErc20(address cToken, uint256 amount) external onlyBundler {
         require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
 
-        address _initiator = initiator();
+        address _initiator = _initiator();
 
         address underlying = ICToken(cToken).underlying();
 
@@ -64,7 +64,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// debt. Pass `type(uint).max` to repay the maximum repayable debt (mininimum of the module's balance and the
     /// initiator's debt).
     function compoundV2RepayEth(uint256 amount) external onlyBundler {
-        address _initiator = initiator();
+        address _initiator = _initiator();
 
         if (amount == type(uint256).max) {
             amount = address(this).balance;

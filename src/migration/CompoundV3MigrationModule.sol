@@ -32,7 +32,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV3Repay(address instance, uint256 amount) external onlyBundler {
-        address _initiator = initiator();
+        address _initiator = _initiator();
         address asset = ICompoundV3(instance).baseToken();
 
         if (amount == type(uint256).max) {
@@ -61,7 +61,7 @@ contract CompoundV3MigrationModule is BaseModule {
         external
         onlyBundler
     {
-        address _initiator = initiator();
+        address _initiator = _initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
@@ -93,7 +93,7 @@ contract CompoundV3MigrationModule is BaseModule {
         bytes32 s,
         bool skipRevert
     ) external onlyBundler {
-        try ICompoundV3(instance).allowBySig(initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
+        try ICompoundV3(instance).allowBySig(_initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }

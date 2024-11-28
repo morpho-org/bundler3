@@ -15,21 +15,12 @@ import {ModuleLib} from "./libraries/ModuleLib.sol";
 /// @notice Stores the initiator of the multicall transaction.
 /// @notice Stores the current module that is about to be called.
 contract Bundler is IBundler {
-    /* STORAGE FUNCTIONS */
-
-    /// @notice Set the initiator value in transient storage.
-    function setInitiator(address _initiator) internal {
-        assembly ("memory-safe") {
-            tstore(INITIATOR_SLOT, _initiator)
-        }
-    }
-
-    /* PUBLIC */
+    /* TRANSIENT STORAGE GETTERS */
 
     /// @notice Returns the address of the initiator of the multicall transaction.
-    function initiator() public view returns (address _initiator) {
+    function initiator() public view returns (address initiator_) {
         assembly ("memory-safe") {
-            _initiator := tload(INITIATOR_SLOT)
+            initiator_ := tload(INITIATOR_SLOT)
         }
     }
 
@@ -51,11 +42,11 @@ contract Bundler is IBundler {
     function multicall(Call[] calldata bundle) external payable {
         require(initiator() == address(0), ErrorsLib.AlreadyInitiated());
 
-        setInitiator(msg.sender);
+        _setInitiator(msg.sender);
 
         _multicall(bundle);
 
-        setInitiator(address(0));
+        _setInitiator(address(0));
     }
 
     /// @notice Responds to bundle from the current module.
@@ -73,19 +64,28 @@ contract Bundler is IBundler {
         for (uint256 i; i < bundle.length; ++i) {
             address previousModule = currentModule();
             address module = bundle[i].to;
-            setCurrentModule(module);
+            _setCurrentModule(module);
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
 
             if (!success) {
                 ModuleLib.lowLevelRevert(returnData);
             }
 
-            setCurrentModule(previousModule);
+            _setCurrentModule(previousModule);
+        }
+    }
+
+    /* TRANSIENT STORAGE SETTERS */
+
+    /// @notice Set the initiator value in transient storage.
+    function _setInitiator(address _initiator) internal {
+        assembly ("memory-safe") {
+            tstore(INITIATOR_SLOT, _initiator)
         }
     }
 
     /// @notice Set the module that is about to be called.
-    function setCurrentModule(address module) internal {
+    function _setCurrentModule(address module) internal {
         assembly ("memory-safe") {
             tstore(CURRENT_MODULE_SLOT, module)
         }

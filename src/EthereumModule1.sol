@@ -112,7 +112,7 @@ contract EthereumModule1 is GenericModule1 {
         bytes32 s,
         bool skipRevert
     ) external onlyBundler {
-        try IDaiPermit(DAI).permit(initiator(), spender, nonce, expiry, allowed, v, r, s) {}
+        try IDaiPermit(DAI).permit(_initiator(), spender, nonce, expiry, allowed, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }

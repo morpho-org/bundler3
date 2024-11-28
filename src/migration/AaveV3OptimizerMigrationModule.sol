@@ -45,7 +45,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
 
         ModuleLib.approveMaxToIfAllowanceZero(underlying, address(AAVE_V3_OPTIMIZER));
 
-        AAVE_V3_OPTIMIZER.repay(underlying, amount, initiator());
+        AAVE_V3_OPTIMIZER.repay(underlying, amount, _initiator());
     }
 
     /// @notice Withdraws on the AaveV3 Optimizer.
@@ -61,7 +61,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
-        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), receiver, maxIterations);
+        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, _initiator(), receiver, maxIterations);
     }
 
     /// @notice Withdraws on the AaveV3 Optimizer.
@@ -76,7 +76,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
-        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), receiver);
+        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, _initiator(), receiver);
     }
 
     /// @notice Approves on the AaveV3 Optimizer.
@@ -92,7 +92,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         Signature calldata signature,
         bool skipRevert
     ) external onlyBundler {
-        try AAVE_V3_OPTIMIZER.approveManagerWithSig(initiator(), address(this), isApproved, nonce, deadline, signature)
+        try AAVE_V3_OPTIMIZER.approveManagerWithSig(_initiator(), address(this), isApproved, nonce, deadline, signature)
         {} catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
