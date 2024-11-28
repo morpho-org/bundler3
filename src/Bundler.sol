@@ -77,13 +77,16 @@ contract Bundler is IBundler {
     /// @notice Executes a series of calls to modules.
     function _multicall(Call[] calldata bundle) internal {
         address previousModule = currentModule();
+        
         for (uint256 i; i < bundle.length; ++i) {
             address module = bundle[i].to;
+            
             setCurrentModule(module);
+            
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
-
-            if (!success && !bundle[i].skipRevert) ModuleLib.lowLevelRevert(returnData);
+            if (!bundle[i].skipRevert && !success) ModuleLib.lowLevelRevert(returnData);
         }
+        
         setCurrentModule(previousModule);
     }
 }

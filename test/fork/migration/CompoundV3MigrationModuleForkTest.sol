@@ -45,20 +45,6 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-<<<<<<< HEAD
-||||||| 9b7dd1f
-    function testCompoundV3AllowBySigUnauthorized() public {
-        vm.expectPartialRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
-    }
-
-=======
-    function testCompoundV3AllowBySigUnauthorized() public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
-    }
-
->>>>>>> origin/main
     function testCompoundV3AuthorizationWithSigRevert(address owner) public {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);
