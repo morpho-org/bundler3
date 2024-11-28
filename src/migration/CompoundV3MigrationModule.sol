@@ -27,9 +27,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @dev Assumes the given `instance` is a CompoundV3 instance.
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param amount The amount of base token to repay. Unlike with `morphoRepay`, the amount is capped at the
-    /// initiator's debt. Pass `type(uint).max` to repay
-    /// the
-    /// maximum repayable debt
+    /// initiator's debt. Pass `type(uint).max` to repay the maximum repayable debt
     /// (mininimum of the module's balance and the initiator's debt).
     function compoundV3Repay(address instance, uint256 amount) external onlyBundler {
         address _initiator = initiator();
@@ -54,8 +52,7 @@ contract CompoundV3MigrationModule is BaseModule {
     /// @param instance The address of the CompoundV3 instance to call.
     /// @param asset The address of the token to withdraw.
     /// @param amount The amount of `asset` to withdraw. Unlike with `morphoWithdraw`, the amount is capped at the
-    /// initiator's max withdrawable amount. Pass
-    /// `type(uint).max` to always withdraw the initiator's balance.
+    /// initiator's max withdrawable amount. Pass `type(uint).max` to always withdraw the initiator's balance.
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
