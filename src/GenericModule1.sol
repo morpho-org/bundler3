@@ -232,15 +232,14 @@ contract GenericModule1 is BaseModule {
     /// @param marketParams The Morpho market to supply assets to.
     /// @param assets The amount of assets to supply. Pass `type(uint).max` to supply the module's loan asset balance.
     /// @param shares The amount of shares to mint.
-    /// @param slippageAmount The minimum amount of supply shares to mint in exchange for `assets` when it is used.
-    /// The maximum amount of assets to deposit in exchange for `shares` otherwise.
+    /// @param maxSharePriceE27 The maximum amount of assets supplied per minted share, scaled by 1e27.
     /// @param onBehalf The address that will own the increased supply position.
     /// @param data Arbitrary data to pass to the `onMorphoSupply` callback. Pass empty data if not needed.
     function morphoSupply(
         MarketParams calldata marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 maxSharePriceE27,
         address onBehalf,
         bytes calldata data
     ) external onlyBundler {
@@ -256,8 +255,7 @@ contract GenericModule1 is BaseModule {
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
-        if (assets > 0) require(suppliedShares >= slippageAmount, ErrorsLib.SlippageExceeded());
-        else require(suppliedAssets <= slippageAmount, ErrorsLib.SlippageExceeded());
+        require(suppliedAssets.rDivUp(suppliedShares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Supplies collateral on Morpho.
@@ -294,21 +292,19 @@ contract GenericModule1 is BaseModule {
     /// @param marketParams The Morpho market to borrow assets from.
     /// @param assets The amount of assets to borrow.
     /// @param shares The amount of shares to mint.
-    /// @param slippageAmount The maximum amount of borrow shares to mint in exchange for `assets` when it is used.
-    /// The minimum amount of assets to borrow in exchange for `shares` otherwise.
+    /// @param minSharePriceE27 The minimum amount of assets borrowed per borrow share minted, scaled by 1e27.
     /// @param receiver The address that will receive the borrowed assets.
     function morphoBorrow(
         MarketParams calldata marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 minSharePriceE27,
         address receiver
     ) external onlyBundler {
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
-        if (assets > 0) require(borrowedShares <= slippageAmount, ErrorsLib.SlippageExceeded());
-        else require(borrowedAssets >= slippageAmount, ErrorsLib.SlippageExceeded());
+        require(borrowedAssets.rDivDown(borrowedShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Repays assets on Morpho.
@@ -319,15 +315,14 @@ contract GenericModule1 is BaseModule {
     /// @param marketParams The Morpho market to repay assets to.
     /// @param assets The amount of assets to repay. Pass `type(uint).max` to repay the module's loan asset balance.
     /// @param shares The amount of shares to burn. Pass `type(uint).max` to repay the initiator's entire debt.
-    /// @param slippageAmount The minimum amount of borrow shares to burn in exchange for `assets` when it is used.
-    /// The maximum amount of assets to deposit in exchange for `shares` otherwise.
+    /// @param maxSharePriceE27 The maximum amount of assets repaid per borrow share burned, scaled by 1e27.
     /// @param onBehalf The address of the owner of the debt position.
     /// @param data Arbitrary data to pass to the `onMorphoRepay` callback. Pass empty data if not needed.
     function morphoRepay(
         MarketParams calldata marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 maxSharePriceE27,
         address onBehalf,
         bytes calldata data
     ) external onlyBundler {
@@ -349,8 +344,7 @@ contract GenericModule1 is BaseModule {
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
-        if (assets > 0) require(repaidShares >= slippageAmount, ErrorsLib.SlippageExceeded());
-        else require(repaidAssets <= slippageAmount, ErrorsLib.SlippageExceeded());
+        require(repaidAssets.rDivUp(repaidShares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws assets on Morpho.
@@ -361,14 +355,13 @@ contract GenericModule1 is BaseModule {
     /// @param marketParams The Morpho market to withdraw assets from.
     /// @param assets The amount of assets to withdraw.
     /// @param shares The amount of shares to burn. Pass `type(uint).max` to burn all the initiator's supply shares.
-    /// @param slippageAmount The maximum amount of supply shares to burn in exchange for `assets` when it is used.
-    /// The minimum amount of assets to withdraw in exchange for `shares` otherwise.
+    /// @param minSharePriceE27 The minimum amount of assets withdraw per burn share, scaled by 1e27.
     /// @param receiver The address that will receive the withdrawn assets.
     function morphoWithdraw(
         MarketParams calldata marketParams,
         uint256 assets,
         uint256 shares,
-        uint256 slippageAmount,
+        uint256 minSharePriceE27,
         address receiver
     ) external onlyBundler {
         if (shares == type(uint256).max) {
@@ -379,8 +372,7 @@ contract GenericModule1 is BaseModule {
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
             MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 
-        if (assets > 0) require(withdrawnShares <= slippageAmount, ErrorsLib.SlippageExceeded());
-        else require(withdrawnAssets >= slippageAmount, ErrorsLib.SlippageExceeded());
+        require(withdrawnAssets.rDivDown(withdrawnShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws collateral from Morpho.

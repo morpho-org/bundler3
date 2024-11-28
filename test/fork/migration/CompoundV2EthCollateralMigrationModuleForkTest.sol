@@ -138,7 +138,7 @@ contract CompoundV2EthCollateralMigrationModuleForkTest is MigrationForkTest {
         ERC20(C_ETH_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, type(uint256).max, address(migrationModule)));
+        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationModule)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_compoundV2RepayErc20(C_DAI_V2, borrowed / 2));
         callbackBundle.push(_compoundV2RepayErc20(C_DAI_V2, type(uint256).max));
