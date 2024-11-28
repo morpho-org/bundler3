@@ -15,7 +15,7 @@ import {ModuleLib} from "./libraries/ModuleLib.sol";
 /// @notice Stores the current module that is about to be called.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
-    
+
     /// @notice The address of the initiator of the multicall transaction.
     address public transient initiator;
 
