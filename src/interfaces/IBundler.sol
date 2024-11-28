@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity >=0.8.0;
 
+import {Mode} from "../libraries/ModeLib.sol";
+
 /// @notice Struct containing all the data needed to make a call.
 struct Call {
-    bool skipRevert;
-    address to;
+    Mode mode;
     bytes data;
     uint256 value;
 }

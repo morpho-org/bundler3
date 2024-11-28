@@ -30,7 +30,7 @@ import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 import {BaseModule} from "../../src/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GenericModule1} from "../../src/GenericModule1.sol";
-import {Bundler, Call} from "../../src/Bundler.sol";
+import {Bundler, Call, ModeLib, Mode} from "../../src/Bundler.sol";
 
 import "../../lib/forge-std/src/Test.sol";
 import "../../lib/forge-std/src/console2.sol";
@@ -129,8 +129,8 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         require(address(module) != address(0), "Module address is zero");
-        address to = address(module);
-        return Call(skipRevert, to, data, value);
+        Mode mode = ModeLib.wrap(skipRevert, address(module));
+        return Call(mode, data, value);
     }
 
     /* TRANSFER */

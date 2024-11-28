@@ -2,6 +2,7 @@
 pragma solidity 0.8.27;
 
 import {IBundler, Call} from "./interfaces/IBundler.sol";
+import {Mode, ModeLib} from "./libraries/ModeLib.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {INITIATOR_SLOT, CURRENT_MODULE_SLOT} from "./libraries/ConstantsLib.sol";
@@ -14,6 +15,8 @@ import {ModuleLib} from "./libraries/ModuleLib.sol";
 /// @notice Stores the initiator of the multicall transaction.
 /// @notice Stores the current module that is about to be called.
 contract Bundler is IBundler {
+    using ModeLib for Mode;
+
     /* STORAGE FUNCTIONS */
 
     /// @notice Set the initiator value in transient storage.
@@ -71,11 +74,11 @@ contract Bundler is IBundler {
     function _multicall(Call[] calldata bundle) internal {
         address previousModule = currentModule();
         for (uint256 i; i < bundle.length; ++i) {
-            address module = bundle[i].to;
+            address module = bundle[i].mode.to();
             setCurrentModule(module);
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
 
-            if (!success && !bundle[i].skipRevert) ModuleLib.lowLevelRevert(returnData);
+            if (!success && !bundle[i].mode.skipRevert()) ModuleLib.lowLevelRevert(returnData);
         }
         setCurrentModule(previousModule);
     }
