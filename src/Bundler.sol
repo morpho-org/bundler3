@@ -39,8 +39,6 @@ contract Bundler is IBundler {
 
     /// @notice Returns the current module.
     /// @notice A module becomes the current module upon being called.
-    /// @notice In a callback (using `multicallFromModule`), the current module is set back to the previous current
-    /// module at the end of the calls.
     function currentModule() public view returns (address module) {
         assembly ("memory-safe") {
             module := tload(CURRENT_MODULE_SLOT)
