@@ -1,22 +1,28 @@
 # Morpho Blue Bundler v3
 
-The [`Bundler`](./src/Bundler.sol) executes a sequence of calls atomically. EOAs should use the Bundler to execute multiple actions in a single transaction.
+The [`Bundler`](./src/Bundler.sol) executes a sequence of calls atomically.
+EOAs should use the Bundler to execute multiple actions in a single transaction.
 
 ## Structure
 
 <img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
-The Bundler's entrypoint is `multicall(Call[] calldata bundle)`. A bundle is a sequence of calls, and each call specifies an arbitrary address and arbitrary calldata.
+The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
+A bundle is a sequence of calls, and each call specifies an arbitrary address and arbitrary calldata.
 
 A contract called by the Bundler is called a module.
 
-For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains generic as well as ethereum-specific actions. It must be approved by the user to e.g. transfer the initiator's assets.
+For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains generic as well as ethereum-specific actions.
+It must be approved by the user to e.g. transfer the initiator's assets.
 
 Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
 
-Before calling a contract, the Bundler stores its own caller as the bundle's `initiator`. Modules can read the current initiator during bundle execution. This is useful to make a secure module: for instance, a module should only move funds owned by the current initiator.
+Before calling a contract, the Bundler stores its own caller as the bundle's `initiator`.
+Modules can read the current initiator during bundle execution.
+This is useful to make a secure module: for instance, a module should only move funds owned by the current initiator.
 
-When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`. This is useful for callback-based flows such as flashloans.
+When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`.
+This is useful for callback-based flows such as flashloans.
 
 To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GenericModule1.approve2Batch`](./src/GenericModule1.sol).
 
@@ -53,7 +59,8 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 ## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
 
 * Use transient storage where it makes sense.
-* Bundler is now a call dispatcher that holds no approvals. Useful to freely add bundlers over time without additional risk to users of existing bundlers.
+* Bundler is now a call dispatcher that holds no approvals.
+  This is useful to freely add bundlers over time without additional risk to users of existing bundlers.
 * All generic features are in `GenericModule1`, instead of being in separate files that are then all inherited by a single contract.
 * All ethereum features are in `EthereumModule1` which inherits `GenericModule1`.
 * The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`. Existing modules will still be used.
