@@ -153,7 +153,7 @@ contract GenericModule1 is BaseModule {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
@@ -174,7 +174,7 @@ contract GenericModule1 is BaseModule {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
 
         if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
 
@@ -297,7 +297,7 @@ contract GenericModule1 is BaseModule {
         address receiver
     ) external onlyBundler {
         (uint256 borrowedAssets, uint256 borrowedShares) =
-            MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
+            MORPHO.borrow(marketParams, assets, shares, _initiator(), receiver);
 
         require(borrowedAssets.rDivDown(borrowedShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -331,7 +331,7 @@ contract GenericModule1 is BaseModule {
         }
 
         if (shares == type(uint256).max) {
-            shares = MORPHO.borrowShares(marketParams.id(), initiator());
+            shares = MORPHO.borrowShares(marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
@@ -360,12 +360,12 @@ contract GenericModule1 is BaseModule {
         address receiver
     ) external onlyBundler {
         if (shares == type(uint256).max) {
-            shares = MORPHO.supplyShares(marketParams.id(), initiator());
+            shares = MORPHO.supplyShares(marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
-            MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
+            MORPHO.withdraw(marketParams, assets, shares, _initiator(), receiver);
 
         require(withdrawnAssets.rDivDown(withdrawnShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -380,9 +380,9 @@ contract GenericModule1 is BaseModule {
         external
         onlyBundler
     {
-        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), initiator());
+        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
-        MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
+        MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
     }
 
     /// @notice Triggers a flash loan on Morpho.
@@ -406,7 +406,7 @@ contract GenericModule1 is BaseModule {
         external
         onlyBundler
     {
-        try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
+        try Permit2Lib.PERMIT2.permit(_initiator(), permitSingle, signature) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
@@ -421,7 +421,7 @@ contract GenericModule1 is BaseModule {
         bytes calldata signature,
         bool skipRevert
     ) external onlyBundler {
-        try Permit2Lib.PERMIT2.permit(initiator(), permitBatch, signature) {}
+        try Permit2Lib.PERMIT2.permit(_initiator(), permitBatch, signature) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
@@ -434,7 +434,7 @@ contract GenericModule1 is BaseModule {
     function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address _initiator = initiator();
+        address _initiator = _initiator();
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -463,7 +463,7 @@ contract GenericModule1 is BaseModule {
         bytes32 s,
         bool skipRevert
     ) external onlyBundler {
-        try IERC20Permit(token).permit(initiator(), spender, amount, deadline, v, r, s) {}
+        try IERC20Permit(token).permit(_initiator(), spender, amount, deadline, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
@@ -480,7 +480,7 @@ contract GenericModule1 is BaseModule {
     function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address _initiator = initiator();
+        address _initiator = _initiator();
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -551,6 +551,6 @@ contract GenericModule1 is BaseModule {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        multicallBundler(data);
+        _multicallBundler(data);
     }
 }
