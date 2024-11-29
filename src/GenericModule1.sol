@@ -269,9 +269,8 @@ contract GenericModule1 is BaseModule {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
 
-        if (assets == type(uint256).max) {
-            assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
-        }
+        if (assets == type(uint256).max) assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
+
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));

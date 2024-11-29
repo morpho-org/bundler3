@@ -31,9 +31,8 @@ contract CompoundV3MigrationModule is BaseModule {
     function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
         address asset = ICompoundV3(instance).baseToken();
 
-        if (amount == type(uint256).max) {
-            amount = ERC20(asset).balanceOf(address(this));
-        }
+        if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
+
         amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

@@ -29,9 +29,7 @@ contract MigrationForkTest is ForkTest {
         marketParams.lltv = 0.8 ether;
 
         Market memory market = morpho.market(marketParams.id());
-        if (market.lastUpdate == 0) {
-            morpho.createMarket(marketParams);
-        }
+        if (market.lastUpdate == 0) morpho.createMarket(marketParams);
 
         suppliersVault = new ERC4626Mock(marketParams.loanToken, "suppliers vault", "vault");
         vm.label(address(suppliersVault), "Suppliers Vault");
