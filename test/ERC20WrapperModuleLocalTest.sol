@@ -16,6 +16,15 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
         loanWrapper = new ERC20WrapperMock(loanToken, "Wrapped Loan Token", "WLT");
     }
 
+    function testErc20WrapperDepositForZeroAdress(uint256 amount) public {
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(0), amount));
+
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        bundler.multicall(bundle);
+    }
+
     function testErc20WrapperDepositFor(uint256 amount, address receiver) public {
         vm.assume(receiver != address(0));
         vm.assume(receiver != address(loanWrapper));

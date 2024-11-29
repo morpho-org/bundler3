@@ -65,13 +65,14 @@ contract GenericModule1 is BaseModule {
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the module's
     /// underlying balance.
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
-        ERC20 underlying = ERC20(address(ERC20Wrapper(wrapper).underlying()));
-
-        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+        
+        address underlying = address(ERC20Wrapper(wrapper).underlying());
+        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(address(underlying), wrapper);
+        ModuleLib.approveMaxToIfAllowanceZero(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
