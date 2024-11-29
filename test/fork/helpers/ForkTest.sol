@@ -17,6 +17,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
     EthereumModule1 internal ethereumModule1;
     MarketParams[] internal allMarketParams;
+    bytes4 constant permitSingleSelector = 0x2b67b570;
+    bytes4 constant permitBatchSelector = 0x2a2d80d1;
 
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);
@@ -123,8 +125,10 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
+            BaseModule(payable(address(Permit2Lib.PERMIT2))),
+            abi.encodeWithSelector(permitSingleSelector, vm.addr(privateKey), permitSingle, abi.encodePacked(r, s, v)),
+            0,
+            skipRevert
         );
     }
 
@@ -157,8 +161,10 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.approve2Batch, (permitBatch, abi.encodePacked(r, s, v), skipRevert))
+            BaseModule(payable(address(Permit2Lib.PERMIT2))),
+            abi.encodeWithSelector(permitBatchSelector, vm.addr(privateKey), permitBatch, abi.encodePacked(r, s, v)),
+            0,
+            skipRevert
         );
     }
 

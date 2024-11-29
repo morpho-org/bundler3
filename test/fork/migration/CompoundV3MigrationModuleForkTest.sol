@@ -45,11 +45,6 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
-    function testCompoundV3AllowBySigUnauthorized() public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
-    }
-
     function testCompoundV3AuthorizationWithSigRevert(address owner) public {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);
@@ -64,10 +59,12 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                migrationModule,
+                BaseModule(payable(C_WETH_V3)),
                 abi.encodeCall(
-                    migrationModule.compoundV3AllowBySig, (C_WETH_V3, true, 0, SIGNATURE_DEADLINE, v, r, s, false)
-                )
+                    ICompoundV3.allowBySig, (owner, address(migrationModule), true, 0, SIGNATURE_DEADLINE, v, r, s)
+                ),
+                0,
+                false
             )
         );
 
@@ -225,11 +222,6 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         _assertVaultSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testCompoundV3AllowUnauthorized() public {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.compoundV3AllowBySig(C_WETH_V3, true, 0, SIGNATURE_DEADLINE, 0, 0, 0, false);
-    }
-
     function testCompoundV3WithdrawFromUnauthorized(uint256 amount, address receiver) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -247,18 +239,18 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         uint256 nonce,
         bool skipRevert
     ) internal view returns (Call memory) {
+        address owner = vm.addr(privateKey);
         bytes32 digest = SigUtils.toTypedDataHash(
-            instance, CompoundV3Authorization(vm.addr(privateKey), manager, isAllowed, nonce, SIGNATURE_DEADLINE)
+            instance, CompoundV3Authorization(owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE)
         );
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            migrationModule,
-            abi.encodeCall(
-                migrationModule.compoundV3AllowBySig,
-                (instance, isAllowed, nonce, SIGNATURE_DEADLINE, v, r, s, skipRevert)
-            )
+            BaseModule(payable(instance)),
+            abi.encodeCall(ICompoundV3.allowBySig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, v, r, s)),
+            0,
+            false
         );
     }
 

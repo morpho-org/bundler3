@@ -66,30 +66,4 @@ contract CompoundV3MigrationModule is BaseModule {
 
         ICompoundV3(instance).withdrawFrom(_initiator, receiver, asset, amount);
     }
-
-    /// @notice Approves on a CompoundV3 instance.
-    /// @dev Assumes the given instance is a CompoundV3 instance.
-    /// @param instance The address of the CompoundV3 instance to call.
-    /// @param isAllowed Whether the module is allowed to manage the initiator's position or not.
-    /// @param nonce The nonce of the signed message.
-    /// @param expiry The expiry of the signed message.
-    /// @param v The `v` component of a signature.
-    /// @param r The `r` component of a signature.
-    /// @param s The `s` component of a signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function compoundV3AllowBySig(
-        address instance,
-        bool isAllowed,
-        uint256 nonce,
-        uint256 expiry,
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        bool skipRevert
-    ) external onlyBundler {
-        try ICompoundV3(instance).allowBySig(_initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
 }

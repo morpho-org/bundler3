@@ -141,22 +141,6 @@ contract Permit2ModuleForkTest is ForkTest {
         );
     }
 
-    function testApprove2Unauthorized() public {
-        IAllowanceTransfer.PermitSingle memory permitSingle;
-        bytes memory signature;
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.approve2(permitSingle, signature, false);
-    }
-
-    function testApprove2BatchUnauthorized() public {
-        IAllowanceTransfer.PermitBatch memory permitBatch;
-        bytes memory signature;
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.approve2Batch(permitBatch, signature, false);
-    }
-
     function testApprove2InvalidNonce(uint256 seed, uint256 amount) public {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);

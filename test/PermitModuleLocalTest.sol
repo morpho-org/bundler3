@@ -36,14 +36,6 @@ contract PermitModuleLocalTest is LocalTest {
         assertEq(permitToken.allowance(user, spender), amount, "allowance(user, genericModule1");
     }
 
-    function testPermitUnauthorized(uint256 amount, address spender) public {
-        vm.assume(spender != address(0));
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.permit(address(loanToken), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
-    }
-
     function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
         vm.assume(spender != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -77,25 +69,5 @@ contract PermitModuleLocalTest is LocalTest {
 
         assertEq(permitToken.balanceOf(address(genericModule1)), amount, "balanceOf(genericModule1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
-    }
-
-    function _permit(
-        IERC20Permit token,
-        uint256 privateKey,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        bool skipRevert
-    ) internal view returns (Call memory) {
-        address user = vm.addr(privateKey);
-
-        Permit memory permit = Permit(user, spender, amount, token.nonces(user), deadline);
-
-        bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
-
-        bytes memory callData =
-            abi.encodeCall(GenericModule1.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
-        return _call(genericModule1, callData);
     }
 }
