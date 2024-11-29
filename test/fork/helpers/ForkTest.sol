@@ -16,7 +16,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     using SafeTransferLib for ERC20;
 
     EthereumModule1 internal ethereumModule1;
-    MarketParams[] allMarketParams;
+    MarketParams[] internal allMarketParams;
 
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);

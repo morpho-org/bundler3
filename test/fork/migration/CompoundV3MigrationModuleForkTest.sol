@@ -14,14 +14,14 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     using MorphoBalancesLib for IMorpho;
     using MathLib for uint256;
 
-    address internal C_WETH_V3 = getAddress("C_WETH_V3");
-    address internal CB_ETH = getAddress("CB_ETH");
-    address internal WETH = getAddress("WETH");
+    address internal immutable C_WETH_V3 = getAddress("C_WETH_V3");
+    address internal immutable CB_ETH = getAddress("CB_ETH");
+    address internal immutable WETH = getAddress("WETH");
 
-    uint256 collateralSupplied = 10 ether;
-    uint256 borrowed = 1 ether;
+    uint256 internal constant collateralSupplied = 10 ether;
+    uint256 internal constant borrowed = 1 ether;
 
-    CompoundV3MigrationModule public migrationModule;
+    CompoundV3MigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();

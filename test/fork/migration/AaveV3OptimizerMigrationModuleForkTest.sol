@@ -18,17 +18,17 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal AAVE_V3_OPTIMIZER = getAddress("AAVE_V3_OPTIMIZER");
-    address internal USDT = getAddress("USDT");
-    address internal WST_ETH = getAddress("WST_ETH");
-    address internal WETH = getAddress("WETH");
+    address internal immutable AAVE_V3_OPTIMIZER = getAddress("AAVE_V3_OPTIMIZER");
+    address internal immutable USDT = getAddress("USDT");
+    address internal immutable WST_ETH = getAddress("WST_ETH");
+    address internal immutable WETH = getAddress("WETH");
 
-    uint256 public constant MAX_ITERATIONS = 15;
+    uint256 internal constant MAX_ITERATIONS = 15;
 
-    uint256 collateralSupplied = 10_000 ether;
-    uint256 borrowed = 1 ether;
+    uint256 internal constant collateralSupplied = 10_000 ether;
+    uint256 internal constant borrowed = 1 ether;
 
-    AaveV3OptimizerMigrationModule public migrationModule;
+    AaveV3OptimizerMigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();

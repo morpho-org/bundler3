@@ -6,7 +6,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 
 contract BaseModuleLocalTest is LocalTest {
-    BaseModule baseModule;
+    BaseModule internal baseModule;
 
     function setUp() public override {
         super.setUp();

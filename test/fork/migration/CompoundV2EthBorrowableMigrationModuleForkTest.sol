@@ -14,15 +14,15 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal C_ETH_V2 = getAddress("C_ETH_V2");
-    address internal C_DAI_V2 = getAddress("C_DAI_V2");
-    address internal COMPTROLLER = getAddress("COMPTROLLER");
-    address internal DAI = getAddress("DAI");
-    address internal WETH = getAddress("WETH");
+    address internal immutable C_ETH_V2 = getAddress("C_ETH_V2");
+    address internal immutable C_DAI_V2 = getAddress("C_DAI_V2");
+    address internal immutable COMPTROLLER = getAddress("COMPTROLLER");
+    address internal immutable DAI = getAddress("DAI");
+    address internal immutable WETH = getAddress("WETH");
 
     address[] internal enteredMarkets;
 
-    CompoundV2MigrationModule public migrationModule;
+    CompoundV2MigrationModule internal migrationModule;
 
     receive() external payable {}
 
