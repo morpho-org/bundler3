@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {IAToken} from "./interfaces/IAToken.sol";
+import {IERC20Permit} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {IAaveV3} from "../../../src/interfaces/IAaveV3.sol";
 
 import {SigUtils, Permit} from "../../helpers/SigUtils.sol";
@@ -322,10 +322,10 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
         returns (Call memory)
     {
         address user = vm.addr(privateKey);
-        uint256 nonce = IAToken(aToken).nonces(user);
+        uint256 nonce = IERC20Permit(aToken).nonces(user);
 
         Permit memory permit = Permit(user, module, amount, nonce, SIGNATURE_DEADLINE);
-        bytes32 hashed = SigUtils.toTypedDataHash(IAToken(aToken).DOMAIN_SEPARATOR(), permit);
+        bytes32 hashed = SigUtils.toTypedDataHash(IERC20Permit(aToken).DOMAIN_SEPARATOR(), permit);
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, hashed);
 
