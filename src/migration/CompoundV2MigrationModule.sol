@@ -42,9 +42,8 @@ contract CompoundV2MigrationModule is BaseModule {
 
         address underlying = ICToken(cToken).underlying();
 
-        if (amount == type(uint256).max) {
-            amount = ERC20(underlying).balanceOf(address(this));
-        }
+        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
+
         amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -104,8 +103,6 @@ contract CompoundV2MigrationModule is BaseModule {
         uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
         require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (receiver != address(this)) {
-            SafeTransferLib.safeTransferETH(receiver, received);
-        }
+        if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, received);
     }
 }

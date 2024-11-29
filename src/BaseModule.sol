@@ -75,8 +75,6 @@ abstract contract BaseModule {
     function multicallBundler(bytes calldata data) internal {
         (bool success, bytes memory returnData) =
             BUNDLER.call(bytes.concat(IBundler.multicallFromModule.selector, data));
-        if (!success) {
-            ModuleLib.lowLevelRevert(returnData);
-        }
+        if (!success) ModuleLib.lowLevelRevert(returnData);
     }
 }
