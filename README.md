@@ -17,7 +17,7 @@ A bundle is a sequence of calls, and each call specifies:
 A contract called by the Bundler is called a module.
 
 For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains generic as well as ethereum-specific actions.
-It must be approved by the user to e.g. transfer the initiator's assets.
+It must be approved by the user to e.g. transfer their assets.
 
 Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
 
