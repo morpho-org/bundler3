@@ -64,6 +64,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
   * When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
   * There are receiver arguments in all functions that give tokens to the module so the module can pass along those tokens.
   * Flashloans and simple transfer actions have been removed.
+  * No module function is payable anymore, which means that the bundler must make a first call to transfer ETH and then the call to the action.
 
 ## Development
 
