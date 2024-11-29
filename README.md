@@ -21,7 +21,7 @@ It must be approved by the user to e.g. transfer the initiator's assets.
 
 Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
 
-Before calling a contract, the Bundler stores its own caller as the bundle's `initiator`.
+Before calling a contract, the Bundler stores its own caller address as the bundle's `initiator`.
 Modules can read the current initiator during bundle execution.
 This is useful to make a secure module: for instance, a module should only move funds owned by the current initiator.
 
@@ -66,7 +66,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 - Bundler is now a call dispatcher that holds no approvals.
   This is useful to freely add bundlers over time without additional risk to users of existing bundlers.
 - All generic features are in `GenericModule1`, instead of being in separate files that are then all inherited by a single contract.
-- All ethereum features are in `EthereumModule1` which inherits `GenericModule1`.
+- All Ethereum related features are in the `EthereumModule1` which inherits from `GenericModule1`.
 - The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`. Existing modules will still be used.
 - There is a new action `permit2Batch` to allow multiple contracts to move multiple tokens using a single signature.
 - Many adjustments such as:
