@@ -66,7 +66,7 @@ contract GenericModule1 is BaseModule {
     /// underlying balance.
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        
+
         address underlying = address(ERC20Wrapper(wrapper).underlying());
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
