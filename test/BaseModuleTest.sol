@@ -26,7 +26,7 @@ contract BaseModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
     }
 
-    function testTranferZeroAddress(uint256 amount) public {
+    function testTransferZeroAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20Transfer(address(loanToken), address(0), amount, baseModule));
@@ -35,7 +35,7 @@ contract BaseModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testTranferModuleAddress(uint256 amount) public {
+    function testTransferModuleAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20Transfer(address(loanToken), address(baseModule), amount, baseModule));

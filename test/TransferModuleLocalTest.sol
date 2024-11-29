@@ -38,7 +38,7 @@ contract TransferModuleLocalTest is LocalTest {
         genericModule1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
     }
 
-    function testTranferFromZeroAmount() public {
+    function testTransferFromZeroAmount() public {
         bundle.push(_erc20TransferFrom(address(loanToken), 0));
 
         vm.prank(USER);
