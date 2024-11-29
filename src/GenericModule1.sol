@@ -65,13 +65,14 @@ contract GenericModule1 is BaseModule {
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the module's
     /// underlying balance.
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
-        ERC20 underlying = ERC20(address(ERC20Wrapper(wrapper).underlying()));
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
+        address underlying = address(ERC20Wrapper(wrapper).underlying());
+        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(address(underlying), wrapper);
+        ModuleLib.approveMaxToIfAllowanceZero(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
@@ -95,7 +96,7 @@ contract GenericModule1 is BaseModule {
 
     /* ERC4626 ACTIONS */
 
-    /// @notice Mints shares of a ERC4626 vault.
+    /// @notice Mints shares of an ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
@@ -115,7 +116,7 @@ contract GenericModule1 is BaseModule {
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Deposits underlying token in a ERC4626 vault.
+    /// @notice Deposits underlying token in an ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
@@ -139,7 +140,7 @@ contract GenericModule1 is BaseModule {
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Withdraws underlying token from a ERC4626 vault.
+    /// @notice Withdraws underlying token from an ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
@@ -160,7 +161,7 @@ contract GenericModule1 is BaseModule {
         require(assets.rDivDown(shares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Redeems shares of a ERC4626 vault.
+    /// @notice Redeems shares of an ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
