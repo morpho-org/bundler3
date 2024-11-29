@@ -64,7 +64,7 @@ Contain the actions to repay current debt and withdraw supply/collateral on thes
 
 - Make use of transient storage.
 - Bundler is now a call dispatcher that does not require any approval.
-  This is useful to freely add bundlers over time without additional risk to users of existing bundlers.
+  Because call-dispatch and approvals are now separated, it is possible to add bundlers over time without additional risk to users of existing bundlers.
 - All generic features are now in `GenericModule1`, instead of being in separate files that are then all inherited by a single contract.
 - All Ethereum related features are in the `EthereumModule1` which inherits from `GenericModule1`.
 - The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`.
