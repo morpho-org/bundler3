@@ -14,7 +14,7 @@ contract Permit2ModuleForkTest is ForkTest {
     using MorphoBalancesLib for IMorpho;
     using MorphoLib for IMorpho;
 
-    address internal DAI = getAddress("DAI");
+    address internal immutable DAI = getAddress("DAI");
 
     function testSupplyWithPermit2(uint256 seed, uint256 amount, address onBehalf, uint256 deadline) public {
         uint256 privateKey = _boundPrivateKey(pickUint());

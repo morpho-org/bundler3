@@ -9,10 +9,14 @@ import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/
 
 contract Empty {}
 
+contract ConcreteBaseModule is BaseModule {
+    constructor(address bundler) BaseModule(bundler) {}
+}
+
 contract BundlerLocalTest is LocalTest {
-    ModuleMock moduleMock;
-    Call[] callbackBundle2;
-    address empty;
+    ModuleMock internal moduleMock;
+    Call[] internal callbackBundle2;
+    address internal empty;
 
     function setUp() public override {
         super.setUp();
@@ -22,7 +26,7 @@ contract BundlerLocalTest is LocalTest {
 
     function testBundlerZeroAddress() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        new BaseModule(address(0));
+        new ConcreteBaseModule(address(0));
     }
 
     function testMulticallEmpty() public {

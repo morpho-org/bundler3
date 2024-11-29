@@ -50,11 +50,11 @@ abstract contract CommonTest is Test {
     using SafeTransferLib for ERC20;
     using stdJson for string;
 
-    address internal USER = makeAddr("User");
-    address internal SUPPLIER = makeAddr("Owner");
-    address internal OWNER = makeAddr("Supplier");
-    address internal RECEIVER = makeAddr("Receiver");
-    address internal LIQUIDATOR = makeAddr("Liquidator");
+    address internal immutable USER = makeAddr("User");
+    address internal immutable SUPPLIER = makeAddr("Owner");
+    address internal immutable OWNER = makeAddr("Supplier");
+    address internal immutable RECEIVER = makeAddr("Receiver");
+    address internal immutable LIQUIDATOR = makeAddr("Liquidator");
 
     IMorpho internal morpho;
     IrmMock internal irm;
@@ -66,7 +66,7 @@ abstract contract CommonTest is Test {
     Call[] internal bundle;
     Call[] internal callbackBundle;
 
-    FunctionMocker functionMocker;
+    FunctionMocker internal functionMocker;
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));

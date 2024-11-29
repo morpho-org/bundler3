@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 uint256 constant RAY = 1e27;
 
-/// @title MathLib
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Library to manage high-precision fixed-point arithmetic.
 library MathRayLib {

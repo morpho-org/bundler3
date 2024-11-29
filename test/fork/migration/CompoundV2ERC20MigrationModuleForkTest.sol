@@ -14,16 +14,16 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal C_USDC_V2 = getAddress("C_USDC_V2");
-    address internal C_DAI_V2 = getAddress("C_DAI_V2");
-    address internal COMPTROLLER = getAddress("COMPTROLLER");
-    address internal DAI = getAddress("DAI");
-    address internal USDC = getAddress("USDC");
-    address internal C_ETH_V2 = getAddress("C_ETH_V2");
+    address internal immutable C_USDC_V2 = getAddress("C_USDC_V2");
+    address internal immutable C_DAI_V2 = getAddress("C_DAI_V2");
+    address internal immutable COMPTROLLER = getAddress("COMPTROLLER");
+    address internal immutable DAI = getAddress("DAI");
+    address internal immutable USDC = getAddress("USDC");
+    address internal immutable C_ETH_V2 = getAddress("C_ETH_V2");
 
     address[] internal enteredMarkets;
 
-    CompoundV2MigrationModule public migrationModule;
+    CompoundV2MigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();

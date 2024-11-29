@@ -16,9 +16,9 @@ interface IMetaMorpho {
 abstract contract MetaMorphoLocalTest is LocalTest {
     using MarketParamsLib for MarketParams;
 
-    address internal VAULT_OWNER = makeAddr("VaultOwner");
-    IMetaMorpho vault;
-    MarketParams idleMarketParams;
+    address internal immutable VAULT_OWNER = makeAddr("VaultOwner");
+    IMetaMorpho internal vault;
+    MarketParams internal idleMarketParams;
 
     function setUp() public virtual override {
         super.setUp();

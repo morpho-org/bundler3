@@ -6,11 +6,9 @@ import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.s
 import {IBundler} from "./interfaces/IBundler.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
-/// @title BaseModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Common contract to all Morpho Modules.
-contract BaseModule {
+/// @notice Common contract to all Bundler modules.
+abstract contract BaseModule {
     address public immutable BUNDLER;
 
     constructor(address bundler) {
@@ -31,7 +29,7 @@ contract BaseModule {
     /* FALLBACKS */
 
     /// @notice Native tokens are received by the module and should be used afterwards.
-    /// @dev Allows the wrapped native contract to send native tokens to the module.
+    /// @dev Allows the wrapped native contract to transfer native tokens to the module.
     receive() external payable {}
 
     /* ACTIONS */
