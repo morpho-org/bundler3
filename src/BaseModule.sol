@@ -38,7 +38,7 @@ abstract contract BaseModule {
     /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
-    function nativeTransfer(address receiver, uint256 amount) external payable onlyBundler {
+    function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
