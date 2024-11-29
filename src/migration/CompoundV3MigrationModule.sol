@@ -31,9 +31,8 @@ contract CompoundV3MigrationModule is BaseModule {
     function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
         address asset = ICompoundV3(instance).baseToken();
 
-        if (amount == type(uint256).max) {
-            amount = ERC20(asset).balanceOf(address(this));
-        }
+        if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
+
         amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -56,7 +55,7 @@ contract CompoundV3MigrationModule is BaseModule {
         external
         onlyBundler
     {
-        address _initiator = initiator();
+        address _initiator = _initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
@@ -88,7 +87,7 @@ contract CompoundV3MigrationModule is BaseModule {
         bytes32 s,
         bool skipRevert
     ) external onlyBundler {
-        try ICompoundV3(instance).allowBySig(initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
+        try ICompoundV3(instance).allowBySig(_initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
         catch (bytes memory returnData) {
             if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
         }
