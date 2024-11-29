@@ -6,6 +6,7 @@ struct Call {
     address to;
     bytes data;
     uint256 value;
+    bool skipRevert;
 }
 
 /// @custom:contact security@morpho.org

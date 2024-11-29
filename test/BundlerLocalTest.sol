@@ -7,6 +7,8 @@ import "./helpers/LocalTest.sol";
 import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
+contract Empty {}
+
 contract ConcreteBaseModule is BaseModule {
     constructor(address bundler) BaseModule(bundler) {}
 }
@@ -14,10 +16,12 @@ contract ConcreteBaseModule is BaseModule {
 contract BundlerLocalTest is LocalTest {
     ModuleMock internal moduleMock;
     Call[] internal callbackBundle2;
+    address internal empty;
 
     function setUp() public override {
         super.setUp();
         moduleMock = new ModuleMock(address(bundler));
+        empty = address(new Empty());
     }
 
     function testBundlerZeroAddress() public {
@@ -125,5 +129,27 @@ contract BundlerLocalTest is LocalTest {
 
         vm.prank(module);
         bundler.multicallFromModule(new Call[](0));
+    }
+
+    function testNotSkipRevert() public {
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: false});
+
+        // Check that this produces a failing call.
+        vm.prank(USER);
+        (bool success,) = empty.call(hex"");
+        assertFalse(success);
+
+        bundle.push(failingCall);
+        vm.prank(USER);
+        vm.expectRevert();
+        bundler.multicall(bundle);
+    }
+
+    function testSkipRevert() public {
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: true});
+
+        bundle.push(failingCall);
+        vm.prank(USER);
+        bundler.multicall(bundle);
     }
 }
