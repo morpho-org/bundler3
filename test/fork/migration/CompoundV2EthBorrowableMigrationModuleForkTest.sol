@@ -7,7 +7,7 @@ import "../../../src/migration/CompoundV2MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
-contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
+contract CompoundV2EthBorrowableMigrationModuleForkTest is MigrationForkTest {
     using MathLib for uint256;
     using SafeTransferLib for ERC20;
     using MarketParamsLib for MarketParams;
@@ -86,7 +86,9 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
 
+        bundle.push(_sendNativeToModule(payable(migrationModule), toRepay));
         bundle.push(_compoundV2RepayEth(type(uint256).max, toRepay, address(this)));
+
         bundler.multicall{value: toRepay}(bundle);
         assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
     }
@@ -223,11 +225,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
         view
         returns (Call memory)
     {
-        return _call(
-            migrationModule,
-            abi.encodeCall(migrationModule.compoundV2RepayEth, (repayAmount, onBehalf)),
-            valueTransferred
-        );
+        return _call(migrationModule, abi.encodeCall(migrationModule.compoundV2RepayEth, (repayAmount, onBehalf)));
     }
 
     function _compoundV2RedeemErc20(address cToken, uint256 amount, address receiver)

@@ -198,10 +198,6 @@ contract GenericModule1 is BaseModule {
         _morphoCallback(data);
     }
 
-    function onMorphoFlashLoan(uint256, bytes calldata data) external {
-        _morphoCallback(data);
-    }
-
     /* MORPHO ACTIONS */
 
     /// @notice Approves with signature on Morpho.
@@ -385,17 +381,6 @@ contract GenericModule1 is BaseModule {
         MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
     }
 
-    /// @notice Triggers a flash loan on Morpho.
-    /// @param token The address of the token to flash loan.
-    /// @param assets The amount of assets to flash loan.
-    /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
-    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
-        require(assets != 0, ErrorsLib.ZeroAmount());
-        ModuleLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
-
-        MORPHO.flashLoan(token, assets, data);
-    }
-
     /* PERMIT2 ACTIONS */
 
     /// @notice Approves with Permit2.
@@ -494,7 +479,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Native tokens must have been previously sent to the module.
     /// @param amount The amount of native token to wrap. Pass `type(uint).max` to wrap the module's balance.
     /// @param receiver The account receiving the wrapped native tokens.
-    function wrapNative(uint256 amount, address receiver) external payable onlyBundler {
+    function wrapNative(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = address(this).balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());

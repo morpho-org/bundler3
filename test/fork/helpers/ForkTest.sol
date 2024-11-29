@@ -177,18 +177,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         view
         returns (Call memory)
     {
-        return _stakeEth(amount, maxSharePriceE27, referral, receiver, amount);
-    }
-
-    function _stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver, uint256 callValue)
-        internal
-        view
-        returns (Call memory)
-    {
         return _call(
-            ethereumModule1,
-            abi.encodeCall(EthereumModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver)),
-            callValue
+            ethereumModule1, abi.encodeCall(EthereumModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
         );
     }
 
@@ -209,7 +199,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     }
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.wrapNative, (amount, receiver)), amount);
+        return _call(genericModule1, abi.encodeCall(GenericModule1.wrapNative, (amount, receiver)));
     }
 
     function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {

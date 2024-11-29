@@ -66,7 +66,6 @@ abstract contract CommonTest is Test {
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
-        console.log("OK?");
         vm.label(address(morpho), "Morpho");
 
         functionMocker = new FunctionMocker();
@@ -124,33 +123,13 @@ abstract contract CommonTest is Test {
         return Call({to: address(module), data: data, value: value});
     }
 
-    /* TRANSFER */
+    /* NATIVE TRANSFER */
 
-    function _nativeTransfer(address recipient, uint256 amount, BaseModule module)
-        internal
-        pure
-        returns (Call memory)
-    {
-        return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)), amount);
-    }
-
-    function _nativeTransferNoFunding(address recipient, uint256 amount, BaseModule module)
-        internal
-        pure
-        returns (Call memory)
-    {
-        return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)), 0);
+    function _sendNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
+        return _call(BaseModule(module), hex"", amount);
     }
 
     /* ERC20 ACTIONS */
-
-    function _erc20Transfer(address token, address recipient, uint256 amount, BaseModule module)
-        internal
-        pure
-        returns (Call memory)
-    {
-        return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)));
-    }
 
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
         return _call(genericModule1, abi.encodeCall(GenericModule1.erc20TransferFrom, (token, recipient, amount)));
@@ -342,9 +321,5 @@ abstract contract CommonTest is Test {
         return _call(
             genericModule1, abi.encodeCall(GenericModule1.morphoWithdrawCollateral, (marketParams, assets, receiver))
         );
-    }
-
-    function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
     }
 }

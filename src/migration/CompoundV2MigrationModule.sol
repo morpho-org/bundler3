@@ -60,7 +60,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and `onBehalf`'s
     /// debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function compoundV2RepayEth(uint256 amount, address onBehalf) external payable onlyBundler {
+    function compoundV2RepayEth(uint256 amount, address onBehalf) external onlyBundler {
         if (amount == type(uint256).max) {
             amount = address(this).balance;
         }
