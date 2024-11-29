@@ -200,21 +200,6 @@ contract GenericModule1 is BaseModule {
 
     /* MORPHO ACTIONS */
 
-    /// @notice Approves with signature on Morpho.
-    /// @param authorization The `Authorization` struct.
-    /// @param signature The signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function morphoSetAuthorizationWithSig(
-        Authorization calldata authorization,
-        Signature calldata signature,
-        bool skipRevert
-    ) external onlyBundler {
-        try MORPHO.setAuthorizationWithSig(authorization, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
-
     /// @notice Supplies loan asset on Morpho.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// module is guaranteed to have `assets` tokens pulled from its balance, but the possibility to mint a specific
@@ -382,35 +367,6 @@ contract GenericModule1 is BaseModule {
 
     /* PERMIT2 ACTIONS */
 
-    /// @notice Approves with Permit2.
-    /// @param permitSingle The `PermitSingle` struct.
-    /// @param signature The signature, serialized.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
-        external
-        onlyBundler
-    {
-        try Permit2Lib.PERMIT2.permit(_initiator(), permitSingle, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
-
-    /// @notice Batch approves with Permit2.
-    /// @param permitBatch The `PermitBatch` struct.
-    /// @param signature The signature, serialized.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function approve2Batch(
-        IAllowanceTransfer.PermitBatch calldata permitBatch,
-        bytes calldata signature,
-        bool skipRevert
-    ) external onlyBundler {
-        try Permit2Lib.PERMIT2.permit(_initiator(), permitBatch, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
-
     /// @notice Transfers with Permit2.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
@@ -424,33 +380,6 @@ contract GenericModule1 is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), token);
-    }
-
-    /* PERMIT ACTIONS */
-
-    /// @notice Permits with EIP-2612.
-    /// @param token The address of the token to be permitted.
-    /// @param spender The address allowed to spend the tokens.
-    /// @param amount The amount of token to be permitted.
-    /// @param deadline The deadline of the approval.
-    /// @param v The `v` component of a signature.
-    /// @param r The `r` component of a signature.
-    /// @param s The `s` component of a signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function permit(
-        address token,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        bool skipRevert
-    ) external onlyBundler {
-        try IERC20Permit(token).permit(_initiator(), spender, amount, deadline, v, r, s) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
     }
 
     /* TRANSFER ACTIONS */
@@ -499,33 +428,6 @@ contract GenericModule1 is BaseModule {
 
         WRAPPED_NATIVE.withdraw(amount);
         if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, amount);
-    }
-
-    /* UNIVERSAL REWARDS DISTRIBUTOR ACTIONS */
-
-    /// @notice Claims rewards on the URD.
-    /// @dev Assumes the given distributor implements `IUniversalRewardsDistributor`.
-    /// @param distributor The address of the reward distributor contract.
-    /// @param account The address of the owner of the rewards (also the address that will receive the rewards).
-    /// @param reward The address of the token reward.
-    /// @param claimable The overall claimable amount of token rewards.
-    /// @param proof The proof.
-    /// @param skipRevert Whether to avoid reverting the call in case the proof is frontrunned.
-    function urdClaim(
-        address distributor,
-        address account,
-        address reward,
-        uint256 claimable,
-        bytes32[] calldata proof,
-        bool skipRevert
-    ) external onlyBundler {
-        require(account != address(0), ErrorsLib.ZeroAddress());
-        require(account != address(this), ErrorsLib.ModuleAddress());
-
-        try IUniversalRewardsDistributor(distributor).claim(account, reward, claimable, proof) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
     }
 
     /* INTERNAL FUNCTIONS */
