@@ -361,10 +361,6 @@ abstract contract CommonTest is Test {
         );
     }
 
-    function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
-    }
-
     function _permit(
         IERC20Permit token,
         uint256 privateKey,
