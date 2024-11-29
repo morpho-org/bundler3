@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "./ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
-/// @title ModuleLib
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Library exposing common module functionality
 library ModuleLib {

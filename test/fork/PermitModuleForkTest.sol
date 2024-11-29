@@ -4,9 +4,8 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
 import {IDaiPermit} from "../../src/interfaces/IDaiPermit.sol";
-import {DaiPermit, Permit} from "../helpers/SigUtils.sol";
+import {DaiPermit} from "../helpers/SigUtils.sol";
 
-import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../helpers/mocks/ERC20PermitMock.sol";
 import {EthereumModule1} from "../../src/EthereumModule1.sol";
@@ -19,8 +18,8 @@ bytes32 constant DAI_DOMAIN_SEPARATOR = 0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f
 contract PermitModuleForkTest is ForkTest {
     ERC20PermitMock internal permitToken;
 
-    address internal DAI = getAddress("DAI");
-    address internal USDC = getAddress("USDC");
+    address internal immutable DAI = getAddress("DAI");
+    address internal immutable USDC = getAddress("USDC");
 
     function setUp() public override {
         super.setUp();
@@ -44,11 +43,6 @@ contract PermitModuleForkTest is ForkTest {
         assertEq(ERC20(DAI).allowance(user, spender), type(uint256).max, "allowance(user, spender)");
     }
 
-    function testPermitDaiUnauthorized(address receiver) public onlyEthereum {
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        ethereumModule1.permitDai(receiver, 0, SIGNATURE_DEADLINE, true, 0, 0, 0, true);
-    }
-
     function testPermitDaiRevert(address spender, uint256 expiry) public onlyEthereum {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);
@@ -70,6 +64,7 @@ contract PermitModuleForkTest is ForkTest {
     {
         address user = vm.addr(privateKey);
         uint256 nonce = IDaiPermit(DAI).nonces(user);
+        require(DAI == ethereumModule1.DAI(), "not the same DAI");
 
         uint8 v;
         bytes32 r;
@@ -82,10 +77,9 @@ contract PermitModuleForkTest is ForkTest {
             (v, r, s) = vm.sign(privateKey, digest);
         }
 
-        bytes memory callData =
-            abi.encodeCall(ethereumModule1.permitDai, (spender, nonce, expiry, allowed, v, r, s, skipRevert));
+        bytes memory callData = abi.encodeCall(IDaiPermit(DAI).permit, (user, spender, nonce, expiry, allowed, v, r, s));
 
-        return _call(ethereumModule1, callData);
+        return _call(BaseModule(payable(address(DAI))), callData, 0, skipRevert);
     }
 
     function testPermit(uint256 amount, address spender, uint256 deadline) public {
@@ -102,14 +96,6 @@ contract PermitModuleForkTest is ForkTest {
         bundler.multicall(bundle);
 
         assertEq(permitToken.allowance(user, spender), amount, "allowance(user, spender)");
-    }
-
-    function testPermitUnauthorized(uint256 amount, address spender) public {
-        vm.assume(spender != address(0));
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.permit(address(USDC), spender, amount, SIGNATURE_DEADLINE, 0, 0, 0, true);
     }
 
     function testPermitRevert(uint256 amount, address spender, uint256 deadline) public {
@@ -144,26 +130,5 @@ contract PermitModuleForkTest is ForkTest {
 
         assertEq(permitToken.balanceOf(address(genericModule1)), amount, "balanceOf(genericModule1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
-    }
-
-    function _permit(
-        IERC20Permit token,
-        uint256 privateKey,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        bool skipRevert
-    ) internal view returns (Call memory) {
-        address user = vm.addr(privateKey);
-
-        Permit memory permit = Permit(user, spender, amount, token.nonces(user), deadline);
-
-        bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
-
-        bytes memory callData =
-            abi.encodeCall(GenericModule1.permit, (address(token), spender, amount, deadline, v, r, s, skipRevert));
-
-        return _call(genericModule1, callData);
     }
 }

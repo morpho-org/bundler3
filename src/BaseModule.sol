@@ -6,11 +6,9 @@ import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.s
 import {IBundler} from "./interfaces/IBundler.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
-/// @title BaseModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice Common contract to all Morpho Modules.
-contract BaseModule {
+/// @notice Common contract to all Bundler modules.
+abstract contract BaseModule {
     address public immutable BUNDLER;
 
     constructor(address bundler) {
@@ -31,7 +29,7 @@ contract BaseModule {
     /* FALLBACKS */
 
     /// @notice Native tokens are received by the module and should be used afterwards.
-    /// @dev Allows the wrapped native contract to send native tokens to the module.
+    /// @dev Allows the wrapped native contract to transfer native tokens to the module.
     receive() external payable {}
 
     /* ACTIONS */
@@ -46,7 +44,9 @@ contract BaseModule {
 
         if (amount == type(uint256).max) amount = address(this).balance;
 
-        if (amount > 0) SafeTransferLib.safeTransferETH(receiver, amount);
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
     /// @notice Transfers ERC20 tokens.
@@ -60,25 +60,25 @@ contract BaseModule {
 
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
-        if (amount > 0) SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
     }
 
     /* INTERNAL */
 
     /// @notice Returns the current initiator stored in the module.
     /// @dev The initiator value being non-zero indicates that a bundle is being processed.
-    function initiator() internal view returns (address) {
+    function _initiator() internal view returns (address) {
         return IBundler(BUNDLER).initiator();
     }
 
     /// @notice Calls bundler.multicallFromModule with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
-    function multicallBundler(bytes calldata data) internal {
+    function _multicallBundler(bytes calldata data) internal {
         (bool success, bytes memory returnData) =
             BUNDLER.call(bytes.concat(IBundler.multicallFromModule.selector, data));
-        if (!success) {
-            ModuleLib.lowLevelRevert(returnData);
-        }
+        if (!success) ModuleLib.lowLevelRevert(returnData);
     }
 }

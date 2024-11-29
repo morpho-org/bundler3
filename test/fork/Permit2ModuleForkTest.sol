@@ -14,7 +14,7 @@ contract Permit2ModuleForkTest is ForkTest {
     using MorphoBalancesLib for IMorpho;
     using MorphoLib for IMorpho;
 
-    address internal DAI = getAddress("DAI");
+    address internal immutable DAI = getAddress("DAI");
 
     function testSupplyWithPermit2(uint256 seed, uint256 amount, address onBehalf, uint256 deadline) public {
         uint256 privateKey = _boundPrivateKey(pickUint());
@@ -139,22 +139,6 @@ contract Permit2ModuleForkTest is ForkTest {
         assertEq(
             ERC20(token1).allowance(user, address(genericModule1)), 0, "loan.allowance(user, asset 2, genericModule1)"
         );
-    }
-
-    function testApprove2Unauthorized() public {
-        IAllowanceTransfer.PermitSingle memory permitSingle;
-        bytes memory signature;
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.approve2(permitSingle, signature, false);
-    }
-
-    function testApprove2BatchUnauthorized() public {
-        IAllowanceTransfer.PermitBatch memory permitBatch;
-        bytes memory signature;
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.approve2Batch(permitBatch, signature, false);
     }
 
     function testApprove2InvalidNonce(uint256 seed, uint256 amount) public {

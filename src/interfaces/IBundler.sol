@@ -6,10 +6,9 @@ struct Call {
     address to;
     bytes data;
     uint256 value;
+    bool skipRevert;
 }
 
-/// @title IBundler
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Interface of Bundler.
 interface IBundler {

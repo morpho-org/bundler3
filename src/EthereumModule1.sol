@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
 import {IWstEth} from "./interfaces/IWstEth.sol";
@@ -16,8 +16,6 @@ import {
 } from "./GenericModule1.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
 
-/// @title EthereumModule1
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module contract specific to Ethereum n°1.
 contract EthereumModule1 is GenericModule1 {
@@ -89,33 +87,6 @@ contract EthereumModule1 is GenericModule1 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
-    }
-
-    /* DAI PERMIT ACTIONS */
-
-    /// @notice Permits DAI.
-    /// @param spender The account allowed to spend the Dai.
-    /// @param nonce The nonce of the signed message.
-    /// @param expiry The expiry of the signed message.
-    /// @param allowed Whether the initiator gives the module infinite Dai approval or not.
-    /// @param v The `v` component of a signature.
-    /// @param r The `r` component of a signature.
-    /// @param s The `s` component of a signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function permitDai(
-        address spender,
-        uint256 nonce,
-        uint256 expiry,
-        bool allowed,
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        bool skipRevert
-    ) external onlyBundler {
-        try IDaiPermit(DAI).permit(initiator(), spender, nonce, expiry, allowed, v, r, s) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
     }
 
     /* LIDO ACTIONS */

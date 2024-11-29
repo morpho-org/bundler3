@@ -5,16 +5,20 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 import "./helpers/LocalTest.sol";
 
+contract ConcreteBaseModule is BaseModule {
+    constructor(address bundler) BaseModule(bundler) {}
+}
+
 contract BaseModuleLocalTest is LocalTest {
-    BaseModule baseModule;
+    BaseModule internal baseModule;
 
     function setUp() public override {
         super.setUp();
-        baseModule = new BaseModule(address(bundler));
+        baseModule = new ConcreteBaseModule(address(bundler));
     }
 
     function testTransfer(uint256 amount) public {
-        amount = bound(amount, 0, MAX_AMOUNT);
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20Transfer(address(loanToken), RECEIVER, amount, baseModule));
 
@@ -26,7 +30,7 @@ contract BaseModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
     }
 
-    function testTranferZeroAddress(uint256 amount) public {
+    function testTransferZeroAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20Transfer(address(loanToken), address(0), amount, baseModule));
@@ -35,7 +39,7 @@ contract BaseModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testTranferModuleAddress(uint256 amount) public {
+    function testTransferModuleAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_erc20Transfer(address(loanToken), address(baseModule), amount, baseModule));
@@ -44,8 +48,16 @@ contract BaseModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
+    function testTransferZeroAmount() public {
+        bundle.push(_erc20Transfer(address(loanToken), RECEIVER, 0, baseModule));
+
+        vm.prank(USER);
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
     function testNativeTransfer(uint256 amount) public {
-        amount = bound(amount, 0, MAX_AMOUNT);
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_nativeTransfer(RECEIVER, amount, baseModule));
 
@@ -72,6 +84,13 @@ contract BaseModuleLocalTest is LocalTest {
         bundle.push(_nativeTransferNoFunding(address(baseModule), amount, baseModule));
 
         vm.expectRevert(ErrorsLib.ModuleAddress.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testNativeTransferZeroAmount() public {
+        bundle.push(_nativeTransferNoFunding(RECEIVER, 0, baseModule));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 }

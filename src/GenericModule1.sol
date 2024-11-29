@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.27;
+pragma solidity 0.8.28;
 
 import {BaseModule} from "./BaseModule.sol";
 
@@ -25,8 +25,6 @@ import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.so
 import {MathRayLib} from "./libraries/MathRayLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
-/// @title GenericModule1
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
 contract GenericModule1 is BaseModule {
@@ -68,13 +66,14 @@ contract GenericModule1 is BaseModule {
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the module's
     /// underlying balance.
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
-        ERC20 underlying = ERC20(address(ERC20Wrapper(wrapper).underlying()));
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
+        address underlying = address(ERC20Wrapper(wrapper).underlying());
+        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(address(underlying), wrapper);
+        ModuleLib.approveMaxToIfAllowanceZero(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
@@ -98,7 +97,7 @@ contract GenericModule1 is BaseModule {
 
     /* ERC4626 ACTIONS */
 
-    /// @notice Mints shares of a ERC4626 vault.
+    /// @notice Mints shares of an ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
@@ -118,7 +117,7 @@ contract GenericModule1 is BaseModule {
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Deposits underlying token in a ERC4626 vault.
+    /// @notice Deposits underlying token in an ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @dev Assumes the given vault implements EIP-4626.
     /// @param vault The address of the vault.
@@ -142,7 +141,7 @@ contract GenericModule1 is BaseModule {
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Withdraws underlying token from a ERC4626 vault.
+    /// @notice Withdraws underlying token from an ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
@@ -156,14 +155,14 @@ contract GenericModule1 is BaseModule {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
         require(assets.rDivDown(shares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
-    /// @notice Redeems shares of a ERC4626 vault.
+    /// @notice Redeems shares of an ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
     /// @dev If `owner` is the initiator, they must have previously approved the module to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the module.
@@ -177,7 +176,7 @@ contract GenericModule1 is BaseModule {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
 
         if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
 
@@ -206,21 +205,6 @@ contract GenericModule1 is BaseModule {
     }
 
     /* MORPHO ACTIONS */
-
-    /// @notice Approves with signature on Morpho.
-    /// @param authorization The `Authorization` struct.
-    /// @param signature The signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function morphoSetAuthorizationWithSig(
-        Authorization calldata authorization,
-        Signature calldata signature,
-        bool skipRevert
-    ) external onlyBundler {
-        try MORPHO.setAuthorizationWithSig(authorization, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
 
     /// @notice Supplies loan asset on Morpho.
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
@@ -272,9 +256,8 @@ contract GenericModule1 is BaseModule {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
 
-        if (assets == type(uint256).max) {
-            assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
-        }
+        if (assets == type(uint256).max) assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
+
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         ModuleLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
@@ -300,7 +283,7 @@ contract GenericModule1 is BaseModule {
         address receiver
     ) external onlyBundler {
         (uint256 borrowedAssets, uint256 borrowedShares) =
-            MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
+            MORPHO.borrow(marketParams, assets, shares, _initiator(), receiver);
 
         require(borrowedAssets.rDivDown(borrowedShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -334,7 +317,7 @@ contract GenericModule1 is BaseModule {
         }
 
         if (shares == type(uint256).max) {
-            shares = MORPHO.borrowShares(marketParams.id(), initiator());
+            shares = MORPHO.borrowShares(marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
@@ -363,12 +346,12 @@ contract GenericModule1 is BaseModule {
         address receiver
     ) external onlyBundler {
         if (shares == type(uint256).max) {
-            shares = MORPHO.supplyShares(marketParams.id(), initiator());
+            shares = MORPHO.supplyShares(marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
-            MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
+            MORPHO.withdraw(marketParams, assets, shares, _initiator(), receiver);
 
         require(withdrawnAssets.rDivDown(withdrawnShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -383,9 +366,9 @@ contract GenericModule1 is BaseModule {
         external
         onlyBundler
     {
-        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), initiator());
+        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
-        MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
+        MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
     }
 
     /// @notice Triggers a flash loan on Morpho.
@@ -401,35 +384,6 @@ contract GenericModule1 is BaseModule {
 
     /* PERMIT2 ACTIONS */
 
-    /// @notice Approves with Permit2.
-    /// @param permitSingle The `PermitSingle` struct.
-    /// @param signature The signature, serialized.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function approve2(IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature, bool skipRevert)
-        external
-        onlyBundler
-    {
-        try Permit2Lib.PERMIT2.permit(initiator(), permitSingle, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
-
-    /// @notice Batch approves with Permit2.
-    /// @param permitBatch The `PermitBatch` struct.
-    /// @param signature The signature, serialized.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function approve2Batch(
-        IAllowanceTransfer.PermitBatch calldata permitBatch,
-        bytes calldata signature,
-        bool skipRevert
-    ) external onlyBundler {
-        try Permit2Lib.PERMIT2.permit(initiator(), permitBatch, signature) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
-
     /// @notice Transfers with Permit2.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
@@ -437,39 +391,12 @@ contract GenericModule1 is BaseModule {
     function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address _initiator = initiator();
+        address _initiator = _initiator();
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), token);
-    }
-
-    /* PERMIT ACTIONS */
-
-    /// @notice Permits with EIP-2612.
-    /// @param token The address of the token to be permitted.
-    /// @param spender The address allowed to spend the tokens.
-    /// @param amount The amount of token to be permitted.
-    /// @param deadline The deadline of the approval.
-    /// @param v The `v` component of a signature.
-    /// @param r The `r` component of a signature.
-    /// @param s The `s` component of a signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function permit(
-        address token,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        bool skipRevert
-    ) external onlyBundler {
-        try IERC20Permit(token).permit(initiator(), spender, amount, deadline, v, r, s) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
     }
 
     /* TRANSFER ACTIONS */
@@ -483,7 +410,7 @@ contract GenericModule1 is BaseModule {
     function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address _initiator = initiator();
+        address _initiator = _initiator();
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -520,33 +447,6 @@ contract GenericModule1 is BaseModule {
         if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
-    /* UNIVERSAL REWARDS DISTRIBUTOR ACTIONS */
-
-    /// @notice Claims rewards on the URD.
-    /// @dev Assumes the given distributor implements `IUniversalRewardsDistributor`.
-    /// @param distributor The address of the reward distributor contract.
-    /// @param account The address of the owner of the rewards (also the address that will receive the rewards).
-    /// @param reward The address of the token reward.
-    /// @param claimable The overall claimable amount of token rewards.
-    /// @param proof The proof.
-    /// @param skipRevert Whether to avoid reverting the call in case the proof is frontrunned.
-    function urdClaim(
-        address distributor,
-        address account,
-        address reward,
-        uint256 claimable,
-        bytes32[] calldata proof,
-        bool skipRevert
-    ) external onlyBundler {
-        require(account != address(0), ErrorsLib.ZeroAddress());
-        require(account != address(this), ErrorsLib.ModuleAddress());
-
-        try IUniversalRewardsDistributor(distributor).claim(account, reward, claimable, proof) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
-    }
-
     /* SWAP ACTIONS */
 
     function paraswapBuyMorphoDebt(
@@ -558,7 +458,7 @@ contract GenericModule1 is BaseModule {
         Offsets calldata offsets,
         address receiver
     ) external onlyBundler {
-        uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, initiator());
+        uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, _initiator());
         IParaswapModule(paraswapModule).buy(
             augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver
         );
@@ -571,6 +471,6 @@ contract GenericModule1 is BaseModule {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        multicallBundler(data);
+        _multicallBundler(data);
     }
 }

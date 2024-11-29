@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {ICEth} from "../interfaces/ICEth.sol";
 import {ICToken} from "../interfaces/ICToken.sol";
@@ -10,8 +10,6 @@ import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
-/// @title CompoundV2MigrationModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
 contract CompoundV2MigrationModule is BaseModule {
@@ -44,9 +42,8 @@ contract CompoundV2MigrationModule is BaseModule {
 
         address underlying = ICToken(cToken).underlying();
 
-        if (amount == type(uint256).max) {
-            amount = ERC20(underlying).balanceOf(address(this));
-        }
+        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
+
         amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -57,7 +54,7 @@ contract CompoundV2MigrationModule is BaseModule {
     }
 
     /// @notice Repays an ETH debt on CompoundV2.
-    /// @dev Underlying tokens must have been previously sent to the module.
+    /// @dev ETH must have been previously sent to the module.
     /// @param amount The amount of cEth to repay. Unlike with `morphoRepay`, the amount is capped at `onBehalf`'s debt.
     /// Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and `onBehalf`'s
     /// debt).
@@ -106,8 +103,6 @@ contract CompoundV2MigrationModule is BaseModule {
         uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
         require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (receiver != address(this)) {
-            SafeTransferLib.safeTransferETH(receiver, received);
-        }
+        if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, received);
     }
 }

@@ -2,33 +2,35 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
-import "../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
 import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
-import {CURRENT_MODULE_SLOT} from "../src/libraries/ConstantsLib.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
+contract Empty {}
+
+contract ConcreteBaseModule is BaseModule {
+    constructor(address bundler) BaseModule(bundler) {}
+}
+
 contract BundlerLocalTest is LocalTest {
-    ModuleMock moduleMock;
-    Call[] callbackBundle2;
+    ModuleMock internal moduleMock;
+    Call[] internal callbackBundle2;
+    address internal empty;
 
     function setUp() public override {
         super.setUp();
         moduleMock = new ModuleMock(address(bundler));
+        empty = address(new Empty());
     }
 
     function testBundlerZeroAddress() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        new BaseModule(address(0));
+        new ConcreteBaseModule(address(0));
     }
 
     function testMulticallEmpty() public {
         bundler.multicall(bundle);
-    }
-
-    function testInitiatorSlot() public pure {
-        assertEq(ConstantsLib.INITIATOR_SLOT, bytes32(uint256(keccak256("Morpho Bundler Initiator Slot")) - 1));
     }
 
     function testAlreadyInitiated(address initiator) public {
@@ -87,10 +89,6 @@ contract BundlerLocalTest is LocalTest {
         assertEq(entries[7].data, abi.encode(moduleMock));
     }
 
-    function testCurrentModuleSlot() public pure {
-        assertEq(CURRENT_MODULE_SLOT, bytes32(uint256(keccak256("Morpho Bundler Current Module Slot")) - 1));
-    }
-
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
         vm.assume(initiator != address(0));
 
@@ -131,5 +129,27 @@ contract BundlerLocalTest is LocalTest {
 
         vm.prank(module);
         bundler.multicallFromModule(new Call[](0));
+    }
+
+    function testNotSkipRevert() public {
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: false});
+
+        // Check that this produces a failing call.
+        vm.prank(USER);
+        (bool success,) = empty.call(hex"");
+        assertFalse(success);
+
+        bundle.push(failingCall);
+        vm.prank(USER);
+        vm.expectRevert();
+        bundler.multicall(bundle);
+    }
+
+    function testSkipRevert() public {
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: true});
+
+        bundle.push(failingCall);
+        vm.prank(USER);
+        bundler.multicall(bundle);
     }
 }

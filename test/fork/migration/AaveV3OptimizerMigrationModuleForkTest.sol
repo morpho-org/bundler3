@@ -18,17 +18,17 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal AAVE_V3_OPTIMIZER = getAddress("AAVE_V3_OPTIMIZER");
-    address internal USDT = getAddress("USDT");
-    address internal WST_ETH = getAddress("WST_ETH");
-    address internal WETH = getAddress("WETH");
+    address internal immutable AAVE_V3_OPTIMIZER = getAddress("AAVE_V3_OPTIMIZER");
+    address internal immutable USDT = getAddress("USDT");
+    address internal immutable WST_ETH = getAddress("WST_ETH");
+    address internal immutable WETH = getAddress("WETH");
 
-    uint256 public constant MAX_ITERATIONS = 15;
+    uint256 internal constant MAX_ITERATIONS = 15;
 
-    uint256 collateralSupplied = 10_000 ether;
-    uint256 borrowed = 1 ether;
+    uint256 internal constant collateralSupplied = 10_000 ether;
+    uint256 internal constant borrowed = 1 ether;
 
-    AaveV3OptimizerMigrationModule public migrationModule;
+    AaveV3OptimizerMigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();
@@ -72,10 +72,12 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                migrationModule,
+                BaseModule(payable(address(AAVE_V3_OPTIMIZER))),
                 abi.encodeCall(
-                    migrationModule.aaveV3OptimizerApproveManagerWithSig, (true, 0, SIGNATURE_DEADLINE, sig, false)
-                )
+                    IAaveV3Optimizer.approveManagerWithSig, (user, address(this), true, 0, SIGNATURE_DEADLINE, sig)
+                ),
+                0,
+                false
             )
         );
 
@@ -225,15 +227,6 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         _assertVaultSupplierPosition(supplied, user, address(genericModule1));
     }
 
-    function testAaveV3OptimizerApproveManagerUnauthorized(uint256 amount) public onlyEthereum {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        Signature memory sig;
-
-        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        migrationModule.aaveV3OptimizerApproveManagerWithSig(true, 0, SIGNATURE_DEADLINE, sig, false);
-    }
-
     function testAaveV3OptimizerWithdrawUnauthorized(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -257,20 +250,22 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         uint256 nonce,
         bool skipRevert
     ) internal view returns (Call memory) {
+        address owner = vm.addr(privateKey);
         bytes32 digest = SigUtils.toTypedDataHash(
             IAaveV3Optimizer(AAVE_V3_OPTIMIZER).DOMAIN_SEPARATOR(),
-            AaveV3OptimizerAuthorization(vm.addr(privateKey), manager, isAllowed, nonce, SIGNATURE_DEADLINE)
+            AaveV3OptimizerAuthorization(owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE)
         );
 
         Signature memory sig;
         (sig.v, sig.r, sig.s) = vm.sign(privateKey, digest);
 
         return _call(
-            migrationModule,
+            BaseModule(payable(AAVE_V3_OPTIMIZER)),
             abi.encodeCall(
-                migrationModule.aaveV3OptimizerApproveManagerWithSig,
-                (isAllowed, nonce, SIGNATURE_DEADLINE, sig, skipRevert)
-            )
+                IAaveV3Optimizer.approveManagerWithSig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, sig)
+            ),
+            0,
+            skipRevert
         );
     }
 

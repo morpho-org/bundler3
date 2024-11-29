@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IAaveV3Optimizer, Signature} from "../interfaces/IAaveV3Optimizer.sol";
 
@@ -9,8 +9,6 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title AaveV3OptimizerMigrationModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho Blue easily.
 contract AaveV3OptimizerMigrationModule is BaseModule {
@@ -62,7 +60,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
-        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), receiver, maxIterations);
+        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, _initiator(), receiver, maxIterations);
     }
 
     /// @notice Withdraws on the AaveV3 Optimizer.
@@ -77,25 +75,6 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
-        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), receiver);
-    }
-
-    /// @notice Approves on the AaveV3 Optimizer.
-    /// @param isApproved Whether the module is allowed to manage the initiator's position or not.
-    /// @param nonce The nonce of the signed message.
-    /// @param deadline The deadline of the signed message.
-    /// @param signature The signature of the message.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function aaveV3OptimizerApproveManagerWithSig(
-        bool isApproved,
-        uint256 nonce,
-        uint256 deadline,
-        Signature calldata signature,
-        bool skipRevert
-    ) external onlyBundler {
-        try AAVE_V3_OPTIMIZER.approveManagerWithSig(initiator(), address(this), isApproved, nonce, deadline, signature)
-        {} catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
+        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, _initiator(), receiver);
     }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IAaveV3} from "../interfaces/IAaveV3.sol";
 
@@ -9,8 +9,6 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title AaveV3MigrationModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V3 to Morpho Blue easily.
 contract AaveV3MigrationModule is BaseModule {

@@ -15,19 +15,19 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
 
-    address internal AAVE_V2_POOL = getAddress("AAVE_V2_POOL");
-    address internal ST_ETH = getAddress("ST_ETH");
-    address internal WST_ETH = getAddress("WST_ETH");
-    address internal S_DAI = getAddress("S_DAI");
-    address internal DAI = getAddress("DAI");
-    address internal WETH = getAddress("WETH");
+    address internal immutable AAVE_V2_POOL = getAddress("AAVE_V2_POOL");
+    address internal immutable ST_ETH = getAddress("ST_ETH");
+    address internal immutable WST_ETH = getAddress("WST_ETH");
+    address internal immutable S_DAI = getAddress("S_DAI");
+    address internal immutable DAI = getAddress("DAI");
+    address internal immutable WETH = getAddress("WETH");
 
-    uint256 public constant RATE_MODE = 2;
+    uint256 internal constant RATE_MODE = 2;
 
-    uint256 collateralSupplied = 10_000 ether;
-    uint256 borrowed = 1 ether;
+    uint256 internal collateralSupplied = 10_000 ether;
+    uint256 internal constant borrowed = 1 ether;
 
-    AaveV2MigrationModule public migrationModule;
+    AaveV2MigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();

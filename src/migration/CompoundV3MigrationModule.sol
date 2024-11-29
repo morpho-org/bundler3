@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {ICompoundV3} from "../interfaces/ICompoundV3.sol";
 
@@ -10,8 +10,6 @@ import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 
-/// @title CompoundV3MigrationModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.
 contract CompoundV3MigrationModule is BaseModule {
@@ -33,9 +31,8 @@ contract CompoundV3MigrationModule is BaseModule {
     function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
         address asset = ICompoundV3(instance).baseToken();
 
-        if (amount == type(uint256).max) {
-            amount = ERC20(asset).balanceOf(address(this));
-        }
+        if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
+
         amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -58,7 +55,7 @@ contract CompoundV3MigrationModule is BaseModule {
         external
         onlyBundler
     {
-        address _initiator = initiator();
+        address _initiator = _initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
@@ -68,31 +65,5 @@ contract CompoundV3MigrationModule is BaseModule {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         ICompoundV3(instance).withdrawFrom(_initiator, receiver, asset, amount);
-    }
-
-    /// @notice Approves on a CompoundV3 instance.
-    /// @dev Assumes the given instance is a CompoundV3 instance.
-    /// @param instance The address of the CompoundV3 instance to call.
-    /// @param isAllowed Whether the module is allowed to manage the initiator's position or not.
-    /// @param nonce The nonce of the signed message.
-    /// @param expiry The expiry of the signed message.
-    /// @param v The `v` component of a signature.
-    /// @param r The `r` component of a signature.
-    /// @param s The `s` component of a signature.
-    /// @param skipRevert Whether to avoid reverting the call in case the signature is frontrunned.
-    function compoundV3AllowBySig(
-        address instance,
-        bool isAllowed,
-        uint256 nonce,
-        uint256 expiry,
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        bool skipRevert
-    ) external onlyBundler {
-        try ICompoundV3(instance).allowBySig(initiator(), address(this), isAllowed, nonce, expiry, v, r, s) {}
-        catch (bytes memory returnData) {
-            if (!skipRevert) ModuleLib.lowLevelRevert(returnData);
-        }
     }
 }
