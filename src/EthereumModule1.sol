@@ -16,8 +16,6 @@ import {
 } from "./GenericModule1.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
 
-/// @title EthereumModule1
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module contract specific to Ethereum n°1.
 contract EthereumModule1 is GenericModule1 {

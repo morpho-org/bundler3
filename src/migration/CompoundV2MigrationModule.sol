@@ -10,8 +10,6 @@ import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 
-/// @title CompoundV2MigrationModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
 contract CompoundV2MigrationModule is BaseModule {

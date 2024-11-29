@@ -6,28 +6,24 @@ import {IBundler, Call} from "./interfaces/IBundler.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
-/// @title Bundler
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Enables calling multiple functions in a single call to multiple contracts ("modules").
-/// @notice Stores the initiator of the multicall transaction.
-/// @notice Stores the current module that is about to be called.
+/// @notice Transiently stores the initiator of the multicall transaction.
+/// @notice Transiently stores the current module that is being called.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
 
-    /// @notice The address of the initiator of the multicall transaction.
+    /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Returns the current module.
-    /// @notice A module takes the 'current' status when called.
-    /// @notice A module gives back the 'current' status to the previously current module when it returns from a call.
-    /// @notice The initial current module is address(0).
+    /// @notice The current module.
+    /// @notice A module becomes the current module upon being called.
     address public transient currentModule;
 
     /* EXTERNAL */
 
     /// @notice Executes a series of calls to modules.
-    /// @dev Locks the initiator so that the sender can uniquely be identified in callbacks.
+    /// @dev Locks the initiator so that the sender can be identified by modules.
     /// @param bundle The ordered array of calldata to execute.
     function multicall(Call[] calldata bundle) external payable {
         require(initiator == address(0), ErrorsLib.AlreadyInitiated());
@@ -39,9 +35,10 @@ contract Bundler is IBundler {
         initiator = msg.sender;
     }
 
-    /// @notice Responds to bundle from the current module.
-    /// @dev Triggers `_multicall` logic during a callback.
-    /// @dev Only the current module can call this function.
+    /// @notice Executes a series of calls to modules.
+    /// @dev Useful during callbacks.
+    /// @dev Can only be called by the current module.
+    /// @param bundle The ordered array of calldata to execute.
     function multicallFromModule(Call[] calldata bundle) external {
         require(msg.sender == currentModule, ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
