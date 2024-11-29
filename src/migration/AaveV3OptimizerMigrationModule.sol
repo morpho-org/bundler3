@@ -60,7 +60,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
-        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), receiver, maxIterations);
+        AAVE_V3_OPTIMIZER.withdraw(underlying, amount, _initiator(), receiver, maxIterations);
     }
 
     /// @notice Withdraws on the AaveV3 Optimizer.
@@ -75,6 +75,6 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
-        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), receiver);
+        AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, _initiator(), receiver);
     }
 }

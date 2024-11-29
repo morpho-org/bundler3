@@ -56,7 +56,7 @@ contract CompoundV3MigrationModule is BaseModule {
         external
         onlyBundler
     {
-        address _initiator = initiator();
+        address _initiator = _initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
             ? ICompoundV3(instance).balanceOf(_initiator)
             : ICompoundV3(instance).userCollateral(_initiator, asset).balance;

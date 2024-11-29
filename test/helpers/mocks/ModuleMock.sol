@@ -20,7 +20,7 @@ contract ModuleMock is BaseModule {
     }
 
     function emitInitiator() external {
-        emit Initiator(initiator());
+        emit Initiator(_initiator());
     }
 
     function callbackBundler(Call[] calldata calls) external onlyBundler {

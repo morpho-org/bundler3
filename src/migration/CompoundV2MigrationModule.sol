@@ -55,7 +55,7 @@ contract CompoundV2MigrationModule is BaseModule {
     }
 
     /// @notice Repays an ETH debt on CompoundV2.
-    /// @dev Underlying tokens must have been previously sent to the module.
+    /// @dev ETH must have been previously sent to the module.
     /// @param amount The amount of cEth to repay. Unlike with `morphoRepay`, the amount is capped at `onBehalf`'s debt.
     /// Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and `onBehalf`'s
     /// debt).
