@@ -16,8 +16,8 @@ contract EthereumStEthModuleForkTest is ForkTest {
     using SafeTransferLib for ERC20;
     using MathRayLib for uint256;
 
-    address internal ST_ETH = getAddress("ST_ETH");
-    address internal WST_ETH = getAddress("WST_ETH");
+    address internal immutable ST_ETH = getAddress("ST_ETH");
+    address internal immutable WST_ETH = getAddress("WST_ETH");
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_stakeEth(0, type(uint256).max, address(0), receiver));

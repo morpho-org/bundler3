@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
 import {IStEth} from "../../../src/interfaces/IStEth.sol";
@@ -16,7 +16,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     using SafeTransferLib for ERC20;
 
     EthereumModule1 internal ethereumModule1;
-    MarketParams[] allMarketParams;
+    MarketParams[] internal allMarketParams;
 
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);

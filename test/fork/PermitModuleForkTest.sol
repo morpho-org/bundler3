@@ -19,8 +19,8 @@ bytes32 constant DAI_DOMAIN_SEPARATOR = 0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f
 contract PermitModuleForkTest is ForkTest {
     ERC20PermitMock internal permitToken;
 
-    address internal DAI = getAddress("DAI");
-    address internal USDC = getAddress("USDC");
+    address internal immutable DAI = getAddress("DAI");
+    address internal immutable USDC = getAddress("USDC");
 
     function setUp() public override {
         super.setUp();

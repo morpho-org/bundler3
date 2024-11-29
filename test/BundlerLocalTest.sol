@@ -8,8 +8,8 @@ import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 contract BundlerLocalTest is LocalTest {
-    ModuleMock moduleMock;
-    Call[] callbackBundle2;
+    ModuleMock internal moduleMock;
+    Call[] internal callbackBundle2;
 
     function setUp() public override {
         super.setUp();
