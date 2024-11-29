@@ -22,6 +22,15 @@ contract TransferModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
     }
 
+    function testTransferFromZeroAddress(uint256 amount) public {
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_erc20TransferFrom(address(loanToken), address(0), amount));
+
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        bundler.multicall(bundle);
+    }
+
     function testTransferFromUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 

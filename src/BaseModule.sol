@@ -46,7 +46,9 @@ contract BaseModule {
 
         if (amount == type(uint256).max) amount = address(this).balance;
 
-        if (amount > 0) SafeTransferLib.safeTransferETH(receiver, amount);
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
     /// @notice Transfers ERC20 tokens.
@@ -60,7 +62,9 @@ contract BaseModule {
 
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
 
-        if (amount > 0) SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
     }
 
     /* INTERNAL */
