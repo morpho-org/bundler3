@@ -2,11 +2,9 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
-import "../src/libraries/ConstantsLib.sol" as ConstantsLib;
 
 import "./helpers/LocalTest.sol";
 import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
-import {CURRENT_MODULE_SLOT} from "../src/libraries/ConstantsLib.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 contract ConcreteBaseModule is BaseModule {
@@ -29,10 +27,6 @@ contract BundlerLocalTest is LocalTest {
 
     function testMulticallEmpty() public {
         bundler.multicall(bundle);
-    }
-
-    function testInitiatorSlot() public pure {
-        assertEq(ConstantsLib.INITIATOR_SLOT, bytes32(uint256(keccak256("Morpho Bundler Initiator Slot")) - 1));
     }
 
     function testAlreadyInitiated(address initiator) public {
@@ -89,10 +83,6 @@ contract BundlerLocalTest is LocalTest {
         assertEq(entries[5].data, abi.encode(moduleMock2));
         assertEq(entries[6].data, abi.encode(moduleMock3));
         assertEq(entries[7].data, abi.encode(moduleMock));
-    }
-
-    function testCurrentModuleSlot() public pure {
-        assertEq(CURRENT_MODULE_SLOT, bytes32(uint256(keccak256("Morpho Bundler Current Module Slot")) - 1));
     }
 
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
