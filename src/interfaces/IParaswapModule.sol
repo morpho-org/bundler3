@@ -14,8 +14,6 @@ struct Offsets {
     uint256 quotedAmount;
 }
 
-/// @title IParaswapModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Interface of Paraswap Module
 interface IParaswapModule {

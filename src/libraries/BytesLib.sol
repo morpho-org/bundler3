@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "./ErrorsLib.sol";
 
-/// @title BytesLib
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Library exposing bytes manipulation.
 library BytesLib {

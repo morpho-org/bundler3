@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.27;
+pragma solidity 0.8.28;
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
@@ -9,8 +9,6 @@ import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
 
-/// @title ParaswapModule
-/// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
 contract ParaswapModule is IParaswapModule {
