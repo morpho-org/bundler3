@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity 0.8.28;
 
 import {IAaveV3Optimizer, Signature} from "../interfaces/IAaveV3Optimizer.sol";
 
