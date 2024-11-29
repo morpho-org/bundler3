@@ -23,7 +23,8 @@ Users should not approve untrusted modules, just like they should not approve un
 
 Before calling a contract, the Bundler stores its own caller address as the bundle's `initiator`.
 Modules can read the current initiator during bundle execution.
-This is useful to make a secure module: for instance, a module should only move funds owned by the current initiator.
+This is useful to secure a module that holds approvals or authorizations, by restricting function calls depending on the value of the current initiator.
+For instance, such a module should only allow to move funds owned by the current initiator.
 
 When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`.
 This is useful for callback-based flows such as flashloans.
