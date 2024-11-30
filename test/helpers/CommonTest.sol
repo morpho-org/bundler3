@@ -250,7 +250,7 @@ abstract contract CommonTest is Test {
         uint256 claimable,
         bytes32[] memory proof,
         bool skipRevert
-    ) internal view returns (Call memory) {
+    ) internal pure returns (Call memory) {
         return _call(
             BaseModule(payable(address(distributor))),
             abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
