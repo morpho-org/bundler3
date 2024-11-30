@@ -47,11 +47,9 @@ contract ParaswapModule is IParaswapModule {
         Offsets calldata offsets,
         address receiver
     ) external {
-        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
-
         if (sellEntireBalance) {
             uint256 newSrcAmount = ERC20(srcToken).balanceOf(address(this));
-            updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
+            _updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
         }
 
         _swapAndSkim(
@@ -86,10 +84,8 @@ contract ParaswapModule is IParaswapModule {
         Offsets calldata offsets,
         address receiver
     ) external {
-        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
-
         if (newDestAmount != 0) {
-            updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
+            _updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
 
         _swapAndSkim(
@@ -115,6 +111,8 @@ contract ParaswapModule is IParaswapModule {
         uint256 minDestAmount,
         address receiver
     ) internal {
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+
         uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = ERC20(destToken).balanceOf(address(this));
 
@@ -141,10 +139,12 @@ contract ParaswapModule is IParaswapModule {
     /// @notice Set exact amount in `callData` to `exactAmount`.
     /// @notice Proportionally scale limit amount in `callData`.
     /// @notice If `offsets.quotedAmount` is not zero, proportionally scale quoted amount in `callData`.
-    function updateAmounts(bytes memory callData, Offsets calldata offsets, uint256 exactAmount, Math.Rounding rounding)
-        internal
-        pure
-    {
+    function _updateAmounts(
+        bytes memory callData,
+        Offsets calldata offsets,
+        uint256 exactAmount,
+        Math.Rounding rounding
+    ) internal pure {
         uint256 oldExactAmount = callData.get(offsets.exactAmount);
         callData.set(offsets.exactAmount, exactAmount);
 
