@@ -306,8 +306,11 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         deal(address(collateralToken), address(paraswapModule), amount + extra);
         bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, receiver));
+        bundle.push(
+            _erc20TransferSkipRevert(address(collateralToken), address(this), type(uint256).max, paraswapModule)
+        );
         bundler.multicall(bundle);
-        assertEq(collateralToken.balanceOf(receiver), extra, "receiver collateral");
+        assertEq(collateralToken.balanceOf(address(this)), extra, "receiver collateral");
         assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "paraswap module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "paraswap module loan token");
@@ -321,8 +324,11 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         deal(address(collateralToken), address(paraswapModule), amount + extra);
         bundle.push(_buy(address(collateralToken), address(loanToken), amount, amount, 0, receiver));
+        bundle.push(
+            _erc20TransferSkipRevert(address(collateralToken), address(this), type(uint256).max, paraswapModule)
+        );
         bundler.multicall(bundle);
-        assertEq(collateralToken.balanceOf(receiver), extra, "receiver collateral");
+        assertEq(collateralToken.balanceOf(address(this)), extra, "receiver collateral");
         assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "paraswap module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "paraswap module loan token");

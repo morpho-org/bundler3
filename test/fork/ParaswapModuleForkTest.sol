@@ -117,6 +117,7 @@ contract ParaswapModuleForkTest is ForkTest {
                 )
             )
         );
+        bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapModule));
 
         vm.startPrank(user);
         ERC20(USDC).approve(address(genericModule1), type(uint256).max);
@@ -161,6 +162,7 @@ contract ParaswapModuleForkTest is ForkTest {
                 )
             )
         );
+        bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapModule));
 
         vm.startPrank(user);
         ERC20(USDC).approve(address(genericModule1), type(uint256).max);
