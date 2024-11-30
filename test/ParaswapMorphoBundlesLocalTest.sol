@@ -316,10 +316,10 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             )
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(
-            _morphoBorrow(destParams, borrowAssetsToTransfer, 0, 0, address(genericModule1))
+        callbackBundle.push(_morphoBorrow(destParams, borrowAssetsToTransfer, 0, 0, address(genericModule1)));
+        bundle.push(
+            _morphoRepay(sourceParams, borrowAssetsToTransfer, 0, type(uint256).max, user, abi.encode(callbackBundle))
         );
-        bundle.push(_morphoRepay(sourceParams, borrowAssetsToTransfer, 0, type(uint256).max, user, abi.encode(callbackBundle)));
     }
 
     function testFullCollateralSwap(uint256 borrowAmount) public {
@@ -379,9 +379,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             )
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(
-            _morphoBorrow(destParams, sourceBorrowAssetsOverestimate, 0, 0, address(genericModule1))
-        );
+        callbackBundle.push(_morphoBorrow(destParams, sourceBorrowAssetsOverestimate, 0, 0, address(genericModule1)));
         callbackBundle.push(_morphoRepay(sourceParams, 0, sourceBorrowShares, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(genericModule1)));
@@ -550,9 +548,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             )
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(
-            _morphoBorrow(destParams, destBorrowAssetsOverestimate, 0, 0, address(paraswapModule))
-        );
+        callbackBundle.push(_morphoBorrow(destParams, destBorrowAssetsOverestimate, 0, 0, address(paraswapModule)));
 
         // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams
         callbackBundle.push(
