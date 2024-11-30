@@ -13,7 +13,6 @@ import {ModuleLib} from "./libraries/ModuleLib.sol";
 /// @notice Module for trading with Paraswap.
 contract ParaswapModule is IParaswapModule {
     using Math for uint256;
-    using SafeTransferLib for ERC20;
     using BytesLib for bytes;
 
     /* IMMUTABLES */
@@ -117,7 +116,7 @@ contract ParaswapModule is IParaswapModule {
         uint256 destInitial = ERC20(destToken).balanceOf(address(this));
 
         if (ERC20(srcToken).allowance(address(this), augustus) == 0) {
-            ERC20(srcToken).safeApprove(augustus, type(uint256).max);
+            SafeTransferLib.safeApprove(ERC20(srcToken), augustus, type(uint256).max);
         }
 
         (bool success, bytes memory returnData) = address(augustus).call(callData);
@@ -132,8 +131,8 @@ contract ParaswapModule is IParaswapModule {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (srcFinal > 0) ERC20(srcToken).safeTransfer(receiver, srcFinal);
-        if (destFinal > 0) ERC20(destToken).safeTransfer(receiver, destFinal);
+        if (srcFinal > 0) SafeTransferLib.safeTransfer(ERC20(srcToken), receiver, srcFinal);
+        if (destFinal > 0) SafeTransferLib.safeTransfer(ERC20(destToken), receiver, destFinal);
     }
 
     /// @notice Set exact amount in `callData` to `exactAmount`.
