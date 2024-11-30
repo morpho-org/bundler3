@@ -38,7 +38,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.prank(address(bundler));
 
         vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
-        paraswapModule.sell(_augustus, hex"", address(0), address(0), true, Offsets(0, 0, 0), address(0));
+        paraswapModule.sell(_augustus, new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
     }
 
     function testAugustusInRegistryBuyCheck(address _augustus) public {
@@ -47,7 +47,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.prank(address(bundler));
 
         vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
-        paraswapModule.buy(_augustus, hex"", address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+        paraswapModule.buy(_augustus, new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
     }
 
     uint256 _bytesLength = 1024;
