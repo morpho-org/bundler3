@@ -3,14 +3,15 @@ pragma solidity ^0.8.0;
 
 // Pose as existing contracts and make them do unexpected things.
 contract FunctionMocker {
-    address public transient initiator;
-    address public transient currentModule;
-
     function setInitiator(address newInitiator) external {
-        initiator = newInitiator;
+        assembly {
+            tstore(0, newInitiator)
+        }
     }
 
     function setCurrentModule(address newCurrentModule) external {
-        currentModule = newCurrentModule;
+        assembly {
+            tstore(1, newCurrentModule)
+        }
     }
 }
