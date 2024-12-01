@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {BaseModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./BaseModule.sol";
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
+import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
+import {ModuleLib} from "./libraries/ModuleLib.sol";
 import {IMorpho, MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is BaseModule, IParaswapModule {
+contract ParaswapModule is IParaswapModule {
     using Math for uint256;
     using BytesLib for bytes;
 
@@ -21,7 +23,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address augustusRegistry) BaseModule(bundler) {
+    constructor(address morpho, address augustusRegistry) {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
         MORPHO = IMorpho(morpho);
     }
@@ -99,13 +101,14 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         );
     }
 
-    /// @notice Buy the amount of the initiator's Morpho debt.
+    /// @notice Buy an amount corresponding to a user's Morpho debt.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
-    /// @param marketParams Market parameters of the initiator's Morpho debt.
+    /// @param marketParams Market parameters of the market with Morpho debt.
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
+    /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
     /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
     function buyMorphoDebt(
         address augustus,
@@ -113,9 +116,10 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         address srcToken,
         MarketParams calldata marketParams,
         Offsets calldata offsets,
+        address onBehalf,
         address receiver
     ) external {
-        uint256 newDestAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, _initiator());
+        uint256 newDestAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, onBehalf);
         buy(augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver);
     }
 

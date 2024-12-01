@@ -88,7 +88,7 @@ abstract contract CommonTest is Test {
 
         bundler = new Bundler();
         genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
-        paraswapModule = new ParaswapModule(address(bundler), address(morpho), address(augustusRegistryMock));
+        paraswapModule = new ParaswapModule(address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
