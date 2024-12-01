@@ -96,11 +96,10 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            genericModule1,
+            paraswapModule,
             abi.encodeCall(
-                genericModule1.paraswapBuyMorphoDebt,
+                paraswapModule.buyMorphoDebt,
                 (
-                    address(paraswapModule),
                     address(augustus),
                     abi.encodeCall(augustus.mockBuy, (srcToken, marketParams.loanToken, maxSrcAmount, destAmount)),
                     srcToken,

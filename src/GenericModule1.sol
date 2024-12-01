@@ -447,23 +447,6 @@ contract GenericModule1 is BaseModule {
         if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, amount);
     }
 
-    /* SWAP ACTIONS */
-
-    function paraswapBuyMorphoDebt(
-        address paraswapModule,
-        address augustus,
-        bytes memory callData,
-        address srcToken,
-        MarketParams calldata marketParams,
-        Offsets calldata offsets,
-        address receiver
-    ) external onlyBundler {
-        uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, _initiator());
-        IParaswapModule(paraswapModule).buy(
-            augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver
-        );
-    }
-
     /* INTERNAL FUNCTIONS */
 
     /// @dev Triggers `_multicall` logic during a callback.

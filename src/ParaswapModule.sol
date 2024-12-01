@@ -1,28 +1,29 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {BaseModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./BaseModule.sol";
 import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
-import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {IMorpho, MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is IParaswapModule {
+contract ParaswapModule is BaseModule, IParaswapModule {
     using Math for uint256;
     using BytesLib for bytes;
 
     /* IMMUTABLES */
 
     IAugustusRegistry public immutable AUGUSTUS_REGISTRY;
+    IMorpho public immutable MORPHO;
 
     /* CONSTRUCTOR */
 
-    constructor(address augustusRegistry) {
+    constructor(address bundler, address morpho, address augustusRegistry) BaseModule(bundler) {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
+        MORPHO = IMorpho(morpho);
     }
 
     /* SWAP ACTIONS */
@@ -82,7 +83,7 @@ contract ParaswapModule is IParaswapModule {
         uint256 newDestAmount,
         Offsets calldata offsets,
         address receiver
-    ) external {
+    ) public {
         if (newDestAmount != 0) {
             _updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
@@ -96,6 +97,26 @@ contract ParaswapModule is IParaswapModule {
             callData.get(offsets.exactAmount),
             receiver
         );
+    }
+
+    /// @notice Buy the amount of the initiator's Morpho debt.
+    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param callData Swap data to call `augustus` with. Contains routing information.
+    /// @param srcToken Token to sell.
+    /// @param marketParams Market parameters of the initiator's Morpho debt.
+    /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
+    /// and quoted sell amount (`quotedAmount`).
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    function buyMorphoDebt(
+        address augustus,
+        bytes memory callData,
+        address srcToken,
+        MarketParams calldata marketParams,
+        Offsets calldata offsets,
+        address receiver
+    ) external {
+        uint256 newDestAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, _initiator());
+        buy(augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver);
     }
 
     /* INTERNAL FUNCTIONS */
