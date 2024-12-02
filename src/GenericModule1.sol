@@ -197,9 +197,9 @@ contract GenericModule1 is BaseModule {
         _morphoCallback(data);
     }
 
-        function onMorphoFlashLoan(uint256, bytes calldata data) external {
-            _morphoCallback(data);
-        }
+    function onMorphoFlashLoan(uint256, bytes calldata data) external {
+        _morphoCallback(data);
+    }
 
     /* MORPHO ACTIONS */
 
