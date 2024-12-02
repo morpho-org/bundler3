@@ -33,7 +33,7 @@ contract PermitModuleLocalTest is LocalTest {
         vm.prank(user);
         bundler.multicall(bundle);
 
-        assertEq(permitToken.allowance(user, spender), amount, "allowance(user, genericModule1");
+        assertEq(permitToken.allowance(user, spender), amount, "allowance(user, generalModule1");
     }
 
     function testPermitRevert(uint256 amount, uint256 privateKey, address spender, uint256 deadline) public {
@@ -59,7 +59,7 @@ contract PermitModuleLocalTest is LocalTest {
 
         address user = vm.addr(privateKey);
 
-        bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, address(generalModule1), amount, deadline, false));
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
         deal(address(permitToken), user, amount);
@@ -67,7 +67,7 @@ contract PermitModuleLocalTest is LocalTest {
         vm.prank(user);
         bundler.multicall(bundle);
 
-        assertEq(permitToken.balanceOf(address(genericModule1)), amount, "balanceOf(genericModule1)");
+        assertEq(permitToken.balanceOf(address(generalModule1)), amount, "balanceOf(generalModule1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
     }
 }

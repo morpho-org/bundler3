@@ -18,15 +18,15 @@ contract ERC4626ModuleLocalTest is LocalTest {
         vault = new ERC4626Mock(address(loanToken), "LoanToken Vault", "BV");
 
         vm.startPrank(USER);
-        vault.approve(address(genericModule1), type(uint256).max);
-        loanToken.approve(address(genericModule1), type(uint256).max);
+        vault.approve(address(generalModule1), type(uint256).max);
+        loanToken.approve(address(generalModule1), type(uint256).max);
         loanToken.approve(address(vault), type(uint256).max);
         vm.stopPrank();
     }
 
     function test4626MintUnauthorized(uint256 shares) public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc4626Mint(address(vault), 0, shares, RECEIVER);
+        generalModule1.erc4626Mint(address(vault), 0, shares, RECEIVER);
     }
 
     function testErc4626MintZeroAdressVault(uint256 shares) public {
@@ -45,7 +45,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
     function test4626DepositUnauthorized(uint256 assets) public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc4626Deposit(address(vault), assets, type(uint256).max, RECEIVER);
+        generalModule1.erc4626Deposit(address(vault), assets, type(uint256).max, RECEIVER);
     }
 
     function testErc4626DepositZeroAdressVault(uint256 assets) public {
@@ -64,18 +64,18 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
     function test4626WithdrawUnauthorized(uint256 assets) public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc4626Withdraw(address(vault), assets, 0, RECEIVER, address(genericModule1));
+        generalModule1.erc4626Withdraw(address(vault), assets, 0, RECEIVER, address(generalModule1));
     }
 
     function testErc4626WithdrawZeroAdressVault(uint256 assets) public {
-        bundle.push(_erc4626Withdraw(address(0), assets, 0, RECEIVER, address(genericModule1)));
+        bundle.push(_erc4626Withdraw(address(0), assets, 0, RECEIVER, address(generalModule1)));
 
         vm.expectRevert();
         bundler.multicall(bundle);
     }
 
     function testErc4626WithdrawUnexpectedOwner(uint256 assets, address owner) public {
-        vm.assume(owner != address(this) && owner != address(genericModule1));
+        vm.assume(owner != address(this) && owner != address(generalModule1));
 
         bundle.push(_erc4626Withdraw(address(vault), assets, 0, RECEIVER, owner));
 
@@ -84,7 +84,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function testErc4626WithdrawZeroAdress(uint256 assets) public {
-        bundle.push(_erc4626Withdraw(address(vault), assets, 0, address(0), address(genericModule1)));
+        bundle.push(_erc4626Withdraw(address(vault), assets, 0, address(0), address(generalModule1)));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
@@ -92,18 +92,18 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
     function test4626RedeemUnauthorized(uint256 shares) public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc4626Redeem(address(vault), shares, 0, RECEIVER, address(genericModule1));
+        generalModule1.erc4626Redeem(address(vault), shares, 0, RECEIVER, address(generalModule1));
     }
 
     function testErc4626RedeemZeroAdressVault(uint256 shares) public {
-        bundle.push(_erc4626Redeem(address(0), shares, 0, RECEIVER, address(genericModule1)));
+        bundle.push(_erc4626Redeem(address(0), shares, 0, RECEIVER, address(generalModule1)));
 
         vm.expectRevert();
         bundler.multicall(bundle);
     }
 
     function testErc4626RedeemUnexpectedOwner(uint256 shares, address owner) public {
-        vm.assume(owner != address(this) && owner != address(genericModule1));
+        vm.assume(owner != address(this) && owner != address(generalModule1));
 
         bundle.push(_erc4626Redeem(address(vault), shares, 0, RECEIVER, owner));
 
@@ -112,7 +112,7 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function testErc4626RedeemZeroAdress(uint256 shares) public {
-        bundle.push(_erc4626Redeem(address(vault), shares, 0, address(0), address(genericModule1)));
+        bundle.push(_erc4626Redeem(address(vault), shares, 0, address(0), address(generalModule1)));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
@@ -133,14 +133,14 @@ contract ERC4626ModuleLocalTest is LocalTest {
     }
 
     function testErc4626WithdrawZero() public {
-        bundle.push(_erc4626Withdraw(address(vault), 0, 0, RECEIVER, address(genericModule1)));
+        bundle.push(_erc4626Withdraw(address(vault), 0, 0, RECEIVER, address(generalModule1)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
     function testErc4626RedeemZero() public {
-        bundle.push(_erc4626Redeem(address(vault), 0, 0, RECEIVER, address(genericModule1)));
+        bundle.push(_erc4626Redeem(address(vault), 0, 0, RECEIVER, address(generalModule1)));
 
         vm.expectRevert(ErrorsLib.ZeroShares.selector);
         bundler.multicall(bundle);
@@ -177,8 +177,8 @@ contract ERC4626ModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), assets, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(genericModule1)");
-        assertEq(vault.balanceOf(address(genericModule1)), 0, "vault.balanceOf(USER)");
+        assertEq(loanToken.balanceOf(address(generalModule1)), 0, "loan.balanceOf(generalModule1)");
+        assertEq(vault.balanceOf(address(generalModule1)), 0, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
     }
 
@@ -213,8 +213,8 @@ contract ERC4626ModuleLocalTest is LocalTest {
         bundler.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), assets, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(genericModule1)");
-        assertEq(vault.balanceOf(address(genericModule1)), 0, "vault.balanceOf(USER)");
+        assertEq(loanToken.balanceOf(address(generalModule1)), 0, "loan.balanceOf(generalModule1)");
+        assertEq(vault.balanceOf(address(generalModule1)), 0, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
     }
 
@@ -248,14 +248,14 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         bundle.push(_erc20TransferFrom(address(vault), redeemed));
         bundle.push(
-            _erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, address(genericModule1))
+            _erc4626Withdraw(address(vault), assets, assets.rDivDown(redeemed), RECEIVER, address(generalModule1))
         );
 
         vm.prank(USER);
         bundler.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), deposited - assets, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(genericModule1)");
+        assertEq(loanToken.balanceOf(address(generalModule1)), 0, "loan.balanceOf(generalModule1)");
         assertEq(loanToken.balanceOf(RECEIVER), assets, "loan.balanceOf(RECEIVER)");
         assertEq(vault.balanceOf(USER), minted - redeemed, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(RECEIVER), 0, "vault.balanceOf(RECEIVER)");
@@ -290,14 +290,14 @@ contract ERC4626ModuleLocalTest is LocalTest {
 
         bundle.push(_erc20TransferFrom(address(vault), shares));
         bundle.push(
-            _erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, address(genericModule1))
+            _erc4626Redeem(address(vault), shares, withdrawn.rDivDown(shares), RECEIVER, address(generalModule1))
         );
 
         vm.prank(USER);
         bundler.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(vault)), deposited - withdrawn, "loan.balanceOf(vault)");
-        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(genericModule1)");
+        assertEq(loanToken.balanceOf(address(generalModule1)), 0, "loan.balanceOf(generalModule1)");
         assertEq(loanToken.balanceOf(RECEIVER), withdrawn, "loan.balanceOf(RECEIVER)");
         assertEq(vault.balanceOf(USER), minted - shares, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(RECEIVER), 0, "vault.balanceOf(RECEIVER)");

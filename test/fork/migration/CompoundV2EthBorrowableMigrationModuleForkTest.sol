@@ -145,21 +145,21 @@ contract CompoundV2EthBorrowableMigrationModuleForkTest is MigrationForkTest {
         ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
-        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(genericModule1)));
+        callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(generalModule1)));
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, false, 1, false));
         callbackBundle.push(_unwrapNative(borrowed, address(migrationModule)));
         callbackBundle.push(_compoundV2RepayEth(borrowed / 2, user));
         callbackBundle.push(_compoundV2RepayEth(type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
         callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationModule), cTokenBalance));
-        callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(genericModule1)));
+        callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(generalModule1)));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertBorrowerPosition(collateral, borrowed, user, address(genericModule1));
+        _assertBorrowerPosition(collateral, borrowed, user, address(generalModule1));
     }
 
     function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
@@ -180,14 +180,14 @@ contract CompoundV2EthBorrowableMigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
-        bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
-        bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
+        bundle.push(_compoundV2RedeemEth(cTokenBalance, address(generalModule1)));
+        bundle.push(_wrapNativeNoFunding(supplied, address(generalModule1)));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertSupplierPosition(supplied, user, address(genericModule1));
+        _assertSupplierPosition(supplied, user, address(generalModule1));
     }
 
     function testMigrateSupplierToVaultWithPermit2(uint256 supplied) public onlyEthereum {
@@ -208,14 +208,14 @@ contract CompoundV2EthBorrowableMigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationModule), cTokenBalance));
-        bundle.push(_compoundV2RedeemEth(cTokenBalance, address(genericModule1)));
-        bundle.push(_wrapNativeNoFunding(supplied, address(genericModule1)));
+        bundle.push(_compoundV2RedeemEth(cTokenBalance, address(generalModule1)));
+        bundle.push(_wrapNativeNoFunding(supplied, address(generalModule1)));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertVaultSupplierPosition(supplied, user, address(genericModule1));
+        _assertVaultSupplierPosition(supplied, user, address(generalModule1));
     }
 
     /* ACTIONS */

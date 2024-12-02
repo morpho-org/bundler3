@@ -6,7 +6,7 @@ import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTra
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import "../../src/modules/EthereumModule1.sol";
+import "../../src/modules/EthereumGeneralModule1.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -32,7 +32,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_transferNativeToModule(payable(genericModule1), amount));
+        bundle.push(_transferNativeToModule(payable(generalModule1), amount));
         bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), RECEIVER));
 
         deal(USER, amount);
@@ -42,9 +42,9 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         assertEq(USER.balance, 0, "USER.balance");
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
-        assertEq(address(ethereumModule1).balance, 0, "ethereumModule1.balance");
+        assertEq(address(ethereumGeneralModule1).balance, 0, "ethereumGeneralModule1.balance");
         assertEq(ERC20(ST_ETH).balanceOf(USER), 0, "balanceOf(USER)");
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumModule1)), 0, 1, "balanceOf(ethereumModule1)");
+        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "balanceOf(ethereumGeneralModule1)");
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), amount, 3, "balanceOf(RECEIVER)");
     }
 
@@ -53,8 +53,8 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
 
-        bundle.push(_transferNativeToModule(payable(genericModule1), amount));
-        bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), address(ethereumModule1)));
+        bundle.push(_transferNativeToModule(payable(generalModule1), amount));
+        bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), address(ethereumGeneralModule1)));
 
         vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
 
@@ -83,7 +83,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
         amount = ERC20(ST_ETH).balanceOf(user);
 
         bundle.push(_approve2(privateKey, ST_ETH, amount, 0, false));
-        bundle.push(_transferFrom2(ST_ETH, address(ethereumModule1), amount));
+        bundle.push(_transferFrom2(ST_ETH, address(ethereumGeneralModule1), amount));
         bundle.push(_wrapStEth(amount, RECEIVER));
 
         uint256 wstEthExpectedAmount = IStEth(ST_ETH).getSharesByPooledEth(ERC20(ST_ETH).balanceOf(user));
@@ -94,11 +94,11 @@ contract EthereumStEthModuleForkTest is ForkTest {
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumModule1)), 0, "wstEth.balanceOf(ethereumModule1)");
+        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, "wstEth.balanceOf(ethereumGeneralModule1)");
         assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertApproxEqAbs(ERC20(WST_ETH).balanceOf(RECEIVER), wstEthExpectedAmount, 1, "wstEth.balanceOf(RECEIVER)");
 
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumModule1)), 0, 1, "wstEth.balanceOf(ethereumModule1)");
+        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "wstEth.balanceOf(ethereumGeneralModule1)");
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
         assertEq(ERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
     }
@@ -117,7 +117,7 @@ contract EthereumStEthModuleForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_approve2(privateKey, WST_ETH, amount, 0, false));
-        bundle.push(_transferFrom2(WST_ETH, address(ethereumModule1), amount));
+        bundle.push(_transferFrom2(WST_ETH, address(ethereumGeneralModule1), amount));
         bundle.push(_unwrapStEth(amount, RECEIVER));
 
         deal(WST_ETH, user, amount);
@@ -130,11 +130,11 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 expectedUnwrappedAmount = IWstEth(WST_ETH).getStETHByWstETH(amount);
 
-        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumModule1)), 0, "wstEth.balanceOf(ethereumModule1)");
+        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, "wstEth.balanceOf(ethereumGeneralModule1)");
         assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertEq(ERC20(WST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
 
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumModule1)), 0, 1, "stEth.balanceOf(ethereumModule1)");
+        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "stEth.balanceOf(ethereumGeneralModule1)");
         assertEq(ERC20(ST_ETH).balanceOf(user), 0, "stEth.balanceOf(user)");
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
     }

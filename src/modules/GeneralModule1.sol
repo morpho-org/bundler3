@@ -26,7 +26,7 @@ import {UtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
-contract GenericModule1 is CoreModule {
+contract GeneralModule1 is CoreModule {
     using SafeCast160 for uint256;
     using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
