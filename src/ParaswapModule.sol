@@ -137,12 +137,10 @@ contract ParaswapModule is IParaswapModule {
     ) internal {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
 
+        ModuleLib.approveMaxToIfAllowanceZero(srcToken, augustus);
+
         uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = ERC20(destToken).balanceOf(address(this));
-
-        if (ERC20(srcToken).allowance(address(this), augustus) == 0) {
-            SafeTransferLib.safeApprove(ERC20(srcToken), augustus, type(uint256).max);
-        }
 
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) ModuleLib.lowLevelRevert(returnData);
