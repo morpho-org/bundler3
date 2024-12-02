@@ -130,7 +130,9 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (destFinal > 0) SafeTransferLib.safeTransfer(ERC20(destToken), receiver, destFinal);
+        if (destFinal > 0 && receiver != address(this)) {
+            SafeTransferLib.safeTransfer(ERC20(destToken), receiver, destAmount);
+        }
     }
 
     /// @notice Set exact amount in `callData` to `exactAmount`.

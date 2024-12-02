@@ -368,4 +368,19 @@ contract ParaswapModuleLocalTest is LocalTest {
         assertEq(collateralToken.balanceOf(address(paraswapModule)), 0, "paraswap module collateral");
         assertEq(loanToken.balanceOf(address(paraswapModule)), 0, "paraswap module loan token");
     }
+
+    function testReceiverGetsReceivedAmountOnly(address receiver, uint256 amount, uint256 initialAmount) public {
+        _receiver(receiver);
+        amount = bound(amount, 0, type(uint64).max);
+        initialAmount = bound(initialAmount, 0, type(uint64).max);
+
+        deal(address(loanToken), address(paraswapModule), initialAmount);
+
+        deal(address(collateralToken), address(paraswapModule), amount);
+
+        bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, receiver));
+        bundler.multicall(bundle);
+        assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
+        assertEq(loanToken.balanceOf(address(paraswapModule)), initialAmount, "paraswapModule loan token");
+    }
 }
