@@ -30,7 +30,7 @@ abstract contract BaseModule {
 
     /// @notice Native tokens are received by the module and should be used afterwards.
     /// @dev Allows the wrapped native contract to transfer native tokens to the module.
-    receive() external payable {}
+    receive() external payable virtual {}
 
     /* ACTIONS */
 
