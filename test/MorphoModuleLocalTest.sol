@@ -893,4 +893,31 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         bundle.push(_morphoRepay(marketParams, assets, 0, sharePriceE27, address(this), hex""));
         bundler.multicall(bundle);
     }
+
+    function testFlashLoanZero() public {
+        bundle.push(_morphoFlashLoan(address(0), 0, hex""));
+
+        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testFlashLoan(uint256 amount) public {
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        deal(address(loanToken), address(this), amount);
+
+        morpho.supply(marketParams, amount, 0, SUPPLIER, hex"");
+
+        callbackBundle.push(_erc20Transfer(address(loanToken), USER, amount, genericModule1));
+        callbackBundle.push(_erc20TransferFrom(address(loanToken), amount));
+
+        bundle.push(_morphoFlashLoan(address(loanToken), amount, abi.encode(callbackBundle)));
+
+        vm.prank(USER);
+        bundler.multicall(bundle);
+
+        assertEq(loanToken.balanceOf(USER), 0, "User's loan token balance");
+        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "Module's loan token balance");
+        assertEq(loanToken.balanceOf(address(morpho)), amount, "Morpho's loan token balance");
+    }
 }
