@@ -53,15 +53,15 @@ contract ParaswapModule is BaseModule, IParaswapModule {
             _updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
         }
 
-        _swap(
-            augustus,
-            callData,
-            srcToken,
-            destToken,
-            callData.get(offsets.exactAmount),
-            callData.get(offsets.limitAmount),
-            receiver
-        );
+        _swap({
+            augustus: augustus,
+            callData: callData,
+            srcToken: srcToken,
+            destToken: destToken,
+            maxSrcAmount: callData.get(offsets.exactAmount),
+            minDestAmount: callData.get(offsets.limitAmount),
+            receiver: receiver
+        });
     }
 
     /// @notice Buy an exact amount. Can check for a maximum sold amount.
@@ -90,15 +90,15 @@ contract ParaswapModule is BaseModule, IParaswapModule {
             _updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
 
-        _swap(
-            augustus,
-            callData,
-            srcToken,
-            destToken,
-            callData.get(offsets.limitAmount),
-            callData.get(offsets.exactAmount),
-            receiver
-        );
+        _swap({
+            augustus: augustus,
+            callData: callData,
+            srcToken: srcToken,
+            destToken: destToken,
+            maxSrcAmount: callData.get(offsets.limitAmount),
+            minDestAmount: callData.get(offsets.exactAmount),
+            receiver: receiver
+        });
     }
 
     /// @notice Buy an amount corresponding to a user's Morpho debt.
@@ -119,8 +119,16 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         address onBehalf,
         address receiver
     ) external {
-        uint256 newDestAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, onBehalf);
-        buy(augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver);
+        uint256 debtAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, onBehalf);
+        buy({
+            augustus: augustus,
+            callData: callData,
+            srcToken: srcToken,
+            destToken: marketParams.loanToken,
+            newDestAmount: debtAmount,
+            offsets: offsets,
+            receiver: receiver
+        });
     }
 
     /* INTERNAL FUNCTIONS */
