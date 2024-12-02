@@ -26,28 +26,7 @@ abstract contract BaseModule {
         _;
     }
 
-    /* FALLBACKS */
-
-    /// @notice Native tokens are received by the module and should be used afterwards.
-    /// @dev Allows the wrapped native contract to transfer native tokens to the module.
-    receive() external payable {}
-
     /* ACTIONS */
-
-    /// @notice Transfers native assets.
-    /// @dev The amount transfered can be zero.
-    /// @param receiver The address that will receive the native tokens.
-    /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
-    function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
-        require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(receiver != address(this), ErrorsLib.ModuleAddress());
-
-        if (amount == type(uint256).max) amount = address(this).balance;
-
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        SafeTransferLib.safeTransferETH(receiver, amount);
-    }
 
     /// @notice Transfers ERC20 tokens.
     /// @dev The amount transfered can be zero.

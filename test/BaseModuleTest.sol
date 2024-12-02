@@ -55,43 +55,4 @@ contract BaseModuleLocalTest is LocalTest {
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
-
-    function testNativeTransfer(uint256 amount) public {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        bundle.push(_sendNativeToModule(payable(baseModule), amount));
-        bundle.push(_nativeTransfer(RECEIVER, amount, baseModule));
-
-        deal(address(bundler), amount);
-
-        bundler.multicall(bundle);
-
-        assertEq(address(baseModule).balance, 0, "baseModule.balance");
-        assertEq(RECEIVER.balance, amount, "RECEIVER.balance");
-    }
-
-    function testNativeTransferZeroAddress(uint256 amount) public {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        bundle.push(_nativeTransferNoFunding(address(0), amount, baseModule));
-
-        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
-    }
-
-    function testNativeTransferModuleAddress(uint256 amount) public {
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        bundle.push(_nativeTransferNoFunding(address(baseModule), amount, baseModule));
-
-        vm.expectRevert(ErrorsLib.ModuleAddress.selector);
-        bundler.multicall(bundle);
-    }
-
-    function testNativeTransferZeroAmount() public {
-        bundle.push(_nativeTransferNoFunding(RECEIVER, 0, baseModule));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
-    }
 }

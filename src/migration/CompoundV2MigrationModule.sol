@@ -30,6 +30,21 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /* ACTIONS */
 
+    /// @notice Transfers native assets.
+    /// @dev The amount transfered can be zero.
+    /// @param receiver The address that will receive the native tokens.
+    /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
+    function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(receiver != address(this), ErrorsLib.ModuleAddress());
+
+        if (amount == type(uint256).max) amount = address(this).balance;
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeTransferLib.safeTransferETH(receiver, amount);
+    }
+
     /// @notice Repays an ERC20 debt on CompoundV2.
     /// @dev Underlying tokens must have been previously sent to the module.
     /// @param cToken The address of the cToken contract.
@@ -105,4 +120,9 @@ contract CompoundV2MigrationModule is BaseModule {
 
         if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, received);
     }
+
+    /* FALLBACKS */
+
+    /// @notice Allows to module to receive native tokens (from the Bundler or other contracts).
+    receive() external payable {}
 }

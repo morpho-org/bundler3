@@ -440,4 +440,9 @@ contract GenericModule1 is BaseModule {
 
         _multicallBundler(data);
     }
+
+    /* FALLBACKS */
+
+    /// @notice Allows to module to receive native tokens (from the Bundler or other contracts).
+    receive() external payable {}
 }
