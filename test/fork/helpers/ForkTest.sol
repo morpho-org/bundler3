@@ -7,7 +7,7 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {EthereumModule1} from "../../../src/EthereumModule1.sol";
+import {IEthereumModule1} from "../../../src/interfaces/IEthereumModule1.sol";
 
 import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";
@@ -15,7 +15,7 @@ import "../../helpers/CommonTest.sol";
 abstract contract ForkTest is CommonTest, NetworkConfig {
     using SafeTransferLib for ERC20;
 
-    EthereumModule1 internal ethereumModule1;
+    IEthereumModule1 internal ethereumModule1;
     MarketParams[] internal allMarketParams;
     bytes4 constant permitSingleSelector = 0x2b67b570;
     bytes4 constant permitBatchSelector = 0x2a2d80d1;
@@ -29,18 +29,27 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         super.setUp();
 
         if (isEq(config.network, "ethereum")) {
-            ethereumModule1 = new EthereumModule1(
-                address(bundler),
-                address(morpho),
-                getAddress("WETH"),
-                getAddress("DAI"),
-                getAddress("WST_ETH"),
-                getAddress("MORPHO_TOKEN"),
-                getAddress("MORPHO_WRAPPER")
+            ethereumModule1 = IEthereumModule1(
+                payable(
+                    deployCode(
+                        "EthereumModule1.sol",
+                        abi.encode(
+                            bundler,
+                            morpho,
+                            getAddress("WETH"),
+                            getAddress("DAI"),
+                            getAddress("WST_ETH"),
+                            getAddress("MORPHO_TOKEN"),
+                            getAddress("MORPHO_WRAPPER")
+                        )
+                    )
+                )
             );
-            genericModule1 = GenericModule1(ethereumModule1);
+            genericModule1 = IGenericModule1(ethereumModule1);
         } else {
-            genericModule1 = new GenericModule1(address(bundler), address(morpho), getAddress("WETH"));
+            genericModule1 = IGenericModule1(
+                payable(deployCode("GenericModule1.sol", abi.encode(bundler, morpho, getAddress("WETH"))))
+            );
         }
 
         for (uint256 i; i < config.markets.length; ++i) {
@@ -125,7 +134,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            BaseModule(payable(address(Permit2Lib.PERMIT2))),
+            IBaseModule(payable(address(Permit2Lib.PERMIT2))),
             abi.encodeWithSelector(permitSingleSelector, vm.addr(privateKey), permitSingle, abi.encodePacked(r, s, v)),
             0,
             skipRevert
@@ -160,12 +169,10 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
-        return _call(
-            BaseModule(payable(address(Permit2Lib.PERMIT2))),
-            abi.encodeWithSelector(permitBatchSelector, vm.addr(privateKey), permitBatch, abi.encodePacked(r, s, v)),
-            0,
-            skipRevert
-        );
+        bytes memory cd =
+            abi.encodeWithSelector(permitBatchSelector, vm.addr(privateKey), permitBatch, abi.encodePacked(r, s, v));
+
+        return _call(IBaseModule(payable(address(Permit2Lib.PERMIT2))), cd, 0, skipRevert);
     }
 
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
@@ -173,7 +180,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     }
 
     function _transferFrom2(address asset, address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.transferFrom2, (asset, receiver, amount)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.transferFrom2, (asset, receiver, amount)));
     }
 
     /* STAKE ACTIONS */
@@ -184,31 +191,31 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         returns (Call memory)
     {
         return _call(
-            ethereumModule1, abi.encodeCall(EthereumModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
+            ethereumModule1, abi.encodeCall(ethereumModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
         );
     }
 
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.wrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(ethereumModule1.wrapStEth, (amount, receiver)));
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.unwrapStEth, (amount, receiver)));
+        return _call(ethereumModule1, abi.encodeCall(ethereumModule1.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */
 
     function _wrapNativeNoFunding(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.wrapNative, (amount, receiver)), 0);
+        return _call(genericModule1, abi.encodeCall(genericModule1.wrapNative, (amount, receiver)), 0);
     }
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.wrapNative, (amount, receiver)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.wrapNative, (amount, receiver)));
     }
 
     function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.unwrapNative, (amount, receiver)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.unwrapNative, (amount, receiver)));
     }
 }

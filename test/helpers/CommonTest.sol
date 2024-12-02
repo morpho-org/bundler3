@@ -31,10 +31,10 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {BaseModule} from "../../src/BaseModule.sol";
+import {IBaseModule} from "../../src/interfaces/IBaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
-import {GenericModule1} from "../../src/GenericModule1.sol";
-import {Bundler, Call} from "../../src/Bundler.sol";
+import {IGenericModule1} from "../../src/interfaces/IGenericModule1.sol";
+import {IBundler, Call} from "../../src/interfaces/IBundler.sol";
 
 import "../../lib/forge-std/src/Test.sol";
 import "../../lib/forge-std/src/console.sol";
@@ -60,8 +60,8 @@ abstract contract CommonTest is Test {
     IrmMock internal irm;
     OracleMock internal oracle;
 
-    Bundler internal bundler;
-    GenericModule1 internal genericModule1;
+    IBundler internal bundler;
+    IGenericModule1 internal genericModule1;
 
     Call[] internal bundle;
     Call[] internal callbackBundle;
@@ -69,13 +69,14 @@ abstract contract CommonTest is Test {
     FunctionMocker internal functionMocker;
 
     function setUp() public virtual {
-        morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
+        morpho = IMorpho(payable(deployCode("Morpho.sol", abi.encode(OWNER))));
         vm.label(address(morpho), "Morpho");
 
         functionMocker = new FunctionMocker();
 
-        bundler = new Bundler();
-        genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
+        bundler = IBundler(deployCode("Bundler.sol", hex""));
+        genericModule1 =
+            IGenericModule1(payable(deployCode("GenericModule1.sol", abi.encode(bundler, morpho, new WethContract()))));
 
         irm = new IrmMock();
 
@@ -118,15 +119,15 @@ abstract contract CommonTest is Test {
     }
 
     /* GENERIC MODULE CALL */
-    function _call(BaseModule module, bytes memory data) internal pure returns (Call memory) {
+    function _call(IBaseModule module, bytes memory data) internal pure returns (Call memory) {
         return _call(module, data, 0, false);
     }
 
-    function _call(BaseModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
+    function _call(IBaseModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
         return _call(module, data, value, false);
     }
 
-    function _call(BaseModule module, bytes memory data, uint256 value, bool skipRevert)
+    function _call(IBaseModule module, bytes memory data, uint256 value, bool skipRevert)
         internal
         pure
         returns (Call memory)
@@ -139,12 +140,12 @@ abstract contract CommonTest is Test {
     /* CALL WITH VALUE */
 
     function _sendNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
-        return _call(BaseModule(module), hex"", amount);
+        return _call(IBaseModule(module), hex"", amount);
     }
 
     /* TRANSFER */
 
-    function _nativeTransfer(address recipient, uint256 amount, BaseModule module)
+    function _nativeTransfer(address recipient, uint256 amount, IBaseModule module)
         internal
         pure
         returns (Call memory)
@@ -152,7 +153,7 @@ abstract contract CommonTest is Test {
         return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)));
     }
 
-    function _nativeTransferNoFunding(address recipient, uint256 amount, BaseModule module)
+    function _nativeTransferNoFunding(address recipient, uint256 amount, IBaseModule module)
         internal
         pure
         returns (Call memory)
@@ -162,7 +163,7 @@ abstract contract CommonTest is Test {
 
     /* ERC20 ACTIONS */
 
-    function _erc20Transfer(address token, address recipient, uint256 amount, BaseModule module)
+    function _erc20Transfer(address token, address recipient, uint256 amount, IBaseModule module)
         internal
         pure
         returns (Call memory)
@@ -171,7 +172,7 @@ abstract contract CommonTest is Test {
     }
 
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.erc20TransferFrom, (token, recipient, amount)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.erc20TransferFrom, (token, recipient, amount)));
     }
 
     function _erc20TransferFrom(address token, uint256 amount) internal view returns (Call memory) {
@@ -185,7 +186,7 @@ abstract contract CommonTest is Test {
         view
         returns (Call memory)
     {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.erc20WrapperDepositFor, (token, receiver, amount)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.erc20WrapperDepositFor, (token, receiver, amount)));
     }
 
     function _erc20WrapperWithdrawTo(address token, address receiver, uint256 amount)
@@ -193,7 +194,7 @@ abstract contract CommonTest is Test {
         view
         returns (Call memory)
     {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.erc20WrapperWithdrawTo, (token, receiver, amount)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.erc20WrapperWithdrawTo, (token, receiver, amount)));
     }
 
     /* ERC4626 ACTIONS */
@@ -204,7 +205,7 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
+            genericModule1, abi.encodeCall(genericModule1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
         );
     }
 
@@ -214,7 +215,7 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
+            genericModule1, abi.encodeCall(genericModule1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
         );
     }
 
@@ -225,7 +226,7 @@ abstract contract CommonTest is Test {
     {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
+            abi.encodeCall(genericModule1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
         );
     }
 
@@ -236,7 +237,7 @@ abstract contract CommonTest is Test {
     {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
+            abi.encodeCall(genericModule1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
         );
     }
 
@@ -251,7 +252,7 @@ abstract contract CommonTest is Test {
         bool skipRevert
     ) internal pure returns (Call memory) {
         return _call(
-            BaseModule(payable(address(distributor))),
+            IBaseModule(payable(address(distributor))),
             abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
             0,
             skipRevert
@@ -281,7 +282,7 @@ abstract contract CommonTest is Test {
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(
-            BaseModule(payable(address(morpho))),
+            IBaseModule(payable(address(morpho))),
             abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)),
             0,
             skipRevert
@@ -299,7 +300,7 @@ abstract contract CommonTest is Test {
         return _call(
             genericModule1,
             abi.encodeCall(
-                GenericModule1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
+                genericModule1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
             )
         );
     }
@@ -313,7 +314,7 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoBorrow, (marketParams, assets, shares, minSharePriceE27, receiver))
+            abi.encodeCall(genericModule1.morphoBorrow, (marketParams, assets, shares, minSharePriceE27, receiver))
         );
     }
 
@@ -326,7 +327,7 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoWithdraw, (marketParams, assets, shares, slippageAmount, receiver))
+            abi.encodeCall(genericModule1.morphoWithdraw, (marketParams, assets, shares, slippageAmount, receiver))
         );
     }
 
@@ -340,7 +341,7 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data))
+            abi.encodeCall(genericModule1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data))
         );
     }
 
@@ -352,7 +353,7 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             genericModule1,
-            abi.encodeCall(GenericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
+            abi.encodeCall(genericModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
         );
     }
 
@@ -362,12 +363,12 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            genericModule1, abi.encodeCall(GenericModule1.morphoWithdrawCollateral, (marketParams, assets, receiver))
+            genericModule1, abi.encodeCall(genericModule1.morphoWithdrawCollateral, (marketParams, assets, receiver))
         );
     }
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.morphoFlashLoan, (token, amount, data)));
+        return _call(genericModule1, abi.encodeCall(genericModule1.morphoFlashLoan, (token, amount, data)));
     }
 
     function _permit(
@@ -386,6 +387,6 @@ abstract contract CommonTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, spender, amount, deadline, v, r, s));
-        return _call(BaseModule(payable(address(token))), callData, 0, skipRevert);
+        return _call(IBaseModule(payable(address(token))), callData, 0, skipRevert);
     }
 }

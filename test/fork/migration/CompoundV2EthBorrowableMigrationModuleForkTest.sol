@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import {IComptroller} from "../../../src/interfaces/IComptroller.sol";
 
-import "../../../src/migration/CompoundV2MigrationModule.sol";
+import "../../../src/interfaces/migration/ICompoundV2MigrationModule.sol";
+import {ICEth} from "../../../src/interfaces/ICEth.sol";
+import {ICToken} from "../../../src/interfaces/ICToken.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -22,7 +24,7 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
 
     address[] internal enteredMarkets;
 
-    CompoundV2MigrationModule internal migrationModule;
+    ICompoundV2MigrationModule internal migrationModule;
 
     receive() external payable {}
 
@@ -33,7 +35,9 @@ contract CompoundV2EthLoanMigrationModuleForkTest is MigrationForkTest {
 
         _initMarket(DAI, WETH);
 
-        migrationModule = new CompoundV2MigrationModule(address(bundler), C_ETH_V2);
+        migrationModule = ICompoundV2MigrationModule(
+            payable(deployCode("CompoundV2MigrationModule.sol", abi.encode(bundler, C_ETH_V2)))
+        );
 
         enteredMarkets.push(C_DAI_V2);
     }

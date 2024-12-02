@@ -5,16 +5,12 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 import "./helpers/LocalTest.sol";
 
-contract ConcreteBaseModule is BaseModule {
-    constructor(address bundler) BaseModule(bundler) {}
-}
-
 contract BaseModuleLocalTest is LocalTest {
-    BaseModule internal baseModule;
+    IBaseModule internal baseModule;
 
     function setUp() public override {
         super.setUp();
-        baseModule = new ConcreteBaseModule(address(bundler));
+        baseModule = IBaseModule(payable(deployCode("BaseModuleMock.sol", abi.encode(bundler))));
     }
 
     function testTransfer(uint256 amount) public {

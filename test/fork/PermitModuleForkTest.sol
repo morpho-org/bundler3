@@ -8,7 +8,7 @@ import {DaiPermit} from "../helpers/SigUtils.sol";
 
 import {ERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../helpers/mocks/ERC20PermitMock.sol";
-import {EthereumModule1} from "../../src/EthereumModule1.sol";
+// import {EthereumModule1} from "../../src/EthereumModule1.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -79,7 +79,7 @@ contract PermitModuleForkTest is ForkTest {
 
         bytes memory callData = abi.encodeCall(IDaiPermit(DAI).permit, (user, spender, nonce, expiry, allowed, v, r, s));
 
-        return _call(BaseModule(payable(address(DAI))), callData, 0, skipRevert);
+        return _call(IBaseModule(payable(address(DAI))), callData, 0, skipRevert);
     }
 
     function testPermit(uint256 amount, address spender, uint256 deadline) public {

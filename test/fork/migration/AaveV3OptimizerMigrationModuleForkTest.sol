@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import {Authorization as AaveV3OptimizerAuthorization} from "../../../src/interfaces/IAaveV3Optimizer.sol";
 
-import "../../../src/migration/AaveV3OptimizerMigrationModule.sol";
+import "../../../src/interfaces/migration/IAaveV3OptimizerMigrationModule.sol";
+
+import {Signature} from "../../../src/interfaces/IAaveV3Optimizer.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -28,7 +30,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
     uint256 internal constant collateralSupplied = 10_000 ether;
     uint256 internal constant borrowed = 1 ether;
 
-    AaveV3OptimizerMigrationModule internal migrationModule;
+    IAaveV3OptimizerMigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();
@@ -39,7 +41,9 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         vm.label(AAVE_V3_OPTIMIZER, "AaveV3Optimizer");
 
-        migrationModule = new AaveV3OptimizerMigrationModule(address(bundler), address(AAVE_V3_OPTIMIZER));
+        migrationModule = IAaveV3OptimizerMigrationModule(
+            payable(deployCode("AaveV3OptimizerMigrationModule.sol", abi.encode(bundler, AAVE_V3_OPTIMIZER)))
+        );
     }
 
     function testAaveV3OptimizerRepayUnauthorized(uint256 amount) public onlyEthereum {
@@ -72,7 +76,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                BaseModule(payable(address(AAVE_V3_OPTIMIZER))),
+                IBaseModule(payable(address(AAVE_V3_OPTIMIZER))),
                 abi.encodeCall(
                     IAaveV3Optimizer.approveManagerWithSig, (user, address(this), true, 0, SIGNATURE_DEADLINE, sig)
                 ),
@@ -260,7 +264,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         (sig.v, sig.r, sig.s) = vm.sign(privateKey, digest);
 
         return _call(
-            BaseModule(payable(AAVE_V3_OPTIMIZER)),
+            IBaseModule(payable(AAVE_V3_OPTIMIZER)),
             abi.encodeCall(
                 IAaveV3Optimizer.approveManagerWithSig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, sig)
             ),

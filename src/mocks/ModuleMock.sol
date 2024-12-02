@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {BaseModule} from "../../../src/BaseModule.sol";
-import {IBundler, Call} from "../../../src/interfaces/IBundler.sol";
+import "./interfaces/IModuleMock.sol";
+import {BaseModule} from "../BaseModule.sol";
+import {IBundler} from "../interfaces/IBundler.sol";
 
-event Initiator(address);
-
-event CurrentModule(address);
-
-contract ModuleMock is BaseModule {
+contract ModuleMock is BaseModule, IModuleMock {
     constructor(address bundler) BaseModule(bundler) {}
 
     function isProtected() external payable onlyBundler {

@@ -11,6 +11,11 @@ via-ir = true
 optimizer_runs = 999999
 ignored_error_codes = ["transient-storage"]
 
+# # enforce compiling tests without via_ir and only some heavy contract with via_ir
+# # note: it will only work if tests are using vm.deployCode to deploy contract
+additional_compiler_profiles = [ { name = "no-via-ir", via_ir = false } ]
+compilation_restrictions = [ { paths = "test/**", via_ir = false } ]
+
 [profile.default.fuzz]
 runs = 64
 

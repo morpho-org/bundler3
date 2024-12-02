@@ -23,10 +23,11 @@ import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.
 import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {IGenericModule1} from "./interfaces/IGenericModule1.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
-contract GenericModule1 is BaseModule {
+contract GenericModule1 is BaseModule, IGenericModule1 {
     using SafeCast160 for uint256;
     using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;

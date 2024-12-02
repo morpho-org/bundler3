@@ -5,7 +5,7 @@ import {IERC20Permit} from "../../../lib/openzeppelin-contracts/contracts/token/
 import {IAaveV3} from "../../../src/interfaces/IAaveV3.sol";
 
 import {SigUtils, Permit} from "../../helpers/SigUtils.sol";
-import "../../../src/migration/AaveV3MigrationModule.sol";
+import "../../../src/interfaces/migration/IAaveV3MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -26,7 +26,7 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
     uint256 internal collateralSupplied;
     uint256 internal constant borrowed = 1 ether;
 
-    AaveV3MigrationModule internal migrationModule;
+    IAaveV3MigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();
@@ -43,7 +43,8 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
 
         vm.label(AAVE_V3_POOL, "Aave V3 Pool");
 
-        migrationModule = new AaveV3MigrationModule(address(bundler), address(AAVE_V3_POOL));
+        migrationModule =
+            IAaveV3MigrationModule(payable(deployCode("AaveV3MigrationModule.sol", abi.encode(bundler, AAVE_V3_POOL))));
         vm.label(address(migrationModule), "Aave V3 Migration Module");
     }
 
@@ -331,16 +332,14 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
 
         bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, module, amount, SIGNATURE_DEADLINE, v, r, s));
 
-        return _call(BaseModule(payable(aToken)), callData, 0, false);
+        return _call(IBaseModule(payable(aToken)), callData, 0, false);
     }
 
     function _aaveV3Repay(address asset, uint256 amount, address onBehalf) internal view returns (Call memory) {
-        return _call(
-            migrationModule, abi.encodeCall(AaveV3MigrationModule.aaveV3Repay, (asset, amount, RATE_MODE, onBehalf))
-        );
+        return _call(migrationModule, abi.encodeCall(migrationModule.aaveV3Repay, (asset, amount, RATE_MODE, onBehalf)));
     }
 
     function _aaveV3Withdraw(address asset, uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationModule, abi.encodeCall(AaveV3MigrationModule.aaveV3Withdraw, (asset, amount, receiver)));
+        return _call(migrationModule, abi.encodeCall(migrationModule.aaveV3Withdraw, (asset, amount, receiver)));
     }
 }

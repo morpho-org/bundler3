@@ -5,7 +5,7 @@ import {IStEth} from "../../../src/interfaces/IStEth.sol";
 import {IAaveV2} from "../../../src/interfaces/IAaveV2.sol";
 import {IERC4626} from "../../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
-import "../../../src/migration/AaveV2MigrationModule.sol";
+import "../../../src/interfaces/migration/IAaveV2MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -27,7 +27,7 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
     uint256 internal collateralSupplied = 10_000 ether;
     uint256 internal constant borrowed = 1 ether;
 
-    AaveV2MigrationModule internal migrationModule;
+    IAaveV2MigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();
@@ -38,7 +38,8 @@ contract AaveV2MigrationModuleForkTest is MigrationForkTest {
 
         vm.label(AAVE_V2_POOL, "Aave V2 Pool");
 
-        migrationModule = new AaveV2MigrationModule(address(bundler), AAVE_V2_POOL);
+        migrationModule =
+            IAaveV2MigrationModule(payable(deployCode("AaveV2MigrationModule.sol", abi.encode(bundler, AAVE_V2_POOL))));
     }
 
     function testAaveV2RepayUnauthorized(uint256 amount) public onlyEthereum {

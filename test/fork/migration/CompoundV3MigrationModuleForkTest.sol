@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import {CompoundV3Authorization} from "../../helpers/SigUtils.sol";
 
-import "../../../src/migration/CompoundV3MigrationModule.sol";
+import "../../../src/interfaces/migration/ICompoundV3MigrationModule.sol";
+import {ICompoundV3} from "../../../src/interfaces/ICompoundV3.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -21,14 +22,15 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
     uint256 internal constant collateralSupplied = 10 ether;
     uint256 internal constant borrowed = 1 ether;
 
-    CompoundV3MigrationModule internal migrationModule;
+    ICompoundV3MigrationModule internal migrationModule;
 
     function setUp() public override {
         super.setUp();
 
         _initMarket(CB_ETH, WETH);
 
-        migrationModule = new CompoundV3MigrationModule(address(bundler));
+        migrationModule =
+            ICompoundV3MigrationModule(payable(deployCode("CompoundV3MigrationModule.sol", abi.encode(bundler))));
     }
 
     function testCompoundV3RepayUnauthorized(uint256 amount) public {
@@ -59,7 +61,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                BaseModule(payable(C_WETH_V3)),
+                IBaseModule(payable(C_WETH_V3)),
                 abi.encodeCall(
                     ICompoundV3.allowBySig, (owner, address(migrationModule), true, 0, SIGNATURE_DEADLINE, v, r, s)
                 ),
@@ -247,7 +249,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            BaseModule(payable(instance)),
+            IBaseModule(payable(instance)),
             abi.encodeCall(ICompoundV3.allowBySig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, v, r, s)),
             0,
             false
@@ -264,8 +266,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationModule,
-            abi.encodeCall(CompoundV3MigrationModule.compoundV3WithdrawFrom, (instance, asset, amount, receiver))
+            migrationModule, abi.encodeCall(migrationModule.compoundV3WithdrawFrom, (instance, asset, amount, receiver))
         );
     }
 }

@@ -4,29 +4,25 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 import "./helpers/LocalTest.sol";
-import {ModuleMock, Initiator} from "./helpers/mocks/ModuleMock.sol";
+import {IModuleMock, Initiator} from "../src/mocks/interfaces/IModuleMock.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 contract Empty {}
 
-contract ConcreteBaseModule is BaseModule {
-    constructor(address bundler) BaseModule(bundler) {}
-}
-
 contract BundlerLocalTest is LocalTest {
-    ModuleMock internal moduleMock;
+    IModuleMock internal moduleMock;
     Call[] internal callbackBundle2;
     address internal empty;
 
     function setUp() public override {
         super.setUp();
-        moduleMock = new ModuleMock(address(bundler));
+        moduleMock = IModuleMock(payable(deployCode("ModuleMock.sol", abi.encode(bundler))));
         empty = address(new Empty());
     }
 
     function testBundlerZeroAddress() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        new ConcreteBaseModule(address(0));
+        deployCode("BaseModuleMock.sol", abi.encode(address(0)));
     }
 
     function testMulticallEmpty() public {
@@ -35,7 +31,7 @@ contract BundlerLocalTest is LocalTest {
 
     function testAlreadyInitiated(address initiator) public {
         vm.assume(initiator != address(0));
-        bundle.push(_call(moduleMock, abi.encodeCall(ModuleMock.callbackBundlerWithMulticall, ())));
+        bundle.push(_call(moduleMock, abi.encodeCall(moduleMock.callbackBundlerWithMulticall, ())));
 
         vm.expectRevert(ErrorsLib.AlreadyInitiated.selector);
         vm.prank(initiator);
@@ -45,9 +41,9 @@ contract BundlerLocalTest is LocalTest {
     function testPassthroughValue(address initiator, uint128 value) public {
         vm.assume(initiator != address(0));
 
-        bundle.push(_call(moduleMock, abi.encodeCall(ModuleMock.isProtected, ()), value));
+        bundle.push(_call(moduleMock, abi.encodeCall(moduleMock.isProtected, ()), value));
 
-        vm.expectCall(address(moduleMock), value, bytes.concat(ModuleMock.isProtected.selector));
+        vm.expectCall(address(moduleMock), value, bytes.concat(moduleMock.isProtected.selector));
 
         vm.deal(initiator, value);
         vm.prank(initiator);
@@ -56,16 +52,16 @@ contract BundlerLocalTest is LocalTest {
 
     function testNestedCallbackAndCurrentModuleValue(address initiator) public {
         vm.assume(initiator != address(0));
-        ModuleMock moduleMock2 = new ModuleMock(address(bundler));
-        ModuleMock moduleMock3 = new ModuleMock(address(bundler));
+        IModuleMock moduleMock2 = IModuleMock(payable(deployCode("ModuleMock.sol", abi.encode(bundler))));
+        IModuleMock moduleMock3 = IModuleMock(payable(deployCode("ModuleMock.sol", abi.encode(bundler))));
 
-        callbackBundle2.push(_call(moduleMock2, abi.encodeCall(ModuleMock.isProtected, ())));
+        callbackBundle2.push(_call(moduleMock2, abi.encodeCall(moduleMock.isProtected, ())));
 
-        callbackBundle.push(_call(moduleMock2, abi.encodeCall(ModuleMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(_call(moduleMock2, abi.encodeCall(moduleMock.callbackBundler, (callbackBundle2))));
 
-        callbackBundle.push(_call(moduleMock3, abi.encodeCall(ModuleMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(_call(moduleMock3, abi.encodeCall(moduleMock.callbackBundler, (callbackBundle2))));
 
-        bundle.push(_call(moduleMock, abi.encodeCall(ModuleMock.callbackBundler, (callbackBundle))));
+        bundle.push(_call(moduleMock, abi.encodeCall(moduleMock.callbackBundler, (callbackBundle))));
 
         vm.prank(initiator);
 
@@ -92,7 +88,7 @@ contract BundlerLocalTest is LocalTest {
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
         vm.assume(initiator != address(0));
 
-        bundle.push(_call(moduleMock, abi.encodeCall(ModuleMock.emitInitiator, ())));
+        bundle.push(_call(moduleMock, abi.encodeCall(moduleMock.emitInitiator, ())));
 
         vm.expectEmit(true, true, false, true, address(moduleMock));
         emit Initiator(initiator);
@@ -102,7 +98,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testMulticallShouldPassRevertData(string memory revertReason) public {
-        bundle.push(_call(moduleMock, abi.encodeCall(ModuleMock.doRevert, (revertReason))));
+        bundle.push(_call(moduleMock, abi.encodeCall(moduleMock.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));
         bundler.multicall(bundle);
     }

@@ -5,10 +5,11 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IBundler} from "./interfaces/IBundler.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {IBaseModule} from "./interfaces/IBaseModule.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Bundler modules.
-abstract contract BaseModule {
+abstract contract BaseModule is IBaseModule {
     address public immutable BUNDLER;
 
     constructor(address bundler) {
