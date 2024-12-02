@@ -186,7 +186,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         returns (Call memory)
     {
         return _call(
-            ethereumGeneralModule1, abi.encodeCall(EthereumGeneralModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
+            ethereumGeneralModule1,
+            abi.encodeCall(EthereumGeneralModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
         );
     }
 

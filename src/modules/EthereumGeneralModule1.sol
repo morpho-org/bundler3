@@ -5,15 +5,7 @@ import {IDaiPermit} from "../interfaces/IDaiPermit.sol";
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {
-    GeneralModule1,
-    CoreModule,
-    ErrorsLib,
-    ERC20Wrapper,
-    ModuleLib,
-    SafeTransferLib,
-    ERC20
-} from "./GeneralModule1.sol";
+import {GeneralModule1, ErrorsLib, ERC20Wrapper, ModuleLib, SafeTransferLib, ERC20} from "./GeneralModule1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:contact security@morpho.org

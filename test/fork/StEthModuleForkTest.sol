@@ -44,7 +44,9 @@ contract EthereumStEthModuleForkTest is ForkTest {
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
         assertEq(address(ethereumGeneralModule1).balance, 0, "ethereumGeneralModule1.balance");
         assertEq(ERC20(ST_ETH).balanceOf(USER), 0, "balanceOf(USER)");
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "balanceOf(ethereumGeneralModule1)");
+        assertApproxEqAbs(
+            ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "balanceOf(ethereumGeneralModule1)"
+        );
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), amount, 3, "balanceOf(RECEIVER)");
     }
 
@@ -94,11 +96,15 @@ contract EthereumStEthModuleForkTest is ForkTest {
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, "wstEth.balanceOf(ethereumGeneralModule1)");
+        assertEq(
+            ERC20(WST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, "wstEth.balanceOf(ethereumGeneralModule1)"
+        );
         assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertApproxEqAbs(ERC20(WST_ETH).balanceOf(RECEIVER), wstEthExpectedAmount, 1, "wstEth.balanceOf(RECEIVER)");
 
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "wstEth.balanceOf(ethereumGeneralModule1)");
+        assertApproxEqAbs(
+            ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "wstEth.balanceOf(ethereumGeneralModule1)"
+        );
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
         assertEq(ERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
     }
@@ -130,11 +136,15 @@ contract EthereumStEthModuleForkTest is ForkTest {
 
         uint256 expectedUnwrappedAmount = IWstEth(WST_ETH).getStETHByWstETH(amount);
 
-        assertEq(ERC20(WST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, "wstEth.balanceOf(ethereumGeneralModule1)");
+        assertEq(
+            ERC20(WST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, "wstEth.balanceOf(ethereumGeneralModule1)"
+        );
         assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertEq(ERC20(WST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
 
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "stEth.balanceOf(ethereumGeneralModule1)");
+        assertApproxEqAbs(
+            ERC20(ST_ETH).balanceOf(address(ethereumGeneralModule1)), 0, 1, "stEth.balanceOf(ethereumGeneralModule1)"
+        );
         assertEq(ERC20(ST_ETH).balanceOf(user), 0, "stEth.balanceOf(user)");
         assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
     }
