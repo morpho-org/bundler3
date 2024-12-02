@@ -29,8 +29,6 @@ import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 /// @notice Chain agnostic module contract n°1.
 contract GenericModule1 is BaseModule {
     using SafeCast160 for uint256;
-    using MorphoBalancesLib for IMorpho;
-    using MorphoLib for IMorpho;
     using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
 
@@ -317,7 +315,7 @@ contract GenericModule1 is BaseModule {
         }
 
         if (shares == type(uint256).max) {
-            shares = MORPHO.borrowShares(marketParams.id(), _initiator());
+            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
@@ -346,7 +344,7 @@ contract GenericModule1 is BaseModule {
         address receiver
     ) external onlyBundler {
         if (shares == type(uint256).max) {
-            shares = MORPHO.supplyShares(marketParams.id(), _initiator());
+            shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
@@ -366,7 +364,7 @@ contract GenericModule1 is BaseModule {
         external
         onlyBundler
     {
-        if (assets == type(uint256).max) assets = MORPHO.collateral(marketParams.id(), _initiator());
+        if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
         MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
     }
