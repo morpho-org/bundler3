@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {BaseModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./BaseModule.sol";
 import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
@@ -12,7 +11,7 @@ import {IMorpho, MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/perip
 
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is IParaswapModule {
+contract ParaswapModule is BaseModule, IParaswapModule {
     using Math for uint256;
     using BytesLib for bytes;
 
@@ -23,7 +22,7 @@ contract ParaswapModule is IParaswapModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address morpho, address augustusRegistry) {
+    constructor(address bundler, address morpho, address augustusRegistry) BaseModule(bundler) {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
         MORPHO = IMorpho(morpho);
     }
@@ -39,7 +38,7 @@ contract ParaswapModule is IParaswapModule {
     /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`limitAmount`)
     /// and quoted buy amount (`quotedAmount`).
     /// @dev The quoted buy amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    /// @param receiver Address to which bought assets will be sent.
     function sell(
         address augustus,
         bytes memory callData,
@@ -54,7 +53,7 @@ contract ParaswapModule is IParaswapModule {
             _updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
         }
 
-        _swapAndSkim(
+        _swap(
             augustus,
             callData,
             srcToken,
@@ -76,7 +75,8 @@ contract ParaswapModule is IParaswapModule {
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @dev The quoted sell amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `srcToken` should be skimmed
+    /// separately.
     function buy(
         address augustus,
         bytes memory callData,
@@ -90,7 +90,7 @@ contract ParaswapModule is IParaswapModule {
             _updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
 
-        _swapAndSkim(
+        _swap(
             augustus,
             callData,
             srcToken,
@@ -126,7 +126,7 @@ contract ParaswapModule is IParaswapModule {
     /* INTERNAL FUNCTIONS */
 
     /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
-    function _swapAndSkim(
+    function _swap(
         address augustus,
         bytes memory callData,
         address srcToken,
@@ -154,8 +154,9 @@ contract ParaswapModule is IParaswapModule {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (srcFinal > 0) SafeTransferLib.safeTransfer(ERC20(srcToken), receiver, srcFinal);
-        if (destFinal > 0) SafeTransferLib.safeTransfer(ERC20(destToken), receiver, destFinal);
+        if (destFinal > 0 && receiver != address(this)) {
+            SafeTransferLib.safeTransfer(ERC20(destToken), receiver, destAmount);
+        }
     }
 
     /// @notice Set exact amount in `callData` to `exactAmount`.

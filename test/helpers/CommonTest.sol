@@ -80,7 +80,6 @@ abstract contract CommonTest is Test {
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
-        console.log("OK?");
         vm.label(address(morpho), "Morpho");
 
         augustusRegistryMock = new AugustusRegistryMock();
@@ -88,7 +87,7 @@ abstract contract CommonTest is Test {
 
         bundler = new Bundler();
         genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
-        paraswapModule = new ParaswapModule(address(morpho), address(augustusRegistryMock));
+        paraswapModule = new ParaswapModule(address(bundler), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
@@ -200,6 +199,14 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)));
+    }
+
+    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, BaseModule module)
+        internal
+        pure
+        returns (Call memory)
+    {
+        return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)), 0, true);
     }
 
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
