@@ -72,13 +72,4 @@ abstract contract BaseModule {
     function _initiator() internal view returns (address) {
         return IBundler(BUNDLER).initiator();
     }
-
-    /// @notice Calls bundler.multicallFromModule with an already encoded Call array.
-    /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
-    /// @param data An abi-encoded Call[].
-    function _multicallBundler(bytes calldata data) internal {
-        (bool success, bytes memory returnData) =
-            BUNDLER.call(bytes.concat(IBundler.multicallFromModule.selector, data));
-        if (!success) ModuleLib.lowLevelRevert(returnData);
-    }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {BaseModule} from "./BaseModule.sol";
+import {BaseModule, IBundler} from "./BaseModule.sol";
 
 import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
@@ -436,6 +436,9 @@ contract GenericModule1 is BaseModule {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        _multicallBundler(data);
+        // Low-level call to skip ABI decode-encode.
+        (bool success, bytes memory returnData) =
+            BUNDLER.call(bytes.concat(IBundler.multicallFromModule.selector, data));
+        if (!success) ModuleLib.lowLevelRevert(returnData);
     }
 }
