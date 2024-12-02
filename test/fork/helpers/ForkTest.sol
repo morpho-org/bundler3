@@ -17,6 +17,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
     EthereumModule1 internal ethereumModule1;
     MarketParams[] internal allMarketParams;
+    // Overloaded function permit in IAllowanceTransfer cannot be directly referenced in Solidity. The selectors are
+    // used directly.
     bytes4 constant permitSingleSelector = 0x2b67b570;
     bytes4 constant permitBatchSelector = 0x2a2d80d1;
 
