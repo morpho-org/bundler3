@@ -6,13 +6,7 @@ import {IWstEth} from "./interfaces/IWstEth.sol";
 import {IStEth} from "./interfaces/IStEth.sol";
 
 import {
-    GenericModule1,
-    BaseModule,
-    ErrorsLib,
-    ERC20Wrapper,
-    UtilsLib,
-    SafeTransferLib,
-    ERC20
+    GenericModule1, BaseModule, ErrorsLib, ERC20Wrapper, UtilsLib, SafeTransferLib, ERC20
 } from "./GenericModule1.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
 
