@@ -138,7 +138,7 @@ abstract contract CommonTest is Test {
 
     /* CALL WITH VALUE */
 
-    function _sendNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
+    function _transferNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
         return _call(BaseModule(module), hex"", amount);
     }
 
