@@ -86,7 +86,7 @@ contract CompoundV2EthBorrowableMigrationModuleForkTest is MigrationForkTest {
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
 
-        bundle.push(_sendNativeToModule(payable(migrationModule), toRepay));
+        bundle.push(_transferNativeToModule(payable(migrationModule), toRepay));
         bundle.push(_compoundV2RepayEth(type(uint256).max, address(this)));
 
         bundler.multicall{value: toRepay}(bundle);

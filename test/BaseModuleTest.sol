@@ -59,7 +59,7 @@ contract BaseModuleLocalTest is LocalTest {
     function testNativeTransfer(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_sendNativeToModule(payable(baseModule), amount));
+        bundle.push(_transferNativeToModule(payable(baseModule), amount));
         bundle.push(_nativeTransfer(RECEIVER, amount, baseModule));
 
         deal(address(bundler), amount);
