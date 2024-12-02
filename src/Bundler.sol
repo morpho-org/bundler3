@@ -44,6 +44,13 @@ contract Bundler is IBundler {
         _multicall(bundle);
     }
 
+    /// @notice Transfers Ether to an address.
+    /// @dev Can only be called by the current module.
+    function transferFromNative(address to, uint256 value) external {
+        require(msg.sender == currentModule, ErrorsLib.UnauthorizedSender());
+        payable(to).transfer(value);
+    }
+
     /* INTERNAL */
 
     /// @notice Executes a series of calls to modules.

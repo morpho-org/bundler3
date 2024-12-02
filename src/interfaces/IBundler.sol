@@ -14,6 +14,7 @@ struct Call {
 interface IBundler {
     function multicall(Call[] calldata bundle) external payable;
     function multicallFromModule(Call[] calldata bundle) external;
+    function transferFromNative(address to, uint256 value) external;
     function currentModule() external view returns (address module);
     function initiator() external view returns (address);
 }

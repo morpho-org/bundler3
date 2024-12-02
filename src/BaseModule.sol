@@ -65,6 +65,16 @@ abstract contract BaseModule {
         SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
     }
 
+    function transferFromNative(address receiver, uint256 amount) external onlyBundler {
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+
+        if (amount == type(uint256).max) amount = address(this).balance;
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        IBundler(BUNDLER).transferFromNative(receiver, amount);
+    }
+
     /* INTERNAL */
 
     /// @notice Returns the current initiator stored in the module.
