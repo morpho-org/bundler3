@@ -49,4 +49,18 @@ library ErrorsLib {
 
     /// @dev Thrown when redeeming CompoundV2 cTokens returns an error code.
     error RedeemError();
+
+    /* PARASWAP MODULE */
+
+    /// @dev Thrown when contract used to trade is not in the paraswap registry.
+    error AugustusNotInRegistry();
+
+    /// @dev Thrown when a data offset is invalid.
+    error InvalidOffset();
+
+    /// @dev Thrown when a swap has spent too many source tokens.
+    error SellAmountTooHigh();
+
+    /// @dev Thrown when a swap has bought too few destination tokens.
+    error BuyAmountTooLow();
 }
