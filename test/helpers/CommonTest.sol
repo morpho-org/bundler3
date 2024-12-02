@@ -80,7 +80,6 @@ abstract contract CommonTest is Test {
 
     function setUp() public virtual {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
-        console.log("OK?");
         vm.label(address(morpho), "Morpho");
 
         augustusRegistryMock = new AugustusRegistryMock();
@@ -88,7 +87,7 @@ abstract contract CommonTest is Test {
 
         bundler = new Bundler();
         genericModule1 = new GenericModule1(address(bundler), address(morpho), address(new WethContract()));
-        paraswapModule = new ParaswapModule(address(bundler), address(augustusRegistryMock));
+        paraswapModule = new ParaswapModule(address(bundler), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
@@ -168,6 +167,12 @@ abstract contract CommonTest is Test {
         return Call(to, data, value, skipRevert);
     }
 
+    /* CALL WITH VALUE */
+
+    function _sendNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
+        return _call(BaseModule(module), hex"", amount);
+    }
+
     /* TRANSFER */
 
     function _nativeTransfer(address recipient, uint256 amount, BaseModule module)
@@ -175,7 +180,7 @@ abstract contract CommonTest is Test {
         pure
         returns (Call memory)
     {
-        return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)), amount);
+        return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)));
     }
 
     function _nativeTransferNoFunding(address recipient, uint256 amount, BaseModule module)
@@ -283,7 +288,7 @@ abstract contract CommonTest is Test {
         uint256 claimable,
         bytes32[] memory proof,
         bool skipRevert
-    ) internal view returns (Call memory) {
+    ) internal pure returns (Call memory) {
         return _call(
             BaseModule(payable(address(distributor))),
             abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),

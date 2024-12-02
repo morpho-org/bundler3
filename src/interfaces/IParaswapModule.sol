@@ -36,4 +36,14 @@ interface IParaswapModule {
         Offsets calldata offsets,
         address receiver
     ) external;
+
+    function buyMorphoDebt(
+        address augustus,
+        bytes memory callData,
+        address srcToken,
+        MarketParams calldata marketParams,
+        Offsets calldata offsets,
+        address onBehalf,
+        address receiver
+    ) external;
 }

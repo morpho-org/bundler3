@@ -424,7 +424,7 @@ contract GenericModule1 is BaseModule {
     /// @dev Native tokens must have been previously sent to the module.
     /// @param amount The amount of native token to wrap. Pass `type(uint).max` to wrap the module's balance.
     /// @param receiver The account receiving the wrapped native tokens.
-    function wrapNative(uint256 amount, address receiver) external payable onlyBundler {
+    function wrapNative(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = address(this).balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -445,23 +445,6 @@ contract GenericModule1 is BaseModule {
 
         WRAPPED_NATIVE.withdraw(amount);
         if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, amount);
-    }
-
-    /* SWAP ACTIONS */
-
-    function paraswapBuyMorphoDebt(
-        address paraswapModule,
-        address augustus,
-        bytes memory callData,
-        address srcToken,
-        MarketParams calldata marketParams,
-        Offsets calldata offsets,
-        address receiver
-    ) external onlyBundler {
-        uint256 newDestAmount = MORPHO.expectedBorrowAssets(marketParams, _initiator());
-        IParaswapModule(paraswapModule).buy(
-            augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver
-        );
     }
 
     /* INTERNAL FUNCTIONS */

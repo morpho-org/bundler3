@@ -91,21 +91,22 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 maxSrcAmount,
         uint256 destAmount,
         MarketParams memory marketParams,
+        address onBehalf,
         address receiver
     ) internal view returns (Call memory) {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            genericModule1,
+            BaseModule(payable(address(paraswapModule))),
             abi.encodeCall(
-                genericModule1.paraswapBuyMorphoDebt,
+                paraswapModule.buyMorphoDebt,
                 (
-                    address(paraswapModule),
                     address(augustus),
                     abi.encodeCall(augustus.mockBuy, (srcToken, marketParams.loanToken, maxSrcAmount, destAmount)),
                     srcToken,
                     marketParams,
                     Offsets({exactAmount: toAmountOffset, limitAmount: fromAmountOffset, quotedAmount: 0}),
+                    onBehalf,
                     receiver
                 )
             )
@@ -484,7 +485,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, 0, address(paraswapModule)));
         // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams
         callbackBundle.push(
-            _buyMorphoDebt(destParams.loanToken, toBorrow, toRepay, sourceParams, address(genericModule1))
+            _buyMorphoDebt(destParams.loanToken, toBorrow, toRepay, sourceParams, user, address(genericModule1))
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(
@@ -567,6 +568,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 destBorrowAssetsOverestimate,
                 sourceBorrowAssetsOverestimate,
                 sourceParams,
+                user,
                 address(genericModule1)
             )
         );
@@ -685,7 +687,9 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         );
         // Buy amount will be adjusted inside the paraswap module to the current debt
         callbackBundle.push(
-            _buyMorphoDebt(marketParams.collateralToken, collateral, assetsToBuy, marketParams, address(genericModule1))
+            _buyMorphoDebt(
+                marketParams.collateralToken, collateral, assetsToBuy, marketParams, user, address(genericModule1)
+            )
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(

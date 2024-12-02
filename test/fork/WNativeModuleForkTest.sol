@@ -26,6 +26,7 @@ contract WNativeModuleForkTest is ForkTest {
     function testWrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
+        bundle.push(_sendNativeToModule(payable(genericModule1), amount));
         bundle.push(_wrapNative(amount, RECEIVER));
 
         deal(USER, amount);
