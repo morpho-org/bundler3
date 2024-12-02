@@ -252,7 +252,7 @@ contract CompoundV3MigrationModuleForkTest is MigrationForkTest {
             IBaseModule(payable(instance)),
             abi.encodeCall(ICompoundV3.allowBySig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, v, r, s)),
             0,
-            false
+            skipRevert
         );
     }
 
