@@ -31,7 +31,7 @@ This is useful for callback-based flows such as flashloans.
 
 To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GenericModule1.approve2Batch`](./src/modules/GenericModule1.sol).
 
-All modules inherit from [`BaseModule`](./src/modules/BaseModule.sol), which provides essential features such as reading the current initiator address.
+All modules inherit from [`CoreModule`](./src/modules/CoreModule.sol), which provides essential features such as reading the current initiator address.
 
 ## Modules
 

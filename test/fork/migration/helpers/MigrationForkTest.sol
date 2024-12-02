@@ -9,7 +9,7 @@ import {Market} from "../../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {MorphoBalancesLib} from "../../../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 import "../../helpers/ForkTest.sol";
-import {BaseModule} from "../../../../src/modules/BaseModule.sol";
+import {CoreModule} from "../../../../src/modules/CoreModule.sol";
 import {ERC4626Mock} from "../../../helpers/mocks/ERC4626Mock.sol";
 
 contract MigrationForkTest is ForkTest {

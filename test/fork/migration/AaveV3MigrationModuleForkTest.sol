@@ -331,7 +331,7 @@ contract AaveV3MigrationModuleForkTest is MigrationForkTest {
 
         bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, module, amount, SIGNATURE_DEADLINE, v, r, s));
 
-        return _call(BaseModule(payable(aToken)), callData, 0, false);
+        return _call(CoreModule(payable(aToken)), callData, 0, false);
     }
 
     function _aaveV3Repay(address asset, uint256 amount, address onBehalf) internal view returns (Call memory) {

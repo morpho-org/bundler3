@@ -79,7 +79,7 @@ contract PermitModuleForkTest is ForkTest {
 
         bytes memory callData = abi.encodeCall(IDaiPermit(DAI).permit, (user, spender, nonce, expiry, allowed, v, r, s));
 
-        return _call(BaseModule(payable(address(DAI))), callData, 0, skipRevert);
+        return _call(CoreModule(payable(address(DAI))), callData, 0, skipRevert);
     }
 
     function testPermit(uint256 amount, address spender, uint256 deadline) public {

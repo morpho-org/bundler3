@@ -31,7 +31,7 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {BaseModule} from "../../src/modules/BaseModule.sol";
+import {CoreModule} from "../../src/modules/CoreModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GenericModule1} from "../../src/modules/GenericModule1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
@@ -118,15 +118,15 @@ abstract contract CommonTest is Test {
     }
 
     /* GENERIC MODULE CALL */
-    function _call(BaseModule module, bytes memory data) internal pure returns (Call memory) {
+    function _call(CoreModule module, bytes memory data) internal pure returns (Call memory) {
         return _call(module, data, 0, false);
     }
 
-    function _call(BaseModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
+    function _call(CoreModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
         return _call(module, data, value, false);
     }
 
-    function _call(BaseModule module, bytes memory data, uint256 value, bool skipRevert)
+    function _call(CoreModule module, bytes memory data, uint256 value, bool skipRevert)
         internal
         pure
         returns (Call memory)
@@ -139,12 +139,12 @@ abstract contract CommonTest is Test {
     /* CALL WITH VALUE */
 
     function _transferNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
-        return _call(BaseModule(module), hex"", amount);
+        return _call(CoreModule(module), hex"", amount);
     }
 
     /* TRANSFER */
 
-    function _nativeTransfer(address recipient, uint256 amount, BaseModule module)
+    function _nativeTransfer(address recipient, uint256 amount, CoreModule module)
         internal
         pure
         returns (Call memory)
@@ -152,7 +152,7 @@ abstract contract CommonTest is Test {
         return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)));
     }
 
-    function _nativeTransferNoFunding(address recipient, uint256 amount, BaseModule module)
+    function _nativeTransferNoFunding(address recipient, uint256 amount, CoreModule module)
         internal
         pure
         returns (Call memory)
@@ -162,7 +162,7 @@ abstract contract CommonTest is Test {
 
     /* ERC20 ACTIONS */
 
-    function _erc20Transfer(address token, address recipient, uint256 amount, BaseModule module)
+    function _erc20Transfer(address token, address recipient, uint256 amount, CoreModule module)
         internal
         pure
         returns (Call memory)
@@ -251,7 +251,7 @@ abstract contract CommonTest is Test {
         bool skipRevert
     ) internal pure returns (Call memory) {
         return _call(
-            BaseModule(payable(address(distributor))),
+            CoreModule(payable(address(distributor))),
             abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
             0,
             skipRevert
@@ -281,7 +281,7 @@ abstract contract CommonTest is Test {
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(
-            BaseModule(payable(address(morpho))),
+            CoreModule(payable(address(morpho))),
             abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)),
             0,
             skipRevert
@@ -386,6 +386,6 @@ abstract contract CommonTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, spender, amount, deadline, v, r, s));
-        return _call(BaseModule(payable(address(token))), callData, 0, skipRevert);
+        return _call(CoreModule(payable(address(token))), callData, 0, skipRevert);
     }
 }

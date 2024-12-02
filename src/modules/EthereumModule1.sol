@@ -7,7 +7,7 @@ import {IStEth} from "../interfaces/IStEth.sol";
 
 import {
     GenericModule1,
-    BaseModule,
+    CoreModule,
     ErrorsLib,
     ERC20Wrapper,
     ModuleLib,

@@ -5,13 +5,13 @@ import {IAaveV2} from "../../interfaces/IAaveV2.sol";
 
 import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
-import {BaseModule} from "../BaseModule.sol";
+import {CoreModule} from "../CoreModule.sol";
 import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ModuleLib} from "../../libraries/ModuleLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V2 to Morpho Blue easily.
-contract AaveV2MigrationModule is BaseModule {
+contract AaveV2MigrationModule is CoreModule {
     /* IMMUTABLES */
 
     /// @dev The AaveV2 contract address.
@@ -21,7 +21,7 @@ contract AaveV2MigrationModule is BaseModule {
 
     /// @param bundler The Bundler contract address
     /// @param aaveV2Pool The AaveV2 contract address.
-    constructor(address bundler, address aaveV2Pool) BaseModule(bundler) {
+    constructor(address bundler, address aaveV2Pool) CoreModule(bundler) {
         require(aaveV2Pool != address(0), ErrorsLib.ZeroAddress());
 
         AAVE_V2_POOL = IAaveV2(aaveV2Pool);

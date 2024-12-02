@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {BaseModule} from "./BaseModule.sol";
+import {CoreModule} from "./CoreModule.sol";
 
 import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
@@ -26,7 +26,7 @@ import {UtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
-contract GenericModule1 is BaseModule {
+contract GenericModule1 is CoreModule {
     using SafeCast160 for uint256;
     using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
@@ -41,7 +41,7 @@ contract GenericModule1 is BaseModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address wNative) BaseModule(bundler) {
+    constructor(address bundler, address morpho, address wNative) CoreModule(bundler) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
 

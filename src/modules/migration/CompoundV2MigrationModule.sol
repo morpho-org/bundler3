@@ -8,11 +8,11 @@ import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
+import {CoreModule, ERC20, SafeTransferLib, ModuleLib} from "../CoreModule.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
-contract CompoundV2MigrationModule is BaseModule {
+contract CompoundV2MigrationModule is CoreModule {
     /* IMMUTABLES */
 
     /// @dev The address of the cETH contract.
@@ -22,7 +22,7 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /// @param bundler The Bundler contract address.
     /// @param cEth The address of the cETH contract.
-    constructor(address bundler, address cEth) BaseModule(bundler) {
+    constructor(address bundler, address cEth) CoreModule(bundler) {
         require(cEth != address(0), ErrorsLib.ZeroAddress());
 
         C_ETH = cEth;

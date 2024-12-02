@@ -8,7 +8,7 @@ import {ModuleLib} from "../libraries/ModuleLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Bundler modules.
-abstract contract BaseModule {
+abstract contract CoreModule {
     address public immutable BUNDLER;
 
     constructor(address bundler) {
