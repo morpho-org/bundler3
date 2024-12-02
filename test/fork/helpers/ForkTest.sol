@@ -42,7 +42,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         } else {
             genericModule1 = new GenericModule1(address(bundler), address(morpho), getAddress("WETH"));
         }
-        paraswapModule = new ParaswapModule(getAddress("AUGUSTUS_REGISTRY"));
+        paraswapModule = new ParaswapModule(address(morpho), getAddress("AUGUSTUS_REGISTRY"));
 
         for (uint256 i; i < config.markets.length; ++i) {
             ConfigMarket memory configMarket = config.markets[i];

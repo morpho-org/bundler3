@@ -8,6 +8,7 @@ import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol"
 import {BytesLib} from "./libraries/BytesLib.sol";
 import "./interfaces/IParaswapModule.sol";
 import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {IMorpho, MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
@@ -18,11 +19,13 @@ contract ParaswapModule is IParaswapModule {
     /* IMMUTABLES */
 
     IAugustusRegistry public immutable AUGUSTUS_REGISTRY;
+    IMorpho public immutable MORPHO;
 
     /* CONSTRUCTOR */
 
-    constructor(address augustusRegistry) {
+    constructor(address morpho, address augustusRegistry) {
         AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
+        MORPHO = IMorpho(morpho);
     }
 
     /* SWAP ACTIONS */
@@ -82,7 +85,7 @@ contract ParaswapModule is IParaswapModule {
         uint256 newDestAmount,
         Offsets calldata offsets,
         address receiver
-    ) external {
+    ) public {
         if (newDestAmount != 0) {
             _updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
@@ -96,6 +99,28 @@ contract ParaswapModule is IParaswapModule {
             callData.get(offsets.exactAmount),
             receiver
         );
+    }
+
+    /// @notice Buy an amount corresponding to a user's Morpho debt.
+    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param callData Swap data to call `augustus` with. Contains routing information.
+    /// @param srcToken Token to sell.
+    /// @param marketParams Market parameters of the market with Morpho debt.
+    /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
+    /// and quoted sell amount (`quotedAmount`).
+    /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    function buyMorphoDebt(
+        address augustus,
+        bytes memory callData,
+        address srcToken,
+        MarketParams calldata marketParams,
+        Offsets calldata offsets,
+        address onBehalf,
+        address receiver
+    ) external {
+        uint256 newDestAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, onBehalf);
+        buy(augustus, callData, srcToken, marketParams.loanToken, newDestAmount, offsets, receiver);
     }
 
     /* INTERNAL FUNCTIONS */
