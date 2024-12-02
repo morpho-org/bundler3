@@ -4,26 +4,26 @@ pragma solidity 0.8.28;
 import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {UtilsLib} from "./libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
-/// @notice Enables calling multiple functions in a single call to multiple contracts ("modules").
+/// @notice Enables calling multiple functions in a single call to multiple contracts ("targets").
 /// @notice Transiently stores the initiator of the multicall transaction.
-/// @notice Transiently stores the current module that is being called.
+/// @notice Transiently stores the current target that is being called.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
 
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice The current module.
-    /// @notice A module becomes the current module upon being called.
-    address public transient currentModule;
+    /// @notice The current target.
+    /// @notice A target becomes the "currentTarget" upon being called.
+    address public transient currentTarget;
 
     /* EXTERNAL */
 
-    /// @notice Executes a series of calls to modules.
-    /// @dev Locks the initiator so that the sender can be identified by modules.
+    /// @notice Executes a series of calls to targets.
+    /// @dev Locks the initiator so that the sender can be identified by targets.
     /// @param bundle The ordered array of calldata to execute.
     function multicall(Call[] calldata bundle) external payable {
         require(initiator == address(0), ErrorsLib.AlreadyInitiated());
@@ -35,30 +35,30 @@ contract Bundler is IBundler {
         initiator = msg.sender;
     }
 
-    /// @notice Executes a series of calls to modules.
+    /// @notice Executes a series of calls to targets.
     /// @dev Useful during callbacks.
-    /// @dev Can only be called by the current module.
+    /// @dev Can only be called by the current target.
     /// @param bundle The ordered array of calldata to execute.
-    function multicallFromModule(Call[] calldata bundle) external {
-        require(msg.sender == currentModule, ErrorsLib.UnauthorizedSender());
+    function multicallFromTarget(Call[] calldata bundle) external {
+        require(msg.sender == currentTarget, ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
 
     /* INTERNAL */
 
-    /// @notice Executes a series of calls to modules.
+    /// @notice Executes a series of calls to targets.
     function _multicall(Call[] calldata bundle) internal {
-        address previousModule = currentModule;
+        address previousTarget = currentTarget;
 
         for (uint256 i; i < bundle.length; ++i) {
-            address module = bundle[i].to;
+            address target = bundle[i].to;
 
-            currentModule = module;
+            currentTarget = target;
 
-            (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
-            if (!bundle[i].skipRevert && !success) ModuleLib.lowLevelRevert(returnData);
+            (bool success, bytes memory returnData) = target.call{value: bundle[i].value}(bundle[i].data);
+            if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
         }
 
-        currentModule = previousModule;
+        currentTarget = previousTarget;
     }
 }

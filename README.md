@@ -1,39 +1,41 @@
 # Morpho Blue Bundler v3
 
-The [`Bundler`](./src/Bundler.sol) executes a sequence of calls atomically.
-EOAs should use the Bundler to execute multiple actions in a single transaction.
+The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
+It carries specific features to be able to perform actions that necessitate authorizations, and handle callbacks.
 
 ## Structure
+
+### Bundler
 
 <img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls, and each call specifies:
-- an address to call;
-- some calldata to pass to the call;
-- an amount of native currency to send along the call;
-- a boolean indicating whether the multicall should revert if the call failed.
+- `to`, an address to call;
+- `data`, some calldata to pass to the call;
+- `value`, an amount of native currency to send along the call;
+- `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-A contract called by the Bundler is called a module.
+A contract called by the Bundler is called a target.
 
-For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains generic as well as ethereum-specific actions.
-It must be approved by the user to e.g. transfer their assets.
+The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Modules subsection for the use).
 
-Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
+The last target can re-enter the bundler using `multicallFromModule(Call[] calldata bundle)` (same).
 
-Before calling a contract, the Bundler stores its own caller address as the bundle's `initiator`.
-Modules can read the current initiator during bundle execution.
-This is useful to secure a module that holds approvals or authorizations, by restricting function calls depending on the value of the current initiator.
-For instance, such a module should only allow to move funds owned by the current initiator.
+### Modules
 
-When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`.
-This is useful for callback-based flows such as flashloans.
+Targets can be either protocols, or wrappers of protocols (called "modules").
+The latters can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
-To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GenericModule1.approve2Batch`](./src/GenericModule1.sol).
+In order to be safely authorized by users, modules can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
+For instance, a module that needs to hold some token approvals should only allow to move funds owned by the initiator.
 
-All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
+In order to limit attack surface, calls to these functions should come from the bundler. 
+So inside of a callback (e.g. during a flash-loan), a module can re-enter the bundler to perform these actions.
 
 ## Modules
+
+All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
 
 ### [`GenericModule1`](./src/GenericModule1.sol)
 
@@ -48,12 +50,15 @@ Contains the following actions:
 ### [`EthereumModule1`](./src/ethereum/EthereumModule1.sol)
 
 Contains the following actions:
-
 - Actions of `GenericModule1`.
 - Morpho token wrapper withdrawal.
 - Dai permit.
 - StEth staking.
 - WStEth wrap & unwrap.
+
+### [`ParaswapModule`](./src/ParaswapModule.sol)
+
+TBA.
 
 ### Migration modules
 

@@ -54,7 +54,7 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall{value: value}(bundle);
     }
 
-    function testNestedCallbackAndCurrentModuleValue(address initiator) public {
+    function testNestedCallbackAndCurrentTargetValue(address initiator) public {
         vm.assume(initiator != address(0));
         ModuleMock moduleMock2 = new ModuleMock(address(bundler));
         ModuleMock moduleMock3 = new ModuleMock(address(bundler));
@@ -76,7 +76,7 @@ contract BundlerLocalTest is LocalTest {
         assertEq(entries.length, 8);
 
         for (uint256 i = 0; i < entries.length; i++) {
-            assertEq(entries[i].topics[0], keccak256("CurrentModule(address)"));
+            assertEq(entries[i].topics[0], keccak256("CurrentTarget(address)"));
         }
 
         assertEq(entries[0].data, abi.encode(moduleMock));
@@ -112,12 +112,12 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(caller != initiator);
         vm.assume(caller != module);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (module)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentTarget, (module)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(caller);
-        bundler.multicallFromModule(new Call[](0));
+        bundler.multicallFromTarget(new Call[](0));
     }
 
     function testProtectedSuccessAsModule(address initiator, address module) public {
@@ -125,10 +125,10 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(initiator != module);
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentModule, (module)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setCurrentTarget, (module)));
 
         vm.prank(module);
-        bundler.multicallFromModule(new Call[](0));
+        bundler.multicallFromTarget(new Call[](0));
     }
 
     function testNotSkipRevert() public {

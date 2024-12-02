@@ -8,7 +8,7 @@ import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
+import {BaseModule, ERC20, SafeTransferLib, UtilsLib} from "../BaseModule.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
@@ -48,7 +48,7 @@ contract CompoundV2MigrationModule is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(underlying, cToken);
+        UtilsLib.approveMaxToIfAllowanceZero(underlying, cToken);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
     }

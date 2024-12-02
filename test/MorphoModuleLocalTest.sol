@@ -689,7 +689,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         uint256 supplyBalance =
             vars.expectedSupplyShares.toAssetsDown(vars.expectedTotalSupply, vars.expectedSupplyShares);
 
-        uint256 maxAmount = UtilsLib.min(supplyBalance, availableLiquidity);
+        uint256 maxAmount = MorphoUtilsLib.min(supplyBalance, availableLiquidity);
         amount = bound(amount % maxAmount, 1, maxAmount);
 
         bundle.push(_morphoWithdraw(marketParams, amount, 0, 0, address(genericModule1)));
@@ -711,7 +711,7 @@ contract MorphoModuleLocalTest is MetaMorphoLocalTest {
         uint256 currentBorrowPower = totalBorrowPower - borrowed;
         if (currentBorrowPower == 0) return;
 
-        uint256 maxShares = UtilsLib.min(currentBorrowPower, availableLiquidity).toSharesDown(
+        uint256 maxShares = MorphoUtilsLib.min(currentBorrowPower, availableLiquidity).toSharesDown(
             vars.expectedTotalBorrow, vars.expectedBorrowShares
         );
         if (maxShares < MIN_AMOUNT) return;

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IBundler} from "./interfaces/IBundler.sol";
-import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {UtilsLib} from "./libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Bundler modules.
@@ -73,12 +73,12 @@ abstract contract BaseModule {
         return IBundler(BUNDLER).initiator();
     }
 
-    /// @notice Calls bundler.multicallFromModule with an already encoded Call array.
+    /// @notice Calls bundler.multicallFromTarget with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
     function _multicallBundler(bytes calldata data) internal {
         (bool success, bytes memory returnData) =
-            BUNDLER.call(bytes.concat(IBundler.multicallFromModule.selector, data));
-        if (!success) ModuleLib.lowLevelRevert(returnData);
+            BUNDLER.call(bytes.concat(IBundler.multicallFromTarget.selector, data));
+        if (!success) UtilsLib.lowLevelRevert(returnData);
     }
 }

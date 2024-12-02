@@ -7,7 +7,7 @@ import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {UtilsLib} from "../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho Blue easily.
@@ -42,7 +42,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(underlying, address(AAVE_V3_OPTIMIZER));
+        UtilsLib.approveMaxToIfAllowanceZero(underlying, address(AAVE_V3_OPTIMIZER));
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, onBehalf);
     }

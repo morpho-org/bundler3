@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "./ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 
 /// @custom:contact security@morpho.org
-/// @notice Library exposing common module functionality
-library ModuleLib {
+/// @notice Utils library.
+library UtilsLib {
     /// @dev Gives the max approval to `spender` to spend the given token if not already approved.
     /// @dev Assumes that `type(uint256).max` is large enough to never have to increase the allowance again.
     function approveMaxToIfAllowanceZero(address token, address spender) internal {

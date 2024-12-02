@@ -9,7 +9,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {UtilsLib} from "./libraries/UtilsLib.sol";
 import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
 import {IUniversalRewardsDistributor} from
     "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
@@ -22,7 +22,7 @@ import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/Morp
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MathRayLib} from "./libraries/MathRayLib.sol";
-import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {UtilsLib as MorphoUtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
@@ -70,7 +70,7 @@ contract GenericModule1 is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(underlying, wrapper);
+        UtilsLib.approveMaxToIfAllowanceZero(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
@@ -108,7 +108,7 @@ contract GenericModule1 is BaseModule {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        ModuleLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
+        UtilsLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -132,7 +132,7 @@ contract GenericModule1 is BaseModule {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
+        UtilsLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -230,7 +230,7 @@ contract GenericModule1 is BaseModule {
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
-        ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
+        UtilsLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
@@ -257,7 +257,7 @@ contract GenericModule1 is BaseModule {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
+        UtilsLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
@@ -306,7 +306,7 @@ contract GenericModule1 is BaseModule {
     ) external onlyBundler {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
-        require(UtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
+        require(MorphoUtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
 
         if (assets == type(uint256).max) {
             assets = ERC20(marketParams.loanToken).balanceOf(address(this));
@@ -318,7 +318,7 @@ contract GenericModule1 is BaseModule {
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
-        ModuleLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
+        UtilsLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
@@ -374,7 +374,7 @@ contract GenericModule1 is BaseModule {
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
         require(assets != 0, ErrorsLib.ZeroAmount());
-        ModuleLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
+        UtilsLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
     }

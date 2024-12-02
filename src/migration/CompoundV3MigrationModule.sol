@@ -8,7 +8,7 @@ import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {UtilsLib} from "../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.
@@ -37,7 +37,7 @@ contract CompoundV3MigrationModule is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(asset, instance);
+        UtilsLib.approveMaxToIfAllowanceZero(asset, instance);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
         ICompoundV3(instance).supplyTo(onBehalf, asset, amount);

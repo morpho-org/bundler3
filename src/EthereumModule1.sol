@@ -10,7 +10,7 @@ import {
     BaseModule,
     ErrorsLib,
     ERC20Wrapper,
-    ModuleLib,
+    UtilsLib,
     SafeTransferLib,
     ERC20
 } from "./GenericModule1.sol";
@@ -67,8 +67,8 @@ contract EthereumModule1 is GenericModule1 {
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
 
-        ModuleLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
-        ModuleLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
+        UtilsLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
+        UtilsLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */

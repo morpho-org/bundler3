@@ -6,13 +6,13 @@ import {IBundler, Call} from "../../../src/interfaces/IBundler.sol";
 
 event Initiator(address);
 
-event CurrentModule(address);
+event CurrentTarget(address);
 
 contract ModuleMock is BaseModule {
     constructor(address bundler) BaseModule(bundler) {}
 
     function isProtected() external payable onlyBundler {
-        emit CurrentModule(IBundler(BUNDLER).currentModule());
+        emit CurrentTarget(IBundler(BUNDLER).currentTarget());
     }
 
     function doRevert(string memory reason) external pure {
@@ -24,14 +24,14 @@ contract ModuleMock is BaseModule {
     }
 
     function callbackBundler(Call[] calldata calls) external onlyBundler {
-        emit CurrentModule(IBundler(BUNDLER).currentModule());
-        IBundler(BUNDLER).multicallFromModule(calls);
-        emit CurrentModule(IBundler(BUNDLER).currentModule());
+        emit CurrentTarget(IBundler(BUNDLER).currentTarget());
+        IBundler(BUNDLER).multicallFromTarget(calls);
+        emit CurrentTarget(IBundler(BUNDLER).currentTarget());
     }
 
     function callbackBundlerWithMulticall() external onlyBundler {
         IBundler(BUNDLER).multicall(new Call[](0));
     }
 
-    function emitCurrentModule() external {}
+    function emitCurrentTarget() external {}
 }

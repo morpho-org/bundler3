@@ -7,7 +7,7 @@ import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
 import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {UtilsLib} from "../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V3 to Morpho Blue easily.
@@ -47,7 +47,7 @@ contract AaveV3MigrationModule is BaseModule {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ModuleLib.approveMaxToIfAllowanceZero(token, address(AAVE_V3_POOL));
+        UtilsLib.approveMaxToIfAllowanceZero(token, address(AAVE_V3_POOL));
 
         AAVE_V3_POOL.repay(token, amount, interestRateMode, onBehalf);
     }

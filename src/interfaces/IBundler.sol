@@ -10,10 +10,9 @@ struct Call {
 }
 
 /// @custom:contact security@morpho.org
-/// @notice Interface of Bundler.
 interface IBundler {
     function multicall(Call[] calldata bundle) external payable;
-    function multicallFromModule(Call[] calldata bundle) external;
-    function currentModule() external view returns (address module);
+    function multicallFromTarget(Call[] calldata bundle) external;
+    function currentTarget() external view returns (address target);
     function initiator() external view returns (address);
 }

@@ -7,7 +7,7 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {EthereumModule1} from "../../../src/EthereumModule1.sol";
+import {EthereumModule1, MathRayLib} from "../../../src/EthereumModule1.sol";
 
 import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";

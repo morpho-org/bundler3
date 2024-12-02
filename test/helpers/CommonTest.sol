@@ -13,7 +13,7 @@ import {SigUtils} from "./SigUtils.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {SharesMathLib} from "../../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
-import {UtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {UtilsLib as MorphoUtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
