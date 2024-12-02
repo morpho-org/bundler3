@@ -16,7 +16,7 @@ A bundle is a sequence of calls, and each call specifies:
 
 A contract called by the Bundler is called a module.
 
-For instance, [`EthereumModule1`](./src/ethereum/EthereumModule1.sol) contains generic as well as ethereum-specific actions.
+For instance, [`EthereumModule1`](./src/modules/EthereumModule1.sol) contains generic as well as ethereum-specific actions.
 It must be approved by the user to e.g. transfer their assets.
 
 Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
@@ -29,13 +29,13 @@ For instance, such a module should only allow to move funds owned by the current
 When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`.
 This is useful for callback-based flows such as flashloans.
 
-To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GenericModule1.approve2Batch`](./src/GenericModule1.sol).
+To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GenericModule1.approve2Batch`](./src/modules/GenericModule1.sol).
 
-All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
+All modules inherit from [`BaseModule`](./src/modules/BaseModule.sol), which provides essential features such as reading the current initiator address.
 
 ## Modules
 
-### [`GenericModule1`](./src/GenericModule1.sol)
+### [`GenericModule1`](./src/modules/GenericModule1.sol)
 
 Contains the following actions:
 - ERC20 transfers, permit, wrap & unwrap.
@@ -45,7 +45,7 @@ Contains the following actions:
 - Permit2 approvals.
 - URD claim.
 
-### [`EthereumModule1`](./src/ethereum/EthereumModule1.sol)
+### [`EthereumModule1`](./src/modules/EthereumModule1.sol)
 
 Contains the following actions:
 
@@ -57,9 +57,7 @@ Contains the following actions:
 
 ### Migration modules
 
-For [Aave V2](./src/migration/AaveV2MigrationModule.sol), [Aave V3](./src/migration/AaveV3MigrationModule.sol), [Compound V2](./src/migration/CompoundV2MigrationModule.sol), [Compound V3](./src/migration/CompoundV3MigrationModule.sol), and [Morpho Aave V3 Optimizer](./src/migration/AaveV3OptimizerMigrationModule.sol).
-
-Contain the actions to repay current debt and withdraw supply/collateral on these protocols.
+For [Aave V2](./src/modules/migration/AaveV2MigrationModule.sol), [Aave V3](./src/modules/migration/AaveV3MigrationModule.sol), [Compound V2](./src/modules/migration/CompoundV2MigrationModule.sol), [Compound V3](./src/modules/migration/CompoundV3MigrationModule.sol), and [Morpho Aave V3 Optimizer](./src/modules/migration/AaveV3OptimizerMigrationModule.sol).
 
 ## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
 

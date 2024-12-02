@@ -6,7 +6,7 @@ import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTra
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import "../../src/EthereumModule1.sol";
+import "../../src/modules/EthereumModule1.sol";
 
 import "./helpers/ForkTest.sol";
 

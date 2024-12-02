@@ -5,7 +5,7 @@ import {IERC20Permit} from "../../../lib/openzeppelin-contracts/contracts/token/
 import {IAaveV3} from "../../../src/interfaces/IAaveV3.sol";
 
 import {SigUtils, Permit} from "../../helpers/SigUtils.sol";
-import "../../../src/migration/AaveV3MigrationModule.sol";
+import "../../../src/modules/migration/AaveV3MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

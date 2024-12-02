@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {ICEth} from "../interfaces/ICEth.sol";
-import {ICToken} from "../interfaces/ICToken.sol";
+import {ICEth} from "../../interfaces/ICEth.sol";
+import {ICToken} from "../../interfaces/ICToken.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
-import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
+import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
+import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
 

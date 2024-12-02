@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {IBundler} from "./interfaces/IBundler.sol";
-import {ModuleLib} from "./libraries/ModuleLib.sol";
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {ERC20, SafeTransferLib} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IBundler} from "../interfaces/IBundler.sol";
+import {ModuleLib} from "../libraries/ModuleLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Bundler modules.

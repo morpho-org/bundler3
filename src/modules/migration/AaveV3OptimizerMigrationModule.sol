@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IAaveV3Optimizer, Signature} from "../interfaces/IAaveV3Optimizer.sol";
+import {IAaveV3Optimizer, Signature} from "../../interfaces/IAaveV3Optimizer.sol";
 
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
 import {BaseModule} from "../BaseModule.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ModuleLib} from "../../libraries/ModuleLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho Blue easily.

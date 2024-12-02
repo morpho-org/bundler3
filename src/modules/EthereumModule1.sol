@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
-import {IWstEth} from "./interfaces/IWstEth.sol";
-import {IStEth} from "./interfaces/IStEth.sol";
+import {IDaiPermit} from "../interfaces/IDaiPermit.sol";
+import {IWstEth} from "../interfaces/IWstEth.sol";
+import {IStEth} from "../interfaces/IStEth.sol";
 
 import {
     GenericModule1,
@@ -14,7 +14,7 @@ import {
     SafeTransferLib,
     ERC20
 } from "./GenericModule1.sol";
-import {MathRayLib} from "./libraries/MathRayLib.sol";
+import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Module contract specific to Ethereum n°1.

@@ -8,7 +8,7 @@ import {DaiPermit} from "../helpers/SigUtils.sol";
 
 import {ERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../helpers/mocks/ERC20PermitMock.sol";
-import {EthereumModule1} from "../../src/EthereumModule1.sol";
+import {EthereumModule1} from "../../src/modules/EthereumModule1.sol";
 
 import "./helpers/ForkTest.sol";
 

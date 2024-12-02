@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {Authorization as AaveV3OptimizerAuthorization} from "../../../src/interfaces/IAaveV3Optimizer.sol";
 
-import "../../../src/migration/AaveV3OptimizerMigrationModule.sol";
+import "../../../src/modules/migration/AaveV3OptimizerMigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

@@ -5,7 +5,7 @@ import {IStEth} from "../../../src/interfaces/IStEth.sol";
 import {IAaveV2} from "../../../src/interfaces/IAaveV2.sol";
 import {IERC4626} from "../../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
-import "../../../src/migration/AaveV2MigrationModule.sol";
+import "../../../src/modules/migration/AaveV2MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

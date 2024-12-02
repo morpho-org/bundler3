@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IComptroller} from "../../../src/interfaces/IComptroller.sol";
 
-import "../../../src/migration/CompoundV2MigrationModule.sol";
+import "../../../src/modules/migration/CompoundV2MigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 

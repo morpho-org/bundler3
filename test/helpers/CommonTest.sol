@@ -31,9 +31,9 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {BaseModule} from "../../src/BaseModule.sol";
+import {BaseModule} from "../../src/modules/BaseModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
-import {GenericModule1} from "../../src/GenericModule1.sol";
+import {GenericModule1} from "../../src/modules/GenericModule1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
 
 import "../../lib/forge-std/src/Test.sol";
