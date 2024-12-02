@@ -197,6 +197,10 @@ contract GenericModule1 is BaseModule {
         _morphoCallback(data);
     }
 
+    function onMorphoFlashLoan(uint256, bytes calldata data) external {
+        _morphoCallback(data);
+    }
+
     /* MORPHO ACTIONS */
 
     /// @notice Supplies loan asset on Morpho.
@@ -362,6 +366,17 @@ contract GenericModule1 is BaseModule {
         if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
         MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
+    }
+
+    /// @notice Triggers a flash loan on Morpho.
+    /// @param token The address of the token to flash loan.
+    /// @param assets The amount of assets to flash loan.
+    /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
+    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
+        require(assets != 0, ErrorsLib.ZeroAmount());
+        ModuleLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
+
+        MORPHO.flashLoan(token, assets, data);
     }
 
     /* PERMIT2 ACTIONS */
