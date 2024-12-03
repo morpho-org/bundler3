@@ -37,7 +37,7 @@ If a module gets called back (e.g. during a flashloan) and needs to perform more
 
 All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as accessing the current initiator address.
 
-### [`GenericModule1`](./src/GenericModule1.sol)
+### [`GeneralModule1`](./src/modules/GeneralModule1.sol)
 
 Contains the following actions:
 - ERC20 transfers, permit, wrap & unwrap.
@@ -47,33 +47,34 @@ Contains the following actions:
 - Permit2 approvals.
 - URD claim.
 
-### [`EthereumModule1`](./src/ethereum/EthereumModule1.sol)
+### [`EthereumGeneralModule1`](./src/modules/EthereumModule1.sol)
 
 Contains the following actions:
-- Actions of `GenericModule1`.
+- Actions of `GeneralModule1`.
 - Morpho token wrapper withdrawal.
 - Dai permit.
 - StEth staking.
 - WStEth wrap & unwrap.
 
-### [`ParaswapModule`](./src/ParaswapModule.sol)
+### [`ParaswapModule`](./src/modules/ParaswapModule.sol)
 
-TBA.
+Contains the following actions, all using the paraswap aggregator:
+- Sell a given amount or the balance.
+- Buy a given amount.
+- Buy a what's needed to fully repay on a given Morpho Market.
 
 ### Migration modules
 
-For [Aave V2](./src/migration/AaveV2MigrationModule.sol), [Aave V3](./src/migration/AaveV3MigrationModule.sol), [Compound V2](./src/migration/CompoundV2MigrationModule.sol), [Compound V3](./src/migration/CompoundV3MigrationModule.sol), and [Morpho Aave V3 Optimizer](./src/migration/AaveV3OptimizerMigrationModule.sol).
-
-Contain the actions to repay current debt and withdraw supply/collateral on these protocols.
+For [Aave V2](./src/modules/migration/AaveV2MigrationModule.sol), [Aave V3](./src/modules/migration/AaveV3MigrationModule.sol), [Compound V2](./src/modules/migration/CompoundV2MigrationModule.sol), [Compound V3](./src/modules/migration/CompoundV3MigrationModule.sol), and [Morpho Aave V3 Optimizer](./src/modules/migration/AaveV3OptimizerMigrationModule.sol).
 
 ## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
 
 - Make use of transient storage.
 - Bundler is now a call dispatcher that does not require any approval.
   Because call-dispatch and approvals are now separated, it is possible to add bundlers over time without additional risk to users of existing bundlers.
-- All generic features are now in `GenericModule1`, instead of being in separate files that are then all inherited by a single contract.
-- All Ethereum related features are in the `EthereumModule1` which inherits from `GenericModule1`.
-- The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GenericModule2`.
+- All generic features are now in `GeneralModule1`, instead of being in separate files that are then all inherited by a single contract.
+- All Ethereum related features are in the `EthereumModule1` which inherits from `GeneralModule1`.
+- The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GeneralModule2`.
   Existing modules will still be used.
 - There is a new action `permit2Batch` to allow multiple contracts to move multiple tokens using a single signature.
 - Many adjustments such as:

@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IAaveV3} from "../interfaces/IAaveV3.sol";
+import {IAaveV3} from "../../interfaces/IAaveV3.sol";
 
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
-import {BaseModule} from "../BaseModule.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {UtilsLib} from "../libraries/UtilsLib.sol";
+import {CoreModule} from "../CoreModule.sol";
+import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {UtilsLib} from "../../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V3 to Morpho Blue easily.
-contract AaveV3MigrationModule is BaseModule {
+contract AaveV3MigrationModule is CoreModule {
     /* IMMUTABLES */
 
     /// @dev The AaveV3 contract address.
@@ -22,7 +22,7 @@ contract AaveV3MigrationModule is BaseModule {
     /// @param bundler The Bundler contract address
     /// @param aaveV3Pool The AaveV3 contract address. Assumes it is non-zero (not expected to be an input at
     /// deployment).
-    constructor(address bundler, address aaveV3Pool) BaseModule(bundler) {
+    constructor(address bundler, address aaveV3Pool) CoreModule(bundler) {
         require(aaveV3Pool != address(0), ErrorsLib.ZeroAddress());
 
         AAVE_V3_POOL = IAaveV3(aaveV3Pool);

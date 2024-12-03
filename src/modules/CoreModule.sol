@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {ERC20, SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {IBundler} from "./interfaces/IBundler.sol";
-import {UtilsLib} from "./libraries/UtilsLib.sol";
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {ERC20, SafeTransferLib} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IBundler} from "../interfaces/IBundler.sol";
+import {UtilsLib} from "../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Bundler modules.
-abstract contract BaseModule {
+abstract contract CoreModule {
     address public immutable BUNDLER;
 
     constructor(address bundler) {
@@ -30,7 +30,7 @@ abstract contract BaseModule {
 
     /// @notice Native tokens are received by the module and should be used afterwards.
     /// @dev Allows the wrapped native contract to transfer native tokens to the module.
-    receive() external payable {}
+    receive() external payable virtual {}
 
     /* ACTIONS */
 

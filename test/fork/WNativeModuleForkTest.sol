@@ -12,7 +12,7 @@ contract WNativeModuleForkTest is ForkTest {
         super.setUp();
 
         vm.prank(USER);
-        ERC20(WETH).approve(address(genericModule1), type(uint256).max);
+        ERC20(WETH).approve(address(generalModule1), type(uint256).max);
     }
 
     function testWrapZeroAmount(address receiver) public {
@@ -26,7 +26,7 @@ contract WNativeModuleForkTest is ForkTest {
     function testWrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_sendNativeToModule(payable(genericModule1), amount));
+        bundle.push(_transferNativeToModule(payable(generalModule1), amount));
         bundle.push(_wrapNative(amount, RECEIVER));
 
         deal(USER, amount);
@@ -34,11 +34,11 @@ contract WNativeModuleForkTest is ForkTest {
         vm.prank(USER);
         bundler.multicall{value: amount}(bundle);
 
-        assertEq(ERC20(WETH).balanceOf(address(genericModule1)), 0, "Module's wrapped token balance");
+        assertEq(ERC20(WETH).balanceOf(address(generalModule1)), 0, "Module's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(RECEIVER), amount, "Receiver's wrapped token balance");
 
-        assertEq(address(genericModule1).balance, 0, "Module's native token balance");
+        assertEq(address(generalModule1).balance, 0, "Module's native token balance");
         assertEq(USER.balance, 0, "User's native token balance");
         assertEq(RECEIVER.balance, 0, "Receiver's native token balance");
     }
@@ -62,11 +62,11 @@ contract WNativeModuleForkTest is ForkTest {
         vm.prank(USER);
         bundler.multicall(bundle);
 
-        assertEq(ERC20(WETH).balanceOf(address(genericModule1)), 0, "Module's wrapped token balance");
+        assertEq(ERC20(WETH).balanceOf(address(generalModule1)), 0, "Module's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(RECEIVER), 0, "Receiver's wrapped token balance");
 
-        assertEq(address(genericModule1).balance, 0, "Module's native token balance");
+        assertEq(address(generalModule1).balance, 0, "Module's native token balance");
         assertEq(USER.balance, 0, "User's native token balance");
         assertEq(RECEIVER.balance, amount, "Receiver's native token balance");
     }
