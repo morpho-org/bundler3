@@ -13,7 +13,7 @@ The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
 - `to`, an address to call;
 - `data`, some calldata to pass to the call;
-- `value`, an amount of native currency to send along the call;
+- `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
 A contract called by the Bundler is called a target.
