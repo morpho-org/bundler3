@@ -25,7 +25,7 @@ The last target can re-enter the bundler using `multicallFromModule(Call[] calld
 ### Modules
 
 Targets can be either protocols, or wrappers of protocols (called "modules").
-The latters can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
+Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
 In order to be safely authorized by users, modules can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
 For instance, a module that needs to hold some token approvals should only allow to move funds owned by the initiator.
