@@ -1,7 +1,7 @@
 # Morpho Blue Bundler v3
 
 The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
-It carries specific features to be able to perform actions that necessitate authorizations, and handle callbacks.
+It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
 
@@ -10,7 +10,7 @@ It carries specific features to be able to perform actions that necessitate auth
 <img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
-A bundle is a sequence of calls, and each call specifies:
+A bundle is a sequence of calls where each call is specified by:
 - `to`, an address to call;
 - `data`, some calldata to pass to the call;
 - `value`, an amount of native currency to send along the call;
@@ -35,7 +35,7 @@ If a module uses a callback (e.g. during a flashloan) and needs to perform more 
 
 ## Modules
 
-All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as reading the current initiator address.
+All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as accessing the current initiator address.
 
 ### [`GenericModule1`](./src/GenericModule1.sol)
 
