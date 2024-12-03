@@ -32,7 +32,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
 
         _initMarket(WETH, DAI);
 
-        migrationAdapter = new CompoundV2MigrationAdapter(address(bundler), C_ETH_V2);
+        migrationAdapter = new CompoundV2MigrationAdapter(address(initMulticall), C_ETH_V2);
 
         enteredMarkets.push(C_ETH_V2);
     }
@@ -48,7 +48,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testCompoundV2RepayErc20Max(uint256 borrowed, uint256 repayFactor) public onlyEthereum {
@@ -66,7 +66,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         ERC20(DAI).safeTransfer(address(migrationAdapter), toRepay);
 
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, type(uint256).max, address(this)));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(ICToken(C_DAI_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
     }
@@ -89,7 +89,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         ERC20(DAI).safeTransfer(address(migrationAdapter), toRepay);
 
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, toRepay, USER));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         if (repayFactor < 1 ether) {
             assertEq(ICToken(C_DAI_V2).borrowBalanceCurrent(USER), borrowed - toRepay);
@@ -107,7 +107,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         ERC20(C_ETH_V2).safeTransfer(address(migrationAdapter), minted);
         uint256 toRedeem = minted.wMulDown(redeemFactor);
         bundle.push(_compoundV2RedeemEth(toRedeem, address(migrationAdapter)));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         if (redeemFactor < 1 ether) {
             assertEq(ERC20(C_ETH_V2).balanceOf(address(migrationAdapter)), minted - toRedeem);
@@ -152,7 +152,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertBorrowerPosition(collateral, borrowed, user, address(generalAdapter1));
     }

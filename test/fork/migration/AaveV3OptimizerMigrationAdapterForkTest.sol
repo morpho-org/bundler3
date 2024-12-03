@@ -39,7 +39,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
 
         vm.label(AAVE_V3_OPTIMIZER, "AaveV3Optimizer");
 
-        migrationAdapter = new AaveV3OptimizerMigrationAdapter(address(bundler), address(AAVE_V3_OPTIMIZER));
+        migrationAdapter = new AaveV3OptimizerMigrationAdapter(address(initMulticall), address(AAVE_V3_OPTIMIZER));
     }
 
     function testAaveV3OptimizerRepayUnauthorized(uint256 amount) public onlyEthereum {
@@ -53,7 +53,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testAaveV3OtimizerAuthorizationWithSigRevert(address owner) public onlyEthereum {
@@ -83,7 +83,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
 
         vm.prank(user);
         vm.expectRevert(IAaveV3Optimizer.InvalidSignatory.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testAaveV3OptimizerRepayOnBehalf() public onlyEthereum {
@@ -100,7 +100,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
 
         deal(marketParams.loanToken, address(migrationAdapter), borrowed);
         bundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed, USER));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         debt = IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrowBalance(marketParams.loanToken, USER);
         assertEq(debt, 0);
@@ -136,7 +136,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(generalAdapter1));
     }
@@ -176,7 +176,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertBorrowerPosition(amountUsdt, borrowed, user, address(generalAdapter1));
     }
@@ -199,7 +199,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertSupplierPosition(supplied, user, address(generalAdapter1));
     }
@@ -222,7 +222,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertVaultSupplierPosition(supplied, user, address(generalAdapter1));
     }

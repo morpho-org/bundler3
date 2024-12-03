@@ -37,7 +37,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address wNative) CoreAdapter(bundler) {
+    constructor(address initMulticall, address morpho, address wNative) CoreAdapter(initMulticall) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
 
@@ -58,7 +58,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The account receiving the wrapped tokens.
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
     /// underlying balance.
-    function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
+    function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyInitMulticall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address underlying = address(ERC20Wrapper(wrapper).underlying());
@@ -78,7 +78,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address receiving the underlying tokens.
     /// @param amount The amount of wrapped tokens to burn. Pass `type(uint).max` to burn the adapter's wrapped token
     /// balance.
-    function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler {
+    function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyInitMulticall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         if (amount == type(uint256).max) amount = ERC20(wrapper).balanceOf(address(this));
@@ -99,7 +99,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         external
-        onlyBundler
+        onlyInitMulticall
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
@@ -119,7 +119,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         external
-        onlyBundler
+        onlyInitMulticall
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
@@ -145,7 +145,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param owner The address on behalf of which the assets are withdrawn. Can only be the adapter or the initiator.
     function erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
         external
-        onlyBundler
+        onlyInitMulticall
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
@@ -166,7 +166,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param owner The address on behalf of which the shares are redeemed. Can only be the adapter or the initiator.
     function erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
         external
-        onlyBundler
+        onlyInitMulticall
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
@@ -217,7 +217,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 maxSharePriceE27,
         address onBehalf,
         bytes calldata data
-    ) external onlyBundler {
+    ) external onlyInitMulticall {
         // Do not check `onBehalf` against the zero address as it's done in Morpho.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
@@ -245,7 +245,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 assets,
         address onBehalf,
         bytes calldata data
-    ) external onlyBundler {
+    ) external onlyInitMulticall {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
@@ -274,7 +274,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 shares,
         uint256 minSharePriceE27,
         address receiver
-    ) external onlyBundler {
+    ) external onlyInitMulticall {
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, _initiator(), receiver);
 
@@ -299,7 +299,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 maxSharePriceE27,
         address onBehalf,
         bytes calldata data
-    ) external onlyBundler {
+    ) external onlyInitMulticall {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
@@ -336,7 +336,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 shares,
         uint256 minSharePriceE27,
         address receiver
-    ) external onlyBundler {
+    ) external onlyInitMulticall {
         if (shares == type(uint256).max) {
             shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), _initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
@@ -356,7 +356,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address that will receive the collateral assets.
     function morphoWithdrawCollateral(MarketParams calldata marketParams, uint256 assets, address receiver)
         external
-        onlyBundler
+        onlyInitMulticall
     {
         if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
@@ -368,7 +368,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the token to flash loan.
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
-    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
+    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyInitMulticall {
         require(assets != 0, ErrorsLib.ZeroAmount());
         UtilsLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
 
@@ -381,7 +381,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
-    function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
+    function transferFrom2(address token, address receiver, uint256 amount) external onlyInitMulticall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = _initiator();
@@ -400,7 +400,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
-    function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
+    function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyInitMulticall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = _initiator();
@@ -417,7 +417,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @dev Native tokens must have been previously sent to the adapter.
     /// @param amount The amount of native token to wrap. Pass `type(uint).max` to wrap the adapter's balance.
     /// @param receiver The account receiving the wrapped native tokens.
-    function wrapNative(uint256 amount, address receiver) external onlyBundler {
+    function wrapNative(uint256 amount, address receiver) external onlyInitMulticall {
         if (amount == type(uint256).max) amount = address(this).balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -431,7 +431,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param amount The amount of wrapped native token to unwrap. Pass `type(uint).max` to unwrap the adapter's
     /// balance.
     /// @param receiver The account receiving the native tokens.
-    function unwrapNative(uint256 amount, address receiver) external onlyBundler {
+    function unwrapNative(uint256 amount, address receiver) external onlyInitMulticall {
         if (amount == type(uint256).max) amount = WRAPPED_NATIVE.balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -447,6 +447,6 @@ contract GeneralAdapter1 is CoreAdapter {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        _reenterBundler(data);
+        _reenterInitMulticall(data);
     }
 }

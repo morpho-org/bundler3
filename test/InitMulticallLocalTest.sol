@@ -10,49 +10,49 @@ import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/
 contract Empty {}
 
 contract ConcreteCoreAdapter is CoreAdapter {
-    constructor(address bundler) CoreAdapter(bundler) {}
+    constructor(address initMulticall) CoreAdapter(initMulticall) {}
 }
 
-contract BundlerLocalTest is LocalTest {
+contract InitMulticallLocalTest is LocalTest {
     AdapterMock internal adapterMock;
     Call[] internal callbackBundle2;
     address internal empty;
 
     function setUp() public override {
         super.setUp();
-        adapterMock = new AdapterMock(address(bundler));
+        adapterMock = new AdapterMock(address(initMulticall));
         empty = address(new Empty());
     }
 
-    function testBundlerZeroAddress() public {
+    function testInitMulticallZeroAddress() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         new ConcreteCoreAdapter(address(0));
     }
 
     function testMulticallEmpty() public {
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testAlreadyInitiated(address initiator) public {
         vm.assume(initiator != address(0));
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerWithMulticall, ())));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackInitMulticallWithMulticall, ())));
 
         vm.expectRevert(ErrorsLib.AlreadyInitiated.selector);
         vm.prank(initiator);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testInitiatorReset(address initiator) public {
         vm.assume(initiator != address(0));
 
         vm.prank(initiator);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
-        assertEq(bundler.initiator(), address(0));
+        assertEq(initMulticall.initiator(), address(0));
 
         // Test that it's possible to do a second multicall in the same tx.
         vm.prank(initiator);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testPassthroughValue(address initiator, uint128 value) public {
@@ -64,26 +64,26 @@ contract BundlerLocalTest is LocalTest {
 
         vm.deal(initiator, value);
         vm.prank(initiator);
-        bundler.multicall{value: value}(bundle);
+        initMulticall.multicall{value: value}(bundle);
     }
 
     function testNestedCallbackAndlastUnreturnedCalleeValue(address initiator) public {
         vm.assume(initiator != address(0));
-        AdapterMock adapterMock2 = new AdapterMock(address(bundler));
-        AdapterMock adapterMock3 = new AdapterMock(address(bundler));
+        AdapterMock adapterMock2 = new AdapterMock(address(initMulticall));
+        AdapterMock adapterMock3 = new AdapterMock(address(initMulticall));
 
         callbackBundle2.push(_call(adapterMock2, abi.encodeCall(AdapterMock.isProtected, ())));
 
-        callbackBundle.push(_call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(_call(adapterMock2, abi.encodeCall(AdapterMock.callbackInitMulticall, (callbackBundle2))));
 
-        callbackBundle.push(_call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(_call(adapterMock3, abi.encodeCall(AdapterMock.callbackInitMulticall, (callbackBundle2))));
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle))));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackInitMulticall, (callbackBundle))));
 
         vm.prank(initiator);
 
         vm.recordLogs();
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
         assertEq(entries.length, 8);
@@ -111,13 +111,13 @@ contract BundlerLocalTest is LocalTest {
         emit Initiator(initiator);
 
         vm.prank(initiator);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testMulticallShouldPassRevertData(string memory revertReason) public {
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testProtectedFailure(address initiator, address adapter, address caller) public {
@@ -125,23 +125,23 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(caller != initiator);
         vm.assume(caller != adapter);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(address(initMulticall), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
+        _delegatePrank(address(initMulticall), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(caller);
-        bundler.reenter(new Call[](0));
+        initMulticall.reenter(new Call[](0));
     }
 
     function testProtectedSuccessAsAdapter(address initiator, address adapter) public {
         vm.assume(initiator != address(0));
         vm.assume(initiator != adapter);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
+        _delegatePrank(address(initMulticall), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
+        _delegatePrank(address(initMulticall), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
 
         vm.prank(adapter);
-        bundler.reenter(new Call[](0));
+        initMulticall.reenter(new Call[](0));
     }
 
     function testNotSkipRevert() public {
@@ -155,7 +155,7 @@ contract BundlerLocalTest is LocalTest {
         bundle.push(failingCall);
         vm.prank(USER);
         vm.expectRevert();
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testSkipRevert() public {
@@ -163,6 +163,6 @@ contract BundlerLocalTest is LocalTest {
 
         bundle.push(failingCall);
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 }

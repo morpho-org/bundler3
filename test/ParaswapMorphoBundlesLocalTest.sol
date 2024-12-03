@@ -127,7 +127,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         skip(2 days);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - srcAmount, "sold");
         assertEq(collateralToken2.balanceOf(USER), srcAmount, "bought"); // price is 1
@@ -159,7 +159,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         skip(2 days);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.expectedSupplyAssets(marketParams, USER), supplyAmount - srcAmount, "sold");
         assertEq(loanToken2.balanceOf(USER), srcAmount, "bought"); // price is 1
@@ -186,7 +186,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         skip(2 days);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.expectedSupplyAssets(marketParams, USER), 0, "sold");
         assertEq(loanToken2.balanceOf(USER), supplyAmount, "bought");
@@ -220,7 +220,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         skip(2 days);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.expectedSupplyAssets(marketParams, USER), supplyAmount - srcAmount, "withdrawn");
         assertEq(morpho.expectedSupplyAssets(marketParamsLoan2, USER), srcAmount, "supplied");
@@ -248,7 +248,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         skip(2 days);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.expectedSupplyAssets(marketParams, USER), 0, "withdrawn");
         assertEq(morpho.expectedSupplyAssets(marketParamsLoan2, USER), supplyAmount, "supplied");
@@ -288,7 +288,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 borrowAssetsBefore = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - collateralToSwap, "collateral 1");
         assertEq(morpho.collateral(marketParamsCollateral2.id(), USER), collateralToSwap, "collateral 2");
@@ -342,7 +342,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), 0);
         assertEq(morpho.collateral(marketParamsCollateral2.id(), USER), collateralAmount);
@@ -409,7 +409,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - collateralToTransfer, "collateral 1");
         assertEq(morpho.collateral(marketParamsLoan2.id(), USER), collateralToTransfer, "collateral 2");
@@ -463,7 +463,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), 0, "collateral 1");
         assertEq(morpho.collateral(marketParamsLoan2.id(), USER), collateralAmount, "collateral 2");
@@ -519,7 +519,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), 0);
         assertEq(morpho.collateral(marketParamsAll2.id(), USER), collateralAmount);
@@ -608,7 +608,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - assetsToRepay, "collateral");
         assertEq(morpho.expectedBorrowAssets(marketParams, USER), expectedDebt - assetsToRepay, "loan");
@@ -668,7 +668,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(morpho.collateral(marketParams.id(), USER), collateralAmount - expectedDebt, "collateral");
         assertEq(morpho.expectedBorrowAssets(marketParams, USER), 0, "loan");

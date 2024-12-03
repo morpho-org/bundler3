@@ -28,7 +28,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
 
         _initMarket(CB_ETH, WETH);
 
-        migrationAdapter = new CompoundV3MigrationAdapter(address(bundler));
+        migrationAdapter = new CompoundV3MigrationAdapter(address(initMulticall));
     }
 
     function testCompoundV3RepayUnauthorized(uint256 amount) public {
@@ -42,7 +42,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_compoundV3Repay(C_WETH_V3, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testCompoundV3AuthorizationWithSigRevert(address owner) public {
@@ -70,7 +70,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
 
         vm.prank(user);
         vm.expectRevert(ICompoundV3.BadSignatory.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testMigrateBorrowerWithCompoundAllowance() public {
@@ -103,7 +103,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(generalAdapter1));
     }
@@ -120,7 +120,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         uint256 repaid = borrowed.wMulDown(fractionRepaid);
         ERC20(WETH).safeTransfer(address(migrationAdapter), repaid);
         bundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max, address(this)));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(address(this)), borrowed - repaid, 1);
     }
@@ -140,7 +140,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         deal(WETH, address(this), toRepay);
         ERC20(WETH).safeTransfer(address(migrationAdapter), toRepay);
         bundle.push(_compoundV3Repay(C_WETH_V3, toRepay, USER));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         if (repayFactor < 1 ether) {
             assertApproxEqAbs(ICompoundV3(C_WETH_V3).borrowBalanceOf(USER), borrowed - toRepay, 1);
@@ -161,7 +161,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         ICompoundV3(C_WETH_V3).allow(address(migrationAdapter), true);
 
         bundle.push(_compoundV3WithdrawFrom(C_WETH_V3, WETH, toWithdraw, address(generalAdapter1)));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         if (withdrawFactor < 1 ether) {
             assertApproxEqAbs(ERC20(WETH).balanceOf(address(generalAdapter1)), toWithdraw, 10);
@@ -191,7 +191,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertSupplierPosition(supplied, user, address(generalAdapter1));
     }
@@ -217,7 +217,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         _assertVaultSupplierPosition(supplied, user, address(generalAdapter1));
     }

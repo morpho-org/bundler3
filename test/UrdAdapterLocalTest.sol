@@ -49,7 +49,7 @@ contract UrdAdapterLocalTest is LocalTest {
         bundle.push(_urdClaim(distributor, USER, address(collateralToken), claimable, loanTokenProof, true));
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
 
         assertEq(loanToken.balanceOf(USER), claimable, "User's loan balance");
         assertEq(collateralToken.balanceOf(USER), claimable, "User's collateral balance");
@@ -73,7 +73,7 @@ contract UrdAdapterLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(bytes(UrdErrorsLib.CLAIMABLE_TOO_LOW));
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function _setupRewards(uint256 claimable, uint256 size) internal returns (bytes32[] memory tree) {

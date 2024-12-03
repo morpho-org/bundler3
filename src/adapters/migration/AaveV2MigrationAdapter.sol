@@ -19,9 +19,9 @@ contract AaveV2MigrationAdapter is CoreAdapter {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address
+    /// @param initMulticall The InitMulticall contract address
     /// @param aaveV2Pool The AaveV2 contract address.
-    constructor(address bundler, address aaveV2Pool) CoreAdapter(bundler) {
+    constructor(address initMulticall, address aaveV2Pool) CoreAdapter(initMulticall) {
         require(aaveV2Pool != address(0), ErrorsLib.ZeroAddress());
 
         AAVE_V2_POOL = IAaveV2(aaveV2Pool);
@@ -39,7 +39,7 @@ contract AaveV2MigrationAdapter is CoreAdapter {
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function aaveV2Repay(address token, uint256 amount, uint256 interestRateMode, address onBehalf)
         external
-        onlyBundler
+        onlyInitMulticall
     {
         // Amount will be capped at `onBehalf`'s debt by Aave.
         if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
@@ -58,7 +58,7 @@ contract AaveV2MigrationAdapter is CoreAdapter {
     /// initiator's max withdrawable amount. Pass
     /// `type(uint).max` to always withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
-    function aaveV2Withdraw(address token, uint256 amount, address receiver) external onlyBundler {
+    function aaveV2Withdraw(address token, uint256 amount, address receiver) external onlyInitMulticall {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         AAVE_V2_POOL.withdraw(token, amount, receiver);

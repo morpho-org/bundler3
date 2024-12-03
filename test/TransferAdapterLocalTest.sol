@@ -15,7 +15,7 @@ contract TransferAdapterLocalTest is LocalTest {
 
         vm.startPrank(USER);
         loanToken.approve(address(generalAdapter1), type(uint256).max);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
         vm.stopPrank();
 
         assertEq(loanToken.balanceOf(address(generalAdapter1)), amount, "loan.balanceOf(generalAdapter1)");
@@ -28,7 +28,7 @@ contract TransferAdapterLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), address(0), amount));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 
     function testTransferFromUnauthorized(uint256 amount) public {
@@ -43,6 +43,6 @@ contract TransferAdapterLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        initMulticall.multicall(bundle);
     }
 }

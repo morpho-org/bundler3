@@ -36,7 +36,7 @@ import {IUniversalRewardsDistributorBase} from
 import {CoreAdapter} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GeneralAdapter1} from "../../src/adapters/GeneralAdapter1.sol";
-import {Bundler, Call} from "../../src/Bundler.sol";
+import {InitMulticall, Call} from "../../src/InitMulticall.sol";
 
 import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
 import {AugustusMock} from "../../src/mocks/AugustusMock.sol";
@@ -65,7 +65,7 @@ abstract contract CommonTest is Test {
     IrmMock internal irm;
     OracleMock internal oracle;
 
-    Bundler internal bundler;
+    InitMulticall internal initMulticall;
     GeneralAdapter1 internal generalAdapter1;
 
     ParaswapAdapter paraswapAdapter;
@@ -85,9 +85,9 @@ abstract contract CommonTest is Test {
         augustusRegistryMock = new AugustusRegistryMock();
         functionMocker = new FunctionMocker();
 
-        bundler = new Bundler();
-        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(new WethContract()));
-        paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), address(augustusRegistryMock));
+        initMulticall = new InitMulticall();
+        generalAdapter1 = new GeneralAdapter1(address(initMulticall), address(morpho), address(new WethContract()));
+        paraswapAdapter = new ParaswapAdapter(address(initMulticall), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
