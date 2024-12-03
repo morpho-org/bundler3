@@ -32,6 +32,17 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.assume(account != address(this));
     }
 
+    function testConstructor(address rdmAddress) public {
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        new ParaswapModule(rdmAddress, rdmAddress, address(0));
+
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        new ParaswapModule(rdmAddress, address(0), rdmAddress);
+
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        new ParaswapModule(address(0), rdmAddress, rdmAddress);
+    }
+
     function testAugustusInRegistrySellCheck(address _augustus) public {
         augustusRegistryMock.setValid(_augustus, false);
 
@@ -48,6 +59,18 @@ contract ParaswapModuleLocalTest is LocalTest {
 
         vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
         paraswapModule.buy(_augustus, new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+    }
+
+    function testSellReceiverZero() public {
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        paraswapModule.sell(
+            address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0)
+        );
+    }
+
+    function testBuyReceiverZero() public {
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        paraswapModule.buy(address(augustus), new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
     }
 
     uint256 _bytesLength = 1024;

@@ -60,9 +60,7 @@ contract CompoundV2MigrationModule is CoreModule {
     /// debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function compoundV2RepayEth(uint256 amount, address onBehalf) external onlyBundler {
-        if (amount == type(uint256).max) {
-            amount = address(this).balance;
-        }
+        if (amount == type(uint256).max) amount = address(this).balance;
         amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -78,6 +76,8 @@ contract CompoundV2MigrationModule is CoreModule {
     /// redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
     function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
+        require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
+
         amount = Math.min(amount, ICToken(cToken).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
