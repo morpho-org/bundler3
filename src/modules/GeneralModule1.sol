@@ -447,6 +447,6 @@ contract GeneralModule1 is CoreModule {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        _multicallBundler(data);
+        _reenterBundler(data);
     }
 }

@@ -79,12 +79,12 @@ abstract contract CoreModule {
         return IBundler(BUNDLER).initiator();
     }
 
-    /// @notice Calls bundler.multicallFromTarget with an already encoded Call array.
+    /// @notice Calls bundler.reenter with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
-    function _multicallBundler(bytes calldata data) internal {
+    function _reenterBundler(bytes calldata data) internal {
         (bool success, bytes memory returnData) =
-            BUNDLER.call(bytes.concat(IBundler.multicallFromTarget.selector, data));
+            BUNDLER.call(bytes.concat(IBundler.reenter.selector, data));
         if (!success) UtilsLib.lowLevelRevert(returnData);
     }
 }

@@ -11,8 +11,8 @@ struct Call {
 
 /// @custom:contact security@morpho.org
 interface IBundler {
-    function multicall(Call[] calldata bundle) external payable;
-    function multicallFromTarget(Call[] calldata bundle) external;
-    function currentTarget() external view returns (address target);
+    function multicall(Call[] calldata) external payable;
+    function reenter(Call[] calldata) external;
+    function lastUnreturnedCall() external view returns (address);
     function initiator() external view returns (address);
 }

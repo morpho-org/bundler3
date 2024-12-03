@@ -133,9 +133,9 @@ abstract contract CommonTest is Test {
         morpho.borrow(_marketParams, amount, 0, onBehalf, onBehalf);
     }
 
-    function _delegatePrank(address target, bytes memory callData) internal {
-        vm.mockFunction(target, address(functionMocker), callData);
-        (bool success,) = target.call(callData);
+    function _delegatePrank(address to, bytes memory callData) internal {
+        vm.mockFunction(to, address(functionMocker), callData);
+        (bool success,) = to.call(callData);
         require(success, "Function mocker call failed");
     }
 

@@ -16,22 +16,20 @@ A bundle is a sequence of calls where each call is specified by:
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-A contract called by the Bundler is called a target.
-
 The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Modules subsection for the use).
 
-The last target can re-enter the bundler using `multicallFromTarget(Call[] calldata bundle)` (same).
+The last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)` (same).
 
 ### Modules
 
-Targets can be either protocols, or wrappers of protocols (called "modules").
+The bundler can call either directly protocols, or wrappers of protocols (called "modules").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
 In order to be safely authorized by users, modules can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
 For instance, a module that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
 
 Since these functions can typically move user funds, only the bundler should be allowed to call them.
-If a module gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's `multicallFromTarget(Call[] calldata bundle)` function.
+If a module gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's `reenter(Call[] calldata bundle)` function.
 
 ## Modules List
 
