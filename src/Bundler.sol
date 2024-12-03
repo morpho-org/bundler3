@@ -9,7 +9,7 @@ import {UtilsLib} from "./libraries/UtilsLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Enables doing multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
-/// @notice Can be reentered by the last unreturned Call.
+/// @notice Can be reentered by the last unreturned callee.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
@@ -17,8 +17,8 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Last non-returned Call (Call=call from the bundler).
-    address public transient lastUnreturnedCall;
+    /// @notice Last non-returned callee.
+    address public transient lastUnreturnedCallee;
 
     /* EXTERNAL */
 
@@ -40,7 +40,7 @@ contract Bundler is IBundler {
     /// @dev Can only be called by the last unreturned Call.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
-        require(msg.sender == lastUnreturnedCall, ErrorsLib.UnauthorizedSender());
+        require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
 
@@ -48,17 +48,17 @@ contract Bundler is IBundler {
 
     /// @notice Executes a series of calls.
     function _multicall(Call[] calldata bundle) internal {
-        address previousLastUnreturnedCall = lastUnreturnedCall;
+        address previousLastUnreturnedCallee = lastUnreturnedCallee;
 
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
-            lastUnreturnedCall = to;
+            lastUnreturnedCallee = to;
 
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
         }
 
-        lastUnreturnedCall = previousLastUnreturnedCall;
+        lastUnreturnedCallee = previousLastUnreturnedCallee;
     }
 }

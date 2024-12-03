@@ -67,7 +67,7 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall{value: value}(bundle);
     }
 
-    function testNestedCallbackAndlastUnreturnedCallValue(address initiator) public {
+    function testNestedCallbackAndlastUnreturnedCalleeValue(address initiator) public {
         vm.assume(initiator != address(0));
         AdapterMock adapterMock2 = new AdapterMock(address(bundler));
         AdapterMock adapterMock3 = new AdapterMock(address(bundler));
@@ -89,7 +89,7 @@ contract BundlerLocalTest is LocalTest {
         assertEq(entries.length, 8);
 
         for (uint256 i = 0; i < entries.length; i++) {
-            assertEq(entries[i].topics[0], keccak256("lastUnreturnedCall(address)"));
+            assertEq(entries[i].topics[0], keccak256("lastUnreturnedCallee(address)"));
         }
 
         assertEq(entries[0].data, abi.encode(adapterMock));
@@ -125,7 +125,7 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(caller != initiator);
         vm.assume(caller != adapter);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCall, (adapter)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
@@ -138,7 +138,7 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(initiator != adapter);
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCall, (adapter)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
 
         vm.prank(adapter);
         bundler.reenter(new Call[](0));
