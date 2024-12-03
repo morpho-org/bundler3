@@ -29,7 +29,7 @@ contract EthereumModule1 is GenericModule1 {
     /// @dev The address of the stETH contract.
     address public immutable ST_ETH;
 
-    /// @dev The address of the wStETH contract.
+    /// @dev The address of the wstETH contract.
     address public immutable WST_ETH;
 
     /// @notice The address of the Morpho token.
@@ -41,12 +41,12 @@ contract EthereumModule1 is GenericModule1 {
     /* CONSTRUCTOR */
 
     /// @param bundler The address of the bundler.
-    /// @param morpho The address of Morpho.
-    /// @param weth The address of the weth.
-    /// @param dai The address of the dai.
-    /// @param wStEth The address of the wStEth.
-    /// @param morphoToken The address of the morpho token.
-    /// @param morphoWrapper The address of the morpho token wrapper.
+    /// @param morpho The address of the Morpho protocol.
+    /// @param weth The address of the WETH token.
+    /// @param dai The address of the DAI token.
+    /// @param wStEth The address of the wstETH token.
+    /// @param morphoToken The address of the Morpho token.
+    /// @param morphoWrapper The address of the Morpho token wrapper.
     constructor(
         address bundler,
         address morpho,
