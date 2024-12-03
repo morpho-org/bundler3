@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 library ErrorsLib {
     /* STANDARD MODULES */
 
-    /// @dev Thrown when a multicall is attempted while the module in an initiated execution context.
+    /// @dev Thrown when a multicall is attempted while the module is in an initiated execution context.
     error AlreadyInitiated();
 
     /// @dev Thrown when a call is attempted from an unauthorized sender.
@@ -58,6 +58,6 @@ library ErrorsLib {
     /// @dev Thrown when a swap has spent too many source tokens.
     error SellAmountTooHigh();
 
-    /// @dev Thrown when a swap has bought too few destination tokens.
+    /// @dev Thrown when a swap has not bought enough destination tokens.
     error BuyAmountTooLow();
 }
