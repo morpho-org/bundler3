@@ -1,32 +1,32 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {BaseModule} from "./BaseModule.sol";
+import {CoreModule} from "./CoreModule.sol";
 
-import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 
-import {ModuleLib} from "./libraries/ModuleLib.sol";
-import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
+import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {IUniversalRewardsDistributor} from
-    "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
-import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
-import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
-import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-import {IWNative} from "./interfaces/IWNative.sol";
-import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
-import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
-import {MathRayLib} from "./libraries/MathRayLib.sol";
-import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+    "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
+import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
+import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+import {IWNative} from "../interfaces/IWNative.sol";
+import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
+import {MathRayLib} from "../libraries/MathRayLib.sol";
+import {UtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
-contract GenericModule1 is BaseModule {
+contract GeneralModule1 is CoreModule {
     using SafeCast160 for uint256;
     using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
@@ -41,7 +41,7 @@ contract GenericModule1 is BaseModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address wNative) BaseModule(bundler) {
+    constructor(address bundler, address morpho, address wNative) CoreModule(bundler) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
 

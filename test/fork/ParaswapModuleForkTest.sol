@@ -40,7 +40,7 @@ contract ParaswapModuleForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
             _call(
-                BaseModule(payable(address(paraswapModule))),
+                CoreModule(payable(address(paraswapModule))),
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -54,7 +54,7 @@ contract ParaswapModuleForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(genericModule1), type(uint256).max);
+        ERC20(USDC).approve(address(generalModule1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
@@ -71,7 +71,7 @@ contract ParaswapModuleForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
             _call(
-                BaseModule(payable(address(paraswapModule))),
+                CoreModule(payable(address(paraswapModule))),
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -85,7 +85,7 @@ contract ParaswapModuleForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(genericModule1), type(uint256).max);
+        ERC20(USDC).approve(address(generalModule1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
@@ -111,7 +111,7 @@ contract ParaswapModuleForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
             _call(
-                BaseModule(payable(address(paraswapModule))),
+                CoreModule(payable(address(paraswapModule))),
                 _paraswapBuy(
                     AUGUSTUS_V6_2, buyCalldata, USDC, WETH, 0, Offsets(destAmountOffset, maxSrcAmountOffset, 0), user
                 )
@@ -120,7 +120,7 @@ contract ParaswapModuleForkTest is ForkTest {
         bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapModule));
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(genericModule1), type(uint256).max);
+        ERC20(USDC).approve(address(generalModule1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
@@ -150,7 +150,7 @@ contract ParaswapModuleForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapModule), type(uint256).max));
         bundle.push(
             _call(
-                BaseModule(payable(address(paraswapModule))),
+                CoreModule(payable(address(paraswapModule))),
                 _paraswapBuy(
                     AUGUSTUS_V6_2,
                     buyCalldata,
@@ -165,7 +165,7 @@ contract ParaswapModuleForkTest is ForkTest {
         bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapModule));
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(genericModule1), type(uint256).max);
+        ERC20(USDC).approve(address(generalModule1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 

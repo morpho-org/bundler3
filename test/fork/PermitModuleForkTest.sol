@@ -8,7 +8,7 @@ import {DaiPermit} from "../helpers/SigUtils.sol";
 
 import {ERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20PermitMock} from "../helpers/mocks/ERC20PermitMock.sol";
-import {EthereumModule1} from "../../src/EthereumModule1.sol";
+import {EthereumGeneralModule1} from "../../src/modules/EthereumGeneralModule1.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -64,7 +64,7 @@ contract PermitModuleForkTest is ForkTest {
     {
         address user = vm.addr(privateKey);
         uint256 nonce = IDaiPermit(DAI).nonces(user);
-        require(DAI == ethereumModule1.DAI(), "not the same DAI");
+        require(DAI == ethereumGeneralModule1.DAI(), "not the same DAI");
 
         uint8 v;
         bytes32 r;
@@ -79,7 +79,7 @@ contract PermitModuleForkTest is ForkTest {
 
         bytes memory callData = abi.encodeCall(IDaiPermit(DAI).permit, (user, spender, nonce, expiry, allowed, v, r, s));
 
-        return _call(BaseModule(payable(address(DAI))), callData, 0, skipRevert);
+        return _call(CoreModule(payable(address(DAI))), callData, 0, skipRevert);
     }
 
     function testPermit(uint256 amount, address spender, uint256 deadline) public {
@@ -119,7 +119,7 @@ contract PermitModuleForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deadline = bound(deadline, block.timestamp, type(uint48).max);
 
-        bundle.push(_permit(permitToken, privateKey, address(genericModule1), amount, deadline, false));
+        bundle.push(_permit(permitToken, privateKey, address(generalModule1), amount, deadline, false));
 
         bundle.push(_erc20TransferFrom(address(permitToken), amount));
 
@@ -128,7 +128,7 @@ contract PermitModuleForkTest is ForkTest {
         vm.prank(user);
         bundler.multicall(bundle);
 
-        assertEq(permitToken.balanceOf(address(genericModule1)), amount, "balanceOf(genericModule1)");
+        assertEq(permitToken.balanceOf(address(generalModule1)), amount, "balanceOf(generalModule1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");
     }
 }

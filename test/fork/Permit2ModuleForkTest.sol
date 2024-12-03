@@ -22,7 +22,7 @@ contract Permit2ModuleForkTest is ForkTest {
 
         vm.assume(onBehalf != address(0));
         vm.assume(onBehalf != address(morpho));
-        vm.assume(onBehalf != address(genericModule1));
+        vm.assume(onBehalf != address(generalModule1));
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         privateKey = bound(privateKey, 1, type(uint160).max);
@@ -86,13 +86,13 @@ contract Permit2ModuleForkTest is ForkTest {
         vm.stopPrank();
 
         (uint160 permit2Allowance,,) =
-            Permit2Lib.PERMIT2.allowance(user, marketParams.loanToken, address(genericModule1));
+            Permit2Lib.PERMIT2.allowance(user, marketParams.loanToken, address(generalModule1));
 
-        assertEq(permit2Allowance, amount, "PERMIT2.allowance(user, genericModule1)");
+        assertEq(permit2Allowance, amount, "PERMIT2.allowance(user, generalModule1)");
         assertEq(
-            ERC20(marketParams.loanToken).allowance(user, address(genericModule1)),
+            ERC20(marketParams.loanToken).allowance(user, address(generalModule1)),
             0,
-            "loan.allowance(user, genericModule1)"
+            "loan.allowance(user, generalModule1)"
         );
     }
 
@@ -127,17 +127,17 @@ contract Permit2ModuleForkTest is ForkTest {
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        (uint160 permit2Allowance1,,) = Permit2Lib.PERMIT2.allowance(user, token0, address(genericModule1));
+        (uint160 permit2Allowance1,,) = Permit2Lib.PERMIT2.allowance(user, token0, address(generalModule1));
 
-        (uint160 permit2Allowance2,,) = Permit2Lib.PERMIT2.allowance(user, token1, address(genericModule1));
+        (uint160 permit2Allowance2,,) = Permit2Lib.PERMIT2.allowance(user, token1, address(generalModule1));
 
-        assertEq(permit2Allowance1, amount0, "PERMIT2.allowance(user, asset 1, genericModule1)");
-        assertEq(permit2Allowance2, amount1, "PERMIT2.allowance(user, asset 2,genericModule1)");
+        assertEq(permit2Allowance1, amount0, "PERMIT2.allowance(user, asset 1, generalModule1)");
+        assertEq(permit2Allowance2, amount1, "PERMIT2.allowance(user, asset 2,generalModule1)");
         assertEq(
-            ERC20(token0).allowance(user, address(genericModule1)), 0, "loan.allowance(user, asset 1, genericModule1)"
+            ERC20(token0).allowance(user, address(generalModule1)), 0, "loan.allowance(user, asset 1, generalModule1)"
         );
         assertEq(
-            ERC20(token1).allowance(user, address(genericModule1)), 0, "loan.allowance(user, asset 2, genericModule1)"
+            ERC20(token1).allowance(user, address(generalModule1)), 0, "loan.allowance(user, asset 2, generalModule1)"
         );
     }
 
@@ -194,6 +194,6 @@ contract Permit2ModuleForkTest is ForkTest {
 
     function testTransferFrom2Unauthorized() public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.transferFrom2(address(0), address(0), 0);
+        generalModule1.transferFrom2(address(0), address(0), 0);
     }
 }
