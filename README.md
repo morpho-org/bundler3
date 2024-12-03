@@ -28,7 +28,7 @@ Targets can be either protocols, or wrappers of protocols (called "modules").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
 In order to be safely authorized by users, modules can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
-For instance, a module that needs to hold some token approvals should only allow to move funds owned by the initiator.
+For instance, a module that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
 
 Since these functions can typically move user funds, only the bundler should be allowed to call them.
 If a module uses a callback (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's ``multicallFromTarget(Call[] calldata bundle)` function.
