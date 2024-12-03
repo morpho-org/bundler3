@@ -7,7 +7,7 @@ import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
 import {CoreAdapter} from "../CoreAdapter.sol";
-import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IERC20} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {UtilsLib} from "../../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
@@ -31,13 +31,13 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
     function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
         address asset = ICompoundV3(instance).baseToken();
 
-        if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(asset).balanceOf(address(this));
 
         amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(asset, instance);
+        UtilsLib.forceApproveMaxTo(asset, instance);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
         ICompoundV3(instance).supplyTo(onBehalf, asset, amount);

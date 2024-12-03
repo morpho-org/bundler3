@@ -9,7 +9,7 @@ import {ERC20Mock} from "../helpers/mocks/ERC20Mock.sol";
 error InvalidNonce();
 
 contract Permit2AdapterForkTest is ForkTest {
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoBalancesLib for IMorpho;
     using MorphoLib for IMorpho;
@@ -34,27 +34,27 @@ contract Permit2AdapterForkTest is ForkTest {
         bundle.push(_transferFrom2(marketParams.loanToken, amount));
         bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, onBehalf, hex""));
 
-        uint256 collateralBalanceBefore = ERC20(marketParams.collateralToken).balanceOf(onBehalf);
-        uint256 loanBalanceBefore = ERC20(marketParams.loanToken).balanceOf(onBehalf);
+        uint256 collateralBalanceBefore = IERC20(marketParams.collateralToken).balanceOf(onBehalf);
+        uint256 loanBalanceBefore = IERC20(marketParams.loanToken).balanceOf(onBehalf);
 
         deal(marketParams.loanToken, user, amount);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
-        ERC20(marketParams.collateralToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(marketParams.loanToken).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(marketParams.collateralToken).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(ERC20(marketParams.collateralToken).balanceOf(user), 0, "collateral.balanceOf(user)");
-        assertEq(ERC20(marketParams.loanToken).balanceOf(user), 0, "loan.balanceOf(user)");
+        assertEq(IERC20(marketParams.collateralToken).balanceOf(user), 0, "collateral.balanceOf(user)");
+        assertEq(IERC20(marketParams.loanToken).balanceOf(user), 0, "loan.balanceOf(user)");
 
         assertEq(
-            ERC20(marketParams.collateralToken).balanceOf(onBehalf),
+            IERC20(marketParams.collateralToken).balanceOf(onBehalf),
             collateralBalanceBefore,
             "collateral.balanceOf(onBehalf)"
         );
-        assertEq(ERC20(marketParams.loanToken).balanceOf(onBehalf), loanBalanceBefore, "loan.balanceOf(onBehalf)");
+        assertEq(IERC20(marketParams.loanToken).balanceOf(onBehalf), loanBalanceBefore, "loan.balanceOf(onBehalf)");
 
         Id id = marketParams.id();
 
@@ -80,7 +80,7 @@ contract Permit2AdapterForkTest is ForkTest {
         bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, true));
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(marketParams.loanToken).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
         bundler.multicall(bundle);
         vm.stopPrank();
@@ -90,7 +90,7 @@ contract Permit2AdapterForkTest is ForkTest {
 
         assertEq(permit2Allowance, amount, "PERMIT2.allowance(user, generalAdapter1)");
         assertEq(
-            ERC20(marketParams.loanToken).allowance(user, address(generalAdapter1)),
+            IERC20(marketParams.loanToken).allowance(user, address(generalAdapter1)),
             0,
             "loan.allowance(user, generalAdapter1)"
         );
@@ -121,8 +121,8 @@ contract Permit2AdapterForkTest is ForkTest {
         bundle.push(_approve2Batch(privateKey, assets, amounts, nonces, true));
 
         vm.startPrank(user);
-        ERC20(token0).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
-        ERC20(token1).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(token0).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(token1).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
         bundler.multicall(bundle);
         vm.stopPrank();
@@ -134,10 +134,14 @@ contract Permit2AdapterForkTest is ForkTest {
         assertEq(permit2Allowance1, amount0, "PERMIT2.allowance(user, asset 1, generalAdapter1)");
         assertEq(permit2Allowance2, amount1, "PERMIT2.allowance(user, asset 2,generalAdapter1)");
         assertEq(
-            ERC20(token0).allowance(user, address(generalAdapter1)), 0, "loan.allowance(user, asset 1, generalAdapter1)"
+            IERC20(token0).allowance(user, address(generalAdapter1)),
+            0,
+            "loan.allowance(user, asset 1, generalAdapter1)"
         );
         assertEq(
-            ERC20(token1).allowance(user, address(generalAdapter1)), 0, "loan.allowance(user, asset 2, generalAdapter1)"
+            IERC20(token1).allowance(user, address(generalAdapter1)),
+            0,
+            "loan.allowance(user, asset 2, generalAdapter1)"
         );
     }
 

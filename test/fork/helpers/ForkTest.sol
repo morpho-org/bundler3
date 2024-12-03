@@ -13,8 +13,6 @@ import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";
 
 abstract contract ForkTest is CommonTest, NetworkConfig {
-    using SafeTransferLib for ERC20;
-
     EthereumGeneralAdapter1 internal ethereumGeneralAdapter1;
     MarketParams[] internal allMarketParams;
     // Overloaded function permit in IAllowanceTransfer cannot be directly referenced in Solidity. The selectors are

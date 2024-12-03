@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IComptroller} from "../../../src/interfaces/IComptroller.sol";
+import {Address} from "../../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 import "../../../src/adapters/migration/CompoundV2MigrationAdapter.sol";
 
@@ -9,7 +10,7 @@ import "./helpers/MigrationForkTest.sol";
 
 contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
     using MathLib for uint256;
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -81,7 +82,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
 
         deal(DAI, address(this), collateral);
 
-        ERC20(DAI).safeApprove(C_DAI_V2, collateral);
+        IERC20(DAI).forceApprove(C_DAI_V2, collateral);
         require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
@@ -102,14 +103,14 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         deal(DAI, USER, collateral);
 
         vm.startPrank(USER);
-        ERC20(DAI).safeApprove(C_DAI_V2, collateral);
+        IERC20(DAI).forceApprove(C_DAI_V2, collateral);
         require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
         vm.stopPrank();
 
         deal(address(this), toRepay);
-        SafeTransferLib.safeTransferETH(address(migrationAdapter), toRepay);
+        Address.sendValue(payable(address(migrationAdapter)), toRepay);
 
         bundle.push(_compoundV2RepayEth(toRepay, USER));
         bundler.multicall(bundle);
@@ -132,7 +133,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         deal(DAI, user, collateral);
 
         vm.startPrank(user);
-        ERC20(DAI).safeApprove(C_DAI_V2, collateral);
+        IERC20(DAI).forceApprove(C_DAI_V2, collateral);
         require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICEth(C_ETH_V2).borrow(borrowed) == 0, "borrow error");
@@ -142,7 +143,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         collateral = cTokenBalance.wMulDown(ICToken(C_DAI_V2).exchangeRateStored());
 
         vm.prank(user);
-        ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_DAI_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(generalAdapter1)));
@@ -176,7 +177,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         supplied = cTokenBalance.wMulDown(ICToken(C_ETH_V2).exchangeRateStored());
 
         vm.prank(user);
-        ERC20(C_ETH_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_ETH_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationAdapter), cTokenBalance));
@@ -204,7 +205,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         supplied = cTokenBalance.wMulDown(ICToken(C_ETH_V2).exchangeRateStored());
 
         vm.prank(user);
-        ERC20(C_ETH_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_ETH_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_ETH_V2, address(migrationAdapter), cTokenBalance));

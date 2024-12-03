@@ -14,7 +14,8 @@ import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
-import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
@@ -62,11 +63,11 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address underlying = address(ERC20Wrapper(wrapper).underlying());
-        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlying, wrapper);
+        UtilsLib.forceApproveMaxTo(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
@@ -81,7 +82,7 @@ contract GeneralAdapter1 is CoreAdapter {
     function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        if (amount == type(uint256).max) amount = ERC20(wrapper).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -104,7 +105,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        UtilsLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
+        UtilsLib.forceApproveMaxTo(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -124,11 +125,11 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address underlyingToken = IERC4626(vault).asset();
-        if (assets == type(uint256).max) assets = ERC20(underlyingToken).balanceOf(address(this));
+        if (assets == type(uint256).max) assets = IERC20(underlyingToken).balanceOf(address(this));
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
+        UtilsLib.forceApproveMaxTo(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -222,11 +223,11 @@ contract GeneralAdapter1 is CoreAdapter {
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
         if (assets == type(uint256).max) {
-            assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+            assets = IERC20(marketParams.loanToken).balanceOf(address(this));
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
-        UtilsLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
@@ -249,11 +250,11 @@ contract GeneralAdapter1 is CoreAdapter {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
-        if (assets == type(uint256).max) assets = ERC20(marketParams.collateralToken).balanceOf(address(this));
+        if (assets == type(uint256).max) assets = IERC20(marketParams.collateralToken).balanceOf(address(this));
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(marketParams.collateralToken, address(MORPHO));
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
@@ -304,7 +305,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
         if (assets == type(uint256).max) {
-            assets = ERC20(marketParams.loanToken).balanceOf(address(this));
+            assets = IERC20(marketParams.loanToken).balanceOf(address(this));
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
@@ -313,7 +314,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
-        UtilsLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
@@ -370,7 +371,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
         require(assets != 0, ErrorsLib.ZeroAmount());
-        UtilsLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
     }
@@ -385,7 +386,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = _initiator();
-        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -404,11 +405,11 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address _initiator = _initiator();
-        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(_initiator);
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(_initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        SafeTransferLib.safeTransferFrom(ERC20(token), _initiator, receiver, amount);
+        SafeERC20.safeTransferFrom(IERC20(token), _initiator, receiver, amount);
     }
 
     /* WRAPPED NATIVE TOKEN ACTIONS */
@@ -423,7 +424,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         WRAPPED_NATIVE.deposit{value: amount}();
-        if (receiver != address(this)) SafeTransferLib.safeTransfer(ERC20(address(WRAPPED_NATIVE)), receiver, amount);
+        if (receiver != address(this)) SafeERC20.safeTransfer(IERC20(address(WRAPPED_NATIVE)), receiver, amount);
     }
 
     /// @notice Unwraps wNative tokens to the native token.
@@ -437,7 +438,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         WRAPPED_NATIVE.withdraw(amount);
-        if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, amount);
+        if (receiver != address(this)) Address.sendValue(payable(receiver), amount);
     }
 
     /* INTERNAL FUNCTIONS */

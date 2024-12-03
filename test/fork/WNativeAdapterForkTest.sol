@@ -12,7 +12,7 @@ contract WNativeAdapterForkTest is ForkTest {
         super.setUp();
 
         vm.prank(USER);
-        ERC20(WETH).approve(address(generalAdapter1), type(uint256).max);
+        IERC20(WETH).approve(address(generalAdapter1), type(uint256).max);
     }
 
     function testWrapZeroAmount(address receiver) public {
@@ -34,9 +34,9 @@ contract WNativeAdapterForkTest is ForkTest {
         vm.prank(USER);
         bundler.multicall{value: amount}(bundle);
 
-        assertEq(ERC20(WETH).balanceOf(address(generalAdapter1)), 0, "Adapter's wrapped token balance");
-        assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
-        assertEq(ERC20(WETH).balanceOf(RECEIVER), amount, "Receiver's wrapped token balance");
+        assertEq(IERC20(WETH).balanceOf(address(generalAdapter1)), 0, "Adapter's wrapped token balance");
+        assertEq(IERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
+        assertEq(IERC20(WETH).balanceOf(RECEIVER), amount, "Receiver's wrapped token balance");
 
         assertEq(address(generalAdapter1).balance, 0, "Adapter's native token balance");
         assertEq(USER.balance, 0, "User's native token balance");
@@ -62,9 +62,9 @@ contract WNativeAdapterForkTest is ForkTest {
         vm.prank(USER);
         bundler.multicall(bundle);
 
-        assertEq(ERC20(WETH).balanceOf(address(generalAdapter1)), 0, "Adapter's wrapped token balance");
-        assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
-        assertEq(ERC20(WETH).balanceOf(RECEIVER), 0, "Receiver's wrapped token balance");
+        assertEq(IERC20(WETH).balanceOf(address(generalAdapter1)), 0, "Adapter's wrapped token balance");
+        assertEq(IERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
+        assertEq(IERC20(WETH).balanceOf(RECEIVER), 0, "Receiver's wrapped token balance");
 
         assertEq(address(generalAdapter1).balance, 0, "Adapter's native token balance");
         assertEq(USER.balance, 0, "User's native token balance");

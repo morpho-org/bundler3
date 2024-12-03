@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, UtilsLib, SafeTransferLib, ERC20} from "./GeneralAdapter1.sol";
+import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, UtilsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:contact security@morpho.org
@@ -58,8 +58,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
 
-        UtilsLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
-        UtilsLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
+        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
+        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
@@ -73,7 +73,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        if (amount == type(uint256).max) amount = ERC20(MORPHO_TOKEN).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -100,7 +100,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
         require(amount.rDivUp(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
-        if (receiver != address(this)) SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, amount);
+        if (receiver != address(this)) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, amount);
     }
 
     /// @notice Wraps stETH to wStETH.
@@ -108,12 +108,12 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the adapter's balance.
     /// @param receiver The account receiving the wStETH tokens.
     function wrapStEth(uint256 amount, address receiver) external onlyBundler {
-        if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(ST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
-        if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(WST_ETH), receiver, received);
+        if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
     }
 
     /// @notice Unwraps wStETH to stETH.
@@ -121,11 +121,11 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param amount The amount of wStEth to unwrap. Pass `type(uint).max` to unwrap the adapter's balance.
     /// @param receiver The account receiving the stETH tokens.
     function unwrapStEth(uint256 amount, address receiver) external onlyBundler {
-        if (amount == type(uint256).max) amount = ERC20(WST_ETH).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(WST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
-        if (receiver != address(this) && received > 0) SafeTransferLib.safeTransfer(ERC20(ST_ETH), receiver, received);
+        if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, received);
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IERC20} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 import {Test} from "../../lib/forge-std/src/Test.sol";
 
 contract AugustusMock is Test {
@@ -20,9 +20,9 @@ contract AugustusMock is Test {
         if (toGive != type(uint256).max) toAmount = toGive;
         uint256 fromAmount = toTake != type(uint256).max ? toTake : toAmount;
 
-        ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
+        IERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
         deal(address(destToken), address(this), toAmount);
-        ERC20(destToken).transfer(msg.sender, toAmount);
+        IERC20(destToken).transfer(msg.sender, toAmount);
 
         toGive = type(uint256).max;
         toTake = type(uint256).max;
@@ -32,9 +32,9 @@ contract AugustusMock is Test {
         if (toTake != type(uint256).max) fromAmount = toTake;
         uint256 toAmount = toGive != type(uint256).max ? toGive : fromAmount;
 
-        ERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
+        IERC20(srcToken).transferFrom(msg.sender, address(this), fromAmount);
         deal(address(destToken), address(this), toAmount);
-        ERC20(destToken).transfer(msg.sender, toAmount);
+        IERC20(destToken).transfer(msg.sender, toAmount);
 
         toGive = type(uint256).max;
         toTake = type(uint256).max;

@@ -13,7 +13,7 @@ import "./helpers/ForkTest.sol";
 bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972bb68a68f500cd2dd3a16bbf3686483; // keccak256("lido.Lido.beaconBalance");
 
 contract EthereumStEthAdapterForkTest is ForkTest {
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MathRayLib for uint256;
 
     address internal immutable ST_ETH = getAddress("ST_ETH");
@@ -43,11 +43,11 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertEq(USER.balance, 0, "USER.balance");
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
         assertEq(address(ethereumGeneralAdapter1).balance, 0, "ethereumGeneralAdapter1.balance");
-        assertEq(ERC20(ST_ETH).balanceOf(USER), 0, "balanceOf(USER)");
+        assertEq(IERC20(ST_ETH).balanceOf(USER), 0, "balanceOf(USER)");
         assertApproxEqAbs(
-            ERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, 1, "balanceOf(ethereumGeneralAdapter1)"
+            IERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, 1, "balanceOf(ethereumGeneralAdapter1)"
         );
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), amount, 3, "balanceOf(RECEIVER)");
+        assertApproxEqAbs(IERC20(ST_ETH).balanceOf(RECEIVER), amount, 3, "balanceOf(RECEIVER)");
     }
 
     function testStakeEthSlippageExceeded(uint256 amount) public onlyEthereum {
@@ -82,31 +82,34 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
         deal(ST_ETH, user, amount);
 
-        amount = ERC20(ST_ETH).balanceOf(user);
+        amount = IERC20(ST_ETH).balanceOf(user);
 
         bundle.push(_approve2(privateKey, ST_ETH, amount, 0, false));
         bundle.push(_transferFrom2(ST_ETH, address(ethereumGeneralAdapter1), amount));
         bundle.push(_wrapStEth(amount, RECEIVER));
 
-        uint256 wstEthExpectedAmount = IStEth(ST_ETH).getSharesByPooledEth(ERC20(ST_ETH).balanceOf(user));
+        uint256 wstEthExpectedAmount = IStEth(ST_ETH).getSharesByPooledEth(IERC20(ST_ETH).balanceOf(user));
 
         vm.startPrank(user);
-        ERC20(ST_ETH).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(ST_ETH).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
         bundler.multicall(bundle);
         vm.stopPrank();
 
         assertEq(
-            ERC20(WST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, "wstEth.balanceOf(ethereumGeneralAdapter1)"
+            IERC20(WST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, "wstEth.balanceOf(ethereumGeneralAdapter1)"
         );
-        assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
-        assertApproxEqAbs(ERC20(WST_ETH).balanceOf(RECEIVER), wstEthExpectedAmount, 1, "wstEth.balanceOf(RECEIVER)");
+        assertEq(IERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
+        assertApproxEqAbs(IERC20(WST_ETH).balanceOf(RECEIVER), wstEthExpectedAmount, 1, "wstEth.balanceOf(RECEIVER)");
 
         assertApproxEqAbs(
-            ERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, 1, "wstEth.balanceOf(ethereumGeneralAdapter1)"
+            IERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)),
+            0,
+            1,
+            "wstEth.balanceOf(ethereumGeneralAdapter1)"
         );
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
-        assertEq(ERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
+        assertApproxEqAbs(IERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
+        assertEq(IERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
     }
 
     function testUnwrapZeroAmount(address receiver) public onlyEthereum {
@@ -129,7 +132,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         deal(WST_ETH, user, amount);
 
         vm.startPrank(user);
-        ERC20(WST_ETH).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
+        IERC20(WST_ETH).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
         bundler.multicall(bundle);
         vm.stopPrank();
@@ -137,15 +140,15 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         uint256 expectedUnwrappedAmount = IWstEth(WST_ETH).getStETHByWstETH(amount);
 
         assertEq(
-            ERC20(WST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, "wstEth.balanceOf(ethereumGeneralAdapter1)"
+            IERC20(WST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, "wstEth.balanceOf(ethereumGeneralAdapter1)"
         );
-        assertEq(ERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
-        assertEq(ERC20(WST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
+        assertEq(IERC20(WST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
+        assertEq(IERC20(WST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
 
         assertApproxEqAbs(
-            ERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, 1, "stEth.balanceOf(ethereumGeneralAdapter1)"
+            IERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, 1, "stEth.balanceOf(ethereumGeneralAdapter1)"
         );
-        assertEq(ERC20(ST_ETH).balanceOf(user), 0, "stEth.balanceOf(user)");
-        assertApproxEqAbs(ERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
+        assertEq(IERC20(ST_ETH).balanceOf(user), 0, "stEth.balanceOf(user)");
+        assertApproxEqAbs(IERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
     }
 }

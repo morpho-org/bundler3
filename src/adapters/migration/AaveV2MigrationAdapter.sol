@@ -6,7 +6,7 @@ import {IAaveV2} from "../../interfaces/IAaveV2.sol";
 import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
 import {CoreAdapter} from "../CoreAdapter.sol";
-import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IERC20} from "../../../lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 import {UtilsLib} from "../../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
@@ -42,11 +42,11 @@ contract AaveV2MigrationAdapter is CoreAdapter {
         onlyBundler
     {
         // Amount will be capped at `onBehalf`'s debt by Aave.
-        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(token, address(AAVE_V2_POOL));
+        UtilsLib.forceApproveMaxTo(token, address(AAVE_V2_POOL));
 
         AAVE_V2_POOL.repay(token, amount, interestRateMode, onBehalf);
     }

@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
-import {ERC20, SafeTransferLib} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import {IBundler} from "../interfaces/IBundler.sol";
 import {UtilsLib} from "../libraries/UtilsLib.sol";
 
@@ -52,7 +53,7 @@ abstract contract CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        SafeTransferLib.safeTransferETH(receiver, amount);
+        Address.sendValue(payable(receiver), amount);
     }
 
     /// @notice Transfers ERC20 tokens.
@@ -64,11 +65,11 @@ abstract contract CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
-        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        SafeTransferLib.safeTransfer(ERC20(token), receiver, amount);
+        SafeERC20.safeTransfer(IERC20(token), receiver, amount);
     }
 
     /* INTERNAL */

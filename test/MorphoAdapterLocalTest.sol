@@ -577,7 +577,7 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
         vm.startPrank(user);
         morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
         morpho.borrow(marketParams, amount, 0, user, user);
-        ERC20(marketParams.loanToken).transfer(address(generalAdapter1), amount);
+        IERC20(marketParams.loanToken).transfer(address(generalAdapter1), amount);
         vm.stopPrank();
 
         bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, user, hex""));

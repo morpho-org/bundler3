@@ -6,7 +6,7 @@ import {IAaveV3Optimizer} from "../../interfaces/IAaveV3Optimizer.sol";
 import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
 import {CoreAdapter} from "../CoreAdapter.sol";
-import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {IERC20} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {UtilsLib} from "../../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
@@ -38,11 +38,11 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyBundler {
         // Amount will be capped at `onBehalf`'s debt by the optimizer.
-        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlying, address(AAVE_V3_OPTIMIZER));
+        UtilsLib.forceApproveMaxTo(underlying, address(AAVE_V3_OPTIMIZER));
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, onBehalf);
     }

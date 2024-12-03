@@ -9,7 +9,7 @@ import "./helpers/MigrationForkTest.sol";
 
 contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
     using MathLib for uint256;
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -69,19 +69,19 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         supplied = bound(supplied, MIN_AMOUNT, MAX_AMOUNT);
         redeemFactor = bound(redeemFactor, 0.1 ether, 100 ether);
         deal(USDC, address(this), supplied);
-        ERC20(USDC).safeApprove(C_USDC_V2, supplied);
+        IERC20(USDC).forceApprove(C_USDC_V2, supplied);
         require(ICToken(C_USDC_V2).mint(supplied) == 0, "mint error");
         uint256 minted = ICToken(C_USDC_V2).balanceOf(address(this));
-        ERC20(C_USDC_V2).safeTransfer(address(migrationAdapter), minted);
+        IERC20(C_USDC_V2).safeTransfer(address(migrationAdapter), minted);
 
         uint256 toRedeem = minted.wMulDown(redeemFactor);
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, toRedeem, address(this)));
         bundler.multicall(bundle);
 
         if (redeemFactor < 1 ether) {
-            assertEq(ERC20(C_USDC_V2).balanceOf(address(migrationAdapter)), minted - toRedeem);
+            assertEq(IERC20(C_USDC_V2).balanceOf(address(migrationAdapter)), minted - toRedeem);
         } else {
-            assertEq(ERC20(C_USDC_V2).balanceOf(address(this)), 0);
+            assertEq(IERC20(C_USDC_V2).balanceOf(address(this)), 0);
         }
     }
 
@@ -96,7 +96,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.collateralToken, user, collateral);
 
         vm.startPrank(user);
-        ERC20(marketParams.collateralToken).safeApprove(C_DAI_V2, collateral);
+        IERC20(marketParams.collateralToken).forceApprove(C_DAI_V2, collateral);
         require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICToken(C_USDC_V2).borrow(borrowed) == 0, "borrow error");
@@ -117,7 +117,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.startPrank(user);
-        ERC20(C_DAI_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_DAI_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
         bundler.multicall(bundle);
         vm.stopPrank();
 
@@ -132,7 +132,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(C_USDC_V2, supplied);
+        IERC20(marketParams.loanToken).forceApprove(C_USDC_V2, supplied);
         require(ICToken(C_USDC_V2).mint(supplied) == 0, "mint error");
         vm.stopPrank();
 
@@ -140,7 +140,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         supplied = cTokenBalance.wMulDown(ICToken(C_USDC_V2).exchangeRateStored());
 
         vm.prank(user);
-        ERC20(C_USDC_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_USDC_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationAdapter), cTokenBalance));
@@ -161,7 +161,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(C_USDC_V2, supplied);
+        IERC20(marketParams.loanToken).forceApprove(C_USDC_V2, supplied);
         require(ICToken(C_USDC_V2).mint(supplied) == 0, "mint error");
         vm.stopPrank();
 
@@ -169,7 +169,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         supplied = cTokenBalance.wMulDown(ICToken(C_USDC_V2).exchangeRateStored());
 
         vm.prank(user);
-        ERC20(C_USDC_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_USDC_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
         bundle.push(_transferFrom2(C_USDC_V2, address(migrationAdapter), cTokenBalance));

@@ -8,7 +8,8 @@ import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
 import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {CoreAdapter, ERC20, SafeTransferLib, UtilsLib} from "../CoreAdapter.sol";
+import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../CoreAdapter.sol";
+import {Address} from "../../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
@@ -42,13 +43,13 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         address underlying = ICToken(cToken).underlying();
 
-        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
 
         amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlying, cToken);
+        UtilsLib.forceApproveMaxTo(underlying, cToken);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
     }
@@ -86,7 +87,7 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
         if (receiver != address(this)) {
-            SafeTransferLib.safeTransfer(ERC20(ICToken(cToken).underlying()), receiver, received);
+            SafeERC20.safeTransfer(IERC20(ICToken(cToken).underlying()), receiver, received);
         }
     }
 
@@ -103,6 +104,6 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
         uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
         require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (receiver != address(this)) SafeTransferLib.safeTransferETH(receiver, received);
+        if (receiver != address(this)) Address.sendValue(payable(receiver), received);
     }
 }
