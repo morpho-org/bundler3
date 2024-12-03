@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {Authorization as AaveV3OptimizerAuthorization} from "../../../src/interfaces/IAaveV3Optimizer.sol";
+import {Authorization as AaveV3OptimizerAuthorization, Signature} from "../../../src/interfaces/IAaveV3Optimizer.sol";
 
 import "../../../src/modules/migration/AaveV3OptimizerMigrationModule.sol";
 

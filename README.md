@@ -71,12 +71,11 @@ For [Aave V2](./src/modules/migration/AaveV2MigrationModule.sol), [Aave V3](./sr
 
 - Make use of transient storage.
 - Bundler is now a call dispatcher that does not require any approval.
-  Because call-dispatch and approvals are now separated, it is possible to add bundlers over time without additional risk to users of existing bundlers.
+  Because call-dispatch and approvals are now separated, it is possible to add modules over time without additional risk to users of existing modules.
 - All generic features are now in `GeneralModule1`, instead of being in separate files that are then all inherited by a single contract.
 - All Ethereum related features are in the `EthereumModule1` which inherits from `GeneralModule1`.
 - The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GeneralModule2`.
   Existing modules will still be used.
-- There is a new action `permit2Batch` to allow multiple contracts to move multiple tokens using a single signature.
 - Many adjustments such as:
   - A value `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
   - Slippage checks are done with a price argument instead of a limit amount.
