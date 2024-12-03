@@ -29,10 +29,10 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* IMMUTABLES */
 
-    /// @notice The Morpho contract address.
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
 
-    /// @dev The address of the wrapped native token contract.
+    /// @dev The address of the wrapped native token.
     IWNative public immutable WRAPPED_NATIVE;
 
     /* CONSTRUCTOR */
@@ -203,7 +203,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// adapter is guaranteed to have `assets` tokens pulled from its balance, but the possibility to mint a specific
     /// amount of shares is given for full compatibility and precision.
-    /// @dev Underlying tokens must have been previously sent to the adapter.
+    /// @dev Loan tokens must have been previously sent to the adapter.
     /// @param marketParams The Morpho market to supply assets to.
     /// @param assets The amount of assets to supply. Pass `type(uint).max` to supply the adapter's loan asset balance.
     /// @param shares The amount of shares to mint.
@@ -234,7 +234,7 @@ contract GeneralAdapter1 is CoreAdapter {
     }
 
     /// @notice Supplies collateral on Morpho.
-    /// @dev Underlying tokens must have been previously sent to the adapter.
+    /// @dev Collateral tokens must have been previously sent to the adapter.
     /// @param marketParams The Morpho market to supply collateral to.
     /// @param assets The amount of collateral to supply. Pass `type(uint).max` to supply the adapter's collateral
     /// balance.
@@ -285,7 +285,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @dev Either `assets` or `shares` should be zero. Most usecases should rely on `assets` as an input so the
     /// adapter is guaranteed to have `assets` tokens pulled from its balance, but the possibility to burn a specific
     /// amount of shares is given for full compatibility and precision.
-    /// @dev Underlying tokens must have been previously sent to the adapter.
+    /// @dev Loan tokens must have been previously sent to the adapter.
     /// @param marketParams The Morpho market to repay assets to.
     /// @param assets The amount of assets to repay. Pass `type(uint).max` to repay the adapter's loan asset balance.
     /// @param shares The amount of shares to burn. Pass `type(uint).max` to repay the initiator's entire debt.
