@@ -6,8 +6,7 @@ import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/toke
 /// @custom:contact security@morpho.org
 /// @notice Utils library.
 library UtilsLib {
-    /// @dev Gives the max approval to `spender` to spend the given token if not already approved.
-    /// @dev Assumes that `type(uint256).max` is large enough to never have to increase the allowance again.
+    /// @dev Gives the max approval to `spender` to spend the given token.
     function forceApproveMaxTo(address token, address spender) internal {
         SafeERC20.forceApprove(IERC20(token), spender, type(uint256).max);
     }
