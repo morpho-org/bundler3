@@ -649,7 +649,9 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
         );
         assertEq(collateralToken.balanceOf(address(morpho)), vars.expectedCollateral, "Morpho's collateral balance");
         assertEq(
-            loanToken.balanceOf(address(generalAdapter1)), vars.expectedAdapterLoanBalance, unicode"Adapter's loan balance"
+            loanToken.balanceOf(address(generalAdapter1)),
+            vars.expectedAdapterLoanBalance,
+            unicode"Adapter's loan balance"
         );
         assertEq(
             collateralToken.balanceOf(address(generalAdapter1)),

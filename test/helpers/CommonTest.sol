@@ -389,7 +389,9 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             generalAdapter1,
-            abi.encodeCall(GeneralAdapter1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data))
+            abi.encodeCall(
+                GeneralAdapter1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
+            )
         );
     }
 

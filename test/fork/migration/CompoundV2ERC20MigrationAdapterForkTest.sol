@@ -199,6 +199,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         view
         returns (Call memory)
     {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver)));
+        return
+            _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver)));
     }
 }

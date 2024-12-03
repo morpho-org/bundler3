@@ -83,8 +83,7 @@ abstract contract CoreAdapter {
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
     function _reenterBundler(bytes calldata data) internal {
-        (bool success, bytes memory returnData) =
-            BUNDLER.call(bytes.concat(IBundler.reenter.selector, data));
+        (bool success, bytes memory returnData) = BUNDLER.call(bytes.concat(IBundler.reenter.selector, data));
         if (!success) UtilsLib.lowLevelRevert(returnData);
     }
 }

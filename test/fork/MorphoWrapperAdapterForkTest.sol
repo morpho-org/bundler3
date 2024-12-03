@@ -96,6 +96,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
     /* MORPHO WRAPPER ACTIONS */
 
     function _morphoWrapperWithdrawTo(address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(EthereumGeneralAdapter1.morphoWrapperWithdrawTo, (receiver, amount)));
+        return
+            _call(generalAdapter1, abi.encodeCall(EthereumGeneralAdapter1.morphoWrapperWithdrawTo, (receiver, amount)));
     }
 }

@@ -274,8 +274,9 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         view
         returns (Call memory)
     {
-        return
-            _call(migrationAdapter, abi.encodeCall(migrationAdapter.aaveV3OptimizerRepay, (underlying, amount, onBehalf)));
+        return _call(
+            migrationAdapter, abi.encodeCall(migrationAdapter.aaveV3OptimizerRepay, (underlying, amount, onBehalf))
+        );
     }
 
     function _aaveV3OptimizerWithdraw(address underlying, uint256 amount, address receiver)

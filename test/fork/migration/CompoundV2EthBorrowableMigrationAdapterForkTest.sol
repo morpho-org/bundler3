@@ -229,7 +229,8 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         view
         returns (Call memory)
     {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver)));
+        return
+            _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver)));
     }
 
     function _compoundV2RedeemEth(uint256 amount, address receiver) internal view returns (Call memory) {

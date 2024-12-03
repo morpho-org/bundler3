@@ -272,7 +272,8 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
     /* ACTIONS */
 
     function _aaveV2Repay(address token, uint256 amount, address onBehalf) internal view returns (Call memory) {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.aaveV2Repay, (token, amount, RATE_MODE, onBehalf)));
+        return
+            _call(migrationAdapter, abi.encodeCall(migrationAdapter.aaveV2Repay, (token, amount, RATE_MODE, onBehalf)));
     }
 
     function _aaveV2Withdraw(address token, uint256 amount, address receiver) internal view returns (Call memory) {

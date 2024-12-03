@@ -17,8 +17,7 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice The current callee.
-    /// @dev Current callee = last non-returned Call (call from the bundler).
+    /// @notice Last non-returned Call (Call=call from the bundler).
     address public transient lastUnreturnedCall;
 
     /* EXTERNAL */

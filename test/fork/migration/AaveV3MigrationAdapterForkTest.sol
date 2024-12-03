@@ -329,7 +329,8 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, hashed);
 
-        bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, adapter, amount, SIGNATURE_DEADLINE, v, r, s));
+        bytes memory callData =
+            abi.encodeCall(IERC20Permit.permit, (user, adapter, amount, SIGNATURE_DEADLINE, v, r, s));
 
         return _call(CoreAdapter(payable(aToken)), callData, 0, false);
     }
