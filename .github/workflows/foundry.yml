@@ -52,3 +52,5 @@ jobs:
 
       - name: Run tests on chain ${{ matrix.chain }}
         run: forge test
+        env:
+           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
