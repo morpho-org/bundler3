@@ -1,4 +1,4 @@
-# Morpho Blue Bundler v3
+# Morpho Bundler v3
 
 The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
@@ -33,9 +33,9 @@ For instance, a module that needs to hold some token approvals should only allow
 Since these functions can typically move user funds, only the bundler should be allowed to call them.
 If a module gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's ``multicallFromTarget(Call[] calldata bundle)` function.
 
-## Modules
+## Modules List
 
-All modules inherit from [`BaseModule`](./src/BaseModule.sol), which provides essential features such as accessing the current initiator address.
+All modules inherit from [`CoreModule`](./src/modules/CoreModule.sol), which provides essential features such as accessing the current initiator address.
 
 ### [`GeneralModule1`](./src/modules/GeneralModule1.sol)
 
@@ -47,7 +47,7 @@ Contains the following actions:
 - Permit2 approvals.
 - URD claim.
 
-### [`EthereumGeneralModule1`](./src/modules/EthereumModule1.sol)
+### [`EthereumGeneralModule1`](./src/modules/EthereumGeneralModule1.sol)
 
 Contains the following actions:
 - Actions of `GeneralModule1`.
