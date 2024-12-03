@@ -32,6 +32,17 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.assume(account != address(this));
     }
 
+    function testConstructor(address rdmAddress) public {
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        new ParaswapModule(rdmAddress, rdmAddress, address(0));
+        
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        new ParaswapModule(rdmAddress, address(0), rdmAddress);
+
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        new ParaswapModule(address(0), rdmAddress, rdmAddress);
+    }
+
     function testAugustusInRegistrySellCheck(address _augustus) public {
         augustusRegistryMock.setValid(_augustus, false);
 

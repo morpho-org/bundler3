@@ -23,8 +23,11 @@ contract ParaswapModule is BaseModule, IParaswapModule {
     /* CONSTRUCTOR */
 
     constructor(address bundler, address morpho, address augustusRegistry) BaseModule(bundler) {
-        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
+        require(morpho != address(0), ErrorsLib.ZeroAddress());
+        require(augustusRegistry != address(0), ErrorsLib.ZeroAddress());
+        
         MORPHO = IMorpho(morpho);
+        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
     }
 
     /* SWAP ACTIONS */
