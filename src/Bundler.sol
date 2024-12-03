@@ -51,11 +51,11 @@ contract Bundler is IBundler {
         address previousLastUnreturnedCall = lastUnreturnedCall;
 
         for (uint256 i; i < bundle.length; ++i) {
-            address callee = bundle[i].to;
+            address to = bundle[i].to;
 
-            lastUnreturnedCall = callee;
+            lastUnreturnedCall = to;
 
-            (bool success, bytes memory returnData) = callee.call{value: bundle[i].value}(bundle[i].data);
+            (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
         }
 
