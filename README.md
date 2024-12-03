@@ -20,7 +20,7 @@ A contract called by the Bundler is called a target.
 
 The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Modules subsection for the use).
 
-The last target can re-enter the bundler using `multicallFromModule(Call[] calldata bundle)` (same).
+The last target can re-enter the bundler using `multicallFromTarget(Call[] calldata bundle)` (same).
 
 ### Modules
 
@@ -31,7 +31,7 @@ In order to be safely authorized by users, modules can restrict some functions c
 For instance, a module that needs to hold some token approvals should only allow to move funds owned by the initiator.
 
 Since these functions can typically move user funds, only the bundler should be allowed to call them.
-If a module uses a callback (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's ``multicallFromModule(Call[] calldata bundle)` function.
+If a module uses a callback (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's ``multicallFromTarget(Call[] calldata bundle)` function.
 
 ## Modules
 
