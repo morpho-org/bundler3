@@ -31,8 +31,6 @@ contract Bundler is IBundler {
         initiator = msg.sender;
 
         _multicall(bundle);
-
-        initiator = msg.sender;
     }
 
     /// @notice Executes a series of calls to modules.
