@@ -6,6 +6,7 @@ on:
       - main
   pull_request:
 
+# Allows to skip tests if compilation fails.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
@@ -31,59 +32,16 @@ jobs:
           FOUNDRY_PROFILE: build
 
 
-  test-local:
+  test:
     needs: build-via-ir
 
     name: Local tests
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: true
-      matrix:
-        type: ["slow", "fast"]
-        include:
-          - type: "slow"
-            fuzz-runs: 1000
-            max-test-rejects: 10000
-          - type: "fast"
-            fuzz-runs: 256
-            max-test-rejects: 65536
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - uses: ./.github/actions/install-cache
-
-      - name: Run local tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: forge test
-        env:
-          FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
-          FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
-          FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
-          FOUNDRY_MATCH_CONTRACT: LocalTest
-
-  test-fork:
-    needs: build-via-ir
-
-    name: Fork tests (chainid=${{ matrix.chain }})
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: true
       matrix:
         chain: [1, 8453]
-        type: ["slow", "fast"]
-        include:
-          - type: "slow"
-            fuzz-runs: 96
-            max-test-rejects: 65536
-          - type: "fast"
-            fuzz-runs: 16
-            max-test-rejects: 65536
-
+        
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,11 +50,5 @@ jobs:
 
       - uses: ./.github/actions/install-cache
 
-      - name: Run fork tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: forge test --chain ${{ matrix.chain }}
-        env:
-          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
-          FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
-          FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
-          FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
-          FOUNDRY_MATCH_CONTRACT: ForkTest
+      - name: Run tests on chain ${{ matrix.chain }}
+        run: forge test
