@@ -15,13 +15,13 @@ contract EthereumGeneralModule1 is GeneralModule1 {
 
     /* IMMUTABLES */
 
-    /// @dev The address of the DAI token on Ethereum.
+    /// @dev The address of the DAI token.
     address public immutable DAI;
 
-    /// @dev The address of the stETH contract.
+    /// @dev The address of the stETH token.
     address public immutable ST_ETH;
 
-    /// @dev The address of the wStETH contract.
+    /// @dev The address of the wStETH token.
     address public immutable WST_ETH;
 
     /// @notice The address of the Morpho token.
@@ -34,9 +34,9 @@ contract EthereumGeneralModule1 is GeneralModule1 {
 
     /// @param bundler The address of the bundler.
     /// @param morpho The address of Morpho.
-    /// @param weth The address of the weth.
-    /// @param dai The address of the dai.
-    /// @param wStEth The address of the wStEth.
+    /// @param weth The address of the weth token.
+    /// @param dai The address of the dai token.
+    /// @param wStEth The address of the wStEth token.
     /// @param morphoToken The address of the morpho token.
     /// @param morphoWrapper The address of the morpho token wrapper.
     constructor(
