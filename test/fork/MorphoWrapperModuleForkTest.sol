@@ -45,13 +45,13 @@ contract MorphoWrapperModuleForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        ethereumModule1.morphoWrapperWithdrawTo(RECEIVER, amount);
+        ethereumGeneralModule1.morphoWrapperWithdrawTo(RECEIVER, amount);
     }
 
     function testMorphoWrapperWithdrawToFailed(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(MORPHO_TOKEN, address(genericModule1), amount);
+        deal(MORPHO_TOKEN, address(generalModule1), amount);
         deal(MORPHO_TOKEN_LEGACY, MORPHO_WRAPPER, amount);
 
         bundle.push(_morphoWrapperWithdrawTo(RECEIVER, amount));
@@ -68,7 +68,7 @@ contract MorphoWrapperModuleForkTest is ForkTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(MORPHO_TOKEN, address(genericModule1), amount);
+        deal(MORPHO_TOKEN, address(generalModule1), amount);
         deal(MORPHO_TOKEN_LEGACY, MORPHO_WRAPPER, amount);
 
         uint256 wrapperLegacyBalanceBefore = ERC20(MORPHO_TOKEN_LEGACY).balanceOf(MORPHO_WRAPPER);
@@ -78,7 +78,7 @@ contract MorphoWrapperModuleForkTest is ForkTest {
 
         bundler.multicall(bundle);
 
-        assertEq(ERC20(MORPHO_TOKEN).balanceOf(address(genericModule1)), 0, "morpho.balanceOf(genericModule1)");
+        assertEq(ERC20(MORPHO_TOKEN).balanceOf(address(generalModule1)), 0, "morpho.balanceOf(generalModule1)");
         assertEq(
             ERC20(MORPHO_TOKEN).balanceOf(MORPHO_WRAPPER),
             wrapperBalanceBefore + amount,
@@ -96,6 +96,6 @@ contract MorphoWrapperModuleForkTest is ForkTest {
     /* MORPHO WRAPPER ACTIONS */
 
     function _morphoWrapperWithdrawTo(address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(EthereumModule1.morphoWrapperWithdrawTo, (receiver, amount)));
+        return _call(generalModule1, abi.encodeCall(EthereumGeneralModule1.morphoWrapperWithdrawTo, (receiver, amount)));
     }
 }

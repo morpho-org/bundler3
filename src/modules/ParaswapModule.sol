@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IParaswapModule, Offsets, MarketParams} from "./interfaces/IParaswapModule.sol";
-import {IAugustusRegistry} from "./interfaces/IAugustusRegistry.sol";
+import {IParaswapModule, Offsets, MarketParams} from "../interfaces/IParaswapModule.sol";
+import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
 
-import {BaseModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./BaseModule.sol";
-import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
-import {BytesLib} from "./libraries/BytesLib.sol";
-import {ModuleLib} from "./libraries/ModuleLib.sol";
-import {IMorpho, MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {CoreModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./CoreModule.sol";
+import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
+import {BytesLib} from "../libraries/BytesLib.sol";
+import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {IMorpho, MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Module for trading with Paraswap.
-contract ParaswapModule is BaseModule, IParaswapModule {
+contract ParaswapModule is CoreModule, IParaswapModule {
     using Math for uint256;
     using BytesLib for bytes;
 
@@ -26,9 +26,12 @@ contract ParaswapModule is BaseModule, IParaswapModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address augustusRegistry) BaseModule(bundler) {
-        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
+    constructor(address bundler, address morpho, address augustusRegistry) CoreModule(bundler) {
+        require(morpho != address(0), ErrorsLib.ZeroAddress());
+        require(augustusRegistry != address(0), ErrorsLib.ZeroAddress());
+
         MORPHO = IMorpho(morpho);
+        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
     }
 
     /* SWAP ACTIONS */
@@ -147,6 +150,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         address receiver
     ) internal {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         ModuleLib.approveMaxToIfAllowanceZero(srcToken, augustus);
 

@@ -9,8 +9,8 @@ import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/
 
 contract Empty {}
 
-contract ConcreteBaseModule is BaseModule {
-    constructor(address bundler) BaseModule(bundler) {}
+contract ConcreteCoreModule is CoreModule {
+    constructor(address bundler) CoreModule(bundler) {}
 }
 
 contract BundlerLocalTest is LocalTest {
@@ -26,7 +26,7 @@ contract BundlerLocalTest is LocalTest {
 
     function testBundlerZeroAddress() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        new ConcreteBaseModule(address(0));
+        new ConcreteCoreModule(address(0));
     }
 
     function testMulticallEmpty() public {
@@ -38,6 +38,19 @@ contract BundlerLocalTest is LocalTest {
         bundle.push(_call(moduleMock, abi.encodeCall(ModuleMock.callbackBundlerWithMulticall, ())));
 
         vm.expectRevert(ErrorsLib.AlreadyInitiated.selector);
+        vm.prank(initiator);
+        bundler.multicall(bundle);
+    }
+
+    function testInitiatorReset(address initiator) public {
+        vm.assume(initiator != address(0));
+
+        vm.prank(initiator);
+        bundler.multicall(bundle);
+
+        assertEq(bundler.initiator(), address(0));
+
+        // Test that it's possible to do a second multicall in the same tx.
         vm.prank(initiator);
         bundler.multicall(bundle);
     }
