@@ -7,7 +7,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
-/// @notice Enables doing multiple calls in a single one.
+/// @notice Enables batching multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
 /// @notice Can be reentered by the last unreturned callee.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
