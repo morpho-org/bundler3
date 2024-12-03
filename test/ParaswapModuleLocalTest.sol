@@ -63,7 +63,9 @@ contract ParaswapModuleLocalTest is LocalTest {
 
     function testSellReceiverZero() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        paraswapModule.sell(address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
+        paraswapModule.sell(
+            address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0)
+        );
     }
 
     function testBuyReceiverZero() public {
