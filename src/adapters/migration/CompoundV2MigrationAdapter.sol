@@ -48,7 +48,7 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlying, cToken);
+        UtilsLib.forceApproveMaxTo(underlying, cToken);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
     }

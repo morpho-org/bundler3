@@ -66,7 +66,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlying, wrapper);
+        UtilsLib.forceApproveMaxTo(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
     }
@@ -104,7 +104,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        UtilsLib.approveMaxToIfAllowanceZero(IERC4626(vault).asset(), vault);
+        UtilsLib.forceApproveMaxTo(IERC4626(vault).asset(), vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -128,7 +128,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlyingToken, vault);
+        UtilsLib.forceApproveMaxTo(underlyingToken, vault);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -226,7 +226,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
-        UtilsLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
@@ -253,7 +253,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(marketParams.collateralToken, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(marketParams.collateralToken, address(MORPHO));
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
@@ -313,7 +313,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
-        UtilsLib.approveMaxToIfAllowanceZero(marketParams.loanToken, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
@@ -370,7 +370,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
         require(assets != 0, ErrorsLib.ZeroAmount());
-        UtilsLib.approveMaxToIfAllowanceZero(token, address(MORPHO));
+        UtilsLib.forceApproveMaxTo(token, address(MORPHO));
 
         MORPHO.flashLoan(token, assets, data);
     }
