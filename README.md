@@ -31,7 +31,7 @@ In order to be safely authorized by users, modules can restrict some functions c
 For instance, a module that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
 
 Since these functions can typically move user funds, only the bundler should be allowed to call them.
-If a module uses a callback (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's ``multicallFromTarget(Call[] calldata bundle)` function.
+If a module gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other modules by calling the bundler's ``multicallFromTarget(Call[] calldata bundle)` function.
 
 ## Modules
 
