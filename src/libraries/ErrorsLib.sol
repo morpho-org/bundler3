@@ -36,12 +36,6 @@ library ErrorsLib {
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
 
-    /// @dev Thrown when trying to repay ETH on CompoundV2 with the wrong function.
-    error CTokenIsCETH();
-
-    /// @notice Thrown when not exactly one of the input amounts is zero.
-    error InconsistentInput();
-
     /* MIGRATION MODULES */
 
     /// @dev Thrown when repaying a CompoundV2 debt returns an error code.
@@ -49,6 +43,9 @@ library ErrorsLib {
 
     /// @dev Thrown when redeeming CompoundV2 cTokens returns an error code.
     error RedeemError();
+    
+    /// @dev Thrown when trying to repay ETH on CompoundV2 with the wrong function.
+    error CTokenIsCETH();
 
     /* PARASWAP MODULE */
 
