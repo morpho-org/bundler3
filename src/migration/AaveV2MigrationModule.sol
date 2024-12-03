@@ -60,6 +60,7 @@ contract AaveV2MigrationModule is BaseModule {
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV2Withdraw(address token, uint256 amount, address receiver) external onlyBundler {
         require(amount != 0, ErrorsLib.ZeroAmount());
+
         AAVE_V2_POOL.withdraw(token, amount, receiver);
     }
 }

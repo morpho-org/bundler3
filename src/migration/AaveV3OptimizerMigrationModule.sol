@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IAaveV3Optimizer, Signature} from "../interfaces/IAaveV3Optimizer.sol";
+import {IAaveV3Optimizer} from "../interfaces/IAaveV3Optimizer.sol";
 
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 
@@ -60,6 +60,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
+
         AAVE_V3_OPTIMIZER.withdraw(underlying, amount, _initiator(), receiver, maxIterations);
     }
 
@@ -75,6 +76,7 @@ contract AaveV3OptimizerMigrationModule is BaseModule {
         onlyBundler
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
+
         AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, _initiator(), receiver);
     }
 }
