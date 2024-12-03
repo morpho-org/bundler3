@@ -43,7 +43,7 @@ library ErrorsLib {
 
     /// @dev Thrown when redeeming CompoundV2 cTokens returns an error code.
     error RedeemError();
-    
+
     /// @dev Thrown when trying to repay ETH on CompoundV2 with the wrong function.
     error CTokenIsCETH();
 

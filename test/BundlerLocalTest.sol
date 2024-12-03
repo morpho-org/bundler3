@@ -44,12 +44,12 @@ contract BundlerLocalTest is LocalTest {
 
     function testInitiatorReset(address initiator) public {
         vm.assume(initiator != address(0));
-        
+
         vm.prank(initiator);
         bundler.multicall(bundle);
 
         assertEq(bundler.initiator(), address(0));
-        
+
         // Test that it's possible to do a second multicall in the same tx.
         vm.prank(initiator);
         bundler.multicall(bundle);

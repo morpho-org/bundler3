@@ -35,7 +35,7 @@ contract ParaswapModuleLocalTest is LocalTest {
     function testConstructor(address rdmAddress) public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         new ParaswapModule(rdmAddress, rdmAddress, address(0));
-        
+
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         new ParaswapModule(rdmAddress, address(0), rdmAddress);
 
