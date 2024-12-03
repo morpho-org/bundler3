@@ -20,7 +20,7 @@ contract WNativeAdapterForkTest is ForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testWrapNative(uint256 amount) public {
@@ -32,7 +32,7 @@ contract WNativeAdapterForkTest is ForkTest {
         deal(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall{value: amount}(bundle);
+        multiexec.multicall{value: amount}(bundle);
 
         assertEq(ERC20(WETH).balanceOf(address(generalAdapter1)), 0, "Adapter's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");
@@ -48,7 +48,7 @@ contract WNativeAdapterForkTest is ForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testUnwrapNative(uint256 amount) public {
@@ -60,7 +60,7 @@ contract WNativeAdapterForkTest is ForkTest {
         deal(WETH, USER, amount);
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(ERC20(WETH).balanceOf(address(generalAdapter1)), 0, "Adapter's wrapped token balance");
         assertEq(ERC20(WETH).balanceOf(USER), 0, "User's wrapped token balance");

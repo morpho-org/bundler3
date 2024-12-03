@@ -38,7 +38,7 @@ contract PermitAdapterForkTest is ForkTest {
         bundle.push(_permitDai(privateKey, spender, expiry, true, true));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(ERC20(DAI).allowance(user, spender), type(uint256).max, "allowance(user, spender)");
     }
@@ -54,7 +54,7 @@ contract PermitAdapterForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert("Dai/invalid-nonce");
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function _permitDai(uint256 privateKey, address spender, uint256 expiry, bool allowed, bool skipRevert)
@@ -93,7 +93,7 @@ contract PermitAdapterForkTest is ForkTest {
         bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, true));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(permitToken.allowance(user, spender), amount, "allowance(user, spender)");
     }
@@ -110,7 +110,7 @@ contract PermitAdapterForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectPartialRevert(ERC20Permit.ERC2612InvalidSigner.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testTransferFrom(uint256 amount, uint256 deadline) public {
@@ -126,7 +126,7 @@ contract PermitAdapterForkTest is ForkTest {
         deal(address(permitToken), user, amount);
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(permitToken.balanceOf(address(generalAdapter1)), amount, "balanceOf(generalAdapter1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");

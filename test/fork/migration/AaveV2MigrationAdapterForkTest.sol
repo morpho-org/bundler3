@@ -38,7 +38,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
 
         vm.label(AAVE_V2_POOL, "Aave V2 Pool");
 
-        migrationAdapter = new AaveV2MigrationAdapter(address(bundler), AAVE_V2_POOL);
+        migrationAdapter = new AaveV2MigrationAdapter(address(multiexec), AAVE_V2_POOL);
     }
 
     function testAaveV2RepayUnauthorized(uint256 amount) public onlyEthereum {
@@ -59,7 +59,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_aaveV2Repay(marketParams.loanToken, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testAaveV2RepayOnBehalf() public onlyEthereum {
@@ -77,7 +77,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         assertGt(debt, 0);
 
         bundle.push(_aaveV2Repay(marketParams.loanToken, borrowed, USER));
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         (, debt,,,,) = IAaveV2(AAVE_V2_POOL).getUserAccountData(USER);
         assertEq(debt, 0);
@@ -115,7 +115,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         _assertBorrowerPosition(collateralSupplied, borrowed, user, address(generalAdapter1));
     }
@@ -156,7 +156,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, sDaiAmount, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         _assertBorrowerPosition(sDaiAmount, borrowed, user, address(generalAdapter1));
     }
@@ -202,7 +202,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, wstEthAmount, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         _assertBorrowerPosition(wstEthAmount, borrowed, user, address(generalAdapter1));
     }
@@ -231,7 +231,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         _assertSupplierPosition(supplied, user, address(generalAdapter1));
     }
@@ -260,7 +260,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         _assertVaultSupplierPosition(supplied, user, address(generalAdapter1));
     }

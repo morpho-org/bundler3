@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 library ErrorsLib {
     /* STANDARD ADAPTERS */
 
-    /// @dev Thrown when a multicall is attempted while the bundler is already initiated.
+    /// @dev Thrown when a multicall is attempted while the multiexec is already initiated.
     error AlreadyInitiated();
 
     /// @dev Thrown when a call is attempted from an unauthorized sender.

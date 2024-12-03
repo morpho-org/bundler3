@@ -10,7 +10,7 @@ struct Call {
 }
 
 /// @custom:contact security@morpho.org
-interface IBundler {
+interface IMultiexec {
     function multicall(Call[] calldata) external payable;
     function reenter(Call[] calldata) external;
     function lastUnreturnedCallee() external view returns (address);

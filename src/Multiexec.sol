@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IBundler, Call} from "./interfaces/IBundler.sol";
+import {IMultiexec, Call} from "./interfaces/IMultiexec.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
@@ -11,7 +11,7 @@ import {UtilsLib} from "./libraries/UtilsLib.sol";
 /// @notice Transiently stores the initiator of the multicall.
 /// @notice Can be reentered by the last unreturned callee.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
-contract Bundler is IBundler {
+contract Multiexec is IMultiexec {
     /* TRANSIENT STORAGE */
 
     /// @notice The initiator of the multicall transaction.

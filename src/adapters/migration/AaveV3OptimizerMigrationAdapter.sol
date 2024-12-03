@@ -19,9 +19,9 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address
+    /// @param multiexec The Multiexec contract address
     /// @param aaveV3Optimizer The AaveV3 optimizer contract address.
-    constructor(address bundler, address aaveV3Optimizer) CoreAdapter(bundler) {
+    constructor(address multiexec, address aaveV3Optimizer) CoreAdapter(multiexec) {
         require(aaveV3Optimizer != address(0), ErrorsLib.ZeroAddress());
 
         AAVE_V3_OPTIMIZER = IAaveV3Optimizer(aaveV3Optimizer);
@@ -36,7 +36,7 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
     /// `onBehalf`s debt. Pass `type(uint).max` to repay the repay the maximum repayable debt (minimum of the adapter's
     /// balance and `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyBundler {
+    function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyMultiexec {
         // Amount will be capped at `onBehalf`'s debt by the optimizer.
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
@@ -57,7 +57,7 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdraw(address underlying, uint256 amount, uint256 maxIterations, address receiver)
         external
-        onlyBundler
+        onlyMultiexec
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -73,7 +73,7 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdrawCollateral(address underlying, uint256 amount, address receiver)
         external
-        onlyBundler
+        onlyMultiexec
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
 

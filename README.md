@@ -1,35 +1,35 @@
-# Morpho Bundler v3
+# Morpho Multiexec v3
 
-The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
+The [`Multiexec`](./src/Multiexec.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
 
-### Bundler
+### Multiexec
 
-<img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
+<img width="586" alt="structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
-The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
+The Multiexec's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
 - `to`, an address to call;
 - `data`, some calldata to pass to the call;
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Adapters subsection for the use).
+The Multiexec transiently stores the initial caller (`initiator`) during the multicall (see in the Adapters subsection for the use).
 
-The last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)` (same).
+The last non-returned called address can re-enter the Multiexec using `reenter(Call[] calldata bundle)` (same).
 
 ### Adapters
 
-The bundler can call either directly protocols, or wrappers of protocols (called "adapters").
+The Multiexec can call either directly protocols, or wrappers of protocols (called "adapters").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
-In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
+In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Multiexec.
 For instance, a adapter that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
 
-Since these functions can typically move user funds, only the bundler should be allowed to call them.
-If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the bundler's `reenter(Call[] calldata bundle)` function.
+Since these functions can typically move user funds, only the Multiexec should be allowed to call them.
+If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Multiexec's `reenter(Call[] calldata bundle)` function.
 
 ## Adapters List
 
@@ -68,7 +68,7 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
 ## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
 
 - Make use of transient storage.
-- Bundler is now a call dispatcher that does not require any approval.
+- Multiexec is, unlike BundlerV2, a call dispatcher that must not be approved.
   Because call-dispatch and approvals are now separated, it is possible to add adapters over time without additional risk to users of existing adapters.
 - All generic features are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
 - All Ethereum related features are in the `EthereumAdapter1` which inherits from `GeneralAdapter1`.
@@ -90,7 +90,7 @@ TBA.
 
 ## License
 
-Bundlers are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+Contracts are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
 
 ## Links
 

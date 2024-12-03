@@ -32,7 +32,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         if (isEq(config.network, "ethereum")) {
             ethereumGeneralAdapter1 = new EthereumGeneralAdapter1(
-                address(bundler),
+                address(multiexec),
                 address(morpho),
                 getAddress("WETH"),
                 getAddress("DAI"),
@@ -42,9 +42,9 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
             );
             generalAdapter1 = GeneralAdapter1(ethereumGeneralAdapter1);
         } else {
-            generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), getAddress("WETH"));
+            generalAdapter1 = new GeneralAdapter1(address(multiexec), address(morpho), getAddress("WETH"));
         }
-        paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), getAddress("AUGUSTUS_REGISTRY"));
+        paraswapAdapter = new ParaswapAdapter(address(multiexec), address(morpho), getAddress("AUGUSTUS_REGISTRY"));
 
         for (uint256 i; i < config.markets.length; ++i) {
             ConfigMarket memory configMarket = config.markets[i];

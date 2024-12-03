@@ -15,8 +15,8 @@ import {UtilsLib} from "../../libraries/UtilsLib.sol";
 contract CompoundV3MigrationAdapter is CoreAdapter {
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address.
-    constructor(address bundler) CoreAdapter(bundler) {}
+    /// @param multiexec The Multiexec contract address.
+    constructor(address multiexec) CoreAdapter(multiexec) {}
 
     /* ACTIONS */
 
@@ -28,7 +28,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
     /// debt. Pass `type(uint).max` to repay the maximum repayable debt (minimum of the adapter's balance and
     /// `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
+    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyMultiexec {
         address asset = ICompoundV3(instance).baseToken();
 
         if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
@@ -53,7 +53,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
-        onlyBundler
+        onlyMultiexec
     {
         address _initiator = _initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()

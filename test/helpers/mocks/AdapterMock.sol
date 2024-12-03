@@ -2,17 +2,17 @@
 pragma solidity ^0.8.0;
 
 import {CoreAdapter} from "../../../src/adapters/CoreAdapter.sol";
-import {IBundler, Call} from "../../../src/interfaces/IBundler.sol";
+import {IMultiexec, Call} from "../../../src/interfaces/IMultiexec.sol";
 
 event Initiator(address);
 
 event lastUnreturnedCallee(address);
 
 contract AdapterMock is CoreAdapter {
-    constructor(address bundler) CoreAdapter(bundler) {}
+    constructor(address multiexec) CoreAdapter(multiexec) {}
 
-    function isProtected() external payable onlyBundler {
-        emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
+    function isProtected() external payable onlyMultiexec {
+        emit lastUnreturnedCallee(IMultiexec(BUNDLER).lastUnreturnedCallee());
     }
 
     function doRevert(string memory reason) external pure {
@@ -23,14 +23,14 @@ contract AdapterMock is CoreAdapter {
         emit Initiator(_initiator());
     }
 
-    function callbackBundler(Call[] calldata calls) external onlyBundler {
-        emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
-        IBundler(BUNDLER).reenter(calls);
-        emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
+    function callbackMultiexec(Call[] calldata calls) external onlyMultiexec {
+        emit lastUnreturnedCallee(IMultiexec(BUNDLER).lastUnreturnedCallee());
+        IMultiexec(BUNDLER).reenter(calls);
+        emit lastUnreturnedCallee(IMultiexec(BUNDLER).lastUnreturnedCallee());
     }
 
-    function callbackBundlerWithMulticall() external onlyBundler {
-        IBundler(BUNDLER).multicall(new Call[](0));
+    function callbackMultiexecWithMulticall() external onlyMultiexec {
+        IMultiexec(BUNDLER).multicall(new Call[](0));
     }
 
     function emitlastUnreturnedCallee() external {}

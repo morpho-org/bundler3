@@ -43,7 +43,7 @@ contract Permit2AdapterForkTest is ForkTest {
         ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
         ERC20(marketParams.collateralToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
         vm.stopPrank();
 
         assertEq(ERC20(marketParams.collateralToken).balanceOf(user), 0, "collateral.balanceOf(user)");
@@ -82,7 +82,7 @@ contract Permit2AdapterForkTest is ForkTest {
         vm.startPrank(user);
         ERC20(marketParams.loanToken).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
         vm.stopPrank();
 
         (uint160 permit2Allowance,,) =
@@ -124,7 +124,7 @@ contract Permit2AdapterForkTest is ForkTest {
         ERC20(token0).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
         ERC20(token1).safeApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
         vm.stopPrank();
 
         (uint160 permit2Allowance1,,) = Permit2Lib.PERMIT2.allowance(user, token0, address(generalAdapter1));
@@ -153,7 +153,7 @@ contract Permit2AdapterForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testApprove2BatchInvalidNonce(uint256 amount0, uint256 amount1) public {
@@ -182,14 +182,14 @@ contract Permit2AdapterForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testTransferFrom2ZeroAmount() public {
         bundle.push(_transferFrom2(DAI, 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testTransferFrom2Unauthorized() public {

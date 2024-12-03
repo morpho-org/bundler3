@@ -3,31 +3,31 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {ERC20, SafeTransferLib} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {IBundler} from "../interfaces/IBundler.sol";
+import {IMultiexec} from "../interfaces/IMultiexec.sol";
 import {UtilsLib} from "../libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
-/// @notice Common contract to all Bundler adapters.
+/// @notice Common contract to all Multiexec adapters.
 abstract contract CoreAdapter {
     /* IMMUTABLES */
 
-    /// @notice The address of the Bundler contract.
+    /// @notice The address of the Multiexec contract.
     address public immutable BUNDLER;
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The address of the Bundler contract.
-    constructor(address bundler) {
-        require(bundler != address(0), ErrorsLib.ZeroAddress());
+    /// @param multiexec The address of the Multiexec contract.
+    constructor(address multiexec) {
+        require(multiexec != address(0), ErrorsLib.ZeroAddress());
 
-        BUNDLER = bundler;
+        BUNDLER = multiexec;
     }
 
     /* MODIFIERS */
 
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
-    modifier onlyBundler() {
+    modifier onlyMultiexec() {
         require(msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender());
         _;
     }
@@ -44,7 +44,7 @@ abstract contract CoreAdapter {
     /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the adapter's balance.
-    function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
+    function nativeTransfer(address receiver, uint256 amount) external onlyMultiexec {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
@@ -60,7 +60,7 @@ abstract contract CoreAdapter {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the adapter's balance.
-    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
+    function erc20Transfer(address token, address receiver, uint256 amount) external onlyMultiexec {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
@@ -76,14 +76,14 @@ abstract contract CoreAdapter {
     /// @notice Returns the current initiator stored in the adapter.
     /// @dev The initiator value being non-zero indicates that a bundle is being processed.
     function _initiator() internal view returns (address) {
-        return IBundler(BUNDLER).initiator();
+        return IMultiexec(BUNDLER).initiator();
     }
 
-    /// @notice Calls bundler.reenter with an already encoded Call array.
+    /// @notice Calls multiexec.reenter with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
-    function _reenterBundler(bytes calldata data) internal {
-        (bool success, bytes memory returnData) = BUNDLER.call(bytes.concat(IBundler.reenter.selector, data));
+    function _reenterMultiexec(bytes calldata data) internal {
+        (bool success, bytes memory returnData) = BUNDLER.call(bytes.concat(IMultiexec.reenter.selector, data));
         if (!success) UtilsLib.lowLevelRevert(returnData);
     }
 }

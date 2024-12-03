@@ -26,7 +26,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address augustusRegistry) CoreAdapter(bundler) {
+    constructor(address multiexec, address morpho, address augustusRegistry) CoreAdapter(multiexec) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(augustusRegistry != address(0), ErrorsLib.ZeroAddress());
 

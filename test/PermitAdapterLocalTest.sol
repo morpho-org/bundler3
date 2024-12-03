@@ -31,7 +31,7 @@ contract PermitAdapterLocalTest is LocalTest {
         bundle.push(_permit(permitToken, privateKey, spender, amount, deadline, true));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(permitToken.allowance(user, spender), amount, "allowance(user, generalAdapter1");
     }
@@ -49,7 +49,7 @@ contract PermitAdapterLocalTest is LocalTest {
 
         vm.prank(user);
         vm.expectPartialRevert(ERC20Permit.ERC2612InvalidSigner.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testTransferFrom(uint256 amount, uint256 privateKey, uint256 deadline) public {
@@ -65,7 +65,7 @@ contract PermitAdapterLocalTest is LocalTest {
         deal(address(permitToken), user, amount);
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(permitToken.balanceOf(address(generalAdapter1)), amount, "balanceOf(generalAdapter1)");
         assertEq(permitToken.balanceOf(user), 0, "balanceOf(user)");

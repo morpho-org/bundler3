@@ -31,14 +31,14 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         bundle.push(_morphoWrapperWithdrawTo(address(0), amount));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testMorphoWrapperWithdrawToZeroAmount() public onlyEthereum {
         bundle.push(_morphoWrapperWithdrawTo(RECEIVER, 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testMorphoWrapperWithdrawToUnauthorized(uint256 amount) public onlyEthereum {
@@ -59,7 +59,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         vm.mockCall(MORPHO_WRAPPER, abi.encodeWithSelector(ERC20Wrapper.withdrawTo.selector), abi.encode(false));
 
         vm.expectRevert(ErrorsLib.WithdrawFailed.selector);
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
     }
 
     function testMorphoWrapperWithdrawTo(uint256 amount) public onlyEthereum {
@@ -76,7 +76,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
 
         bundle.push(_morphoWrapperWithdrawTo(RECEIVER, amount));
 
-        bundler.multicall(bundle);
+        multiexec.multicall(bundle);
 
         assertEq(ERC20(MORPHO_TOKEN).balanceOf(address(generalAdapter1)), 0, "morpho.balanceOf(generalAdapter1)");
         assertEq(
