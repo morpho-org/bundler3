@@ -26,6 +26,8 @@ import {
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
+import {IParaswapModule, Offsets} from "../../src/interfaces/IParaswapModule.sol";
+import {ParaswapModule} from "../../src/ParaswapModule.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
@@ -35,6 +37,9 @@ import {CoreModule} from "../../src/modules/CoreModule.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GeneralModule1} from "../../src/modules/GeneralModule1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
+
+import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
+import {AugustusMock} from "../../src/mocks/AugustusMock.sol";
 
 import "../../lib/forge-std/src/Test.sol";
 import "../../lib/forge-std/src/console.sol";
@@ -63,6 +68,11 @@ abstract contract CommonTest is Test {
     Bundler internal bundler;
     GeneralModule1 internal generalModule1;
 
+    ParaswapModule paraswapModule;
+
+    AugustusRegistryMock augustusRegistryMock;
+    AugustusMock augustus;
+
     Call[] internal bundle;
     Call[] internal callbackBundle;
 
@@ -72,10 +82,12 @@ abstract contract CommonTest is Test {
         morpho = IMorpho(deployCode("Morpho.sol", abi.encode(OWNER)));
         vm.label(address(morpho), "Morpho");
 
+        augustusRegistryMock = new AugustusRegistryMock();
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
         generalModule1 = new GeneralModule1(address(bundler), address(morpho), address(new WethContract()));
+        paraswapModule = new ParaswapModule(address(bundler), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
@@ -93,6 +105,8 @@ abstract contract CommonTest is Test {
         morpho.setAuthorization(address(this), true);
     }
 
+    function emptyMarketParams() internal pure returns (MarketParams memory _emptyMarketParams) {}
+
     function _boundPrivateKey(uint256 privateKey) internal returns (uint256) {
         privateKey = bound(privateKey, 1, type(uint160).max);
 
@@ -100,6 +114,23 @@ abstract contract CommonTest is Test {
         vm.label(user, "address of generated private key");
 
         return privateKey;
+    }
+
+    function _supplyCollateral(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        deal(_marketParams.collateralToken, onBehalf, amount, true);
+        vm.prank(onBehalf);
+        morpho.supplyCollateral(_marketParams, amount, onBehalf, hex"");
+    }
+
+    function _supply(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        deal(_marketParams.loanToken, onBehalf, amount, true);
+        vm.prank(onBehalf);
+        morpho.supply(_marketParams, amount, 0, onBehalf, hex"");
+    }
+
+    function _borrow(MarketParams memory _marketParams, uint256 amount, address onBehalf) internal {
+        vm.prank(onBehalf);
+        morpho.borrow(_marketParams, amount, 0, onBehalf, onBehalf);
     }
 
     function _delegatePrank(address target, bytes memory callData) internal {
@@ -168,6 +199,14 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)));
+    }
+
+    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, BaseModule module)
+        internal
+        pure
+        returns (Call memory)
+    {
+        return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)), 0, true);
     }
 
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
@@ -304,6 +343,16 @@ abstract contract CommonTest is Test {
         );
     }
 
+    function _morphoSupply(
+        MarketParams memory marketParams,
+        uint256 assets,
+        uint256 shares,
+        uint256 slippageAmount,
+        address onBehalf
+    ) internal view returns (Call memory) {
+        return _morphoSupply(marketParams, assets, shares, slippageAmount, onBehalf, abi.encode(callbackBundle));
+    }
+
     function _morphoBorrow(
         MarketParams memory marketParams,
         uint256 assets,
@@ -369,6 +418,86 @@ abstract contract CommonTest is Test {
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
         return _call(generalModule1, abi.encodeCall(GeneralModule1.morphoFlashLoan, (token, amount, data)));
     }
+
+    /* PARASWAP MODULE ACTIONS */
+
+    function _paraswapSell(
+        address _augustus,
+        bytes memory callData,
+        address srcToken,
+        address destToken,
+        bool sellEntireBalance,
+        Offsets memory offsets,
+        address receiver
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(
+            IParaswapModule.sell, (_augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
+        );
+    }
+
+    function _paraswapBuy(
+        address _augustus,
+        bytes memory callData,
+        address srcToken,
+        address destToken,
+        uint256 newDestAmount,
+        Offsets memory offsets,
+        address receiver
+    ) internal pure returns (bytes memory) {
+        return abi.encodeCall(
+            IParaswapModule.buy, (_augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver)
+        );
+    }
+
+    function _sell(
+        address srcToken,
+        address destToken,
+        uint256 srcAmount,
+        uint256 minDestAmount,
+        bool sellEntireBalance,
+        address receiver
+    ) internal view returns (Call memory) {
+        uint256 fromAmountOffset = 4 + 32 + 32;
+        uint256 toAmountOffset = fromAmountOffset + 32;
+        return _call(
+            BaseModule(payable(address(paraswapModule))),
+            _paraswapSell(
+                address(augustus),
+                abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
+                srcToken,
+                destToken,
+                sellEntireBalance,
+                Offsets({exactAmount: fromAmountOffset, limitAmount: toAmountOffset, quotedAmount: 0}),
+                receiver
+            )
+        );
+    }
+
+    function _buy(
+        address srcToken,
+        address destToken,
+        uint256 maxSrcAmount,
+        uint256 destAmount,
+        uint256 newDestAmount,
+        address receiver
+    ) internal view returns (Call memory) {
+        uint256 fromAmountOffset = 4 + 32 + 32;
+        uint256 toAmountOffset = fromAmountOffset + 32;
+        return _call(
+            BaseModule(payable(address(paraswapModule))),
+            _paraswapBuy(
+                address(augustus),
+                abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
+                srcToken,
+                destToken,
+                newDestAmount,
+                Offsets({exactAmount: toAmountOffset, limitAmount: fromAmountOffset, quotedAmount: 0}),
+                receiver
+            )
+        );
+    }
+
+    /* PERMIT ACTIONS */
 
     function _permit(
         IERC20Permit token,
