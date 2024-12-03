@@ -67,7 +67,7 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall{value: value}(bundle);
     }
 
-    function testNestedCallbackAndlastUnreturnedCalleeValue(address initiator) public {
+    function testNestedCallbackAndLastUnreturnedCalleeValue(address initiator) public {
         vm.assume(initiator != address(0));
         AdapterMock adapterMock2 = new AdapterMock(address(bundler));
         AdapterMock adapterMock3 = new AdapterMock(address(bundler));
@@ -125,7 +125,7 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(caller != initiator);
         vm.assume(caller != adapter);
 
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setLastUnreturnedCallee, (adapter)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
@@ -138,7 +138,7 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(initiator != adapter);
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setlastUnreturnedCallee, (adapter)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setLastUnreturnedCallee, (adapter)));
 
         vm.prank(adapter);
         bundler.reenter(new Call[](0));

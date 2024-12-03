@@ -33,5 +33,5 @@ contract AdapterMock is CoreAdapter {
         IBundler(BUNDLER).multicall(new Call[](0));
     }
 
-    function emitlastUnreturnedCallee() external {}
+    function emitLastUnreturnedCallee() external {}
 }
