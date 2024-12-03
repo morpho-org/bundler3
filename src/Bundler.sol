@@ -17,7 +17,7 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Last non-returned callee.
+    /// @notice Last unreturned callee.
     address public transient lastUnreturnedCallee;
 
     /* EXTERNAL */
@@ -37,7 +37,7 @@ contract Bundler is IBundler {
 
     /// @notice Executes a series of calls.
     /// @dev Useful during callbacks.
-    /// @dev Can only be called by the last unreturned Call.
+    /// @dev Can only be called by the last unreturned callee.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
         require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
