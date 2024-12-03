@@ -49,6 +49,41 @@ contract Bundler is IBundler {
     /// @notice Executes a series of calls to modules.
     function _multicall(Call[] calldata bundle) internal {
         address previousModule = currentModule;
+        // TODO add memory-safe-assembly tag
+
+        assembly {
+            let fmp := mload(0x40)
+            let end := add(0x44, shl(5, bundle.length))
+            let calldata_element_id := 0x44
+            // can count index-wise or byte-wise
+
+            if bundle.length {
+                for {} 1 {} {
+                    let o := calldataload(calldata_element_id)
+                    let to := calldataload(add(0x44, o))
+                    tstore(1, to)
+
+                    let value := calldataload(add(0x84, o))
+                    let skipRevert := calldataload(add(0xa4, o))
+
+                    let data_element_id := add(0x44, add(o, calldataload(add(0x64, o))))
+                    // copy data to fmp
+                    let len_data := calldataload(data_element_id)
+                    calldatacopy(fmp, add(0x20, data_element_id), len_data)
+
+                    let success := call(gas(), to, value, fmp, len_data, 0, 0)
+
+                    if and(iszero(success), iszero(skipRevert)){
+                        returndatacopy(fmp, 0x00, returndatasize())
+                        revert(fmp, returndatasize())
+                    }
+                    calldata_element_id := add(calldata_element_id, 0x20)
+                    if iszero(lt(calldata_element_id, end)) {break}
+                }
+            }
+
+        }
+        /*
         uint256 l = bundle.length;
         for (uint256 i; i < l; ++i) {
             address module = bundle[i].to;
@@ -57,7 +92,7 @@ contract Bundler is IBundler {
 
             (bool success, bytes memory returnData) = module.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) ModuleLib.lowLevelRevert(returnData);
-        }
+        }*/
 
         currentModule = previousModule;
     }
