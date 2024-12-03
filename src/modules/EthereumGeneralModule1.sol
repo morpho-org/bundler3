@@ -71,7 +71,7 @@ contract EthereumGeneralModule1 is GeneralModule1 {
     /// withdrawTo.
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
-    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
+    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundlerOrDelegatecall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         if (amount == type(uint256).max) amount = ERC20(MORPHO_TOKEN).balanceOf(address(this));
@@ -92,7 +92,7 @@ contract EthereumGeneralModule1 is GeneralModule1 {
     function stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver)
         external
         payable
-        onlyBundler
+        onlyBundlerOrDelegatecall
     {
         if (amount == type(uint256).max) amount = address(this).balance;
 
@@ -108,7 +108,7 @@ contract EthereumGeneralModule1 is GeneralModule1 {
     /// @dev stETH must have been previously sent to the module.
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the module's balance.
     /// @param receiver The account receiving the wStETH tokens.
-    function wrapStEth(uint256 amount, address receiver) external onlyBundler {
+    function wrapStEth(uint256 amount, address receiver) external onlyBundlerOrDelegatecall {
         if (amount == type(uint256).max) amount = ERC20(ST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -121,7 +121,7 @@ contract EthereumGeneralModule1 is GeneralModule1 {
     /// @dev wStETH must have been previously sent to the module.
     /// @param amount The amount of wStEth to unwrap. Pass `type(uint).max` to unwrap the module's balance.
     /// @param receiver The account receiving the stETH tokens.
-    function unwrapStEth(uint256 amount, address receiver) external onlyBundler {
+    function unwrapStEth(uint256 amount, address receiver) external onlyBundlerOrDelegatecall {
         if (amount == type(uint256).max) amount = ERC20(WST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

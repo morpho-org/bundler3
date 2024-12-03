@@ -11,7 +11,7 @@ event CurrentModule(address);
 contract ModuleMock is CoreModule {
     constructor(address bundler) CoreModule(bundler) {}
 
-    function isProtected() external payable onlyBundler {
+    function isProtected() external payable onlyBundlerOrDelegatecall {
         emit CurrentModule(IBundler(BUNDLER).currentModule());
     }
 
@@ -23,13 +23,13 @@ contract ModuleMock is CoreModule {
         emit Initiator(_initiator());
     }
 
-    function callbackBundler(Call[] calldata calls) external onlyBundler {
+    function callbackBundler(Call[] calldata calls) external onlyBundlerOrDelegatecall {
         emit CurrentModule(IBundler(BUNDLER).currentModule());
         IBundler(BUNDLER).multicallFromModule(calls);
         emit CurrentModule(IBundler(BUNDLER).currentModule());
     }
 
-    function callbackBundlerWithMulticall() external onlyBundler {
+    function callbackBundlerWithMulticall() external onlyBundlerOrDelegatecall {
         IBundler(BUNDLER).multicall(new Call[](0));
     }
 

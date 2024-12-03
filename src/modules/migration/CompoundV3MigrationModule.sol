@@ -28,7 +28,7 @@ contract CompoundV3MigrationModule is CoreModule {
     /// debt. Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and
     /// `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
+    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundlerOrDelegatecall {
         address asset = ICompoundV3(instance).baseToken();
 
         if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
@@ -53,7 +53,7 @@ contract CompoundV3MigrationModule is CoreModule {
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
-        onlyBundler
+        onlyBundlerOrDelegatecall
     {
         address _initiator = _initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()

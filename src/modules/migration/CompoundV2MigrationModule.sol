@@ -37,7 +37,7 @@ contract CompoundV2MigrationModule is CoreModule {
     /// debt. Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and
     /// `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function compoundV2RepayErc20(address cToken, uint256 amount, address onBehalf) external onlyBundler {
+    function compoundV2RepayErc20(address cToken, uint256 amount, address onBehalf) external onlyBundlerOrDelegatecall {
         require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
 
         address underlying = ICToken(cToken).underlying();
@@ -59,7 +59,7 @@ contract CompoundV2MigrationModule is CoreModule {
     /// Pass `type(uint).max` to repay the maximum repayable debt (minimum of the module's balance and `onBehalf`'s
     /// debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function compoundV2RepayEth(uint256 amount, address onBehalf) external onlyBundler {
+    function compoundV2RepayEth(uint256 amount, address onBehalf) external onlyBundlerOrDelegatecall {
         if (amount == type(uint256).max) amount = address(this).balance;
         amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(onBehalf));
 
@@ -75,7 +75,7 @@ contract CompoundV2MigrationModule is CoreModule {
     /// is capped at the module's max redeemable amount. Pass `type(uint).max` to always
     /// redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
-    function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
+    function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundlerOrDelegatecall {
         require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
 
         amount = Math.min(amount, ICToken(cToken).balanceOf(address(this)));
@@ -95,7 +95,7 @@ contract CompoundV2MigrationModule is CoreModule {
     /// @param amount The amount of cEth to redeem. Unlike with `morphoWithdraw` using a shares argument, the amount is
     /// capped at the module's max redeemable amount. Pass `type(uint).max` to redeem the module's balance.
     /// @param receiver The account receiving the redeemed ETH.
-    function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundler {
+    function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundlerOrDelegatecall {
         amount = Math.min(amount, ICEth(C_ETH).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

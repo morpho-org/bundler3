@@ -10,19 +10,21 @@ import {ModuleLib} from "../libraries/ModuleLib.sol";
 /// @notice Common contract to all Bundler modules.
 abstract contract CoreModule {
     address public immutable BUNDLER;
+    address private SELF;
 
     constructor(address bundler) {
         require(bundler != address(0), ErrorsLib.ZeroAddress());
 
         BUNDLER = bundler;
+        SELF = address(this);
     }
 
     /* MODIFIERS */
 
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
-    modifier onlyBundler() {
-        require(msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender());
+    modifier onlyBundlerOrDelegatecall() {
+        require(address(this) != SELF || msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender());
         _;
     }
 
@@ -38,7 +40,7 @@ abstract contract CoreModule {
     /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the module's balance.
-    function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
+    function nativeTransfer(address receiver, uint256 amount) external onlyBundlerOrDelegatecall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
@@ -54,7 +56,7 @@ abstract contract CoreModule {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the module's balance.
-    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
+    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundlerOrDelegatecall {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.ModuleAddress());
 
@@ -67,10 +69,14 @@ abstract contract CoreModule {
 
     /* INTERNAL */
 
-    /// @notice Returns the current initiator stored in the module.
+    /// @notice Returns the current initiator. In the context of a call, it is given by the Bundler. In the context of a delegatecall, it is the current address.
     /// @dev The initiator value being non-zero indicates that a bundle is being processed.
     function _initiator() internal view returns (address) {
-        return IBundler(BUNDLER).initiator();
+        if (address(this) != SELF) {
+            return address(this);
+        } else {
+            return IBundler(BUNDLER).initiator();
+        }
     }
 
     /// @notice Calls bundler.multicallFromModule with an already encoded Call array.

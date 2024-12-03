@@ -36,7 +36,7 @@ contract AaveV3OptimizerMigrationModule is CoreModule {
     /// `onBehalf`s debt. Pass `type(uint).max` to repay the repay the maximum repayable debt (minimum of the module's
     /// balance and `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyBundler {
+    function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyBundlerOrDelegatecall {
         // Amount will be capped at `onBehalf`'s debt by the optimizer.
         if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
 
@@ -57,7 +57,7 @@ contract AaveV3OptimizerMigrationModule is CoreModule {
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdraw(address underlying, uint256 amount, uint256 maxIterations, address receiver)
         external
-        onlyBundler
+        onlyBundlerOrDelegatecall
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
         AAVE_V3_OPTIMIZER.withdraw(underlying, amount, _initiator(), receiver, maxIterations);
@@ -72,7 +72,7 @@ contract AaveV3OptimizerMigrationModule is CoreModule {
     /// @param receiver The account that will receive the withdrawn assets.
     function aaveV3OptimizerWithdrawCollateral(address underlying, uint256 amount, address receiver)
         external
-        onlyBundler
+        onlyBundlerOrDelegatecall
     {
         require(amount != 0, ErrorsLib.ZeroAmount());
         AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, _initiator(), receiver);
