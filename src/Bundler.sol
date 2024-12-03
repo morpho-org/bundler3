@@ -9,7 +9,7 @@ import {UtilsLib} from "./libraries/UtilsLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
-/// @notice Can be reentered by the last unreturned Call.
+/// @notice Can be reentered by the last unreturned callee.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
