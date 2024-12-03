@@ -133,7 +133,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         // adjustedData);
         bundle.push(
             _call(
-                BaseModule(payable(address(paraswapModule))),
+                CoreModule(payable(address(paraswapModule))),
                 _paraswapSell(
                     _augustus,
                     _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
@@ -207,7 +207,7 @@ contract ParaswapModuleLocalTest is LocalTest {
         vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         bundle.push(
             _call(
-                BaseModule(payable(address(paraswapModule))),
+                CoreModule(payable(address(paraswapModule))),
                 _paraswapBuy(
                     _augustus,
                     _swapCalldata(offset, initialExact, initialLimit, initialQuoted),

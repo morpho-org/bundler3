@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {ICompoundV3} from "../interfaces/ICompoundV3.sol";
+import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
+import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 
-import {BaseModule} from "../BaseModule.sol";
-import {ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {CoreModule} from "../CoreModule.sol";
+import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ModuleLib} from "../../libraries/ModuleLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.
-contract CompoundV3MigrationModule is BaseModule {
+contract CompoundV3MigrationModule is CoreModule {
     /* CONSTRUCTOR */
 
     /// @param bundler The Bundler contract address.
-    constructor(address bundler) BaseModule(bundler) {}
+    constructor(address bundler) CoreModule(bundler) {}
 
     /* ACTIONS */
 
