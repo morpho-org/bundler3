@@ -44,6 +44,13 @@ contract CompoundV2ERC20MigrationModuleForkTest is MigrationForkTest {
         bundler.multicall(bundle);
     }
 
+    function testCompoundV2RedeemCeth() public onlyEthereum {
+        bundle.push(_compoundV2RedeemErc20(C_ETH_V2, 1, address(this)));
+
+        vm.expectRevert(ErrorsLib.CTokenIsCETH.selector);
+        bundler.multicall(bundle);
+    }
+
     function testCompoundV2RedeemErc20Unauthorized(uint256 amount, address receiver) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 

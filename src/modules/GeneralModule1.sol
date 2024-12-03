@@ -22,7 +22,6 @@ import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/M
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
-import {UtilsLib as MorphoUtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
@@ -306,7 +305,6 @@ contract GeneralModule1 is CoreModule {
     ) external onlyBundler {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
-        require(MorphoUtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
 
         if (assets == type(uint256).max) {
             assets = ERC20(marketParams.loanToken).balanceOf(address(this));
