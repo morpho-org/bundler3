@@ -22,27 +22,6 @@ contract TransferModuleLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
     }
 
-    // function testTransferFromTest(uint256 amount) public {
-    //     amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-    //     bundle.push(_erc20TransferFrom(address(loanToken), amount));
-
-    //     deal(address(loanToken), USER, amount);
-
-    //     vm.startPrank(USER);
-    //     loanToken.approve(address(genericModule1), type(uint256).max);
-    //     vm.stopPrank();
-
-    //     address user2 = makeAddr("User");
-    //     _call(genericModule1, abi.encodeCall(GenericModule1.erc20TransferFrom, (token, recipient, amount)));
-
-    //     vm.startPrank(USER);
-    //     bundler.multicall(bundle);
-
-    //     assertEq(loanToken.balanceOf(address(genericModule1)), amount, "loan.balanceOf(genericModule1)");
-    //     assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
-    // }
-
     function testTransferFromZeroAddress(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
