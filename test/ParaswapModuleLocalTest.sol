@@ -61,6 +61,16 @@ contract ParaswapModuleLocalTest is LocalTest {
         paraswapModule.buy(_augustus, new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
     }
 
+    function testSellReceiverZero() public {
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        paraswapModule.sell(address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
+    }
+
+    function testBuyReceiverZero() public {
+        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        paraswapModule.buy(address(augustus), new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+    }
+
     uint256 _bytesLength = 1024;
 
     function _boundOffset(uint256 offset) internal view returns (uint256) {

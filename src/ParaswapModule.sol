@@ -147,6 +147,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         address receiver
     ) internal {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         ModuleLib.approveMaxToIfAllowanceZero(srcToken, augustus);
 
