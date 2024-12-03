@@ -9,8 +9,14 @@ import {ModuleLib} from "../libraries/ModuleLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Common contract to all Bundler modules.
 abstract contract CoreModule {
+    /* IMMUTABLES */
+
+    /// @notice The address of the Bundler contract.
     address public immutable BUNDLER;
 
+    /* CONSTRUCTOR */
+
+    /// @param bundler The address of the Bundler contract.
     constructor(address bundler) {
         require(bundler != address(0), ErrorsLib.ZeroAddress());
 

@@ -6,7 +6,7 @@ import {ErrorsLib} from "./ErrorsLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Library exposing bytes manipulation.
 library BytesLib {
-    /// @notice Read 32 bytes at offset `offset` of memory bytes `data`.
+    /// @notice Reads 32 bytes at offset `offset` of memory bytes `data`.
     function get(bytes memory data, uint256 offset) internal pure returns (uint256 currentValue) {
         require(offset <= data.length - 32, ErrorsLib.InvalidOffset());
         assembly {
@@ -14,7 +14,7 @@ library BytesLib {
         }
     }
 
-    /// @notice Write `value` at offset `offset` of memory bytes `data`.
+    /// @notice Writes `value` at offset `offset` of memory bytes `data`.
     function set(bytes memory data, uint256 offset, uint256 value) internal pure {
         require(offset <= data.length - 32, ErrorsLib.InvalidOffset());
         assembly ("memory-safe") {

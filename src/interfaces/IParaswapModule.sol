@@ -15,7 +15,7 @@ struct Offsets {
 }
 
 /// @custom:contact security@morpho.org
-/// @notice Interface of Paraswap Module
+/// @notice Interface of Paraswap Module.
 interface IParaswapModule {
     function sell(
         address augustus,
