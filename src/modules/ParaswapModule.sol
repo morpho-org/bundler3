@@ -5,7 +5,7 @@ import {CoreModule, ErrorsLib, ERC20, SafeTransferLib, UtilsLib} from "./CoreMod
 import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
 import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "../libraries/BytesLib.sol";
-import {IParaswapModule} from "../interfaces/IParaswapModule.sol";
+import {IParaswapModule, Offsets, MarketParams} from "../interfaces/IParaswapModule.sol";
 import {IMorpho, MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 /// @custom:contact security@morpho.org
