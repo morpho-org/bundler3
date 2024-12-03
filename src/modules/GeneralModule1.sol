@@ -1,32 +1,28 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {BaseModule} from "./BaseModule.sol";
+import {IWNative} from "../interfaces/IWNative.sol";
+import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
+import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-import {MarketParams, Signature, Authorization, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {CoreModule} from "./CoreModule.sol";
 
-import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {SafeTransferLib, ERC20} from "../lib/solmate/src/utils/SafeTransferLib.sol";
-import {IAllowanceTransfer} from "../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
-
-import {ModuleLib} from "./libraries/ModuleLib.sol";
-import {SafeCast160} from "../lib/permit2/src/libraries/SafeCast160.sol";
-import {IUniversalRewardsDistributor} from
-    "../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
-import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {Permit2Lib} from "../lib/permit2/src/libraries/Permit2Lib.sol";
-import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
-import {ERC20Wrapper} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-import {IWNative} from "./interfaces/IWNative.sol";
-import {MorphoBalancesLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
-import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import {MorphoLib} from "../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
-import {MathRayLib} from "./libraries/MathRayLib.sol";
-import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {ModuleLib} from "../libraries/ModuleLib.sol";
+import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {MathRayLib} from "../libraries/MathRayLib.sol";
+import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
+import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
+import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
+import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
+import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Chain agnostic module contract n°1.
-contract GenericModule1 is BaseModule {
+contract GeneralModule1 is CoreModule {
     using SafeCast160 for uint256;
     using MarketParamsLib for MarketParams;
     using MathRayLib for uint256;
@@ -41,7 +37,7 @@ contract GenericModule1 is BaseModule {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address wNative) BaseModule(bundler) {
+    constructor(address bundler, address morpho, address wNative) CoreModule(bundler) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
 
@@ -144,7 +140,7 @@ contract GenericModule1 is BaseModule {
     /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to withdraw.
-    /// @param minSharePriceE27 the minimum number of assets to receive per share, scaled by 1e27.
+    /// @param minSharePriceE27 The minimum number of assets to receive per share, scaled by 1e27.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the assets are withdrawn. Can only be the module or the initiator.
     function erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
@@ -165,7 +161,7 @@ contract GenericModule1 is BaseModule {
     /// Otherwise, vault shares must have been previously sent to the module.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to redeem. Pass `type(uint).max` to redeem the owner's shares.
-    /// @param minSharePriceE27 the minimum number of assets to receive per share, scaled by 1e27.
+    /// @param minSharePriceE27 The minimum number of assets to receive per share, scaled by 1e27.
     /// @param receiver The address that will receive the withdrawn assets.
     /// @param owner The address on behalf of which the shares are redeemed. Can only be the module or the initiator.
     function erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
@@ -306,7 +302,6 @@ contract GenericModule1 is BaseModule {
     ) external onlyBundler {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.ModuleAddress());
-        require(UtilsLib.exactlyOneZero(assets, shares), ErrorsLib.InconsistentInput());
 
         if (assets == type(uint256).max) {
             assets = ERC20(marketParams.loanToken).balanceOf(address(this));
@@ -365,6 +360,7 @@ contract GenericModule1 is BaseModule {
     {
         if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
+
         MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
     }
 

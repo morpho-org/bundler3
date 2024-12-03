@@ -14,11 +14,11 @@ contract TransferModuleLocalTest is LocalTest {
         deal(address(loanToken), USER, amount);
 
         vm.startPrank(USER);
-        loanToken.approve(address(genericModule1), type(uint256).max);
+        loanToken.approve(address(generalModule1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(loanToken.balanceOf(address(genericModule1)), amount, "loan.balanceOf(genericModule1)");
+        assertEq(loanToken.balanceOf(address(generalModule1)), amount, "loan.balanceOf(generalModule1)");
         assertEq(loanToken.balanceOf(USER), 0, "loan.balanceOf(USER)");
     }
 
@@ -35,7 +35,7 @@ contract TransferModuleLocalTest is LocalTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
+        generalModule1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
     }
 
     function testTransferFromZeroAmount() public {

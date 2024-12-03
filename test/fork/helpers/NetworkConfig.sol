@@ -53,6 +53,8 @@ abstract contract NetworkConfig is CommonBase {
             setAddress("MORPHO_WRAPPER", 0x9D03bb2092270648d7480049d0E58d2FcF0E5123);
             setAddress("MORPHO_TOKEN_LEGACY", 0x9994E35Db50125E0DF82e4c2dde62496CE330999);
             setAddress("MORPHO_TOKEN", 0x58D97B57BB95320F9a05dC918Aef65434969c2B2);
+            setAddress("AUGUSTUS_V6_2", 0x6A000F20005980200259B80c5102003040001068);
+            setAddress("AUGUSTUS_REGISTRY", 0xa68bEA62Dc4034A689AA0F58A76681433caCa663);
 
             /* BASE NETWORK */
         } else if (config.chainid == 8453) {
@@ -66,6 +68,8 @@ abstract contract NetworkConfig is CommonBase {
             setAddress("CB_ETH", 0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22);
             setAddress("AAVE_V3_POOL", 0xA238Dd80C259a72e81d7e4664a9801593F98d1c5);
             setAddress("C_WETH_V3", 0x46e6b214b524310239732D51387075E0e70970bf);
+            setAddress("AUGUSTUS_V6_2", 0x6A000F20005980200259B80c5102003040001068);
+            setAddress("AUGUSTUS_REGISTRY", 0x7E31B336F9E8bA52ba3c4ac861b033Ba90900bb3);
         }
     }
 

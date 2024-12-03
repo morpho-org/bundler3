@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {Authorization as AaveV3OptimizerAuthorization} from "../../../src/interfaces/IAaveV3Optimizer.sol";
+import {Authorization as AaveV3OptimizerAuthorization, Signature} from "../../../src/interfaces/IAaveV3Optimizer.sol";
 
-import "../../../src/migration/AaveV3OptimizerMigrationModule.sol";
+import "../../../src/modules/migration/AaveV3OptimizerMigrationModule.sol";
 
 import "./helpers/MigrationForkTest.sol";
 
@@ -72,7 +72,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                BaseModule(payable(address(AAVE_V3_OPTIMIZER))),
+                CoreModule(payable(address(AAVE_V3_OPTIMIZER))),
                 abi.encodeCall(
                     IAaveV3Optimizer.approveManagerWithSig, (user, address(this), true, 0, SIGNATURE_DEADLINE, sig)
                 ),
@@ -128,7 +128,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
         callbackBundle.push(
             _aaveV3OptimizerWithdrawCollateral(
-                marketParams.collateralToken, collateralSupplied, address(genericModule1)
+                marketParams.collateralToken, collateralSupplied, address(generalModule1)
             )
         );
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
@@ -138,7 +138,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertBorrowerPosition(collateralSupplied, borrowed, user, address(genericModule1));
+        _assertBorrowerPosition(collateralSupplied, borrowed, user, address(generalModule1));
     }
 
     function testMigrateUSDTBorrowerWithOptimizerPermit() public onlyEthereum {
@@ -170,7 +170,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, borrowed / 2, user));
         callbackBundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, type(uint256).max, user));
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
-        callbackBundle.push(_aaveV3OptimizerWithdrawCollateral(USDT, amountUsdt, address(genericModule1)));
+        callbackBundle.push(_aaveV3OptimizerWithdrawCollateral(USDT, amountUsdt, address(generalModule1)));
         callbackBundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
 
         bundle.push(_morphoSupplyCollateral(marketParams, amountUsdt, user, abi.encode(callbackBundle)));
@@ -178,7 +178,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertBorrowerPosition(amountUsdt, borrowed, user, address(genericModule1));
+        _assertBorrowerPosition(amountUsdt, borrowed, user, address(generalModule1));
     }
 
     function testMigrateSupplierWithOptimizerPermit(uint256 supplied) public onlyEthereum {
@@ -194,14 +194,14 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         vm.stopPrank();
 
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
-        bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
+        bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(generalModule1)));
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertSupplierPosition(supplied, user, address(genericModule1));
+        _assertSupplierPosition(supplied, user, address(generalModule1));
     }
 
     function testMigrateSupplierToVaultWithOptimizerPermit(uint256 supplied) public onlyEthereum {
@@ -217,14 +217,14 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         vm.stopPrank();
 
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), true, 0, false));
-        bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(genericModule1)));
+        bundle.push(_aaveV3OptimizerWithdraw(marketParams.loanToken, supplied, address(generalModule1)));
         bundle.push(_aaveV3OptimizerApproveManager(privateKey, address(migrationModule), false, 1, false));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
         bundler.multicall(bundle);
 
-        _assertVaultSupplierPosition(supplied, user, address(genericModule1));
+        _assertVaultSupplierPosition(supplied, user, address(generalModule1));
     }
 
     function testAaveV3OptimizerWithdrawUnauthorized(uint256 amount) public onlyEthereum {
@@ -260,7 +260,7 @@ contract AaveV3OptimizerMigrationModuleForkTest is MigrationForkTest {
         (sig.v, sig.r, sig.s) = vm.sign(privateKey, digest);
 
         return _call(
-            BaseModule(payable(AAVE_V3_OPTIMIZER)),
+            CoreModule(payable(AAVE_V3_OPTIMIZER)),
             abi.encodeCall(
                 IAaveV3Optimizer.approveManagerWithSig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, sig)
             ),

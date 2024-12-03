@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {ICEth} from "../interfaces/ICEth.sol";
-import {ICToken} from "../interfaces/ICToken.sol";
+import {ICEth} from "../../interfaces/ICEth.sol";
+import {ICToken} from "../../interfaces/ICToken.sol";
 
-import {Math} from "../../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
-import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
+import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
+import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
+import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {BaseModule, ERC20, SafeTransferLib, ModuleLib} from "../BaseModule.sol";
+import {CoreModule, ERC20, SafeTransferLib, ModuleLib} from "../CoreModule.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
-contract CompoundV2MigrationModule is BaseModule {
+contract CompoundV2MigrationModule is CoreModule {
     /* IMMUTABLES */
 
     /// @dev The address of the cETH contract.
@@ -22,7 +22,7 @@ contract CompoundV2MigrationModule is BaseModule {
 
     /// @param bundler The Bundler contract address.
     /// @param cEth The address of the cETH contract.
-    constructor(address bundler, address cEth) BaseModule(bundler) {
+    constructor(address bundler, address cEth) CoreModule(bundler) {
         require(cEth != address(0), ErrorsLib.ZeroAddress());
 
         C_ETH = cEth;
@@ -60,9 +60,7 @@ contract CompoundV2MigrationModule is BaseModule {
     /// debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function compoundV2RepayEth(uint256 amount, address onBehalf) external onlyBundler {
-        if (amount == type(uint256).max) {
-            amount = address(this).balance;
-        }
+        if (amount == type(uint256).max) amount = address(this).balance;
         amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -78,6 +76,8 @@ contract CompoundV2MigrationModule is BaseModule {
     /// redeem the module's balance.
     /// @param receiver The account receiving the redeemed assets.
     function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
+        require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
+
         amount = Math.min(amount, ICToken(cToken).balanceOf(address(this)));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

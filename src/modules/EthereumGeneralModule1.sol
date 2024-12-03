@@ -1,24 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IDaiPermit} from "./interfaces/IDaiPermit.sol";
-import {IWstEth} from "./interfaces/IWstEth.sol";
-import {IStEth} from "./interfaces/IStEth.sol";
+import {IWstEth} from "../interfaces/IWstEth.sol";
+import {IStEth} from "../interfaces/IStEth.sol";
 
-import {
-    GenericModule1,
-    BaseModule,
-    ErrorsLib,
-    ERC20Wrapper,
-    ModuleLib,
-    SafeTransferLib,
-    ERC20
-} from "./GenericModule1.sol";
-import {MathRayLib} from "./libraries/MathRayLib.sol";
+import {GeneralModule1, ErrorsLib, ERC20Wrapper, ModuleLib, SafeTransferLib, ERC20} from "./GeneralModule1.sol";
+import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Module contract specific to Ethereum n°1.
-contract EthereumModule1 is GenericModule1 {
+contract EthereumGeneralModule1 is GeneralModule1 {
     using MathRayLib for uint256;
 
     /* IMMUTABLES */
@@ -55,7 +46,7 @@ contract EthereumModule1 is GenericModule1 {
         address wStEth,
         address morphoToken,
         address morphoWrapper
-    ) GenericModule1(bundler, morpho, weth) {
+    ) GeneralModule1(bundler, morpho, weth) {
         require(dai != address(0), ErrorsLib.ZeroAddress());
         require(wStEth != address(0), ErrorsLib.ZeroAddress());
         require(morphoToken != address(0), ErrorsLib.ZeroAddress());

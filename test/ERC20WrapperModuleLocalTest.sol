@@ -32,11 +32,11 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
 
-        deal(address(loanToken), address(genericModule1), amount);
+        deal(address(loanToken), address(generalModule1), amount);
 
         bundler.multicall(bundle);
 
-        assertEq(loanToken.balanceOf(address(genericModule1)), 0, "loan.balanceOf(genericModule1)");
+        assertEq(loanToken.balanceOf(address(generalModule1)), 0, "loan.balanceOf(generalModule1)");
         assertEq(loanWrapper.balanceOf(receiver), amount, "loanWrapper.balanceOf(receiver)");
     }
 
@@ -50,28 +50,28 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
     function testErc20WrapperWithdrawTo(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanWrapper), address(generalModule1), amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
         bundler.multicall(bundle);
 
-        assertEq(loanWrapper.balanceOf(address(genericModule1)), 0, "loanWrapper.balanceOf(genericModule1)");
+        assertEq(loanWrapper.balanceOf(address(generalModule1)), 0, "loanWrapper.balanceOf(generalModule1)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
     }
 
     function testErc20WrapperWithdrawToAll(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanWrapper), address(generalModule1), amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, type(uint256).max));
 
         bundler.multicall(bundle);
 
-        assertEq(loanWrapper.balanceOf(address(genericModule1)), 0, "loanWrapper.balanceOf(genericModule1)");
+        assertEq(loanWrapper.balanceOf(address(generalModule1)), 0, "loanWrapper.balanceOf(generalModule1)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
     }
 
@@ -95,19 +95,19 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
+        generalModule1.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
     function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        genericModule1.erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount);
+        generalModule1.erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount);
     }
 
     function testErc20WrapperDepositToFailed(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        deal(address(loanToken), address(genericModule1), amount);
+        deal(address(loanToken), address(generalModule1), amount);
 
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount));
 
@@ -119,7 +119,7 @@ contract ERC20WrapperModuleLocalTest is LocalTest {
 
     function testErc20WrapperWithdrawToFailed(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        deal(address(loanWrapper), address(genericModule1), amount);
+        deal(address(loanWrapper), address(generalModule1), amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));

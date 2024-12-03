@@ -10,6 +10,7 @@ import {ModuleLib} from "./libraries/ModuleLib.sol";
 /// @notice Enables calling multiple functions in a single call to multiple contracts ("modules").
 /// @notice Transiently stores the initiator of the multicall transaction.
 /// @notice Transiently stores the current module that is being called.
+/// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
 
@@ -32,7 +33,7 @@ contract Bundler is IBundler {
 
         _multicall(bundle);
 
-        initiator = msg.sender;
+        initiator = address(0);
     }
 
     /// @notice Executes a series of calls to modules.
