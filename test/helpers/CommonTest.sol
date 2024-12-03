@@ -27,7 +27,7 @@ import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 import {IParaswapModule, Offsets} from "../../src/interfaces/IParaswapModule.sol";
-import {ParaswapModule} from "../../src/ParaswapModule.sol";
+import {ParaswapModule} from "../../src/modules/ParaswapModule.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
@@ -201,7 +201,7 @@ abstract contract CommonTest is Test {
         return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)));
     }
 
-    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, BaseModule module)
+    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, CoreModule module)
         internal
         pure
         returns (Call memory)
@@ -460,7 +460,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            BaseModule(payable(address(paraswapModule))),
+            CoreModule(payable(address(paraswapModule))),
             _paraswapSell(
                 address(augustus),
                 abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
@@ -484,7 +484,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            BaseModule(payable(address(paraswapModule))),
+            CoreModule(payable(address(paraswapModule))),
             _paraswapBuy(
                 address(augustus),
                 abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
