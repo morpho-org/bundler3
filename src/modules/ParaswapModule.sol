@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {CoreModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./CoreModule.sol";
+import {IParaswapModule, Offsets, MarketParams} from "../interfaces/IParaswapModule.sol";
 import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
+
+import {CoreModule, ErrorsLib, ERC20, SafeTransferLib, ModuleLib} from "./CoreModule.sol";
 import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {BytesLib} from "../libraries/BytesLib.sol";
-import "../interfaces/IParaswapModule.sol";
 import {ModuleLib} from "../libraries/ModuleLib.sol";
 import {IMorpho, MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
@@ -17,7 +18,10 @@ contract ParaswapModule is CoreModule, IParaswapModule {
 
     /* IMMUTABLES */
 
+    /// @notice The address of the Augustus registry.
     IAugustusRegistry public immutable AUGUSTUS_REGISTRY;
+
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
 
     /* CONSTRUCTOR */
@@ -32,7 +36,7 @@ contract ParaswapModule is CoreModule, IParaswapModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sell an exact amount. Can check for a minimum purchased amount.
+    /// @notice Sells an exact amount. Can check for a minimum purchased amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -67,14 +71,13 @@ contract ParaswapModule is CoreModule, IParaswapModule {
         });
     }
 
-    /// @notice Buy an exact amount. Can check for a maximum sold amount.
+    /// @notice Buys an exact amount. Can check for a maximum sold amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param callData Swap data to call `augustus` with. Contains routing information.
+    /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @dev `callData` can change if `marketParams.loanToken == destToken`.
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
-    /// @param newDestAmount Adjusted amount to buy. Will be used to update callData before before sent to Augustus
-    /// contract.
+    /// @param newDestAmount Adjusted amount to buy. Will be used to update callData before sent to Augustus contract.
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @dev The quoted sell amount will change only if its offset is not zero.
@@ -104,9 +107,9 @@ contract ParaswapModule is CoreModule, IParaswapModule {
         });
     }
 
-    /// @notice Buy an amount corresponding to a user's Morpho debt.
+    /// @notice Buys an amount corresponding to a user's Morpho debt.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
-    /// @param callData Swap data to call `augustus` with. Contains routing information.
+    /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @param srcToken Token to sell.
     /// @param marketParams Market parameters of the market with Morpho debt.
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
@@ -136,7 +139,7 @@ contract ParaswapModule is CoreModule, IParaswapModule {
 
     /* INTERNAL FUNCTIONS */
 
-    /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
+    /// @notice Executes the swap specified by `callData` with `augustus`.
     function _swap(
         address augustus,
         bytes memory callData,
@@ -171,7 +174,7 @@ contract ParaswapModule is CoreModule, IParaswapModule {
         }
     }
 
-    /// @notice Set exact amount in `callData` to `exactAmount`.
+    /// @notice Sets exact amount in `callData` to `exactAmount`.
     /// @notice Proportionally scale limit amount in `callData`.
     /// @notice If `offsets.quotedAmount` is not zero, proportionally scale quoted amount in `callData`.
     function _updateAmounts(
