@@ -48,10 +48,9 @@ contract Bundler is IBundler {
 
     /// @notice Executes a series of calls to modules.
     function _multicall(Call[] calldata bundle) internal {
-        address previousModule = currentModule;
-
         // TODO add memory-safe-assembly tag
         assembly {
+            let previousModule := tload(1)
             let fmp := mload(0x40)
             let end := add(0x44, shl(5, bundle.length))
             let calldata_element_id := 0x44
@@ -74,7 +73,7 @@ contract Bundler is IBundler {
 
                     let success := call(gas(), to, value, fmp, len_data, 0, 0)
 
-                    if and(iszero(success), iszero(skipRevert)){
+                    if iszero(add(success, skipRevert)){
                         // TODO forward error properly
                         returndatacopy(fmp, 0x00, returndatasize())
                         revert(fmp, returndatasize())
@@ -83,8 +82,8 @@ contract Bundler is IBundler {
                     if iszero(lt(calldata_element_id, end)) {break}
                 }
             }
-
+            tstore(1, previousModule)
         }
-        currentModule = previousModule;
+
     }
 }
