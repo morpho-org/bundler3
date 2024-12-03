@@ -366,6 +366,7 @@ contract GenericModule1 is BaseModule {
     {
         if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), _initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
+
         MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
     }
 

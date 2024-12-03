@@ -29,7 +29,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
 
     /* SWAP ACTIONS */
 
-    /// @notice Sell an exact amount. Can check for a minimum purchased amount.
+    /// @notice Sells an exact amount. Can check for a minimum purchased amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -64,7 +64,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         });
     }
 
-    /// @notice Buy an exact amount. Can check for a maximum sold amount.
+    /// @notice Buys an exact amount. Can check for a maximum sold amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @dev `callData` can change if `marketParams.loanToken == destToken`.
@@ -101,7 +101,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         });
     }
 
-    /// @notice Buy an amount corresponding to a user's Morpho debt.
+    /// @notice Buys an amount corresponding to a user's Morpho debt.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -133,7 +133,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
 
     /* INTERNAL FUNCTIONS */
 
-    /// @notice Execute the swap specified by `augustusCalldata` with `augustus`.
+    /// @notice Executes the swap specified by `augustusCalldata` with `augustus`.
     function _swap(
         address augustus,
         bytes memory callData,
@@ -167,7 +167,7 @@ contract ParaswapModule is BaseModule, IParaswapModule {
         }
     }
 
-    /// @notice Set exact amount in `callData` to `exactAmount`.
+    /// @notice Sets exact amount in `callData` to `exactAmount`.
     /// @notice Proportionally scale limit amount in `callData`.
     /// @notice If `offsets.quotedAmount` is not zero, proportionally scale quoted amount in `callData`.
     function _updateAmounts(
