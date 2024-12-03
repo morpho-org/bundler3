@@ -80,7 +80,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         loanToken.approve(address(morpho), type(uint256).max);
 
         vm.startPrank(USER);
-        morpho.setAuthorization(address(generalModule1), true);
+        morpho.setAuthorization(address(generalAdapter1), true);
         collateralToken.approve(address(morpho), type(uint256).max);
         loanToken.approve(address(morpho), type(uint256).max);
         vm.stopPrank();
@@ -97,9 +97,9 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            CoreModule(payable(address(paraswapModule))),
+            CoreAdapter(payable(address(paraswapAdapter))),
             abi.encodeCall(
-                paraswapModule.buyMorphoDebt,
+                paraswapAdapter.buyMorphoDebt,
                 (
                     address(augustus),
                     abi.encodeCall(augustus.mockBuy, (srcToken, marketParams.loanToken, maxSrcAmount, destAmount)),
@@ -141,7 +141,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 srcAmount,
         address receiver
     ) internal {
-        bundle.push(_morphoWithdrawCollateral(marketParams, srcAmount, address(paraswapModule)));
+        bundle.push(_morphoWithdrawCollateral(marketParams, srcAmount, address(paraswapAdapter)));
         bundle.push(_sell(marketParams.collateralToken, destToken, srcAmount, srcAmount, false, receiver));
     }
 
@@ -172,7 +172,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 assetsToWithdraw,
         address receiver
     ) internal {
-        bundle.push(_morphoWithdraw(marketParams, assetsToWithdraw, 0, 0, address(paraswapModule)));
+        bundle.push(_morphoWithdraw(marketParams, assetsToWithdraw, 0, 0, address(paraswapAdapter)));
         bundle.push(_sell(marketParams.loanToken, destToken, assetsToWithdraw, assetsToWithdraw, false, receiver));
     }
 
@@ -192,7 +192,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         assertEq(loanToken2.balanceOf(USER), supplyAmount, "bought");
     }
 
-    // Method: withdraw all, sell exact amount (replaced by current balance by paraswap module)
+    // Method: withdraw all, sell exact amount (replaced by current balance by paraswap adapter)
     function _createFullWithdrawAndSwapBundle(
         address user,
         MarketParams memory marketParams,
@@ -201,8 +201,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     ) internal {
         uint256 sharesToWithdraw = morpho.supplyShares(marketParams.id(), user);
         uint256 currentAssets = morpho.expectedSupplyAssets(marketParams, user);
-        bundle.push(_morphoWithdraw(marketParams, 0, sharesToWithdraw, 0, address(paraswapModule)));
-        // Sell amount will be adjusted inside the paraswap module to the current balance
+        bundle.push(_morphoWithdraw(marketParams, 0, sharesToWithdraw, 0, address(paraswapAdapter)));
+        // Sell amount will be adjusted inside the paraswap adapter to the current balance
         bundle.push(_sell(marketParams.loanToken, destToken, currentAssets, currentAssets, true, receiver));
     }
 
@@ -234,7 +234,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         address destToken,
         uint256 assetsToWithdraw
     ) internal {
-        _createPartialWithdrawAndSwapBundle(sourceParams, destToken, assetsToWithdraw, address(generalModule1));
+        _createPartialWithdrawAndSwapBundle(sourceParams, destToken, assetsToWithdraw, address(generalAdapter1));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
     }
 
@@ -258,7 +258,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     function _createFullSupplySwapBundle(address user, MarketParams memory sourceParams, MarketParams memory destParams)
         internal
     {
-        _createFullWithdrawAndSwapBundle(user, sourceParams, destParams.loanToken, address(generalModule1));
+        _createFullWithdrawAndSwapBundle(user, sourceParams, destParams.loanToken, address(generalAdapter1));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
     }
 
@@ -305,7 +305,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 collateralToSwap,
         uint256 borrowAssetsToTransfer
     ) internal {
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateralToSwap, address(paraswapModule)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateralToSwap, address(paraswapAdapter)));
         callbackBundle.push(
             _sell(
                 sourceParams.collateralToken,
@@ -313,11 +313,11 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 collateralToSwap,
                 collateralToSwap,
                 false,
-                address(generalModule1)
+                address(generalAdapter1)
             )
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoBorrow(destParams, borrowAssetsToTransfer, 0, 0, address(generalModule1)));
+        callbackBundle.push(_morphoBorrow(destParams, borrowAssetsToTransfer, 0, 0, address(generalAdapter1)));
         bundle.push(
             _morphoRepay(sourceParams, borrowAssetsToTransfer, 0, type(uint256).max, user, abi.encode(callbackBundle))
         );
@@ -367,7 +367,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 sourceCollateral = morpho.collateral(marketParams.id(), USER);
 
         callbackBundle.push(
-            _erc20Transfer(sourceParams.collateralToken, address(paraswapModule), sourceCollateral, generalModule1)
+            _erc20Transfer(sourceParams.collateralToken, address(paraswapAdapter), sourceCollateral, generalAdapter1)
         );
         callbackBundle.push(
             _sell(
@@ -376,14 +376,14 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 sourceCollateral,
                 sourceCollateral,
                 true,
-                address(generalModule1)
+                address(generalAdapter1)
             )
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoBorrow(destParams, sourceBorrowAssetsOverestimate, 0, 0, address(generalModule1)));
+        callbackBundle.push(_morphoBorrow(destParams, sourceBorrowAssetsOverestimate, 0, 0, address(generalAdapter1)));
         callbackBundle.push(_morphoRepay(sourceParams, 0, sourceBorrowShares, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(generalModule1)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(generalAdapter1)));
         bundle.push(_morphoFlashLoan(sourceParams.collateralToken, sourceCollateral, abi.encode(callbackBundle)));
     }
 
@@ -431,18 +431,18 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 toSell = toRepay * 101 / 100;
         uint256 toBorrow = toRepay * 101 / 100 + 1;
 
-        callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, 0, address(paraswapModule)));
+        callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, 0, address(paraswapAdapter)));
         callbackBundle.push(
-            _buy(destParams.loanToken, sourceParams.loanToken, toSell, toRepay, 0, address(generalModule1))
+            _buy(destParams.loanToken, sourceParams.loanToken, toSell, toRepay, 0, address(generalAdapter1))
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(
-                address(destParams.loanToken), address(generalModule1), type(uint256).max, paraswapModule
+                address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
         callbackBundle.push(_morphoRepay(sourceParams, type(uint256).max, 0, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateralToTransfer, address(generalModule1)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateralToTransfer, address(generalAdapter1)));
         bundle.push(_morphoSupplyCollateral(destParams, collateralToTransfer, user, abi.encode(callbackBundle)));
     }
 
@@ -482,19 +482,19 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         // overborrow to account for slippage
         uint256 toBorrow = toRepay * 101 / 100;
 
-        callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, 0, address(paraswapModule)));
+        callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, 0, address(paraswapAdapter)));
         // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams
         callbackBundle.push(
-            _buyMorphoDebt(destParams.loanToken, toBorrow, toRepay, sourceParams, user, address(generalModule1))
+            _buyMorphoDebt(destParams.loanToken, toBorrow, toRepay, sourceParams, user, address(generalAdapter1))
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(
-                address(destParams.loanToken), address(generalModule1), type(uint256).max, paraswapModule
+                address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
         callbackBundle.push(_morphoRepay(sourceParams, 0, borrowShares, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateral, address(generalModule1)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateral, address(generalAdapter1)));
         bundle.push(_morphoSupplyCollateral(destParams, collateral, user, abi.encode(callbackBundle)));
     }
 
@@ -546,7 +546,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 destBorrowAssetsOverestimate = sourceBorrowAssetsOverestimate * 101 / 100;
 
         callbackBundle.push(
-            _erc20Transfer(sourceParams.collateralToken, address(paraswapModule), sourceCollateral, generalModule1)
+            _erc20Transfer(sourceParams.collateralToken, address(paraswapAdapter), sourceCollateral, generalAdapter1)
         );
         callbackBundle.push(
             _sell(
@@ -555,11 +555,11 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 sourceCollateral,
                 sourceCollateral,
                 true,
-                address(generalModule1)
+                address(generalAdapter1)
             )
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoBorrow(destParams, destBorrowAssetsOverestimate, 0, 0, address(paraswapModule)));
+        callbackBundle.push(_morphoBorrow(destParams, destBorrowAssetsOverestimate, 0, 0, address(paraswapAdapter)));
 
         // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams
         callbackBundle.push(
@@ -569,19 +569,19 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 sourceBorrowAssetsOverestimate,
                 sourceParams,
                 user,
-                address(generalModule1)
+                address(generalAdapter1)
             )
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(
-                address(destParams.loanToken), address(generalModule1), type(uint256).max, paraswapModule
+                address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
         callbackBundle.push(_morphoRepay(sourceParams, 0, sourceBorrowShares, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(generalModule1)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(generalAdapter1)));
         callbackBundle.push(
-            _erc20TransferSkipRevert(address(sourceParams.collateralToken), user, type(uint256).max, paraswapModule)
+            _erc20TransferSkipRevert(address(sourceParams.collateralToken), user, type(uint256).max, paraswapAdapter)
         );
         bundle.push(_morphoFlashLoan(sourceParams.collateralToken, sourceCollateral, abi.encode(callbackBundle)));
     }
@@ -625,7 +625,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 collateral = morpho.collateral(marketParams.id(), user);
 
         callbackBundle.push(
-            _erc20Transfer(marketParams.collateralToken, address(paraswapModule), collateral, generalModule1)
+            _erc20Transfer(marketParams.collateralToken, address(paraswapAdapter), collateral, generalAdapter1)
         );
         callbackBundle.push(
             _buy(
@@ -634,19 +634,19 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
                 collateral,
                 assetsToRepay,
                 0,
-                address(generalModule1)
+                address(generalAdapter1)
             )
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(
-                address(marketParams.collateralToken), address(generalModule1), type(uint256).max, paraswapModule
+                address(marketParams.collateralToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
         callbackBundle.push(_morphoRepay(marketParams, assetsToRepay, 0, type(uint256).max, user, hex""));
         // Cannot compute collateral - (remaining collateral), which would be the net amount to withdraw.
         // So do it in 2 steps: supply remaining collateral, then withdraw flashloaned amount.
         callbackBundle.push(_morphoSupplyCollateral(marketParams, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(marketParams, collateral, address(generalModule1)));
+        callbackBundle.push(_morphoWithdrawCollateral(marketParams, collateral, address(generalAdapter1)));
         bundle.push(_morphoFlashLoan(marketParams.collateralToken, collateral, abi.encode(callbackBundle)));
     }
 
@@ -683,24 +683,24 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 borrowShares = morpho.borrowShares(marketParams.id(), USER);
 
         callbackBundle.push(
-            _erc20Transfer(marketParams.collateralToken, address(paraswapModule), collateral, generalModule1)
+            _erc20Transfer(marketParams.collateralToken, address(paraswapAdapter), collateral, generalAdapter1)
         );
-        // Buy amount will be adjusted inside the paraswap module to the current debt
+        // Buy amount will be adjusted inside the paraswap adapter to the current debt
         callbackBundle.push(
             _buyMorphoDebt(
-                marketParams.collateralToken, collateral, assetsToBuy, marketParams, user, address(generalModule1)
+                marketParams.collateralToken, collateral, assetsToBuy, marketParams, user, address(generalAdapter1)
             )
         );
         callbackBundle.push(
             _erc20TransferSkipRevert(
-                address(marketParams.collateralToken), address(generalModule1), type(uint256).max, paraswapModule
+                address(marketParams.collateralToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
         callbackBundle.push(_morphoRepay(marketParams, 0, borrowShares, type(uint256).max, user, hex""));
         // Cannot compute collateral - (remaining collateral), which would be the net amount to withdraw.
         // So do it in 2 steps: supply remaining collateral, then withdraw flashloaned amount.
         callbackBundle.push(_morphoSupplyCollateral(marketParams, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(marketParams, collateral, address(generalModule1)));
+        callbackBundle.push(_morphoWithdrawCollateral(marketParams, collateral, address(generalAdapter1)));
         bundle.push(_morphoFlashLoan(marketParams.collateralToken, collateral, abi.encode(callbackBundle)));
     }
 }

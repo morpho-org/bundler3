@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing error messages.
 library ErrorsLib {
-    /* STANDARD MODULES */
+    /* STANDARD ADAPTERS */
 
-    /// @dev Thrown when a multicall is attempted while the module in an initiated execution context.
+    /// @dev Thrown when a multicall is attempted while the adapter in an initiated execution context.
     error AlreadyInitiated();
 
     /// @dev Thrown when a call is attempted from an unauthorized sender.
@@ -15,8 +15,8 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted with a zero address as input.
     error ZeroAddress();
 
-    /// @dev Thrown when a call is attempted with the module address as input.
-    error ModuleAddress();
+    /// @dev Thrown when a call is attempted with the adapter address as input.
+    error AdapterAddress();
 
     /// @dev Thrown when a call is attempted with a zero amount as input.
     error ZeroAmount();
@@ -36,7 +36,7 @@ library ErrorsLib {
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
 
-    /* MIGRATION MODULES */
+    /* MIGRATION ADAPTERS */
 
     /// @dev Thrown when repaying a CompoundV2 debt returns an error code.
     error RepayError();
@@ -47,7 +47,7 @@ library ErrorsLib {
     /// @dev Thrown when trying to repay ETH on CompoundV2 with the wrong function.
     error CTokenIsCETH();
 
-    /* PARASWAP MODULE */
+    /* PARASWAP ADAPTER */
 
     /// @dev Thrown when contract used to trade is not in the paraswap registry.
     error AugustusNotInRegistry();
