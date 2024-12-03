@@ -37,6 +37,9 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* CONSTRUCTOR */
 
+    /// @param bundler The address of the bundler.
+    /// @param morpho The address of the Morpho protocol.
+    /// @param wNative The address of the canonical native token wrapper.
     constructor(address bundler, address morpho, address wNative) CoreAdapter(bundler) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
