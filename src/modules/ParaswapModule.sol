@@ -23,8 +23,11 @@ contract ParaswapModule is CoreModule, IParaswapModule {
     /* CONSTRUCTOR */
 
     constructor(address bundler, address morpho, address augustusRegistry) CoreModule(bundler) {
-        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
+        require(morpho != address(0), ErrorsLib.ZeroAddress());
+        require(augustusRegistry != address(0), ErrorsLib.ZeroAddress());
+
         MORPHO = IMorpho(morpho);
+        AUGUSTUS_REGISTRY = IAugustusRegistry(augustusRegistry);
     }
 
     /* SWAP ACTIONS */
@@ -144,6 +147,7 @@ contract ParaswapModule is CoreModule, IParaswapModule {
         address receiver
     ) internal {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         ModuleLib.approveMaxToIfAllowanceZero(srcToken, augustus);
 
