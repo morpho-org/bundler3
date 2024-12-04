@@ -28,14 +28,6 @@ jobs:
         # skip import files, because we don't care if contracts are too big
         run: forge build --sizes --skip Import
 
-      - name: Save forge compilation cache
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            cache
-            out
-          key: forge-${{ github.ref_name }}-${{ github.run_id }}
-
   test:
     needs: build-via-ir
 

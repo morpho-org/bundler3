@@ -1,19 +1,12 @@
-name: Install repository and cache
+name: Install foundry and its cache
 
 runs:
   using: composite
 
   steps:
     - name: Install Foundry
-      uses: foundry-rs/foundry-toolchain@v1
-
-    - name: Restore forge compilation cache
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          cache
-          out
-        key: forge-${{ github.ref_name }}
-        restore-keys: |
-          forge-${{ github.base_ref }}
-          forge-
+      uses: foundry-rs/foundry-toolchain@v1.2.0
+      cache-key: forge-${{ github.ref_name }}-${{ github.run_id }}
+      cache-restore-keys: |
+        forge-${{ github.ref_name }}
+        forge-
