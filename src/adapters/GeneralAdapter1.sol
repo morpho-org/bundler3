@@ -146,7 +146,7 @@ contract GeneralAdapter1 is CoreAdapter {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
         require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
@@ -167,7 +167,7 @@ contract GeneralAdapter1 is CoreAdapter {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(owner == address(this) || owner == _initiator(), ErrorsLib.UnexpectedOwner());
+        require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
 
         if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
 
@@ -180,19 +180,19 @@ contract GeneralAdapter1 is CoreAdapter {
     /* MORPHO CALLBACKS */
 
     function onMorphoSupply(uint256, bytes calldata data) external {
-        _morphoCallback(data);
+        morphoCallback(data);
     }
 
     function onMorphoSupplyCollateral(uint256, bytes calldata data) external {
-        _morphoCallback(data);
+        morphoCallback(data);
     }
 
     function onMorphoRepay(uint256, bytes calldata data) external {
-        _morphoCallback(data);
+        morphoCallback(data);
     }
 
     function onMorphoFlashLoan(uint256, bytes calldata data) external {
-        _morphoCallback(data);
+        morphoCallback(data);
     }
 
     /* MORPHO ACTIONS */
@@ -274,7 +274,7 @@ contract GeneralAdapter1 is CoreAdapter {
         address receiver
     ) external onlyBundler {
         (uint256 borrowedAssets, uint256 borrowedShares) =
-            MORPHO.borrow(marketParams, assets, shares, _initiator(), receiver);
+            MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
         require(borrowedAssets.rDivDown(borrowedShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -307,7 +307,7 @@ contract GeneralAdapter1 is CoreAdapter {
         }
 
         if (shares == type(uint256).max) {
-            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), _initiator());
+            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
@@ -336,12 +336,12 @@ contract GeneralAdapter1 is CoreAdapter {
         address receiver
     ) external onlyBundler {
         if (shares == type(uint256).max) {
-            shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), _initiator());
+            shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
-            MORPHO.withdraw(marketParams, assets, shares, _initiator(), receiver);
+            MORPHO.withdraw(marketParams, assets, shares, initiator(), receiver);
 
         require(withdrawnAssets.rDivDown(withdrawnShares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -356,10 +356,10 @@ contract GeneralAdapter1 is CoreAdapter {
         external
         onlyBundler
     {
-        if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), _initiator());
+        if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        MORPHO.withdrawCollateral(marketParams, assets, _initiator(), receiver);
+        MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
     }
 
     /// @notice Triggers a flash loan on Morpho.
@@ -382,12 +382,12 @@ contract GeneralAdapter1 is CoreAdapter {
     function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address _initiator = _initiator();
-        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(_initiator);
+        address initiator = initiator();
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        Permit2Lib.PERMIT2.transferFrom(_initiator, receiver, amount.toUint160(), token);
+        Permit2Lib.PERMIT2.transferFrom(initiator, receiver, amount.toUint160(), token);
     }
 
     /* TRANSFER ACTIONS */
@@ -401,12 +401,12 @@ contract GeneralAdapter1 is CoreAdapter {
     function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address _initiator = _initiator();
-        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(_initiator);
+        address initiator = initiator();
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        SafeERC20.safeTransferFrom(IERC20(token), _initiator, receiver, amount);
+        SafeERC20.safeTransferFrom(IERC20(token), initiator, receiver, amount);
     }
 
     /* WRAPPED NATIVE TOKEN ACTIONS */
@@ -441,10 +441,10 @@ contract GeneralAdapter1 is CoreAdapter {
     /* INTERNAL FUNCTIONS */
 
     /// @dev Triggers `_multicall` logic during a callback.
-    function _morphoCallback(bytes calldata data) internal {
+    function morphoCallback(bytes calldata data) internal {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        _reenterBundler(data);
+        reenterBundler(data);
     }
 }
