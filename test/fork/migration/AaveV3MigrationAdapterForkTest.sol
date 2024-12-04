@@ -332,7 +332,7 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
         bytes memory callData =
             abi.encodeCall(IERC20Permit.permit, (user, adapter, amount, SIGNATURE_DEADLINE, v, r, s));
 
-        return _call(CoreAdapter(payable(aToken)), callData, 0, false);
+        return _call(aToken, callData, 0, false);
     }
 
     function _aaveV3Repay(address asset, uint256 amount, address onBehalf) internal view returns (Call memory) {

@@ -72,7 +72,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                CoreAdapter(payable(address(AAVE_V3_OPTIMIZER))),
+                AAVE_V3_OPTIMIZER,
                 abi.encodeCall(
                     IAaveV3Optimizer.approveManagerWithSig, (user, address(this), true, 0, SIGNATURE_DEADLINE, sig)
                 ),
@@ -260,7 +260,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         (sig.v, sig.r, sig.s) = vm.sign(privateKey, digest);
 
         return _call(
-            CoreAdapter(payable(AAVE_V3_OPTIMIZER)),
+            AAVE_V3_OPTIMIZER,
             abi.encodeCall(
                 IAaveV3Optimizer.approveManagerWithSig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, sig)
             ),
