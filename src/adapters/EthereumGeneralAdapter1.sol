@@ -58,8 +58,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
 
-        UtilsLib.approveMaxToIfAllowanceZero(ST_ETH, WST_ETH);
-        UtilsLib.approveMaxToIfAllowanceZero(MORPHO_TOKEN, MORPHO_WRAPPER);
+        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
+        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
