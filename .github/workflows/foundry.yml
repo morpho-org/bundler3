@@ -31,7 +31,6 @@ jobs:
         env:
           FOUNDRY_PROFILE: build
 
-
   test:
     needs: build-via-ir
 
@@ -41,7 +40,7 @@ jobs:
     strategy:
       matrix:
         chain: [1, 8453]
-        
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,4 +52,4 @@ jobs:
       - name: Run tests on chain ${{ matrix.chain }}
         run: forge test
         env:
-           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
