@@ -1,6 +1,5 @@
 [profile.default]
 names = true
-sizes = true
 evm_version = "cancun"
 fs_permissions = [
     { access = "read", path = "./out/"},
