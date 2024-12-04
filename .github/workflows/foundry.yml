@@ -54,6 +54,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Clean cach
+        run: rm -rf cache out
+
       - uses: ./.github/actions/install-cache
 
       - name: Run tests on chain ${{ matrix.chain }}
