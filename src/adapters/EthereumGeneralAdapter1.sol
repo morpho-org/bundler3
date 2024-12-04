@@ -36,8 +36,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param weth The address of the WETH token.
     /// @param dai The address of the DAI token.
     /// @param wStEth The address of the wstETH token.
-    /// @param morphoToken The address of the morpho token.
-    /// @param morphoWrapper The address of the morpho token wrapper.
+    /// @param morphoToken The address of the MORPHO token.
+    /// @param morphoWrapper The address of the MORPHO token wrapper.
     constructor(
         address bundler,
         address morpho,
