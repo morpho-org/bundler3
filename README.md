@@ -1,6 +1,6 @@
 # Morpho Bundler v3
 
-The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
+The [`Bundler`](./src/Bundler.sol) allows to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
