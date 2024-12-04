@@ -165,11 +165,13 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RepayErc20, (cToken, repayAmount, onBehalf))
+            address(migrationAdapter),
+            abi.encodeCall(migrationAdapter.compoundV2RepayErc20, (cToken, repayAmount, onBehalf))
         );
     }
 
     function _compoundV2RedeemEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemEth, (amount, receiver)));
+        return
+            _call(address(migrationAdapter), abi.encodeCall(migrationAdapter.compoundV2RedeemEth, (amount, receiver)));
     }
 }

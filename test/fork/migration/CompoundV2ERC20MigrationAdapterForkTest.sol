@@ -190,7 +190,8 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RepayErc20, (cToken, repayAmount, onBehalf))
+            address(migrationAdapter),
+            abi.encodeCall(migrationAdapter.compoundV2RepayErc20, (cToken, repayAmount, onBehalf))
         );
     }
 
@@ -199,7 +200,9 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         view
         returns (Call memory)
     {
-        return
-            _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver)));
+        return _call(
+            address(migrationAdapter),
+            abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver))
+        );
     }
 }

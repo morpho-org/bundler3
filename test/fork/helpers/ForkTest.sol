@@ -176,7 +176,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     }
 
     function _transferFrom2(address asset, address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.transferFrom2, (asset, receiver, amount)));
+        return _call(address(generalAdapter1), abi.encodeCall(GeneralAdapter1.transferFrom2, (asset, receiver, amount)));
     }
 
     /* STAKE ACTIONS */
@@ -187,7 +187,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         returns (Call memory)
     {
         return _call(
-            ethereumGeneralAdapter1,
+            address(ethereumGeneralAdapter1),
             abi.encodeCall(EthereumGeneralAdapter1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
         );
     }
@@ -195,24 +195,28 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.wrapStEth, (amount, receiver)));
+        return _call(
+            address(ethereumGeneralAdapter1), abi.encodeCall(EthereumGeneralAdapter1.wrapStEth, (amount, receiver))
+        );
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.unwrapStEth, (amount, receiver)));
+        return _call(
+            address(ethereumGeneralAdapter1), abi.encodeCall(EthereumGeneralAdapter1.unwrapStEth, (amount, receiver))
+        );
     }
 
     /* WRAPPED NATIVE ACTIONS */
 
     function _wrapNativeNoFunding(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)), 0);
+        return _call(address(generalAdapter1), abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)), 0);
     }
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)));
+        return _call(address(generalAdapter1), abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)));
     }
 
     function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.unwrapNative, (amount, receiver)));
+        return _call(address(generalAdapter1), abi.encodeCall(GeneralAdapter1.unwrapNative, (amount, receiver)));
     }
 }

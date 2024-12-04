@@ -255,7 +255,9 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
     }
 
     function _compoundV3Repay(address instance, uint256 amount, address onBehalf) internal view returns (Call memory) {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV3Repay, (instance, amount, onBehalf)));
+        return _call(
+            address(migrationAdapter), abi.encodeCall(migrationAdapter.compoundV3Repay, (instance, amount, onBehalf))
+        );
     }
 
     function _compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
@@ -264,7 +266,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationAdapter,
+            address(migrationAdapter),
             abi.encodeCall(CompoundV3MigrationAdapter.compoundV3WithdrawFrom, (instance, asset, amount, receiver))
         );
     }

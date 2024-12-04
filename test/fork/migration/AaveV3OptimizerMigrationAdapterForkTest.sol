@@ -275,7 +275,8 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationAdapter, abi.encodeCall(migrationAdapter.aaveV3OptimizerRepay, (underlying, amount, onBehalf))
+            address(migrationAdapter),
+            abi.encodeCall(migrationAdapter.aaveV3OptimizerRepay, (underlying, amount, onBehalf))
         );
     }
 
@@ -285,7 +286,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationAdapter,
+            address(migrationAdapter),
             abi.encodeCall(migrationAdapter.aaveV3OptimizerWithdraw, (underlying, amount, MAX_ITERATIONS, receiver))
         );
     }
@@ -296,7 +297,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         returns (Call memory)
     {
         return _call(
-            migrationAdapter,
+            address(migrationAdapter),
             abi.encodeCall(migrationAdapter.aaveV3OptimizerWithdrawCollateral, (underlying, amount, receiver))
         );
     }

@@ -40,7 +40,7 @@ contract ParaswapAdapterForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapAdapter), type(uint256).max));
         bundle.push(
             _call(
-                paraswapAdapter,
+                address(paraswapAdapter),
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -71,7 +71,7 @@ contract ParaswapAdapterForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapAdapter), type(uint256).max));
         bundle.push(
             _call(
-                paraswapAdapter,
+                address(paraswapAdapter),
                 _paraswapSell(
                     AUGUSTUS_V6_2,
                     sellCalldata,
@@ -111,7 +111,7 @@ contract ParaswapAdapterForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapAdapter), type(uint256).max));
         bundle.push(
             _call(
-                paraswapAdapter,
+                address(paraswapAdapter),
                 _paraswapBuy(
                     AUGUSTUS_V6_2, buyCalldata, USDC, WETH, 0, Offsets(destAmountOffset, maxSrcAmountOffset, 0), user
                 )
@@ -150,7 +150,7 @@ contract ParaswapAdapterForkTest is ForkTest {
         bundle.push(_erc20TransferFrom(USDC, address(paraswapAdapter), type(uint256).max));
         bundle.push(
             _call(
-                paraswapAdapter,
+                address(paraswapAdapter),
                 _paraswapBuy(
                     AUGUSTUS_V6_2,
                     buyCalldata,

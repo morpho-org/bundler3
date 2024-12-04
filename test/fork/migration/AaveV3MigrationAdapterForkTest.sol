@@ -337,11 +337,14 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
 
     function _aaveV3Repay(address asset, uint256 amount, address onBehalf) internal view returns (Call memory) {
         return _call(
-            migrationAdapter, abi.encodeCall(AaveV3MigrationAdapter.aaveV3Repay, (asset, amount, RATE_MODE, onBehalf))
+            address(migrationAdapter),
+            abi.encodeCall(AaveV3MigrationAdapter.aaveV3Repay, (asset, amount, RATE_MODE, onBehalf))
         );
     }
 
     function _aaveV3Withdraw(address asset, uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationAdapter, abi.encodeCall(AaveV3MigrationAdapter.aaveV3Withdraw, (asset, amount, receiver)));
+        return _call(
+            address(migrationAdapter), abi.encodeCall(AaveV3MigrationAdapter.aaveV3Withdraw, (asset, amount, receiver))
+        );
     }
 }

@@ -35,7 +35,7 @@ contract BundlerLocalTest is LocalTest {
 
     function testAlreadyInitiated(address initiator) public {
         vm.assume(initiator != address(0));
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerWithMulticall, ())));
+        bundle.push(_call(address(adapterMock), abi.encodeCall(AdapterMock.callbackBundlerWithMulticall, ())));
 
         vm.expectRevert(ErrorsLib.AlreadyInitiated.selector);
         vm.prank(initiator);
@@ -58,7 +58,7 @@ contract BundlerLocalTest is LocalTest {
     function testPassthroughValue(address initiator, uint128 value) public {
         vm.assume(initiator != address(0));
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.isProtected, ()), value));
+        bundle.push(_call(address(adapterMock), abi.encodeCall(AdapterMock.isProtected, ()), value));
 
         vm.expectCall(address(adapterMock), value, bytes.concat(AdapterMock.isProtected.selector));
 
@@ -72,13 +72,17 @@ contract BundlerLocalTest is LocalTest {
         AdapterMock adapterMock2 = new AdapterMock(address(bundler));
         AdapterMock adapterMock3 = new AdapterMock(address(bundler));
 
-        callbackBundle2.push(_call(adapterMock2, abi.encodeCall(AdapterMock.isProtected, ())));
+        callbackBundle2.push(_call(address(adapterMock2), abi.encodeCall(AdapterMock.isProtected, ())));
 
-        callbackBundle.push(_call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(
+            _call(address(adapterMock2), abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)))
+        );
 
-        callbackBundle.push(_call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(
+            _call(address(adapterMock3), abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)))
+        );
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle))));
+        bundle.push(_call(address(adapterMock), abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle))));
 
         vm.prank(initiator);
 
@@ -105,7 +109,7 @@ contract BundlerLocalTest is LocalTest {
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
         vm.assume(initiator != address(0));
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ())));
+        bundle.push(_call(address(adapterMock), abi.encodeCall(AdapterMock.emitInitiator, ())));
 
         vm.expectEmit(true, true, false, true, address(adapterMock));
         emit Initiator(initiator);
@@ -115,7 +119,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testMulticallShouldPassRevertData(string memory revertReason) public {
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.doRevert, (revertReason))));
+        bundle.push(_call(address(adapterMock), abi.encodeCall(AdapterMock.doRevert, (revertReason))));
         vm.expectRevert(bytes(revertReason));
         bundler.multicall(bundle);
     }

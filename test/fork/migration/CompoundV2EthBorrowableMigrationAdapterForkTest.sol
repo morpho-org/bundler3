@@ -221,7 +221,9 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
     /* ACTIONS */
 
     function _compoundV2RepayEth(uint256 repayAmount, address onBehalf) internal view returns (Call memory) {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RepayEth, (repayAmount, onBehalf)));
+        return _call(
+            address(migrationAdapter), abi.encodeCall(migrationAdapter.compoundV2RepayEth, (repayAmount, onBehalf))
+        );
     }
 
     function _compoundV2RedeemErc20(address cToken, uint256 amount, address receiver)
@@ -229,11 +231,14 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         view
         returns (Call memory)
     {
-        return
-            _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver)));
+        return _call(
+            address(migrationAdapter),
+            abi.encodeCall(migrationAdapter.compoundV2RedeemErc20, (cToken, amount, receiver))
+        );
     }
 
     function _compoundV2RedeemEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(migrationAdapter, abi.encodeCall(migrationAdapter.compoundV2RedeemEth, (amount, receiver)));
+        return
+            _call(address(migrationAdapter), abi.encodeCall(migrationAdapter.compoundV2RedeemEth, (amount, receiver)));
     }
 }
