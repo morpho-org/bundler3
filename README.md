@@ -1,6 +1,6 @@
 # Morpho Bundler v3
 
-The [`Bundler`](./src/Bundler.sol) allows to batch-execute a sequence of arbitrary calls atomically.
+The [`Bundler`](./src/Bundler.sol) allows accounts to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
@@ -17,7 +17,7 @@ A bundle is a sequence of calls where each call is specified by:
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-The bundler also ships two specific features, their usage is described in the [Adapters subsection](#adapters):
+The bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
 
 - the initial caller is transiently stored as `initiator` during the multicall;
 - the last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)`.
