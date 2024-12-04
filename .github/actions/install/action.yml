@@ -6,7 +6,8 @@ runs:
   steps:
     - name: Install Foundry
       uses: foundry-rs/foundry-toolchain@v1.2.0
-      cache-key: forge-${{ github.ref_name }}-${{ github.run_id }}
-      cache-restore-keys: |
-        forge-${{ github.ref_name }}
-        forge-
+      with:
+        cache-key: forge-${{ github.ref_name }}-${{ github.run_id }}
+        cache-restore-keys: |
+          forge-${{ github.ref_name }}
+          forge-
