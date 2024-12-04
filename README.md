@@ -9,24 +9,26 @@ It carries specific features to be able to perform actions that require authoriz
 
 <img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
-The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
+The bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
+
 - `to`, an address to call;
 - `data`, some calldata to pass to the call;
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Adapters subsection for the use).
+The bundler also defines two features, their usage is described in the [Adapters subsection](#adapters):
 
-The last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)` (same).
+- the initial caller is transiently stored as `initiator` during the multicall;
+- the last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)`.
 
 ### Adapters
 
 The bundler can call either directly protocols, or wrappers of protocols (called "adapters").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
-In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
-For instance, a adapter that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
+In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the bundler.
+For instance, a adapter that needs to hold some token approvals should only allow to call `transferFrom` with `from` being the initiator.
 
 Since these functions can typically move user funds, only the bundler should be allowed to call them.
 If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the bundler's `reenter(Call[] calldata bundle)` function.
@@ -38,9 +40,10 @@ All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which
 ### [`GeneralAdapter1`](./src/adapters/GeneralAdapter1.sol)
 
 Contains the following actions:
+
 - ERC20 transfers, permit, wrap & unwrap.
-- Native token (e.g. WETH) wrap & unwrap.
-- ERC4626 mint,deposit, withdraw & redeem.
+- Native token (e.g. WETH) transfes, wrap & unwrap.
+- ERC4626 mint, deposit, withdraw & redeem.
 - Morpho interactions.
 - Permit2 approvals.
 - URD claim.
@@ -48,15 +51,17 @@ Contains the following actions:
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
 Contains the following actions:
+
 - Actions of `GeneralAdapter1`.
 - Morpho token wrapper withdrawal.
-- Dai permit.
-- StEth staking.
-- WStEth wrap & unwrap.
+- DAI permit.
+- stETH staking.
+- wstETH wrap & unwrap.
 
 ### [`ParaswapAdapter`](./src/adapters/ParaswapAdapter.sol)
 
 Contains the following actions, all using the paraswap aggregator:
+
 - Sell a given amount or the balance.
 - Buy a given amount.
 - Buy a what's needed to fully repay on a given Morpho Market.
@@ -90,7 +95,7 @@ TBA.
 
 ## License
 
-Bundlers are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+Source files are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
 
 ## Links
 
