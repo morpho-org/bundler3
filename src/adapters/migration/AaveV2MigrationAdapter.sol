@@ -2,12 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV2} from "../../interfaces/IAaveV2.sol";
-
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
-
-import {CoreAdapter} from "../CoreAdapter.sol";
-import {IERC20} from "../../../lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol";
-import {UtilsLib} from "../../libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V2 to Morpho Blue easily.

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {IComptroller} from "../../../src/interfaces/IComptroller.sol";
-import {Address} from "../../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 import "../../../src/adapters/migration/CompoundV2MigrationAdapter.sol";
 

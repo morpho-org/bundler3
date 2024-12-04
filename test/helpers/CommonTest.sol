@@ -14,7 +14,6 @@ import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsL
 import {SharesMathLib} from "../../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib as MorphoUtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
-import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {
@@ -32,7 +31,7 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {CoreAdapter} from "../../src/adapters/CoreAdapter.sol";
+import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GeneralAdapter1} from "../../src/adapters/GeneralAdapter1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";

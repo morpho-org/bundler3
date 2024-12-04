@@ -4,11 +4,7 @@ pragma solidity 0.8.28;
 import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
-
-import {CoreAdapter} from "../CoreAdapter.sol";
-import {IERC20} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {UtilsLib} from "../../libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.

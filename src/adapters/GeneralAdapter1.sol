@@ -6,16 +6,10 @@ import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTra
 import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-
-import {CoreAdapter} from "./CoreAdapter.sol";
-
-import {UtilsLib} from "../libraries/UtilsLib.sol";
-import {ErrorsLib} from "../libraries/ErrorsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib, Address} from "./CoreAdapter.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
-import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Address} from "../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";

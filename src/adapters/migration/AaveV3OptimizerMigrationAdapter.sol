@@ -2,12 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV3Optimizer} from "../../interfaces/IAaveV3Optimizer.sol";
-
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
-
-import {CoreAdapter} from "../CoreAdapter.sol";
-import {IERC20} from "../../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {UtilsLib} from "../../libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho Blue easily.

@@ -5,11 +5,9 @@ import {ICEth} from "../../interfaces/ICEth.sol";
 import {ICToken} from "../../interfaces/ICToken.sol";
 
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
 import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../CoreAdapter.sol";
-import {Address} from "../../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib, Address} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho Blue easily.
