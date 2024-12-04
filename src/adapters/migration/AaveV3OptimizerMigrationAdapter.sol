@@ -42,7 +42,7 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(underlying, address(AAVE_V3_OPTIMIZER));
+        UtilsLib.forceApproveMaxTo(underlying, address(AAVE_V3_OPTIMIZER));
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, onBehalf);
     }

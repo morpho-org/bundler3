@@ -46,7 +46,7 @@ contract AaveV2MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.approveMaxToIfAllowanceZero(token, address(AAVE_V2_POOL));
+        UtilsLib.forceApproveMaxTo(token, address(AAVE_V2_POOL));
 
         AAVE_V2_POOL.repay(token, amount, interestRateMode, onBehalf);
     }

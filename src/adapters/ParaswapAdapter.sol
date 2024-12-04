@@ -152,7 +152,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        UtilsLib.approveMaxToIfAllowanceZero(srcToken, augustus);
+        UtilsLib.forceApproveMaxTo(srcToken, augustus);
 
         uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = ERC20(destToken).balanceOf(address(this));
