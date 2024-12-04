@@ -25,7 +25,6 @@ import {
 
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
-import {WETH as WethContract} from "./mocks/WETH.sol";
 import {IParaswapAdapter, Offsets} from "../../src/interfaces/IParaswapAdapter.sol";
 import {ParaswapAdapter} from "../../src/adapters/ParaswapAdapter.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
@@ -85,7 +84,7 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
-        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(new WethContract()));
+        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(1));
         paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
