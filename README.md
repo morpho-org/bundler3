@@ -28,10 +28,10 @@ The Bundler can call either directly protocols, or wrappers of protocols (called
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
 In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
-For instance, a adapter that needs to hold some token approvals should call `token.transferFrom` only with `from` being the initiator.
+For instance, an adapter that needs to hold some token approvals should call `token.transferFrom` only with `from` being the initiator.
 
 Since these functions can typically move user funds, only the Bundler should be allowed to call them.
-If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Bundler's `reenter(Call[] calldata bundle)` function.
+If an adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Bundler's `reenter(Call[] calldata bundle)` function.
 
 ## Adapters List
 
