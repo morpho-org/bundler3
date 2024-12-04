@@ -26,7 +26,7 @@ jobs:
 
       - name: Build contracts via IR & check sizes
         # skip import files, because we don't care if contracts are too big
-        run: forge build --sizes
+        run: forge build --sizes --skip Import
 
       - name: Save forge compilation cache
         uses: actions/cache/save@v4
