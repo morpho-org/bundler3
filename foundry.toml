@@ -21,8 +21,4 @@ tenderly = "https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}"
 [profile.default.fmt]
 wrap_comments = true
 
-[profile.build]
-test = "/dev/null"
-script = "/dev/null"
-
 # See more config options https://github.com/foundry-rs/foundry/tree/master/crates/config
