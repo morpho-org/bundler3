@@ -2,12 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV3} from "../../interfaces/IAaveV3.sol";
-
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
-
-import {CoreAdapter} from "../CoreAdapter.sol";
-import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {UtilsLib} from "../../libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V3 to Morpho Blue easily.
@@ -43,7 +38,7 @@ contract AaveV3MigrationAdapter is CoreAdapter {
         onlyBundler
     {
         // Amount will be capped at `onBehalf`'s debt by Aave.
-        if (amount == type(uint256).max) amount = ERC20(token).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

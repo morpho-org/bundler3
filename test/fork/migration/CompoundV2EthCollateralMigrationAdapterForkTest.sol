@@ -9,7 +9,7 @@ import "./helpers/MigrationForkTest.sol";
 
 contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
     using MathLib for uint256;
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -63,7 +63,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
         require(ICToken(C_DAI_V2).borrow(borrowed) == 0, "borrow error");
 
-        ERC20(DAI).safeTransfer(address(migrationAdapter), toRepay);
+        IERC20(DAI).safeTransfer(address(migrationAdapter), toRepay);
 
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, type(uint256).max, address(this)));
         bundler.multicall(bundle);
@@ -86,7 +86,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         vm.stopPrank();
 
         deal(DAI, address(this), toRepay);
-        ERC20(DAI).safeTransfer(address(migrationAdapter), toRepay);
+        IERC20(DAI).safeTransfer(address(migrationAdapter), toRepay);
 
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, toRepay, USER));
         bundler.multicall(bundle);
@@ -104,15 +104,15 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         deal(address(this), supplied);
         ICEth(C_ETH_V2).mint{value: supplied}();
         uint256 minted = ICToken(C_ETH_V2).balanceOf(address(this));
-        ERC20(C_ETH_V2).safeTransfer(address(migrationAdapter), minted);
+        IERC20(C_ETH_V2).safeTransfer(address(migrationAdapter), minted);
         uint256 toRedeem = minted.wMulDown(redeemFactor);
         bundle.push(_compoundV2RedeemEth(toRedeem, address(migrationAdapter)));
         bundler.multicall(bundle);
 
         if (redeemFactor < 1 ether) {
-            assertEq(ERC20(C_ETH_V2).balanceOf(address(migrationAdapter)), minted - toRedeem);
+            assertEq(IERC20(C_ETH_V2).balanceOf(address(migrationAdapter)), minted - toRedeem);
         } else {
-            assertEq(ERC20(C_ETH_V2).balanceOf(address(this)), 0);
+            assertEq(IERC20(C_ETH_V2).balanceOf(address(this)), 0);
         }
     }
 
@@ -137,7 +137,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         collateral = cTokenBalance.wMulDown(ICToken(C_ETH_V2).exchangeRateStored());
 
         vm.prank(user);
-        ERC20(C_ETH_V2).safeApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
+        IERC20(C_ETH_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationAdapter)));

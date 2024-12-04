@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {SafeTransferLib, ERC20} from "../../../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {ErrorsLib} from "../../../../src/libraries/ErrorsLib.sol";
+import {IERC20, SafeERC20} from "../../../../src/adapters/CoreAdapter.sol";
 import {MarketParamsLib} from "../../../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MorphoLib} from "../../../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {Market} from "../../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {MorphoBalancesLib} from "../../../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
 import "../../helpers/ForkTest.sol";
-import {CoreAdapter} from "../../../../src/adapters/CoreAdapter.sol";
 import {ERC4626Mock} from "../../../helpers/mocks/ERC4626Mock.sol";
 
 contract MigrationForkTest is ForkTest {
-    using SafeTransferLib for ERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -37,7 +34,7 @@ contract MigrationForkTest is ForkTest {
 
     function _provideLiquidity(uint256 liquidity) internal {
         deal(marketParams.loanToken, address(this), liquidity);
-        ERC20(marketParams.loanToken).safeApprove(address(morpho), liquidity);
+        SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(morpho), liquidity);
         morpho.supply(marketParams, liquidity, 0, address(this), hex"");
     }
 

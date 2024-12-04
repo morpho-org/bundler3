@@ -10,7 +10,7 @@ import "../../../src/adapters/migration/AaveV2MigrationAdapter.sol";
 import "./helpers/MigrationForkTest.sol";
 
 contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -66,7 +66,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.collateralToken, USER, collateralSupplied);
 
         vm.startPrank(USER);
-        ERC20(marketParams.collateralToken).safeApprove(AAVE_V2_POOL, collateralSupplied);
+        IERC20(marketParams.collateralToken).forceApprove(AAVE_V2_POOL, collateralSupplied);
         IAaveV2(AAVE_V2_POOL).deposit(marketParams.collateralToken, collateralSupplied, USER, 0);
         IAaveV2(AAVE_V2_POOL).borrow(marketParams.loanToken, borrowed, RATE_MODE, 0, USER);
         vm.stopPrank();
@@ -92,16 +92,16 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.collateralToken, user, collateralSupplied);
 
         vm.startPrank(user);
-        ERC20(marketParams.collateralToken).safeApprove(AAVE_V2_POOL, collateralSupplied);
+        IERC20(marketParams.collateralToken).forceApprove(AAVE_V2_POOL, collateralSupplied);
         IAaveV2(AAVE_V2_POOL).deposit(marketParams.collateralToken, collateralSupplied, user, 0);
         IAaveV2(AAVE_V2_POOL).borrow(marketParams.loanToken, borrowed, RATE_MODE, 0, user);
         vm.stopPrank();
 
         address aToken = _getATokenV2(marketParams.collateralToken);
-        uint256 aTokenBalance = ERC20(aToken).balanceOf(user);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(user);
 
         vm.prank(user);
-        ERC20(aToken).safeApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
+        IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationAdapter)));
@@ -130,16 +130,16 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         deal(DAI, user, collateralSupplied);
 
         vm.startPrank(user);
-        ERC20(DAI).safeApprove(AAVE_V2_POOL, collateralSupplied);
+        IERC20(DAI).forceApprove(AAVE_V2_POOL, collateralSupplied);
         IAaveV2(AAVE_V2_POOL).deposit(DAI, collateralSupplied, user, 0);
         IAaveV2(AAVE_V2_POOL).borrow(marketParams.loanToken, borrowed, RATE_MODE, 0, user);
         vm.stopPrank();
 
         address aToken = _getATokenV2(DAI);
-        uint256 aTokenBalance = ERC20(aToken).balanceOf(user);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(user);
 
         vm.prank(user);
-        ERC20(aToken).safeApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
+        IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         uint256 sDaiAmount = IERC4626(S_DAI).previewDeposit(collateralSupplied);
 
@@ -170,10 +170,10 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
 
         deal(ST_ETH, user, collateralSupplied);
 
-        collateralSupplied = ERC20(ST_ETH).balanceOf(user);
+        collateralSupplied = IERC20(ST_ETH).balanceOf(user);
 
         vm.startPrank(user);
-        ERC20(ST_ETH).safeApprove(AAVE_V2_POOL, collateralSupplied);
+        IERC20(ST_ETH).forceApprove(AAVE_V2_POOL, collateralSupplied);
         IAaveV2(AAVE_V2_POOL).deposit(ST_ETH, collateralSupplied, user, 0);
         IAaveV2(AAVE_V2_POOL).borrow(marketParams.loanToken, borrowed, RATE_MODE, 0, user);
         vm.stopPrank();
@@ -182,12 +182,12 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         collateralSupplied -= 10;
 
         address aToken = _getATokenV2(ST_ETH);
-        uint256 aTokenBalance = ERC20(aToken).balanceOf(user);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(user);
 
         uint256 wstEthAmount = IStEth(ST_ETH).getSharesByPooledEth(collateralSupplied);
 
         vm.prank(user);
-        ERC20(aToken).safeApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
+        IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         callbackBundle.push(_morphoSetAuthorizationWithSig(privateKey, true, 0, false));
         callbackBundle.push(_morphoBorrow(marketParams, borrowed, 0, 0, address(migrationAdapter)));
@@ -215,15 +215,15 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied + 1);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(AAVE_V2_POOL, supplied + 1);
+        IERC20(marketParams.loanToken).forceApprove(AAVE_V2_POOL, supplied + 1);
         IAaveV2(AAVE_V2_POOL).deposit(marketParams.loanToken, supplied + 1, user, 0);
         vm.stopPrank();
 
         address aToken = _getATokenV2(marketParams.loanToken);
-        uint256 aTokenBalance = ERC20(aToken).balanceOf(user);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(user);
 
         vm.prank(user);
-        ERC20(aToken).safeApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
+        IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         bundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
         bundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));
@@ -244,15 +244,15 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied + 1);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(AAVE_V2_POOL, supplied + 1);
+        IERC20(marketParams.loanToken).forceApprove(AAVE_V2_POOL, supplied + 1);
         IAaveV2(AAVE_V2_POOL).deposit(marketParams.loanToken, supplied + 1, user, 0);
         vm.stopPrank();
 
         address aToken = _getATokenV2(marketParams.loanToken);
-        uint256 aTokenBalance = ERC20(aToken).balanceOf(user);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(user);
 
         vm.prank(user);
-        ERC20(aToken).safeApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
+        IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         bundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
         bundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));

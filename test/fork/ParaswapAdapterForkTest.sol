@@ -54,12 +54,12 @@ contract ParaswapAdapterForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
+        IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(ERC20(USDC).balanceOf(user), 0, "remaining");
-        assertEq(ERC20(WETH).balanceOf(user), expectedDestAmount, "bought");
+        assertEq(IERC20(USDC).balanceOf(user), 0, "remaining");
+        assertEq(IERC20(WETH).balanceOf(user), expectedDestAmount, "bought");
     }
 
     function testSellWithAdjustment(uint256 percent) public onlyEthereum {
@@ -85,12 +85,12 @@ contract ParaswapAdapterForkTest is ForkTest {
         );
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
+        IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        assertEq(ERC20(USDC).balanceOf(user), 0, "sold");
-        assertApproxEqRel(ERC20(WETH).balanceOf(user), expectedDestAmount * percent / 100, 2 * WAD / 100, "bought");
+        assertEq(IERC20(USDC).balanceOf(user), 0, "sold");
+        assertApproxEqRel(IERC20(WETH).balanceOf(user), expectedDestAmount * percent / 100, 2 * WAD / 100, "bought");
     }
 
     // swapExactAmountOut
@@ -120,13 +120,13 @@ contract ParaswapAdapterForkTest is ForkTest {
         bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapAdapter));
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
+        IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        uint256 sold = initialBalance - ERC20(USDC).balanceOf(user);
+        uint256 sold = initialBalance - IERC20(USDC).balanceOf(user);
         assertEq(sold, expectedSrcAmount, "sold");
-        assertEq(ERC20(WETH).balanceOf(user), destAmount, "bought");
+        assertEq(IERC20(WETH).balanceOf(user), destAmount, "bought");
     }
 
     function testBuyWithAdjustment(uint256 percent) public onlyEthereum {
@@ -165,12 +165,12 @@ contract ParaswapAdapterForkTest is ForkTest {
         bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapAdapter));
 
         vm.startPrank(user);
-        ERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
+        IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
         bundler.multicall(bundle);
         vm.stopPrank();
 
-        uint256 sold = initialBalance - ERC20(USDC).balanceOf(user);
+        uint256 sold = initialBalance - IERC20(USDC).balanceOf(user);
         assertApproxEqRel(sold, expectedSrcAmount * percent / 100, 2 * WAD / 100, "sold");
-        assertEq(ERC20(WETH).balanceOf(user), newDestAmount, "bought");
+        assertEq(IERC20(WETH).balanceOf(user), newDestAmount, "bought");
     }
 }

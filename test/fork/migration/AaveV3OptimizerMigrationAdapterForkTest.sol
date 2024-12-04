@@ -13,7 +13,7 @@ interface IMorphoSettersPartial {
 }
 
 contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -90,7 +90,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.collateralToken, USER, collateralSupplied + 1);
 
         vm.startPrank(USER);
-        ERC20(marketParams.collateralToken).safeApprove(AAVE_V3_OPTIMIZER, collateralSupplied + 1);
+        IERC20(marketParams.collateralToken).forceApprove(AAVE_V3_OPTIMIZER, collateralSupplied + 1);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supplyCollateral(marketParams.collateralToken, collateralSupplied + 1, USER);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrow(marketParams.loanToken, borrowed, USER, USER, MAX_ITERATIONS);
         vm.stopPrank();
@@ -115,7 +115,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.collateralToken, user, collateralSupplied + 1);
 
         vm.startPrank(user);
-        ERC20(marketParams.collateralToken).safeApprove(AAVE_V3_OPTIMIZER, collateralSupplied + 1);
+        IERC20(marketParams.collateralToken).forceApprove(AAVE_V3_OPTIMIZER, collateralSupplied + 1);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supplyCollateral(marketParams.collateralToken, collateralSupplied + 1, user);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrow(marketParams.loanToken, borrowed, user, user, MAX_ITERATIONS);
         vm.stopPrank();
@@ -159,7 +159,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         deal(USDT, user, amountUsdt + 1);
 
         vm.startPrank(user);
-        ERC20(USDT).safeApprove(AAVE_V3_OPTIMIZER, amountUsdt + 1);
+        IERC20(USDT).forceApprove(AAVE_V3_OPTIMIZER, amountUsdt + 1);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supplyCollateral(USDT, amountUsdt + 1, user);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrow(marketParams.loanToken, borrowed, user, user, MAX_ITERATIONS);
         vm.stopPrank();
@@ -189,7 +189,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied + 2);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(AAVE_V3_OPTIMIZER, supplied + 2);
+        IERC20(marketParams.loanToken).forceApprove(AAVE_V3_OPTIMIZER, supplied + 2);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
@@ -212,7 +212,7 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied + 2);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(AAVE_V3_OPTIMIZER, supplied + 2);
+        IERC20(marketParams.loanToken).forceApprove(AAVE_V3_OPTIMIZER, supplied + 2);
         IAaveV3Optimizer(AAVE_V3_OPTIMIZER).supply(marketParams.loanToken, supplied + 2, user, MAX_ITERATIONS);
         vm.stopPrank();
 
