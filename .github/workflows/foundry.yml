@@ -17,16 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
       - uses: ./.github/actions/install
 
       - name: Build contracts via IR & check sizes
         # skip import files, because we don't care if contracts are too big
-        run: forge build --sizes --skip Import
+        run: forge build --sizes
 
       - name: Save forge compilation cache
         uses: actions/cache/save@v4
@@ -47,12 +42,7 @@ jobs:
         chain: [1, 8453]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - uses: ./.github/actions/install-cache
+      - uses: ./.github/actions/install
 
       - name: Run tests on chain ${{ matrix.chain }}
         run: forge test --chain ${{ matrix.chain }}

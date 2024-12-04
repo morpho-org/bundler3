@@ -1,8 +1,24 @@
-name: Install repository
+name: Install repository and cache
 
 runs:
   using: composite
 
   steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
     - name: Install Foundry
       uses: foundry-rs/foundry-toolchain@v1
+
+    - name: Restore forge compilation cache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          cache
+          out
+        key: forge-${{ github.ref_name }}
+        restore-keys: |
+          forge-${{ github.base_ref }}
+          forge-
