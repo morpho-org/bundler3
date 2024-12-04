@@ -8,7 +8,7 @@ import "../../../src/adapters/migration/CompoundV3MigrationAdapter.sol";
 import "./helpers/MigrationForkTest.sol";
 
 contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
     using MarketParamsLib for MarketParams;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
@@ -82,7 +82,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.collateralToken, user, collateralSupplied);
 
         vm.startPrank(user);
-        ERC20(marketParams.collateralToken).safeApprove(C_WETH_V3, collateralSupplied);
+        IERC20(marketParams.collateralToken).forceApprove(C_WETH_V3, collateralSupplied);
         ICompoundV3(C_WETH_V3).supply(marketParams.collateralToken, collateralSupplied);
         ICompoundV3(C_WETH_V3).withdraw(marketParams.loanToken, borrowed);
         vm.stopPrank();
@@ -113,12 +113,12 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
 
         deal(CB_ETH, address(this), collateralSupplied);
 
-        ERC20(CB_ETH).safeApprove(C_WETH_V3, collateralSupplied);
+        IERC20(CB_ETH).forceApprove(C_WETH_V3, collateralSupplied);
         ICompoundV3(C_WETH_V3).supply(CB_ETH, collateralSupplied);
         ICompoundV3(C_WETH_V3).withdraw(WETH, borrowed);
 
         uint256 repaid = borrowed.wMulDown(fractionRepaid);
-        ERC20(WETH).safeTransfer(address(migrationAdapter), repaid);
+        IERC20(WETH).safeTransfer(address(migrationAdapter), repaid);
         bundle.push(_compoundV3Repay(C_WETH_V3, type(uint256).max, address(this)));
         bundler.multicall(bundle);
 
@@ -131,14 +131,14 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         deal(CB_ETH, USER, collateralSupplied);
 
         vm.startPrank(USER);
-        ERC20(CB_ETH).safeApprove(C_WETH_V3, collateralSupplied);
+        IERC20(CB_ETH).forceApprove(C_WETH_V3, collateralSupplied);
         ICompoundV3(C_WETH_V3).supply(CB_ETH, collateralSupplied);
         ICompoundV3(C_WETH_V3).withdraw(WETH, borrowed);
         vm.stopPrank();
 
         uint256 toRepay = borrowed.wMulDown(repayFactor);
         deal(WETH, address(this), toRepay);
-        ERC20(WETH).safeTransfer(address(migrationAdapter), toRepay);
+        IERC20(WETH).safeTransfer(address(migrationAdapter), toRepay);
         bundle.push(_compoundV3Repay(C_WETH_V3, toRepay, USER));
         bundler.multicall(bundle);
 
@@ -156,7 +156,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
 
         deal(marketParams.loanToken, address(this), supplied);
 
-        ERC20(WETH).safeApprove(C_WETH_V3, supplied);
+        IERC20(WETH).forceApprove(C_WETH_V3, supplied);
         ICompoundV3(C_WETH_V3).supply(WETH, supplied);
         ICompoundV3(C_WETH_V3).allow(address(migrationAdapter), true);
 
@@ -164,9 +164,9 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         bundler.multicall(bundle);
 
         if (withdrawFactor < 1 ether) {
-            assertApproxEqAbs(ERC20(WETH).balanceOf(address(generalAdapter1)), toWithdraw, 10);
+            assertApproxEqAbs(IERC20(WETH).balanceOf(address(generalAdapter1)), toWithdraw, 10);
         } else {
-            assertApproxEqAbs(ERC20(WETH).balanceOf(address(generalAdapter1)), supplied, 10);
+            assertApproxEqAbs(IERC20(WETH).balanceOf(address(generalAdapter1)), supplied, 10);
         }
     }
 
@@ -178,7 +178,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(C_WETH_V3, supplied);
+        IERC20(marketParams.loanToken).forceApprove(C_WETH_V3, supplied);
         ICompoundV3(C_WETH_V3).supply(marketParams.loanToken, supplied);
         vm.stopPrank();
 
@@ -204,7 +204,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         deal(marketParams.loanToken, user, supplied);
 
         vm.startPrank(user);
-        ERC20(marketParams.loanToken).safeApprove(C_WETH_V3, supplied);
+        IERC20(marketParams.loanToken).forceApprove(C_WETH_V3, supplied);
         ICompoundV3(C_WETH_V3).supply(marketParams.loanToken, supplied);
         vm.stopPrank();
 

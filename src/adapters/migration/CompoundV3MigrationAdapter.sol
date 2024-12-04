@@ -4,11 +4,7 @@ pragma solidity 0.8.28;
 import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
-
-import {CoreAdapter} from "../CoreAdapter.sol";
-import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {UtilsLib} from "../../libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.
@@ -31,7 +27,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
     function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
         address asset = ICompoundV3(instance).baseToken();
 
-        if (amount == type(uint256).max) amount = ERC20(asset).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(asset).balanceOf(address(this));
 
         amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 

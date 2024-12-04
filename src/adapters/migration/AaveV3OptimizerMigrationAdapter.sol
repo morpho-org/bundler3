@@ -2,12 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV3Optimizer} from "../../interfaces/IAaveV3Optimizer.sol";
-
-import {ErrorsLib} from "../../libraries/ErrorsLib.sol";
-
-import {CoreAdapter} from "../CoreAdapter.sol";
-import {ERC20} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {UtilsLib} from "../../libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho Blue easily.
@@ -38,7 +33,7 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function aaveV3OptimizerRepay(address underlying, uint256 amount, address onBehalf) external onlyBundler {
         // Amount will be capped at `onBehalf`'s debt by the optimizer.
-        if (amount == type(uint256).max) amount = ERC20(underlying).balanceOf(address(this));
+        if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 

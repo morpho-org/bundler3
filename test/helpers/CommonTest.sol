@@ -14,7 +14,6 @@ import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsL
 import {SharesMathLib} from "../../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib as MorphoUtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
-import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {
@@ -25,7 +24,6 @@ import {
 
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
-import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
 import {IParaswapAdapter, Offsets} from "../../src/interfaces/IParaswapAdapter.sol";
 import {ParaswapAdapter} from "../../src/adapters/ParaswapAdapter.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
@@ -33,7 +31,7 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {CoreAdapter} from "../../src/adapters/CoreAdapter.sol";
+import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GeneralAdapter1} from "../../src/adapters/GeneralAdapter1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
@@ -52,7 +50,6 @@ abstract contract CommonTest is Test {
     using MathLib for uint256;
     using SharesMathLib for uint256;
     using MarketParamsLib for MarketParams;
-    using SafeTransferLib for ERC20;
     using stdJson for string;
 
     address internal immutable USER = makeAddr("User");
@@ -86,7 +83,7 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
-        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(new WethContract()));
+        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(1));
         paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();

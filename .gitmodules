@@ -16,9 +16,6 @@
 [submodule "lib/universal-rewards-distributor"]
 	path = lib/universal-rewards-distributor
 	url = https://github.com/morpho-org/universal-rewards-distributor
-[submodule "lib/solmate"]
-	path = lib/solmate
-	url = https://github.com/transmissions11/solmate
 [submodule "lib/murky"]
 	path = lib/murky
 	url = https://github.com/dmfxyz/murky

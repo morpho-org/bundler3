@@ -71,23 +71,23 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         deal(MORPHO_TOKEN, address(generalAdapter1), amount);
         deal(MORPHO_TOKEN_LEGACY, MORPHO_WRAPPER, amount);
 
-        uint256 wrapperLegacyBalanceBefore = ERC20(MORPHO_TOKEN_LEGACY).balanceOf(MORPHO_WRAPPER);
-        uint256 wrapperBalanceBefore = ERC20(MORPHO_TOKEN).balanceOf(MORPHO_WRAPPER);
+        uint256 wrapperLegacyBalanceBefore = IERC20(MORPHO_TOKEN_LEGACY).balanceOf(MORPHO_WRAPPER);
+        uint256 wrapperBalanceBefore = IERC20(MORPHO_TOKEN).balanceOf(MORPHO_WRAPPER);
 
         bundle.push(_morphoWrapperWithdrawTo(RECEIVER, amount));
 
         bundler.multicall(bundle);
 
-        assertEq(ERC20(MORPHO_TOKEN).balanceOf(address(generalAdapter1)), 0, "morpho.balanceOf(generalAdapter1)");
+        assertEq(IERC20(MORPHO_TOKEN).balanceOf(address(generalAdapter1)), 0, "morpho.balanceOf(generalAdapter1)");
         assertEq(
-            ERC20(MORPHO_TOKEN).balanceOf(MORPHO_WRAPPER),
+            IERC20(MORPHO_TOKEN).balanceOf(MORPHO_WRAPPER),
             wrapperBalanceBefore + amount,
             "morphoToken.balanceOf(morphoWrapper)"
         );
 
-        assertEq(ERC20(MORPHO_TOKEN_LEGACY).balanceOf(RECEIVER), amount, "morphoTokenLegacy.balanceOf(receiver)");
+        assertEq(IERC20(MORPHO_TOKEN_LEGACY).balanceOf(RECEIVER), amount, "morphoTokenLegacy.balanceOf(receiver)");
         assertEq(
-            ERC20(MORPHO_TOKEN_LEGACY).balanceOf(MORPHO_WRAPPER),
+            IERC20(MORPHO_TOKEN_LEGACY).balanceOf(MORPHO_WRAPPER),
             wrapperLegacyBalanceBefore - amount,
             "morphoTokenLegacy.balanceOf(morphoWrapper)"
         );

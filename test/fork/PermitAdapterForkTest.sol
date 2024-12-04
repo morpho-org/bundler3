@@ -40,7 +40,7 @@ contract PermitAdapterForkTest is ForkTest {
         vm.prank(user);
         bundler.multicall(bundle);
 
-        assertEq(ERC20(DAI).allowance(user, spender), type(uint256).max, "allowance(user, spender)");
+        assertEq(IERC20(DAI).allowance(user, spender), type(uint256).max, "allowance(user, spender)");
     }
 
     function testPermitDaiRevert(address spender, uint256 expiry) public onlyEthereum {

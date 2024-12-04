@@ -3,9 +3,7 @@ pragma solidity 0.8.28;
 
 import {IParaswapAdapter, Offsets, MarketParams} from "../interfaces/IParaswapAdapter.sol";
 import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
-
-import {CoreAdapter, ErrorsLib, ERC20, SafeTransferLib, UtilsLib} from "./CoreAdapter.sol";
-
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib} from "./CoreAdapter.sol";
 import {BytesLib} from "../libraries/BytesLib.sol";
 import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {IMorpho, MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
@@ -56,7 +54,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         address receiver
     ) external {
         if (sellEntireBalance) {
-            uint256 newSrcAmount = ERC20(srcToken).balanceOf(address(this));
+            uint256 newSrcAmount = IERC20(srcToken).balanceOf(address(this));
             _updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
         }
 
@@ -155,14 +153,14 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
 
         UtilsLib.forceApproveMaxTo(srcToken, augustus);
 
-        uint256 srcInitial = ERC20(srcToken).balanceOf(address(this));
-        uint256 destInitial = ERC20(destToken).balanceOf(address(this));
+        uint256 srcInitial = IERC20(srcToken).balanceOf(address(this));
+        uint256 destInitial = IERC20(destToken).balanceOf(address(this));
 
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) UtilsLib.lowLevelRevert(returnData);
 
-        uint256 srcFinal = ERC20(srcToken).balanceOf(address(this));
-        uint256 destFinal = ERC20(destToken).balanceOf(address(this));
+        uint256 srcFinal = IERC20(srcToken).balanceOf(address(this));
+        uint256 destFinal = IERC20(destToken).balanceOf(address(this));
 
         uint256 srcAmount = srcInitial - srcFinal;
         uint256 destAmount = destFinal - destInitial;
@@ -171,7 +169,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
         if (destAmount > 0 && receiver != address(this)) {
-            SafeTransferLib.safeTransfer(ERC20(destToken), receiver, destAmount);
+            SafeERC20.safeTransfer(IERC20(destToken), receiver, destAmount);
         }
     }
 
