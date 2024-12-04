@@ -149,6 +149,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     ) internal {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(minDestAmount != 0, ErrorsLib.ZeroAmount());
 
         UtilsLib.forceApproveMaxTo(srcToken, augustus);
 
@@ -167,7 +168,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (destFinal > 0 && receiver != address(this)) {
+        if (destAmount > 0 && receiver != address(this)) {
             SafeERC20.safeTransfer(IERC20(destToken), receiver, destAmount);
         }
     }
