@@ -170,14 +170,10 @@ abstract contract CommonTest is Test {
         pure
         returns (Call memory)
     {
-        return _call(address(to),data,value,skipRevert);
+        return _call(address(to), data, value, skipRevert);
     }
 
-    function _call(address to, bytes memory data, uint256 value, bool skipRevert)
-        internal
-        pure
-        returns (Call memory)
-    {
+    function _call(address to, bytes memory data, uint256 value, bool skipRevert) internal pure returns (Call memory) {
         require(to != address(0), "Adapter address is zero");
         return Call(to, data, value, skipRevert);
     }
@@ -335,10 +331,7 @@ abstract contract CommonTest is Test {
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(
-            address(morpho),
-            abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)),
-            0,
-            skipRevert
+            address(morpho), abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)), 0, skipRevert
         );
     }
 
