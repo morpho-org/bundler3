@@ -9,7 +9,7 @@ It carries specific features to be able to perform actions that require authoriz
 
 <img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
-The bundler's entrypoint is `multicall(Call[] calldata bundle)`.
+The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
 
 - `to`, an address to call;
@@ -17,21 +17,21 @@ A bundle is a sequence of calls where each call is specified by:
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-The bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
+The Bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
 
 - the initial caller is transiently stored as `initiator` during the multicall;
-- the last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)`.
+- the last non-returned called address can re-enter the Bundler using `reenter(Call[] calldata bundle)`.
 
 ### Adapters
 
-The bundler can call either directly protocols, or wrappers of protocols (called "adapters").
+The Bundler can call either directly protocols, or wrappers of protocols (called "adapters").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
-In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the bundler.
+In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
 For instance, a adapter that needs to hold some token approvals should only allow to call `transferFrom` with `from` being the initiator.
 
-Since these functions can typically move user funds, only the bundler should be allowed to call them.
-If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the bundler's `reenter(Call[] calldata bundle)` function.
+Since these functions can typically move user funds, only the Bundler should be allowed to call them.
+If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Bundler's `reenter(Call[] calldata bundle)` function.
 
 ## Adapters List
 
