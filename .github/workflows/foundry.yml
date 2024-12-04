@@ -38,6 +38,9 @@ jobs:
             out
           key: forge-${{ github.ref_name }}-${{ github.run_id }}
 
+      - name: show files
+        run: du -h cache out
+
   test:
     needs: build-via-ir
 
@@ -54,10 +57,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Clean cach
-        run: rm -rf cache out
-
       - uses: ./.github/actions/install-cache
+
+      - name: show files
+        run: du -h cache out
 
       - name: Run tests on chain ${{ matrix.chain }}
         run: forge test --chain ${{ matrix.chain }}
