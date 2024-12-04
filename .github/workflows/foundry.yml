@@ -41,7 +41,7 @@ jobs:
   test:
     needs: build-via-ir
 
-    name: Local tests
+    name: Tests on chainid = ${{ matrix.chain }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -57,6 +57,6 @@ jobs:
       - uses: ./.github/actions/install-cache
 
       - name: Run tests on chain ${{ matrix.chain }}
-        run: forge test
+        run: forge test --chain ${{ matrix.chain }}
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
