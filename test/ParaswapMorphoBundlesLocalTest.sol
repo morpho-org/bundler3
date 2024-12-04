@@ -358,7 +358,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // Note: As demonstrated in the bundle below, if you are too close to LLTV, you can flashloan more collateral than
     // necessary to make sure the morpho borrow is successful. It would also work to borrow the exact max allowed by the
     // destination market LLTV but asynchrony makes it impossible precompute.
-    // Limitation: fails if Morpho does not hold 2 * collateral to swap + extra.
+    // Limitation: fails if Morpho does not already hold enough destination collateral.
     function _createFullCollateralSwapBundleUsingFlashloan(
         address user,
         MarketParams memory sourceParams,
