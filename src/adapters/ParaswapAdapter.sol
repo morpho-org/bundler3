@@ -175,12 +175,10 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @notice Sets exact amount in `callData` to `exactAmount`.
     /// @notice Proportionally scale limit amount in `callData`.
     /// @notice If `offsets.quotedAmount` is not zero, proportionally scale quoted amount in `callData`.
-    function updateAmounts(
-        bytes memory callData,
-        Offsets calldata offsets,
-        uint256 exactAmount,
-        Math.Rounding rounding
-    ) internal pure {
+    function updateAmounts(bytes memory callData, Offsets calldata offsets, uint256 exactAmount, Math.Rounding rounding)
+        internal
+        pure
+    {
         uint256 oldExactAmount = callData.get(offsets.exactAmount);
         callData.set(offsets.exactAmount, exactAmount);
 
