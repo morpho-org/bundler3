@@ -1,41 +1,41 @@
-# Morpho Blue Bundler v3
+# Morpho Bundler v3
 
-The [`Bundler`](./src/Bundler.sol) executes a sequence of calls atomically.
-EOAs should use the Bundler to execute multiple actions in a single transaction.
+The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
+It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
+
+### Bundler
 
 <img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
-A bundle is a sequence of calls, and each call specifies:
-- an address to call;
-- some calldata to pass to the call;
-- an amount of native currency to send along the call;
-- a boolean indicating whether the multicall should revert if the call failed.
+A bundle is a sequence of calls where each call is specified by:
+- `to`, an address to call;
+- `data`, some calldata to pass to the call;
+- `value`, an amount of native currency to send with the call;
+- `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
 
-A contract called by the Bundler is called a module.
+The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Adapters subsection for the use).
 
-For instance, [`EthereumGeneralModule1`](./src/modules/EthereumModule1.sol) contains generic as well as ethereum-specific actions.
-It must be approved by the user to e.g. transfer their assets.
+The last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)` (same).
 
-Users should not approve untrusted modules, just like they should not approve untrusted contracts in general.
+### Adapters
 
-Before calling a contract, the Bundler stores its own caller address as the bundle's `initiator`.
-Modules can read the current initiator during bundle execution.
-This is useful to secure a module that holds approvals or authorizations, by restricting function calls depending on the value of the current initiator.
-For instance, such a module should only allow to move funds owned by the current initiator.
+The bundler can call either directly protocols, or wrappers of protocols (called "adapters").
+Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
-When the Bundler calls a module, the module can call it back using `multicallFromModule(Call[] calldata bundle)`.
-This is useful for callback-based flows such as flashloans.
+In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
+For instance, a adapter that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
 
-To minimize the number of transactions and signatures, it is preferable to use Permit2's [batch permitting](https://github.com/Uniswap/permit2/blob/main/src/AllowanceTransfer.sol#L43-L56) thanks to [`GeneralModule1.approve2Batch`](./src/modules/GeneralModule1.sol).
+Since these functions can typically move user funds, only the bundler should be allowed to call them.
+If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the bundler's `reenter(Call[] calldata bundle)` function.
 
-All modules inherit from [`CoreModule`](./src/modules/CoreModule.sol), which provides essential features such as reading the current initiator address.
+## Adapters List
 
-## Modules
+All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which provides essential features such as accessing the current initiator address.
 
-### [`GeneralModule1`](./src/modules/GeneralModule1.sol)
+### [`GeneralAdapter1`](./src/adapters/GeneralAdapter1.sol)
 
 Contains the following actions:
 - ERC20 transfers, permit, wrap & unwrap.
@@ -45,34 +45,40 @@ Contains the following actions:
 - Permit2 approvals.
 - URD claim.
 
-### [`EthereumGeneralModule1`](./src/modules/EthereumModule1.sol)
+### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
 Contains the following actions:
-
-- Actions of `GeneralModule1`.
+- Actions of `GeneralAdapter1`.
 - Morpho token wrapper withdrawal.
 - Dai permit.
 - StEth staking.
 - WStEth wrap & unwrap.
 
-### Migration modules
+### [`ParaswapAdapter`](./src/adapters/ParaswapAdapter.sol)
 
-For [Aave V2](./src/modules/migration/AaveV2MigrationModule.sol), [Aave V3](./src/modules/migration/AaveV3MigrationModule.sol), [Compound V2](./src/modules/migration/CompoundV2MigrationModule.sol), [Compound V3](./src/modules/migration/CompoundV3MigrationModule.sol), and [Morpho Aave V3 Optimizer](./src/modules/migration/AaveV3OptimizerMigrationModule.sol).
+Contains the following actions, all using the paraswap aggregator:
+- Sell a given amount or the balance.
+- Buy a given amount.
+- Buy a what's needed to fully repay on a given Morpho Market.
+
+### Migration adapters
+
+For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./src/adapters/migration/AaveV3MigrationAdapter.sol), [Compound V2](./src/adapters/migration/CompoundV2MigrationAdapter.sol), [Compound V3](./src/adapters/migration/CompoundV3MigrationAdapter.sol), and [Morpho Aave V3 Optimizer](./src/adapters/migration/AaveV3OptimizerMigrationAdapter.sol).
 
 ## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
 
 - Make use of transient storage.
 - Bundler is now a call dispatcher that does not require any approval.
-  Because call-dispatch and approvals are now separated, it is possible to add modules over time without additional risk to users of existing modules.
-- All generic features are now in `GeneralModule1`, instead of being in separate files that are then all inherited by a single contract.
-- All Ethereum related features are in the `EthereumModule1` which inherits from `GeneralModule1`.
-- The `1` after `Module` is not a version number: when new features are development we will deploy additional modules, for instance `GeneralModule2`.
-  Existing modules will still be used.
+  Because call-dispatch and approvals are now separated, it is possible to add adapters over time without additional risk to users of existing adapters.
+- All generic features are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
+- All Ethereum related features are in the `EthereumAdapter1` which inherits from `GeneralAdapter1`.
+- The `1` after `Adapter` is not a version number: when new features are development we will deploy additional adapters, for instance `GeneralAdapter2`.
+  Existing adapters will still be used.
 - Many adjustments such as:
   - A value `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
   - Slippage checks are done with a price argument instead of a limit amount.
   - When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
-  - There are receiver arguments in all functions that give tokens to the module so the module can pass along those tokens.
+  - There are receiver arguments in all functions that give tokens to the adapter so the adapter can pass along those tokens.
 
 ## Development
 

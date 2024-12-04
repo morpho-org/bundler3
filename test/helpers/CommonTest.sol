@@ -13,7 +13,7 @@ import {SigUtils} from "./SigUtils.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {SharesMathLib} from "../../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {MathLib, WAD} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
-import {UtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {UtilsLib as MorphoUtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {SafeTransferLib, ERC20} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
@@ -26,16 +26,16 @@ import {
 import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {WETH as WethContract} from "../../lib/solmate/src/tokens/WETH.sol";
-import {IParaswapModule, Offsets} from "../../src/interfaces/IParaswapModule.sol";
-import {ParaswapModule} from "../../src/modules/ParaswapModule.sol";
+import {IParaswapAdapter, Offsets} from "../../src/interfaces/IParaswapAdapter.sol";
+import {ParaswapAdapter} from "../../src/adapters/ParaswapAdapter.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {Permit} from "../helpers/SigUtils.sol";
 import {IUniversalRewardsDistributorBase} from
     "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
-import {CoreModule} from "../../src/modules/CoreModule.sol";
+import {CoreAdapter} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
-import {GeneralModule1} from "../../src/modules/GeneralModule1.sol";
+import {GeneralAdapter1} from "../../src/adapters/GeneralAdapter1.sol";
 import {Bundler, Call} from "../../src/Bundler.sol";
 
 import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
@@ -66,9 +66,9 @@ abstract contract CommonTest is Test {
     OracleMock internal oracle;
 
     Bundler internal bundler;
-    GeneralModule1 internal generalModule1;
+    GeneralAdapter1 internal generalAdapter1;
 
-    ParaswapModule paraswapModule;
+    ParaswapAdapter paraswapAdapter;
 
     AugustusRegistryMock augustusRegistryMock;
     AugustusMock augustus;
@@ -86,8 +86,8 @@ abstract contract CommonTest is Test {
         functionMocker = new FunctionMocker();
 
         bundler = new Bundler();
-        generalModule1 = new GeneralModule1(address(bundler), address(morpho), address(new WethContract()));
-        paraswapModule = new ParaswapModule(address(bundler), address(morpho), address(augustusRegistryMock));
+        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(new WethContract()));
+        paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 
@@ -133,9 +133,9 @@ abstract contract CommonTest is Test {
         morpho.borrow(_marketParams, amount, 0, onBehalf, onBehalf);
     }
 
-    function _delegatePrank(address target, bytes memory callData) internal {
-        vm.mockFunction(target, address(functionMocker), callData);
-        (bool success,) = target.call(callData);
+    function _delegatePrank(address to, bytes memory callData) internal {
+        vm.mockFunction(to, address(functionMocker), callData);
+        (bool success,) = to.call(callData);
         require(success, "Function mocker call failed");
     }
 
@@ -148,73 +148,73 @@ abstract contract CommonTest is Test {
         return vm.envOr("PICK_UINT", num);
     }
 
-    /* GENERAL MODULE CALL */
-    function _call(CoreModule module, bytes memory data) internal pure returns (Call memory) {
-        return _call(module, data, 0, false);
+    /* GENERAL ADAPTER CALL */
+    function _call(CoreAdapter adapter, bytes memory data) internal pure returns (Call memory) {
+        return _call(adapter, data, 0, false);
     }
 
-    function _call(CoreModule module, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        return _call(module, data, value, false);
+    function _call(CoreAdapter adapter, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        return _call(adapter, data, value, false);
     }
 
-    function _call(CoreModule module, bytes memory data, uint256 value, bool skipRevert)
+    function _call(CoreAdapter adapter, bytes memory data, uint256 value, bool skipRevert)
         internal
         pure
         returns (Call memory)
     {
-        require(address(module) != address(0), "Module address is zero");
-        address to = address(module);
+        require(address(adapter) != address(0), "Adapter address is zero");
+        address to = address(adapter);
         return Call(to, data, value, skipRevert);
     }
 
     /* CALL WITH VALUE */
 
-    function _transferNativeToModule(address payable module, uint256 amount) internal pure returns (Call memory) {
-        return _call(CoreModule(module), hex"", amount);
+    function _transferNativeToAdapter(address payable adapter, uint256 amount) internal pure returns (Call memory) {
+        return _call(CoreAdapter(adapter), hex"", amount);
     }
 
     /* TRANSFER */
 
-    function _nativeTransfer(address recipient, uint256 amount, CoreModule module)
+    function _nativeTransfer(address recipient, uint256 amount, CoreAdapter adapter)
         internal
         pure
         returns (Call memory)
     {
-        return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)));
+        return _call(adapter, abi.encodeCall(adapter.nativeTransfer, (recipient, amount)));
     }
 
-    function _nativeTransferNoFunding(address recipient, uint256 amount, CoreModule module)
+    function _nativeTransferNoFunding(address recipient, uint256 amount, CoreAdapter adapter)
         internal
         pure
         returns (Call memory)
     {
-        return _call(module, abi.encodeCall(module.nativeTransfer, (recipient, amount)), 0);
+        return _call(adapter, abi.encodeCall(adapter.nativeTransfer, (recipient, amount)), 0);
     }
 
     /* ERC20 ACTIONS */
 
-    function _erc20Transfer(address token, address recipient, uint256 amount, CoreModule module)
+    function _erc20Transfer(address token, address recipient, uint256 amount, CoreAdapter adapter)
         internal
         pure
         returns (Call memory)
     {
-        return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)));
+        return _call(adapter, abi.encodeCall(adapter.erc20Transfer, (token, recipient, amount)));
     }
 
-    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, CoreModule module)
+    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, CoreAdapter adapter)
         internal
         pure
         returns (Call memory)
     {
-        return _call(module, abi.encodeCall(module.erc20Transfer, (token, recipient, amount)), 0, true);
+        return _call(adapter, abi.encodeCall(adapter.erc20Transfer, (token, recipient, amount)), 0, true);
     }
 
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
-        return _call(generalModule1, abi.encodeCall(GeneralModule1.erc20TransferFrom, (token, recipient, amount)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20TransferFrom, (token, recipient, amount)));
     }
 
     function _erc20TransferFrom(address token, uint256 amount) internal view returns (Call memory) {
-        return _erc20TransferFrom(token, address(generalModule1), amount);
+        return _erc20TransferFrom(token, address(generalAdapter1), amount);
     }
 
     /* ERC20 WRAPPER ACTIONS */
@@ -224,7 +224,7 @@ abstract contract CommonTest is Test {
         view
         returns (Call memory)
     {
-        return _call(generalModule1, abi.encodeCall(GeneralModule1.erc20WrapperDepositFor, (token, receiver, amount)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20WrapperDepositFor, (token, receiver, amount)));
     }
 
     function _erc20WrapperWithdrawTo(address token, address receiver, uint256 amount)
@@ -232,7 +232,7 @@ abstract contract CommonTest is Test {
         view
         returns (Call memory)
     {
-        return _call(generalModule1, abi.encodeCall(GeneralModule1.erc20WrapperWithdrawTo, (token, receiver, amount)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20WrapperWithdrawTo, (token, receiver, amount)));
     }
 
     /* ERC4626 ACTIONS */
@@ -243,7 +243,7 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            generalModule1, abi.encodeCall(GeneralModule1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
+            generalAdapter1, abi.encodeCall(GeneralAdapter1.erc4626Mint, (vault, shares, maxSharePriceE27, receiver))
         );
     }
 
@@ -253,7 +253,7 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            generalModule1, abi.encodeCall(GeneralModule1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
+            generalAdapter1, abi.encodeCall(GeneralAdapter1.erc4626Deposit, (vault, assets, maxSharePriceE27, receiver))
         );
     }
 
@@ -263,8 +263,8 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            generalModule1,
-            abi.encodeCall(GeneralModule1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.erc4626Withdraw, (vault, assets, minSharePriceE27, receiver, owner))
         );
     }
 
@@ -274,8 +274,8 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            generalModule1,
-            abi.encodeCall(GeneralModule1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
         );
     }
 
@@ -290,7 +290,7 @@ abstract contract CommonTest is Test {
         bool skipRevert
     ) internal pure returns (Call memory) {
         return _call(
-            CoreModule(payable(address(distributor))),
+            CoreAdapter(payable(address(distributor))),
             abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
             0,
             skipRevert
@@ -308,7 +308,7 @@ abstract contract CommonTest is Test {
 
         MorphoBlueAuthorization memory authorization = MorphoBlueAuthorization({
             authorizer: user,
-            authorized: address(generalModule1),
+            authorized: address(generalAdapter1),
             isAuthorized: isAuthorized,
             nonce: nonce,
             deadline: SIGNATURE_DEADLINE
@@ -320,7 +320,7 @@ abstract contract CommonTest is Test {
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(
-            CoreModule(payable(address(morpho))),
+            CoreAdapter(payable(address(morpho))),
             abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)),
             0,
             skipRevert
@@ -336,9 +336,9 @@ abstract contract CommonTest is Test {
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
-            generalModule1,
+            generalAdapter1,
             abi.encodeCall(
-                GeneralModule1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
+                GeneralAdapter1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
             )
         );
     }
@@ -361,8 +361,8 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal view returns (Call memory) {
         return _call(
-            generalModule1,
-            abi.encodeCall(GeneralModule1.morphoBorrow, (marketParams, assets, shares, minSharePriceE27, receiver))
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.morphoBorrow, (marketParams, assets, shares, minSharePriceE27, receiver))
         );
     }
 
@@ -374,8 +374,8 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal view returns (Call memory) {
         return _call(
-            generalModule1,
-            abi.encodeCall(GeneralModule1.morphoWithdraw, (marketParams, assets, shares, slippageAmount, receiver))
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.morphoWithdraw, (marketParams, assets, shares, slippageAmount, receiver))
         );
     }
 
@@ -388,8 +388,10 @@ abstract contract CommonTest is Test {
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
-            generalModule1,
-            abi.encodeCall(GeneralModule1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data))
+            generalAdapter1,
+            abi.encodeCall(
+                GeneralAdapter1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
+            )
         );
     }
 
@@ -400,8 +402,8 @@ abstract contract CommonTest is Test {
         bytes memory data
     ) internal view returns (Call memory) {
         return _call(
-            generalModule1,
-            abi.encodeCall(GeneralModule1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
         );
     }
 
@@ -411,15 +413,15 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(
-            generalModule1, abi.encodeCall(GeneralModule1.morphoWithdrawCollateral, (marketParams, assets, receiver))
+            generalAdapter1, abi.encodeCall(GeneralAdapter1.morphoWithdrawCollateral, (marketParams, assets, receiver))
         );
     }
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
-        return _call(generalModule1, abi.encodeCall(GeneralModule1.morphoFlashLoan, (token, amount, data)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)));
     }
 
-    /* PARASWAP MODULE ACTIONS */
+    /* PARASWAP ADAPTER ACTIONS */
 
     function _paraswapSell(
         address _augustus,
@@ -431,7 +433,7 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.sell, (_augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
+            IParaswapAdapter.sell, (_augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver)
         );
     }
 
@@ -445,7 +447,7 @@ abstract contract CommonTest is Test {
         address receiver
     ) internal pure returns (bytes memory) {
         return abi.encodeCall(
-            IParaswapModule.buy, (_augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver)
+            IParaswapAdapter.buy, (_augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver)
         );
     }
 
@@ -460,7 +462,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            CoreModule(payable(address(paraswapModule))),
+            CoreAdapter(payable(address(paraswapAdapter))),
             _paraswapSell(
                 address(augustus),
                 abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
@@ -484,7 +486,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            CoreModule(payable(address(paraswapModule))),
+            CoreAdapter(payable(address(paraswapAdapter))),
             _paraswapBuy(
                 address(augustus),
                 abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
@@ -515,6 +517,6 @@ abstract contract CommonTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, spender, amount, deadline, v, r, s));
-        return _call(CoreModule(payable(address(token))), callData, 0, skipRevert);
+        return _call(CoreAdapter(payable(address(token))), callData, 0, skipRevert);
     }
 }
