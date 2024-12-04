@@ -5,4 +5,4 @@ runs:
 
   steps:
     - name: Install Foundry
-      uses: foundry-rs/foundry-toolchain@v1.2.0
+      uses: foundry-rs/foundry-toolchain@v1
