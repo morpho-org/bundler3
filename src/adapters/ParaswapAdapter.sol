@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
+import "forge-std/console.sol";
 import {IParaswapAdapter, Offsets, MarketParams} from "../interfaces/IParaswapAdapter.sol";
 import {IAugustusRegistry} from "../interfaces/IAugustusRegistry.sol";
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib} from "./CoreAdapter.sol";
@@ -182,8 +183,13 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     {
         uint256 oldExactAmount = callData.get(offsets.exactAmount);
         callData.set(offsets.exactAmount, exactAmount);
+        console.log("old exact amount", oldExactAmount);
+        console.log("new exact amount", exactAmount);
+
+        console.log("old limit amount", callData.get(offsets.limitAmount));
 
         uint256 limitAmount = callData.get(offsets.limitAmount).mulDiv(exactAmount, oldExactAmount, rounding);
+        console.log("new limit amount", limitAmount);
         callData.set(offsets.limitAmount, limitAmount);
 
         if (offsets.quotedAmount > 0) {
