@@ -55,10 +55,10 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     ) external {
         if (sellEntireBalance) {
             uint256 newSrcAmount = IERC20(srcToken).balanceOf(address(this));
-            _updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
+            updateAmounts(callData, offsets, newSrcAmount, Math.Rounding.Ceil);
         }
 
-        _swap({
+        swap({
             augustus: augustus,
             callData: callData,
             srcToken: srcToken,
@@ -91,10 +91,10 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         address receiver
     ) public {
         if (newDestAmount != 0) {
-            _updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
+            updateAmounts(callData, offsets, newDestAmount, Math.Rounding.Floor);
         }
 
-        _swap({
+        swap({
             augustus: augustus,
             callData: callData,
             srcToken: srcToken,
@@ -138,7 +138,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /* INTERNAL FUNCTIONS */
 
     /// @notice Executes the swap specified by `callData` with `augustus`.
-    function _swap(
+    function swap(
         address augustus,
         bytes memory callData,
         address srcToken,
@@ -175,7 +175,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @notice Sets exact amount in `callData` to `exactAmount`.
     /// @notice Proportionally scale limit amount in `callData`.
     /// @notice If `offsets.quotedAmount` is not zero, proportionally scale quoted amount in `callData`.
-    function _updateAmounts(
+    function updateAmounts(
         bytes memory callData,
         Offsets calldata offsets,
         uint256 exactAmount,

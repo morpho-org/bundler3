@@ -20,7 +20,7 @@ contract AdapterMock is CoreAdapter {
     }
 
     function emitInitiator() external {
-        emit Initiator(_initiator());
+        emit Initiator(initiator());
     }
 
     function callbackBundler(Call[] calldata calls) external onlyBundler {

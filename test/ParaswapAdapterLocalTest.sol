@@ -172,7 +172,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
     // Checks that the adapter correctly adjusts amounts sent to augustus.
     // Expects a revert since the augustus address will not swap the tokens.
-    function _updateAmountsBuy(
+    function updateAmountsBuy(
         address _augustus,
         uint256 initialExact,
         uint256 initialLimit,
@@ -230,7 +230,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         uint256 adjustedExact,
         uint256 offset
     ) public {
-        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
+        updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, true);
     }
 
     function testUpdateAmountsBuyNoQuoteUpdate(
@@ -241,7 +241,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         uint256 adjustedExact,
         uint256 offset
     ) public {
-        _updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
+        updateAmountsBuy(_augustus, initialExact, initialLimit, initialQuoted, adjustedExact, offset, false);
     }
 
     function testBuyExactAmountCheck(uint256 amount, uint256 subAmount) public {

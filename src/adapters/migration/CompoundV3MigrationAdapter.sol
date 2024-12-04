@@ -51,15 +51,15 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
         external
         onlyBundler
     {
-        address _initiator = _initiator();
+        address initiator = initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
-            ? ICompoundV3(instance).balanceOf(_initiator)
-            : ICompoundV3(instance).userCollateral(_initiator, asset).balance;
+            ? ICompoundV3(instance).balanceOf(initiator)
+            : ICompoundV3(instance).userCollateral(initiator, asset).balance;
 
         amount = Math.min(amount, balance);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        ICompoundV3(instance).withdrawFrom(_initiator, receiver, asset, amount);
+        ICompoundV3(instance).withdrawFrom(initiator, receiver, asset, amount);
     }
 }

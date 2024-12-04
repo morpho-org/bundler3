@@ -76,14 +76,14 @@ abstract contract CoreAdapter {
 
     /// @notice Returns the current initiator stored in the adapter.
     /// @dev The initiator value being non-zero indicates that a bundle is being processed.
-    function _initiator() internal view returns (address) {
+    function initiator() internal view returns (address) {
         return IBundler(BUNDLER).initiator();
     }
 
     /// @notice Calls bundler.reenter with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
-    function _reenterBundler(bytes calldata data) internal {
+    function reenterBundler(bytes calldata data) internal {
         (bool success, bytes memory returnData) = BUNDLER.call(bytes.concat(IBundler.reenter.selector, data));
         if (!success) UtilsLib.lowLevelRevert(returnData);
     }
