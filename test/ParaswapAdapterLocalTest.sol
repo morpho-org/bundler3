@@ -82,7 +82,15 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
     function testBuyReceiverZero() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        paraswapAdapter.buy(address(augustus), new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+        paraswapAdapter.buy(
+            address(augustus),
+            bytes.concat(bytes32(uint256(1))),
+            address(0),
+            address(0),
+            1,
+            Offsets(0, 0, 0),
+            address(0)
+        );
     }
 
     uint256 _bytesLength = 1024;
@@ -105,6 +113,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         );
     }
 
+    // Test that the augustus contract is called with correctly modified amounts by the paraswap adapter.
     function _updateAmountsSell(
         address _augustus,
         uint256 initialExact,
@@ -120,8 +129,8 @@ contract ParaswapAdapterLocalTest is LocalTest {
         offset = _boundOffset(offset);
 
         initialExact = bound(initialExact, 1, type(uint64).max);
-        initialLimit = bound(initialLimit, 0, type(uint64).max);
-        initialQuoted = bound(initialQuoted, 0, type(uint64).max);
+        initialLimit = bound(initialLimit, 1, type(uint64).max);
+        initialQuoted = bound(initialQuoted, 1, type(uint64).max);
         adjustedExact = bound(adjustedExact, 0, type(uint64).max);
         uint256 adjustedLimit = initialLimit.mulDivUp(adjustedExact, initialExact);
 
@@ -138,11 +147,9 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
         deal(address(collateralToken), address(paraswapAdapter), adjustedExact);
 
-        if (adjustedLimit > 0) {
-            vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
-        }
+        vm.assume(adjustedLimit > 0);
+        vm.expectRevert(ErrorsLib.BuyAmountTooLow.selector);
         vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
-        // adjustedData);
         bundle.push(
             _call(
                 CoreAdapter(payable(address(paraswapAdapter))),
@@ -406,7 +413,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
     function testReceiverGetsReceivedAmountOnly(address receiver, uint256 amount, uint256 initialAmount) public {
         _receiver(receiver);
-        amount = bound(amount, 0, type(uint64).max);
+        amount = bound(amount, 1, type(uint64).max);
         initialAmount = bound(initialAmount, 0, type(uint64).max);
 
         deal(address(loanToken), address(paraswapAdapter), initialAmount);

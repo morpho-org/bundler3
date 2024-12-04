@@ -150,9 +150,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         address receiver
     ) internal {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
-        require(minDestAmount != 0, ErrorsLib.ZeroAmount());
-
         require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(minDestAmount != 0, ErrorsLib.ZeroAmount());
 
         UtilsLib.approveMaxToIfAllowanceZero(srcToken, augustus);
 
