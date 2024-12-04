@@ -24,9 +24,6 @@ jobs:
 
       - uses: ./.github/actions/install
 
-      - name: clean cache
-        run: forge clean
-
       - name: Build contracts via IR & check sizes
         # skip import files, because we don't care if contracts are too big
         run: forge build --sizes --skip Import
@@ -38,9 +35,6 @@ jobs:
             cache
             out
           key: forge-${{ github.ref_name }}-${{ github.run_id }}
-
-      - name: show files
-        run: du -h cache out
 
   test:
     needs: build-via-ir
@@ -59,9 +53,6 @@ jobs:
           submodules: recursive
 
       - uses: ./.github/actions/install-cache
-
-      - name: show files
-        run: du -h cache out
 
       - name: Run tests on chain ${{ matrix.chain }}
         run: forge test --chain ${{ matrix.chain }}
