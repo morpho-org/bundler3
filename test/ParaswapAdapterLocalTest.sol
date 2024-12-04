@@ -133,7 +133,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         // adjustedData);
         bundle.push(
             _call(
-                CoreAdapter(payable(address(paraswapAdapter))),
+                address(paraswapAdapter),
                 _paraswapSell(
                     _augustus,
                     _swapCalldata(offset, initialExact, initialLimit, initialQuoted),
@@ -207,7 +207,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         vm.expectCall(address(_augustus), _swapCalldata(offset, adjustedExact, adjustedLimit, adjustedQuoted));
         bundle.push(
             _call(
-                CoreAdapter(payable(address(paraswapAdapter))),
+                address(paraswapAdapter),
                 _paraswapBuy(
                     _augustus,
                     _swapCalldata(offset, initialExact, initialLimit, initialQuoted),

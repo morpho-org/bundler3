@@ -149,28 +149,43 @@ abstract contract CommonTest is Test {
     }
 
     /* GENERAL ADAPTER CALL */
-    function _call(CoreAdapter adapter, bytes memory data) internal pure returns (Call memory) {
-        return _call(adapter, data, 0, false);
+    function _call(CoreAdapter to, bytes memory data) internal pure returns (Call memory) {
+        return _call(address(to), data, 0, false);
     }
 
-    function _call(CoreAdapter adapter, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        return _call(adapter, data, value, false);
+    function _call(address to, bytes memory data) internal pure returns (Call memory) {
+        return _call(to, data, 0, false);
     }
 
-    function _call(CoreAdapter adapter, bytes memory data, uint256 value, bool skipRevert)
+    function _call(CoreAdapter to, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        return _call(address(to), data, value, false);
+    }
+
+    function _call(address to, bytes memory data, uint256 value) internal pure returns (Call memory) {
+        return _call(to, data, value, false);
+    }
+
+    function _call(CoreAdapter to, bytes memory data, uint256 value, bool skipRevert)
         internal
         pure
         returns (Call memory)
     {
-        require(address(adapter) != address(0), "Adapter address is zero");
-        address to = address(adapter);
+        return _call(address(to),data,value,skipRevert);
+    }
+
+    function _call(address to, bytes memory data, uint256 value, bool skipRevert)
+        internal
+        pure
+        returns (Call memory)
+    {
+        require(to != address(0), "Adapter address is zero");
         return Call(to, data, value, skipRevert);
     }
 
     /* CALL WITH VALUE */
 
-    function _transferNativeToAdapter(address payable adapter, uint256 amount) internal pure returns (Call memory) {
-        return _call(CoreAdapter(adapter), hex"", amount);
+    function _transferNativeToAdapter(address adapter, uint256 amount) internal pure returns (Call memory) {
+        return _call(adapter, hex"", amount);
     }
 
     /* TRANSFER */
@@ -290,7 +305,7 @@ abstract contract CommonTest is Test {
         bool skipRevert
     ) internal pure returns (Call memory) {
         return _call(
-            CoreAdapter(payable(address(distributor))),
+            distributor,
             abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
             0,
             skipRevert
@@ -320,7 +335,7 @@ abstract contract CommonTest is Test {
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(
-            CoreAdapter(payable(address(morpho))),
+            address(morpho),
             abi.encodeCall(morpho.setAuthorizationWithSig, (authorization, signature)),
             0,
             skipRevert
@@ -462,7 +477,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            CoreAdapter(payable(address(paraswapAdapter))),
+            address(paraswapAdapter),
             _paraswapSell(
                 address(augustus),
                 abi.encodeCall(augustus.mockSell, (srcToken, destToken, srcAmount, minDestAmount)),
@@ -486,7 +501,7 @@ abstract contract CommonTest is Test {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            CoreAdapter(payable(address(paraswapAdapter))),
+            address(paraswapAdapter),
             _paraswapBuy(
                 address(augustus),
                 abi.encodeCall(augustus.mockBuy, (srcToken, destToken, maxSrcAmount, destAmount)),
@@ -517,6 +532,6 @@ abstract contract CommonTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         bytes memory callData = abi.encodeCall(IERC20Permit.permit, (user, spender, amount, deadline, v, r, s));
-        return _call(CoreAdapter(payable(address(token))), callData, 0, skipRevert);
+        return _call(address(token), callData, 0, skipRevert);
     }
 }

@@ -97,7 +97,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         uint256 fromAmountOffset = 4 + 32 + 32;
         uint256 toAmountOffset = fromAmountOffset + 32;
         return _call(
-            CoreAdapter(payable(address(paraswapAdapter))),
+            address(paraswapAdapter),
             abi.encodeCall(
                 paraswapAdapter.buyMorphoDebt,
                 (

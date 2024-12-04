@@ -128,7 +128,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            CoreAdapter(payable(address(Permit2Lib.PERMIT2))),
+            address(Permit2Lib.PERMIT2),
             abi.encodeWithSelector(permitSingleSelector, vm.addr(privateKey), permitSingle, abi.encodePacked(r, s, v)),
             0,
             skipRevert
@@ -164,7 +164,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            CoreAdapter(payable(address(Permit2Lib.PERMIT2))),
+            address(Permit2Lib.PERMIT2),
             abi.encodeWithSelector(permitBatchSelector, vm.addr(privateKey), permitBatch, abi.encodePacked(r, s, v)),
             0,
             skipRevert

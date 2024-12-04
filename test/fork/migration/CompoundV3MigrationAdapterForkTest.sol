@@ -59,7 +59,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
 
         bundle.push(
             _call(
-                CoreAdapter(payable(C_WETH_V3)),
+                C_WETH_V3,
                 abi.encodeCall(
                     ICompoundV3.allowBySig, (owner, address(migrationAdapter), true, 0, SIGNATURE_DEADLINE, v, r, s)
                 ),
@@ -247,7 +247,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            CoreAdapter(payable(instance)),
+            instance,
             abi.encodeCall(ICompoundV3.allowBySig, (owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE, v, r, s)),
             0,
             skipRevert
