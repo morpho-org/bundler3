@@ -25,11 +25,18 @@ jobs:
       - uses: ./.github/actions/install
 
       - name: Build contracts via IR & check sizes
-        # don't use compilation cache
         # skip import files, because we don't care if contracts are too big
-        run: forge build --force --sizes --skip Import
+        run: forge build --sizes --skip Import
         env:
           FOUNDRY_PROFILE: build
+
+      - name: Save forge compilation cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            cache
+            out
+          key: forge-${{ github.ref_name }}-${{ github.run_id }}
 
   test:
     needs: build-via-ir
