@@ -47,7 +47,10 @@ contract Bundler is IBundler {
         require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
 
         bytes32 _reenterHash = reenterHash;
-        require(_reenterHash == IGNORE_HASH_CHECK || _reenterHash == keccak256(callDataArgs()),ErrorsLib.IncorrectReenterBundle());
+        require(
+            _reenterHash == IGNORE_HASH_CHECK || _reenterHash == keccak256(callDataArgs()),
+            ErrorsLib.IncorrectReenterBundle()
+        );
         _multicall(bundle);
     }
 
