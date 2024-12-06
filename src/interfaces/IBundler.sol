@@ -2,12 +2,14 @@
 pragma solidity >=0.8.0;
 
 /// @notice Struct containing all the data needed to make a call.
+/// @notice If the call will trigger a reenter, the reenterHash should be set to the hash of the reenter calldata.
+/// @notice Set the hash to bytes32(type(uint).max) to skip the reenter hash check at your own risk.
 struct Call {
     address to;
     bytes data;
     uint256 value;
     bool skipRevert;
-    bool allowReenter;
+    bytes32 reenterHash;
 }
 
 /// @custom:contact security@morpho.org

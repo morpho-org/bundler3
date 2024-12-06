@@ -15,9 +15,9 @@ contract FunctionMocker {
         }
     }
 
-    function setAllowReenter(bool newAllowReenter) external {
+    function setReenterHash(bytes32 newReenterHash) external {
         assembly {
-            tstore(2, newAllowReenter)
+            tstore(2, newReenterHash)
         }
     }
 }

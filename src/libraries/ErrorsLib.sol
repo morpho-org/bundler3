@@ -12,8 +12,8 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted from an unauthorized sender.
     error UnauthorizedSender();
 
-    /// @dev Thrown when a reenter is attempted in a bundle that did not explicitly allow it
-    error UnauthorizedReenter();
+    /// @dev Thrown when a reenter is attempted with a bundle that does not hash to the pre-recorded bundle hash.
+    error IncorrectReenterBundle();
 
     /// @dev Thrown when a call is attempted with a zero address as input.
     error ZeroAddress();

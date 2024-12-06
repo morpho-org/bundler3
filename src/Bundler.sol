@@ -5,6 +5,7 @@ import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
+import {IGNORE_HASH_CHECK} from "./libraries/ConstantsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
@@ -20,8 +21,8 @@ contract Bundler is IBundler {
     /// @notice Last unreturned callee.
     address public transient lastUnreturnedCallee;
 
-    /// @notice Allow lastUnreturnedCallee to reenter.
-    bool public transient allowReenter;
+    /// @notice Hash of the next reenter calldata.
+    bytes32 public transient reenterHash;
 
     /* EXTERNAL */
 
@@ -44,7 +45,9 @@ contract Bundler is IBundler {
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
         require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
-        require(allowReenter, ErrorsLib.UnauthorizedReenter());
+
+        bytes32 _reenterHash = reenterHash;
+        require(_reenterHash == IGNORE_HASH_CHECK || _reenterHash == keccak256(callDataArgs()),ErrorsLib.IncorrectReenterBundle());
         _multicall(bundle);
     }
 
@@ -53,19 +56,28 @@ contract Bundler is IBundler {
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
         address previousLastUnreturnedCallee = lastUnreturnedCallee;
-        bool previousAllowReenter = allowReenter;
+        bytes32 previousReenterHash = reenterHash;
 
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
             lastUnreturnedCallee = to;
-            allowReenter = bundle[i].allowReenter;
+            reenterHash = bundle[i].reenterHash;
 
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
         }
 
         lastUnreturnedCallee = previousLastUnreturnedCallee;
-        allowReenter = previousAllowReenter;
+        reenterHash = previousReenterHash;
+    }
+
+    /// @notice Returns bytes [4:] of the calldata.
+    function callDataArgs() internal pure returns (bytes memory) {
+        bytes memory data = new bytes(msg.data.length - 4);
+        assembly ("memory-safe") {
+            calldatacopy(add(data, 32), 4, mload(data))
+        }
+        return data;
     }
 }

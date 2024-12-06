@@ -6,6 +6,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {AdapterMock, Initiator} from "./helpers/mocks/AdapterMock.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {IGNORE_HASH_CHECK} from "../src/libraries/ConstantsLib.sol";
 
 contract Empty {}
 
@@ -75,14 +76,26 @@ contract BundlerLocalTest is LocalTest {
         callbackBundle2.push(_call(adapterMock2, abi.encodeCall(AdapterMock.isProtected, ())));
 
         callbackBundle.push(
-            _call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)), false, true)
+            _call(
+                adapterMock2,
+                abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),
+                _hashBundle(callbackBundle2)
+            )
         );
 
         callbackBundle.push(
-            _call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)), false, true)
+            _call(
+                adapterMock3,
+                abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),
+                _hashBundle(callbackBundle2)
+            )
         );
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)), false, true));
+        bundle.push(
+            _call(
+                adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)), _hashBundle(callbackBundle)
+            )
+        );
 
         vm.prank(initiator);
 
@@ -143,14 +156,16 @@ contract BundlerLocalTest is LocalTest {
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setLastUnreturnedCallee, (adapter)));
-        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setAllowReenter, (true)));
+        _delegatePrank(
+            address(bundler), abi.encodeCall(FunctionMocker.setReenterHash, (keccak256(abi.encode(new Call[](0)))))
+        );
 
         vm.prank(adapter);
         bundler.reenter(new Call[](0));
     }
 
     function testNotSkipRevert() public {
-        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: false, allowReenter: false});
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: false, reenterHash: bytes32(0)});
 
         // Check that this produces a failing call.
         vm.prank(USER);
@@ -164,33 +179,54 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testSkipRevert() public {
-        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: true, allowReenter: false});
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: true, reenterHash: bytes32(0)});
 
         bundle.push(failingCall);
         vm.prank(USER);
         bundler.multicall(bundle);
     }
 
-    function testUnauthorizedReenter() public {
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))), false, false));
+    function testBadReenterHash(bytes32 badHash) public {
+        Call[] memory calls = new Call[](0);
+        vm.assume(badHash != keccak256(abi.encode(calls)));
+        vm.assume(badHash != IGNORE_HASH_CHECK);
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), badHash));
 
-        vm.expectRevert(ErrorsLib.UnauthorizedReenter.selector);
+        vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
         bundler.multicall(bundle);
     }
 
-    function testAuthorizedReenter() public {
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))), false, true));
-
-        bundler.multicall(bundle);
-    }
-
-    function testNestedUnauthorizedReenter() public {
-        callbackBundle.push(
-            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))), false, false)
+    function testGoodReenterHash(uint256 size) public {
+        size = bound(size, 0, 100);
+        Call[] memory calls = new Call[](size);
+        bundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), keccak256(abi.encode(calls)))
         );
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)), false, true));
 
-        vm.expectRevert(ErrorsLib.UnauthorizedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testNestedBadReenterHash(bytes32 badHash) public {
+        Call[] memory calls = new Call[](0);
+        vm.assume(badHash != keccak256(abi.encode(calls)));
+        vm.assume(badHash != IGNORE_HASH_CHECK);
+        callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), badHash));
+        bundle.push(
+            _call(
+                adapterMock,
+                abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),
+                keccak256(abi.encode(callbackBundle))
+            )
+        );
+
+        vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMagicHash() public {
+        Call[] memory calls = new Call[](0);
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), IGNORE_HASH_CHECK));
+
         bundler.multicall(bundle);
     }
 }
