@@ -268,7 +268,6 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsCollateral2, borrowAmount, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
@@ -327,8 +326,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParamsCollateral2, collateralAmount * 2, SUPPLIER); // Need extra collateral for
-            // flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParamsCollateral2, collateralAmount * 2, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsCollateral2, borrowAmount * 2, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
@@ -351,14 +350,16 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         assertEq(morpho.expectedBorrowAssets(marketParamsCollateral2, USER), expectedDebt);
     }
 
-    // Method: flashloan more destination collateral than necessary, supply all destinaiton collateral, borrow more than
+    // Method: flashloan more destination collateral than necessary, supply all destination collateral, borrow more than
     // necessary from destination market, repay entire debt source market, repay residual balance on destination market,
     // withdraw all source collateral, sell all source collateral for destination collateral, supply all destination
     // collateral, withdraw flashloaned amount of destination collateral.
     // Note: As demonstrated in the bundle below, if you are too close to LLTV, you can flashloan more collateral than
     // necessary to make sure the morpho borrow is successful. It would also work to borrow the exact max allowed by the
     // destination market LLTV but asynchrony makes it impossible precompute.
-    // Limitation: fails if Morpho does not already hold enough destination collateral.
+    // Limitation 1: fails if Morpho does not already hold enough destination collateral.
+    // Limitation 2: fails if the borrow asset overestimate is larger than available to borrow on the destination
+    // market.
     function _createFullCollateralSwapBundleUsingFlashloan(
         address user,
         MarketParams memory sourceParams,
@@ -387,7 +388,6 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsCollateral2, borrowAmount * 2, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
@@ -414,7 +414,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // collateral, supply all destination collateral, borrow more than necessary from destination market, leave repay
     // callback, repay all residual assets on destination market
     // Limitation: requires risking borrowing more than necessary to ensure the flashloan is repaid. This borrow can
-    // revert if too close to LLTV.
+    // revert if too close to LLTV, or if there is not enough liquidity.
     function _createFullCollateralSwapBundleUsingCallback(
         address user,
         MarketParams memory sourceParams,
@@ -552,7 +552,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParams, collateralAmount, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsAll2, borrowAmount * 2, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
@@ -640,7 +641,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParams, collateralAmount, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
@@ -702,7 +704,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParams, collateralAmount, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
