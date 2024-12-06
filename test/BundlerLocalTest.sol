@@ -79,7 +79,7 @@ contract BundlerLocalTest is LocalTest {
             _call(
                 adapterMock2,
                 abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),
-                _hashBundle(callbackBundle2)
+                keccak256(abi.encode(callbackBundle2))
             )
         );
 
@@ -87,13 +87,15 @@ contract BundlerLocalTest is LocalTest {
             _call(
                 adapterMock3,
                 abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),
-                _hashBundle(callbackBundle2)
+                keccak256(abi.encode(callbackBundle2))
             )
         );
 
         bundle.push(
             _call(
-                adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)), _hashBundle(callbackBundle)
+                adapterMock,
+                abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),
+                keccak256(abi.encode(callbackBundle))
             )
         );
 

@@ -136,10 +136,6 @@ abstract contract CommonTest is Test {
         require(success, "Function mocker call failed");
     }
 
-    function _hashBundle(Call[] memory _bundle) internal pure returns (bytes32) {
-        return keccak256(abi.encode(_bundle));
-    }
-
     // Pick a uint stable by timestamp.
     /// The environment variable PICK_UINT can be used to force a specific uint.
     // Used to make fork tests faster.
