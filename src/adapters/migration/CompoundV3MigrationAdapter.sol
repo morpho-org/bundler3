@@ -7,7 +7,7 @@ import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
 import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
-/// @notice Contract allowing to migrate a position from Compound V3 to Morpho Blue easily.
+/// @notice Contract allowing to migrate a position from Compound V3 to Morpho easily.
 contract CompoundV3MigrationAdapter is CoreAdapter {
     /* CONSTRUCTOR */
 

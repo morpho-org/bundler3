@@ -5,7 +5,7 @@ import {IAaveV2} from "../../interfaces/IAaveV2.sol";
 import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
-/// @notice Contract allowing to migrate a position from Aave V2 to Morpho Blue easily.
+/// @notice Contract allowing to migrate a position from Aave V2 to Morpho easily.
 contract AaveV2MigrationAdapter is CoreAdapter {
     /* IMMUTABLES */
 

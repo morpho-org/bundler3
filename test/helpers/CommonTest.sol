@@ -5,8 +5,8 @@ import {
     IMorpho,
     Id,
     MarketParams,
-    Authorization as MorphoBlueAuthorization,
-    Signature as MorphoBlueSignature
+    Authorization as MorphoAuthorization,
+    Signature as MorphoSignature
 } from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 import {SigUtils} from "./SigUtils.sol";
@@ -346,7 +346,7 @@ abstract contract CommonTest is Test {
     {
         address user = vm.addr(privateKey);
 
-        MorphoBlueAuthorization memory authorization = MorphoBlueAuthorization({
+        MorphoAuthorization memory authorization = MorphoAuthorization({
             authorizer: user,
             authorized: address(generalAdapter1),
             isAuthorized: isAuthorized,
@@ -356,7 +356,7 @@ abstract contract CommonTest is Test {
 
         bytes32 digest = SigUtils.toTypedDataHash(morpho.DOMAIN_SEPARATOR(), authorization);
 
-        MorphoBlueSignature memory signature;
+        MorphoSignature memory signature;
         (signature.v, signature.r, signature.s) = vm.sign(privateKey, digest);
 
         return _call(

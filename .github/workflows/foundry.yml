@@ -25,32 +25,36 @@ jobs:
       - uses: ./.github/actions/install
 
       - name: Build contracts via IR & check sizes
-        # don't use compilation cache
         # skip import files, because we don't care if contracts are too big
-        run: forge build --force --sizes --skip Import
-        env:
-          FOUNDRY_PROFILE: build
+        run: forge build --sizes --skip Import
 
+      - name: Save forge compilation cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            cache
+            out
+          key: forge-${{ github.ref_name }}-${{ github.run_id }}
 
   test:
     needs: build-via-ir
 
-    name: Local tests
+    name: Tests on chainid = ${{ matrix.chain }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         chain: [1, 8453]
-        
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: ./.github/actions/install-cache
+      - uses: ./.github/actions/install
 
       - name: Run tests on chain ${{ matrix.chain }}
-        run: forge test
+        run: forge test --chain ${{ matrix.chain }}
         env:
-           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}

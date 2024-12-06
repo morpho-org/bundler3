@@ -26,7 +26,7 @@ contract Bundler is IBundler {
 
     /* EXTERNAL */
 
-    /// @notice Executes a series of calls.
+    /// @notice Executes a sequence of calls.
     /// @dev Locks the initiator so that the sender can be identified by other contracts.
     /// @param bundle The ordered array of calldata to execute.
     function multicall(Call[] calldata bundle) external payable {
@@ -39,7 +39,7 @@ contract Bundler is IBundler {
         initiator = address(0);
     }
 
-    /// @notice Executes a series of calls.
+    /// @notice Executes a sequence of calls.
     /// @dev Useful during callbacks.
     /// @dev Can only be called by the last unreturned callee.
     /// @param bundle The ordered array of calldata to execute.
@@ -51,7 +51,7 @@ contract Bundler is IBundler {
 
     /* INTERNAL */
 
-    /// @notice Executes a series of calls.
+    /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
         address previousLastUnreturnedCallee = lastUnreturnedCallee;
         bool previousAllowReenter = allowReenter;
