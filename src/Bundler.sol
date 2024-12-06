@@ -15,10 +15,10 @@ contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
 
     /// @notice The initiator of the multicall transaction.
-    address public initiator;
+    address public transient initiator;
 
     /// @notice Last unreturned callee if it is allowed to reenter.
-    address public allowedToReenter;
+    address public transient allowedToReenter;
 
     /* EXTERNAL */
 
