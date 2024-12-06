@@ -147,19 +147,47 @@ abstract contract CommonTest is Test {
 
     /* GENERAL ADAPTER CALL */
     function _call(CoreAdapter to, bytes memory data) internal pure returns (Call memory) {
-        return _call(address(to), data, 0, false);
+        return _call(address(to), data, 0, false, false);
     }
 
     function _call(address to, bytes memory data) internal pure returns (Call memory) {
-        return _call(to, data, 0, false);
+        return _call(to, data, 0, false, false);
     }
 
     function _call(CoreAdapter to, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        return _call(address(to), data, value, false);
+        return _call(address(to), data, value, false, false);
     }
 
     function _call(address to, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        return _call(to, data, value, false);
+        return _call(to, data, value, false, false);
+    }
+
+
+    function _call(CoreAdapter to, bytes memory data, bool skipRevert) internal pure returns (Call memory) {
+        return _call(address(to), data, 0, skipRevert, false);
+    }
+
+
+    function _call(address to, bytes memory data, bool skipRevert) internal pure returns (Call memory) {
+        return _call(to, data, 0, skipRevert, false);
+    }
+
+
+    function _call(CoreAdapter to, bytes memory data, bool skipRevert, bool allowReenter) internal pure returns (Call memory) {
+        return _call(address(to), data, 0, skipRevert, allowReenter);
+    }
+
+
+    function _call(address to, bytes memory data, bool skipRevert, bool allowReenter) internal pure returns (Call memory) {
+        return _call(to, data, 0, skipRevert, allowReenter);
+    }
+
+    function _call(CoreAdapter to, bytes memory data, uint256 value, bool skipRevert, bool allowReenter)
+        internal
+        pure
+        returns (Call memory)
+    {
+        return _call(address(to), data, value, skipRevert, allowReenter);
     }
 
     function _call(CoreAdapter to, bytes memory data, uint256 value, bool skipRevert)
@@ -167,12 +195,16 @@ abstract contract CommonTest is Test {
         pure
         returns (Call memory)
     {
-        return _call(address(to), data, value, skipRevert);
+        return _call(address(to), data, value, skipRevert, false);
     }
 
     function _call(address to, bytes memory data, uint256 value, bool skipRevert) internal pure returns (Call memory) {
+        return _call(to, data, value, skipRevert, false);
+    }
+
+    function _call(address to, bytes memory data, uint256 value, bool skipRevert,bool allowReenter) internal pure returns (Call memory) {
         require(to != address(0), "Adapter address is zero");
-        return Call(to, data, value, skipRevert);
+        return Call(to, data, value, skipRevert,allowReenter);
     }
 
     /* CALL WITH VALUE */
@@ -344,7 +376,9 @@ abstract contract CommonTest is Test {
             generalAdapter1,
             abi.encodeCall(
                 GeneralAdapter1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
-            )
+            ),
+            false,
+            data.length > 0
         );
     }
 
@@ -396,7 +430,9 @@ abstract contract CommonTest is Test {
             generalAdapter1,
             abi.encodeCall(
                 GeneralAdapter1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
-            )
+            ),
+            false,
+            data.length > 0
         );
     }
 
@@ -408,7 +444,9 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             generalAdapter1,
-            abi.encodeCall(GeneralAdapter1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
+            abi.encodeCall(GeneralAdapter1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data)),
+            false,
+            data.length > 0
         );
     }
 
@@ -423,7 +461,7 @@ abstract contract CommonTest is Test {
     }
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)),false,true);
     }
 
     /* PARASWAP ADAPTER ACTIONS */

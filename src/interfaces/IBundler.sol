@@ -7,6 +7,7 @@ struct Call {
     bytes data;
     uint256 value;
     bool skipRevert;
+    bool allowReenter;
 }
 
 /// @custom:contact security@morpho.org

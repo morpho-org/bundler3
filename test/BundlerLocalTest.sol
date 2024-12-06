@@ -74,11 +74,11 @@ contract BundlerLocalTest is LocalTest {
 
         callbackBundle2.push(_call(adapterMock2, abi.encodeCall(AdapterMock.isProtected, ())));
 
-        callbackBundle.push(_call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(_call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),false,true));
 
-        callbackBundle.push(_call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2))));
+        callbackBundle.push(_call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),false,true));
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle))));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),false,true));
 
         vm.prank(initiator);
 
@@ -139,13 +139,14 @@ contract BundlerLocalTest is LocalTest {
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setLastUnreturnedCallee, (adapter)));
+        _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setAllowReenter, (true)));
 
         vm.prank(adapter);
         bundler.reenter(new Call[](0));
     }
 
     function testNotSkipRevert() public {
-        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: false});
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: false, allowReenter: false});
 
         // Check that this produces a failing call.
         vm.prank(USER);
@@ -159,10 +160,31 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testSkipRevert() public {
-        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: true});
+        Call memory failingCall = Call({to: empty, data: hex"", value: 0, skipRevert: true, allowReenter: false});
 
         bundle.push(failingCall);
         vm.prank(USER);
+        bundler.multicall(bundle);
+    }
+
+    function testUnauthorizedReenter() public {
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))),false,false));
+
+        vm.expectRevert(ErrorsLib.UnauthorizedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testAuthorizedReenter() public {
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))),false,true));
+
+        bundler.multicall(bundle);
+    }
+
+    function testNestedUnauthorizedReenter() public {
+        callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))),false,false));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),false,true));
+
+        vm.expectRevert(ErrorsLib.UnauthorizedReenter.selector);
         bundler.multicall(bundle);
     }
 }

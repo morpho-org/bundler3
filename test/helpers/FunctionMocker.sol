@@ -14,4 +14,10 @@ contract FunctionMocker {
             tstore(1, newLastUnreturnedCallee)
         }
     }
+
+    function setAllowReenter(bool newAllowReenter) external {
+        assembly {
+            tstore(2, newAllowReenter)
+        }
+    }
 }

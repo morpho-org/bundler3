@@ -20,6 +20,10 @@ contract Bundler is IBundler {
     /// @notice Last unreturned callee.
     address public transient lastUnreturnedCallee;
 
+    /// @notice Allow lastUnreturnedCallee to reenter.
+    bool public transient allowReenter;
+
+
     /* EXTERNAL */
 
     /// @notice Executes a series of calls.
@@ -41,6 +45,7 @@ contract Bundler is IBundler {
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
         require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
+        require(allowReenter, ErrorsLib.UnauthorizedReenter());
         _multicall(bundle);
     }
 
@@ -49,16 +54,19 @@ contract Bundler is IBundler {
     /// @notice Executes a series of calls.
     function _multicall(Call[] calldata bundle) internal {
         address previousLastUnreturnedCallee = lastUnreturnedCallee;
+        bool previousAllowReenter = allowReenter;
 
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
             lastUnreturnedCallee = to;
+            allowReenter = bundle[i].allowReenter;
 
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
         }
 
         lastUnreturnedCallee = previousLastUnreturnedCallee;
+        allowReenter = previousAllowReenter;
     }
 }
