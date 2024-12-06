@@ -9,15 +9,9 @@ contract FunctionMocker {
         }
     }
 
-    function setLastUnreturnedCallee(address newLastUnreturnedCallee) external {
+    function setAllowedToReenter(address newAllowedToReenter) external {
         assembly {
-            tstore(1, newLastUnreturnedCallee)
-        }
-    }
-
-    function setAllowReenter(bool newAllowReenter) external {
-        assembly {
-            tstore(2, newAllowReenter)
+            tstore(1, newAllowedToReenter)
         }
     }
 }

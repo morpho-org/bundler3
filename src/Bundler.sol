@@ -15,13 +15,10 @@ contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
 
     /// @notice The initiator of the multicall transaction.
-    address public transient initiator;
+    address public initiator;
 
-    /// @notice Last unreturned callee.
-    address public transient lastUnreturnedCallee;
-
-    /// @notice Allow lastUnreturnedCallee to reenter.
-    bool public transient allowReenter;
+    /// @notice Last unreturned callee if it is allowed to reenter.
+    address public allowedToReenter;
 
     /* EXTERNAL */
 
@@ -43,8 +40,7 @@ contract Bundler is IBundler {
     /// @dev Can only be called by the last unreturned callee.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
-        require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
-        require(allowReenter, ErrorsLib.UnauthorizedReenter());
+        require(msg.sender == allowedToReenter, ErrorsLib.UnauthorizedSender());
         _multicall(bundle);
     }
 
@@ -52,20 +48,18 @@ contract Bundler is IBundler {
 
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
-        address previousLastUnreturnedCallee = lastUnreturnedCallee;
-        bool previousAllowReenter = allowReenter;
+        address previousAllowedToReenter = allowedToReenter;
 
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
-            lastUnreturnedCallee = to;
-            allowReenter = bundle[i].allowReenter;
+            if (bundle[i].allowReenter) allowedToReenter = to;
+            else allowedToReenter = address(0);
 
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
         }
 
-        lastUnreturnedCallee = previousLastUnreturnedCallee;
-        allowReenter = previousAllowReenter;
+        allowedToReenter = previousAllowedToReenter;
     }
 }
