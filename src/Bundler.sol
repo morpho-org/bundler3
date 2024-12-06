@@ -23,7 +23,6 @@ contract Bundler is IBundler {
     /// @notice Allow lastUnreturnedCallee to reenter.
     bool public transient allowReenter;
 
-
     /* EXTERNAL */
 
     /// @notice Executes a sequence of calls.

@@ -74,11 +74,15 @@ contract BundlerLocalTest is LocalTest {
 
         callbackBundle2.push(_call(adapterMock2, abi.encodeCall(AdapterMock.isProtected, ())));
 
-        callbackBundle.push(_call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),false,true));
+        callbackBundle.push(
+            _call(adapterMock2, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)), false, true)
+        );
 
-        callbackBundle.push(_call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)),false,true));
+        callbackBundle.push(
+            _call(adapterMock3, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle2)), false, true)
+        );
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),false,true));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)), false, true));
 
         vm.prank(initiator);
 
@@ -168,21 +172,23 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testUnauthorizedReenter() public {
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))),false,false));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))), false, false));
 
         vm.expectRevert(ErrorsLib.UnauthorizedReenter.selector);
         bundler.multicall(bundle);
     }
 
     function testAuthorizedReenter() public {
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))),false,true));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))), false, true));
 
         bundler.multicall(bundle);
     }
 
     function testNestedUnauthorizedReenter() public {
-        callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))),false,false));
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),false,true));
+        callbackBundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (new Call[](0))), false, false)
+        );
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)), false, true));
 
         vm.expectRevert(ErrorsLib.UnauthorizedReenter.selector);
         bundler.multicall(bundle);
