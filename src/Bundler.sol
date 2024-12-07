@@ -48,7 +48,7 @@ contract Bundler is IBundler {
 
         bytes32 _reenterHash = reenterHash;
         require(
-            _reenterHash == IGNORE_HASH_CHECK || _reenterHash == keccak256(callDataArgs()),
+            _reenterHash == IGNORE_HASH_CHECK || _reenterHash == keccak256(msg.data[4:]),
             ErrorsLib.IncorrectReenterBundle()
         );
         _multicall(bundle);
@@ -73,14 +73,5 @@ contract Bundler is IBundler {
 
         lastUnreturnedCallee = previousLastUnreturnedCallee;
         reenterHash = previousReenterHash;
-    }
-
-    /// @notice Returns bytes [4:] of the calldata.
-    function callDataArgs() internal pure returns (bytes memory) {
-        bytes memory data = new bytes(msg.data.length - 4);
-        assembly ("memory-safe") {
-            calldatacopy(add(data, 32), 4, mload(data))
-        }
-        return data;
     }
 }
