@@ -9,7 +9,6 @@ fs_permissions = [
 libs = ["lib"]
 via-ir = true
 optimizer_runs = 999999
-ignored_error_codes = ["code-size"]
 ignored_warnings_from = ["test"]
 
 [profile.default.fuzz]
