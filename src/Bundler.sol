@@ -45,7 +45,6 @@ contract Bundler is IBundler {
         );
         reenterHash = bytes32(0);
 
-        // Reenter hash is reset to 0 at the end of _multicall, so multiple reenter are impossible.
         _multicall(bundle);
     }
 
