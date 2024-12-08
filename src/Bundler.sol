@@ -58,8 +58,6 @@ contract Bundler is IBundler {
 
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
-        address previousLastUnreturnedCallee = lastUnreturnedCallee;
-
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
@@ -73,7 +71,7 @@ contract Bundler is IBundler {
             require(_reenterHash == IGNORE_HASH_CHECK || _reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
         }
 
-        lastUnreturnedCallee = previousLastUnreturnedCallee;
+        lastUnreturnedCallee = address(0);
         reenterHash = bytes32(0);
     }
 }

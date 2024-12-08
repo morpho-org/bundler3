@@ -114,11 +114,11 @@ contract BundlerLocalTest is LocalTest {
         assertEq(entries[0].data, abi.encode(adapterMock));
         assertEq(entries[1].data, abi.encode(adapterMock2));
         assertEq(entries[2].data, abi.encode(adapterMock2));
-        assertEq(entries[3].data, abi.encode(adapterMock2));
+        assertEq(entries[3].data, abi.encode(address(0)));
         assertEq(entries[4].data, abi.encode(adapterMock3));
         assertEq(entries[5].data, abi.encode(adapterMock2));
-        assertEq(entries[6].data, abi.encode(adapterMock3));
-        assertEq(entries[7].data, abi.encode(adapterMock));
+        assertEq(entries[6].data, abi.encode(address(0)));
+        assertEq(entries[7].data, abi.encode(address(0)));
     }
 
     function testMulticallShouldSetTheRightInitiator(address initiator) public {
@@ -245,7 +245,7 @@ contract BundlerLocalTest is LocalTest {
             )
         );
 
-        vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         bundler.multicall(bundle);
     }
 
@@ -258,7 +258,7 @@ contract BundlerLocalTest is LocalTest {
             _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerTwice, (calls1, calls2)), IGNORE_HASH_CHECK)
         );
 
-        vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         bundler.multicall(bundle);
     }
 
