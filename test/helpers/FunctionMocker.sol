@@ -9,15 +9,9 @@ contract FunctionMocker {
         }
     }
 
-    function setReenterSender(address newReenterSender) external {
-        assembly {
-            tstore(1, newReenterSender)
-        }
-    }
-
     function setReenterHash(bytes32 newReenterHash) external {
         assembly {
-            tstore(2, newReenterHash)
+            tstore(1, newReenterHash)
         }
     }
 }

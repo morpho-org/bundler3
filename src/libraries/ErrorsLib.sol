@@ -12,8 +12,9 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted from an unauthorized sender.
     error UnauthorizedSender();
 
-    /// @dev Thrown when a reenter is attempted with a bundle that does not hash to the pre-recorded bundle hash.
-    error IncorrectReenterBundle();
+    /// @dev Thrown when a reenter is attempted but the concatenation of the sender and bundle does not hash to the
+    /// pre-recorded `reenterHash`.
+    error IncorrectReenterHash();
 
     /// @dev Thrown when a reenter was expected but did not happen.
     error MissingExpectedReenter();

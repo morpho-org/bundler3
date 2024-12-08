@@ -17,10 +17,7 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Only account allowed to reenter the bundle.
-    address public transient reenterSender;
-
-    /// @notice Hash of the next reenter calldata.
+    /// @notice Hash of the concatenation of the next reenter sender and calldata.
     bytes32 public transient reenterHash;
 
     /* EXTERNAL */
@@ -43,11 +40,11 @@ contract Bundler is IBundler {
     /// @dev Can only be called by the last unreturned callee.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
-        require(msg.sender == reenterSender, ErrorsLib.UnauthorizedSender());
+        require(
+            reenterHash == keccak256(bytes.concat(bytes20(msg.sender), msg.data[4:])), ErrorsLib.IncorrectReenterHash()
+        );
 
-        require(reenterHash == keccak256(msg.data[4:]), ErrorsLib.IncorrectReenterBundle());
-        // Reenter data is reset to 0 at the end of _multicall to prevent repeat reenters
-        // and avoid misleading stale values.
+        // Reenter data is reset to 0 at the end of _multicall to prevent repeat reenters.
         _multicall(bundle);
     }
 
@@ -58,7 +55,6 @@ contract Bundler is IBundler {
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
-            reenterSender = to;
             reenterHash = bundle[i].reenterHash;
 
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
@@ -67,7 +63,6 @@ contract Bundler is IBundler {
             require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
         }
 
-        reenterSender = address(0);
         reenterHash = bytes32(0);
     }
 }
