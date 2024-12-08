@@ -9,7 +9,7 @@ import {UtilsLib} from "./libraries/UtilsLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
-/// @notice Can be reentered by the last unreturned callee.
+/// @notice Can be reentered by a known sender with known data.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
@@ -17,10 +17,7 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Only account allowed to reenter the bundle.
-    address public transient reenterSender;
-
-    /// @notice Hash of the next reenter calldata.
+    /// @notice Hash of the concatenation of the sender and calldata of the next call to `reenter`.
     bytes32 public transient reenterHash;
 
     /* EXTERNAL */
@@ -40,13 +37,14 @@ contract Bundler is IBundler {
 
     /// @notice Executes a sequence of calls.
     /// @dev Useful during callbacks.
-    /// @dev Can only be called by the last unreturned callee.
+    /// @dev The sender and calldata's hash must match reenterHash.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
-        require(msg.sender == reenterSender, ErrorsLib.UnauthorizedSender());
-
-        require(reenterHash == keccak256(msg.data[4:]), ErrorsLib.IncorrectReenterBundle());
+        require(
+            reenterHash == keccak256(bytes.concat(bytes20(msg.sender), msg.data[4:])), ErrorsLib.IncorrectReenterHash()
+        );
         reenterHash = bytes32(0);
+
         _multicall(bundle);
     }
 
@@ -55,16 +53,12 @@ contract Bundler is IBundler {
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
         for (uint256 i; i < bundle.length; ++i) {
-            address to = bundle[i].to;
-
-            reenterSender = to;
             reenterHash = bundle[i].reenterHash;
 
-            (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
+            (bool success, bytes memory returnData) = bundle[i].to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
 
             require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
         }
-        reenterSender = address(0);
     }
 }
