@@ -262,16 +262,17 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testMissedReenterFails(bytes32 _hash) public {
+    function testMissedReenterFailsByDefault(bytes32 _hash) public {
         vm.assume(_hash != IGNORE_HASH_CHECK);
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
 
-    function testMissedReenterSucceedsWithIgnoreHashCheck(bytes32 _hash) public {
+    function testMissedReenterFailsWithIgnoreHashCheck(bytes32 _hash) public {
         vm.assume(_hash != IGNORE_HASH_CHECK);
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), IGNORE_HASH_CHECK));
+        vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
 }
