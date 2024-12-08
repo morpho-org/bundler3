@@ -231,4 +231,47 @@ contract BundlerLocalTest is LocalTest {
 
         bundler.multicall(bundle);
     }
+
+    function testSequentialReenterFailsByDefault(uint256 size1, uint256 size2) public {
+        size1 = bound(size1, 0, 10);
+        size2 = bound(size2, 0, 10);
+        Call[] memory calls1 = new Call[](size1);
+        Call[] memory calls2 = new Call[](size2);
+        bundle.push(
+            _call(
+                adapterMock,
+                abi.encodeCall(AdapterMock.callbackBundlerTwice, (calls1, calls2)),
+                keccak256(abi.encode(calls1))
+            )
+        );
+
+        vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testSequentialReenterFailsWithIgnoreHashCheck(uint256 size1, uint256 size2) public {
+        size1 = bound(size1, 0, 10);
+        size2 = bound(size2, 0, 10);
+        Call[] memory calls1 = new Call[](size1);
+        Call[] memory calls2 = new Call[](size2);
+        bundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerTwice, (calls1, calls2)), IGNORE_HASH_CHECK)
+        );
+
+        vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMissedReenterFails(bytes32 _hash) public {
+        vm.assume(_hash != IGNORE_HASH_CHECK);
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
+        vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMissedReenterSucceedsWithIgnoreHashCheck(bytes32 _hash) public {
+        vm.assume(_hash != IGNORE_HASH_CHECK);
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), IGNORE_HASH_CHECK));
+        bundler.multicall(bundle);
+    }
 }

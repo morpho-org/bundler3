@@ -15,6 +15,9 @@ library ErrorsLib {
     /// @dev Thrown when a reenter is attempted with a bundle that does not hash to the pre-recorded bundle hash.
     error IncorrectReenterBundle();
 
+    /// @dev Thrown when a reenter was expected but did not happen.
+    error MissingExpectedReenter();
+
     /// @dev Thrown when a call is attempted with a zero address as input.
     error ZeroAddress();
 

@@ -373,7 +373,7 @@ abstract contract CommonTest is Test {
             abi.encodeCall(
                 GeneralAdapter1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
             ),
-            keccak256(data)
+            data.length > 0 ? keccak256(data) : bytes32(0)
         );
     }
 
@@ -426,7 +426,7 @@ abstract contract CommonTest is Test {
             abi.encodeCall(
                 GeneralAdapter1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
             ),
-            keccak256(data)
+            data.length > 0 ? keccak256(data) : bytes32(0)
         );
     }
 
@@ -439,7 +439,7 @@ abstract contract CommonTest is Test {
         return _call(
             generalAdapter1,
             abi.encodeCall(GeneralAdapter1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data)),
-            keccak256(data)
+            data.length > 0 ? keccak256(data) : bytes32(0)
         );
     }
 
@@ -455,7 +455,9 @@ abstract contract CommonTest is Test {
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
         return _call(
-            generalAdapter1, abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)), keccak256(data)
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)),
+            data.length > 0 ? keccak256(data) : bytes32(0)
         );
     }
 

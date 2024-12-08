@@ -29,6 +29,11 @@ contract AdapterMock is CoreAdapter {
         emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
     }
 
+    function callbackBundlerTwice(Call[] calldata calls1, Call[] calldata calls2) external onlyBundler {
+        IBundler(BUNDLER).reenter(calls1);
+        IBundler(BUNDLER).reenter(calls2);
+    }
+
     function callbackBundlerWithMulticall() external onlyBundler {
         IBundler(BUNDLER).multicall(new Call[](0));
     }
