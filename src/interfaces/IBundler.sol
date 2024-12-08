@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 /// @notice Struct containing all the data needed to make a call.
 /// @notice If the call will trigger a reenter, the reenterHash should be set to the hash of the reenter calldata.
-/// @notice Set the hash to `IGNORE_HASH_CHECK` defined in ConstantsLib.sol to skip the reenter hash check at your own
+/// @notice Set the hash to `SKIP_HASH_CHECK` defined in ConstantsLib.sol to skip the reenter hash check at your own
 /// risk.
 struct Call {
     address to;

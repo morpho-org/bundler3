@@ -5,7 +5,7 @@ import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
-import {IGNORE_HASH_CHECK} from "./libraries/ConstantsLib.sol";
+import {SKIP_HASH_CHECK} from "./libraries/ConstantsLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
@@ -48,7 +48,7 @@ contract Bundler is IBundler {
 
         bytes32 _reenterHash = reenterHash;
         require(
-            _reenterHash == IGNORE_HASH_CHECK || _reenterHash == keccak256(msg.data[4:]),
+            _reenterHash == SKIP_HASH_CHECK || _reenterHash == keccak256(msg.data[4:]),
             ErrorsLib.IncorrectReenterBundle()
         );
         _multicall(bundle);

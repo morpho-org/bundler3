@@ -6,7 +6,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {AdapterMock, Initiator} from "./helpers/mocks/AdapterMock.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {IGNORE_HASH_CHECK} from "../src/libraries/ConstantsLib.sol";
+import {SKIP_HASH_CHECK} from "../src/libraries/ConstantsLib.sol";
 
 contract Empty {}
 
@@ -191,7 +191,7 @@ contract BundlerLocalTest is LocalTest {
     function testBadReenterHash(bytes32 badHash) public {
         Call[] memory calls = new Call[](0);
         vm.assume(badHash != keccak256(abi.encode(calls)));
-        vm.assume(badHash != IGNORE_HASH_CHECK);
+        vm.assume(badHash != SKIP_HASH_CHECK);
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), badHash));
 
         vm.expectRevert(ErrorsLib.IncorrectReenterBundle.selector);
@@ -211,7 +211,7 @@ contract BundlerLocalTest is LocalTest {
     function testNestedBadReenterHash(bytes32 badHash) public {
         Call[] memory calls = new Call[](0);
         vm.assume(badHash != keccak256(abi.encode(calls)));
-        vm.assume(badHash != IGNORE_HASH_CHECK);
+        vm.assume(badHash != SKIP_HASH_CHECK);
         callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), badHash));
         bundle.push(
             _call(
@@ -227,7 +227,7 @@ contract BundlerLocalTest is LocalTest {
 
     function testMagicHash() public {
         Call[] memory calls = new Call[](0);
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), IGNORE_HASH_CHECK));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), SKIP_HASH_CHECK));
 
         bundler.multicall(bundle);
     }
@@ -255,7 +255,7 @@ contract BundlerLocalTest is LocalTest {
         Call[] memory calls1 = new Call[](size1);
         Call[] memory calls2 = new Call[](size2);
         bundle.push(
-            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerTwice, (calls1, calls2)), IGNORE_HASH_CHECK)
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerTwice, (calls1, calls2)), SKIP_HASH_CHECK)
         );
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
@@ -263,15 +263,15 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testMissedReenterFailsByDefault(bytes32 _hash) public {
-        vm.assume(_hash != IGNORE_HASH_CHECK);
+        vm.assume(_hash != SKIP_HASH_CHECK);
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
 
     function testMissedReenterFailsWithIgnoreHashCheck(bytes32 _hash) public {
-        vm.assume(_hash != IGNORE_HASH_CHECK);
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), IGNORE_HASH_CHECK));
+        vm.assume(_hash != SKIP_HASH_CHECK);
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), SKIP_HASH_CHECK));
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
