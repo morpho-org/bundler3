@@ -43,6 +43,4 @@ contract AdapterMock is CoreAdapter, CommonBase {
     function callbackBundlerWithMulticall() external onlyBundler {
         IBundler(BUNDLER).multicall(new Call[](0));
     }
-
-    function emitReenterSender() external {}
 }
