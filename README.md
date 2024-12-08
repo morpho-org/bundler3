@@ -21,7 +21,7 @@ A bundle is a sequence of calls where each call is specified by:
 The Bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
 
 - the initial caller is transiently stored as `initiator` during the multicall;
-- the bundler can be reentered using `reenter(Call[] calldata bundle)`, but the sender and calldata are specified in the initial bundle.
+- the bundler can be reentered using `reenter(Call[] calldata bundle)`, but the sender and calldata are specified in the bundle that originates the multicall.
 
 ### Adapters
 
