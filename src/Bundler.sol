@@ -76,7 +76,7 @@ contract Bundler is IBundler {
         lastUnreturnedCallee = previousLastUnreturnedCallee;
     }
 
-    /// @notice Transiently store `_hash` at index `index`.
+    /// @notice Transiently store `bundleHash` at index `index`.
     /// @param bundleHash The hash to store.
     /// @param index The index at which to store the hash.
     function setBundleHashAtIndex(bytes32 bundleHash, uint256 index) internal {
