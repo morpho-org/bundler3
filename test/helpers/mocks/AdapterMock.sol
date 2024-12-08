@@ -7,13 +7,13 @@ import {IBundler, Call} from "../../../src/interfaces/IBundler.sol";
 
 event Initiator(address);
 
-event reenterHash(bytes32);
+event ReenterHash(bytes32);
 
 contract AdapterMock is CoreAdapter, CommonBase {
     constructor(address bundler) CoreAdapter(bundler) {}
 
     function isProtected() external payable onlyBundler {
-        emit reenterHash(IBundler(BUNDLER).reenterHash());
+        emit ReenterHash(IBundler(BUNDLER).reenterHash());
     }
 
     function doRevert(string memory reason) external pure {
@@ -25,9 +25,9 @@ contract AdapterMock is CoreAdapter, CommonBase {
     }
 
     function callbackBundler(Call[] calldata calls) external onlyBundler {
-        emit reenterHash(IBundler(BUNDLER).reenterHash());
+        emit ReenterHash(IBundler(BUNDLER).reenterHash());
         IBundler(BUNDLER).reenter(calls);
-        emit reenterHash(IBundler(BUNDLER).reenterHash());
+        emit ReenterHash(IBundler(BUNDLER).reenterHash());
     }
 
     function callbackBundlerTwice(Call[] calldata calls1, Call[] calldata calls2) external onlyBundler {

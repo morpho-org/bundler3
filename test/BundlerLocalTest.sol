@@ -105,7 +105,7 @@ contract BundlerLocalTest is LocalTest {
         assertEq(entries.length, 8);
 
         for (uint256 i = 0; i < entries.length; i++) {
-            assertEq(entries[i].topics[0], keccak256("reenterHash(bytes32)"));
+            assertEq(entries[i].topics[0], keccak256("ReenterHash(bytes32)"));
         }
 
         bytes32 reenterHash1 = keccak256(bytes.concat(bytes20(address(adapterMock)), abi.encode(callbackBundle)));
