@@ -18,8 +18,8 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Last unreturned callee.
-    address public transient lastUnreturnedCallee;
+    /// @notice Only account allowed to reenter the bundle.
+    address public transient reenterSender;
 
     /// @notice Hash of the next reenter calldata.
     bytes32 public transient reenterHash;
@@ -44,7 +44,7 @@ contract Bundler is IBundler {
     /// @dev Can only be called by the last unreturned callee.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
-        require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
+        require(msg.sender == reenterSender, ErrorsLib.UnauthorizedSender());
 
         bytes32 _reenterHash = reenterHash;
         require(
@@ -61,7 +61,7 @@ contract Bundler is IBundler {
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
 
-            lastUnreturnedCallee = to;
+            reenterSender = to;
             reenterHash = bundle[i].reenterHash;
 
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
@@ -70,7 +70,7 @@ contract Bundler is IBundler {
             require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
         }
 
-        lastUnreturnedCallee = address(0);
+        reenterSender = address(0);
         reenterHash = bytes32(0);
     }
 }

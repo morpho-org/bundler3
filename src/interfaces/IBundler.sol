@@ -17,7 +17,7 @@ struct Call {
 interface IBundler {
     function multicall(Call[] calldata) external payable;
     function reenter(Call[] calldata) external;
-    function lastUnreturnedCallee() external view returns (address);
+    function reenterSender() external view returns (address);
     function reenterHash() external view returns (bytes32);
     function initiator() external view returns (address);
 }

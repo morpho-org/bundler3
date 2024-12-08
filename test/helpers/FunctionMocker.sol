@@ -9,9 +9,9 @@ contract FunctionMocker {
         }
     }
 
-    function setLastUnreturnedCallee(address newLastUnreturnedCallee) external {
+    function setReenterSender(address newReenterSender) external {
         assembly {
-            tstore(1, newLastUnreturnedCallee)
+            tstore(1, newReenterSender)
         }
     }
 

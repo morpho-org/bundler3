@@ -6,13 +6,13 @@ import {IBundler, Call} from "../../../src/interfaces/IBundler.sol";
 
 event Initiator(address);
 
-event lastUnreturnedCallee(address);
+event reenterSender(address);
 
 contract AdapterMock is CoreAdapter {
     constructor(address bundler) CoreAdapter(bundler) {}
 
     function isProtected() external payable onlyBundler {
-        emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
+        emit reenterSender(IBundler(BUNDLER).reenterSender());
     }
 
     function doRevert(string memory reason) external pure {
@@ -24,9 +24,9 @@ contract AdapterMock is CoreAdapter {
     }
 
     function callbackBundler(Call[] calldata calls) external onlyBundler {
-        emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
+        emit reenterSender(IBundler(BUNDLER).reenterSender());
         IBundler(BUNDLER).reenter(calls);
-        emit lastUnreturnedCallee(IBundler(BUNDLER).lastUnreturnedCallee());
+        emit reenterSender(IBundler(BUNDLER).reenterSender());
     }
 
     function callbackBundlerTwice(Call[] calldata calls1, Call[] calldata calls2) external onlyBundler {
@@ -38,5 +38,5 @@ contract AdapterMock is CoreAdapter {
         IBundler(BUNDLER).multicall(new Call[](0));
     }
 
-    function emitLastUnreturnedCallee() external {}
+    function emitReenterSender() external {}
 }
