@@ -21,6 +21,9 @@ contract Bundler is IBundler {
     /// @notice Last unreturned callee.
     address public transient lastUnreturnedCallee;
 
+    /// @notice The index of the current bundle hash.
+    uint256 internal transient bundleHashIndex;
+
     /* EXTERNAL */
 
     /// @notice Executes a sequence of calls.
@@ -33,16 +36,14 @@ contract Bundler is IBundler {
 
         initiator = msg.sender;
 
+        uint256 _bundleHashIndex = bundleHashIndex;
         for (uint256 i = 0; i < callbackBundlesHashes.length; i++) {
-            bytes32 bundleHash = callbackBundlesHashes[i];
-            // Null hash forbidden: it marks the end of the bundle hashes.
-            require(bundleHash != bytes32(0), ErrorsLib.NullHash());
-            setBundleHashAtIndex(bundleHash, i);
+            setBundleHash(_bundleHashIndex + i, callbackBundlesHashes[i]);
         }
 
         _multicall(initialBundle);
 
-        require(useBundleHash() == bytes32(0), ErrorsLib.MissingBundle());
+        require(getBundleHash(bundleHashIndex) == bytes32(0), ErrorsLib.MissingBundle());
 
         initiator = address(0);
     }
@@ -54,7 +55,7 @@ contract Bundler is IBundler {
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
         require(msg.sender == lastUnreturnedCallee, ErrorsLib.UnauthorizedSender());
-        require(useBundleHash() == keccak256(msg.data[4:]), ErrorsLib.InvalidBundle());
+        require(getBundleHash(bundleHashIndex++) == keccak256(msg.data[4:]), ErrorsLib.InvalidBundle());
         _multicall(bundle);
     }
 
@@ -77,20 +78,19 @@ contract Bundler is IBundler {
     }
 
     /// @notice Transiently store `bundleHash` at index `index`.
-    /// @param bundleHash The hash to store.
     /// @param index The index at which to store the hash.
-    function setBundleHashAtIndex(bytes32 bundleHash, uint256 index) internal {
+    /// @param bundleHash The hash to store.
+    function setBundleHash(uint256 index, bytes32 bundleHash) internal {
+        // Null hash forbidden: it marks the end of the bundle hashes.
+        require(bundleHash != bytes32(0), ErrorsLib.NullHash());
         assembly ("memory-safe") {
             tstore(add(BUNDLE_HASH_0_SLOT, index), bundleHash)
         }
     }
 
-    /// @notice Return the current hash in the sequence and move to the next index.
-    /// @dev The current index starts at 0 and is stored in transient storage.
-    function useBundleHash() internal returns (bytes32 bundleHash) {
+    /// @notice Return the current hash at index `index`.
+    function getBundleHash(uint256 index) internal returns (bytes32 bundleHash) {
         assembly ("memory-safe") {
-            let index := tload(CURRENT_BUNDLE_HASH_INDEX_SLOT)
-            tstore(CURRENT_BUNDLE_HASH_INDEX_SLOT, add(index, 1))
             bundleHash := tload(add(BUNDLE_HASH_0_SLOT, index))
         }
     }
