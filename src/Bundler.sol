@@ -9,7 +9,7 @@ import {UtilsLib} from "./libraries/UtilsLib.sol";
 /// @custom:contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
-/// @notice Can be reentered by the last unreturned callee.
+/// @notice Can be reentered by a known sender with known data.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
 contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
@@ -17,7 +17,7 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Hash of the concatenation of the next reenter sender and calldata.
+    /// @notice Hash of the concatenation of the sender and calldata of the next call to `reenter`.
     bytes32 public transient reenterHash;
 
     /* EXTERNAL */
@@ -37,7 +37,7 @@ contract Bundler is IBundler {
 
     /// @notice Executes a sequence of calls.
     /// @dev Useful during callbacks.
-    /// @dev Can only be called by the last unreturned callee.
+    /// @dev The sender and calldata's hash must match reenterHash.
     /// @param bundle The ordered array of calldata to execute.
     function reenter(Call[] calldata bundle) external {
         require(

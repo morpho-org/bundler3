@@ -2,7 +2,8 @@
 pragma solidity >=0.8.0;
 
 /// @notice Struct containing all the data needed to make a call.
-/// @notice If the call will trigger a reenter, the reenterHash should be set to the hash of the reenter calldata.
+/// @notice If the call will trigger a reenter, the reenterHash should be set to the hash of the concatenation of the
+/// sender and calldata.
 struct Call {
     address to;
     bytes data;
