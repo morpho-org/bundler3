@@ -6,6 +6,7 @@ on:
       - main
   pull_request:
 
+# Allows to skip tests if compilation fails.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
@@ -17,69 +18,33 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - uses: ./.github/actions/install
 
       - name: Build contracts via IR & check sizes
-        # don't use compilation cache
         # skip import files, because we don't care if contracts are too big
-        run: yarn build --force --sizes --skip Import
+        run: forge build --sizes --skip Import
 
-
-  test-local:
-    needs: build-via-ir
-
-    name: Local tests
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: true
-      matrix:
-        type: ["slow", "fast"]
-        include:
-          - type: "slow"
-            fuzz-runs: 1000
-            max-test-rejects: 10000
-          - type: "fast"
-            fuzz-runs: 256
-            max-test-rejects: 65536
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Save forge compilation cache
+        uses: actions/cache/save@v4
         with:
-          submodules: recursive
+          path: |
+            cache
+            out
+          key: forge-${{ github.ref_name }}-${{ github.run_id }}
 
-      - uses: ./.github/actions/install-cache
-
-      - name: Run local tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:local
-        env:
-          FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
-          FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
-          FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
-
-  test-fork:
+  test:
     needs: build-via-ir
 
-    name: Fork tests (chainid=${{ matrix.chain }})
+    name: Tests on chainid = ${{ matrix.chain }}
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: true
       matrix:
         chain: [1, 8453]
-        type: ["slow", "fast"]
-        include:
-          - type: "slow"
-            fuzz-runs: 96
-            max-test-rejects: 65536
-          - type: "fast"
-            fuzz-runs: 16
-            max-test-rejects: 65536
 
     steps:
       - name: Checkout
@@ -87,12 +52,9 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: ./.github/actions/install-cache
+      - uses: ./.github/actions/install
 
-      - name: Run fork tests on chain ${{ matrix.chain }} in ${{ matrix.type }} mode
-        run: yarn test:fork --chain ${{ matrix.chain }}
+      - name: Run tests on chain ${{ matrix.chain }}
+        run: forge test --chain ${{ matrix.chain }}
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
-          FOUNDRY_FUZZ_RUNS: ${{ matrix.fuzz-runs }}
-          FOUNDRY_FUZZ_MAX_TEST_REJECTS: ${{ matrix.max-test-rejects }}
-          FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}

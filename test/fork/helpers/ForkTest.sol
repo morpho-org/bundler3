@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
 import {IStEth} from "../../../src/interfaces/IStEth.sol";
@@ -7,16 +7,18 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
-import {EthereumModule1} from "../../../src/ethereum/EthereumModule1.sol";
+import {EthereumGeneralAdapter1, MathRayLib} from "../../../src/adapters/EthereumGeneralAdapter1.sol";
 
 import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";
 
 abstract contract ForkTest is CommonTest, NetworkConfig {
-    using SafeTransferLib for ERC20;
-
-    EthereumModule1 internal ethereumModule1;
-    MarketParams[] allMarketParams;
+    EthereumGeneralAdapter1 internal ethereumGeneralAdapter1;
+    MarketParams[] internal allMarketParams;
+    // Overloaded function permit in IAllowanceTransfer cannot be directly referenced in Solidity. The selectors are
+    // used directly.
+    bytes4 constant permitSingleSelector = 0x2b67b570;
+    bytes4 constant permitBatchSelector = 0x2a2d80d1;
 
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);
@@ -27,7 +29,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         super.setUp();
 
         if (isEq(config.network, "ethereum")) {
-            ethereumModule1 = new EthereumModule1(
+            ethereumGeneralAdapter1 = new EthereumGeneralAdapter1(
                 address(bundler),
                 address(morpho),
                 getAddress("WETH"),
@@ -36,10 +38,11 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
                 getAddress("MORPHO_TOKEN"),
                 getAddress("MORPHO_WRAPPER")
             );
-            genericModule1 = GenericModule1(ethereumModule1);
+            generalAdapter1 = GeneralAdapter1(ethereumGeneralAdapter1);
         } else {
-            genericModule1 = new GenericModule1(address(bundler), address(morpho), getAddress("WETH"));
+            generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), getAddress("WETH"));
         }
+        paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), getAddress("AUGUSTUS_REGISTRY"));
 
         for (uint256 i; i < config.markets.length; ++i) {
             ConfigMarket memory configMarket = config.markets[i];
@@ -61,7 +64,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         }
 
         vm.prank(USER);
-        morpho.setAuthorization(address(genericModule1), true);
+        morpho.setAuthorization(address(generalAdapter1), true);
     }
 
     // Checks that two `string` values are equal.
@@ -114,7 +117,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
                 expiration: type(uint48).max,
                 nonce: uint48(nonce)
             }),
-            spender: address(genericModule1),
+            spender: address(generalAdapter1),
             sigDeadline: SIGNATURE_DEADLINE
         });
 
@@ -123,8 +126,10 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.approve2, (permitSingle, abi.encodePacked(r, s, v), skipRevert))
+            address(Permit2Lib.PERMIT2),
+            abi.encodeWithSelector(permitSingleSelector, vm.addr(privateKey), permitSingle, abi.encodePacked(r, s, v)),
+            0,
+            skipRevert
         );
     }
 
@@ -148,7 +153,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         IAllowanceTransfer.PermitBatch memory permitBatch = IAllowanceTransfer.PermitBatch({
             details: details,
-            spender: address(genericModule1),
+            spender: address(generalAdapter1),
             sigDeadline: SIGNATURE_DEADLINE
         });
 
@@ -157,17 +162,19 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 
         return _call(
-            genericModule1,
-            abi.encodeCall(GenericModule1.approve2Batch, (permitBatch, abi.encodePacked(r, s, v), skipRevert))
+            address(Permit2Lib.PERMIT2),
+            abi.encodeWithSelector(permitBatchSelector, vm.addr(privateKey), permitBatch, abi.encodePacked(r, s, v)),
+            0,
+            skipRevert
         );
     }
 
     function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
-        return _transferFrom2(asset, address(genericModule1), amount);
+        return _transferFrom2(asset, address(generalAdapter1), amount);
     }
 
     function _transferFrom2(address asset, address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.transferFrom2, (asset, receiver, amount)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.transferFrom2, (asset, receiver, amount)));
     }
 
     /* STAKE ACTIONS */
@@ -177,42 +184,33 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         view
         returns (Call memory)
     {
-        return _stakeEth(amount, maxSharePriceE27, referral, receiver, amount);
-    }
-
-    function _stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver, uint256 callValue)
-        internal
-        view
-        returns (Call memory)
-    {
         return _call(
-            ethereumModule1,
-            abi.encodeCall(EthereumModule1.stakeEth, (amount, maxSharePriceE27, referral, receiver)),
-            callValue
+            ethereumGeneralAdapter1,
+            abi.encodeCall(EthereumGeneralAdapter1.stakeEth, (amount, maxSharePriceE27, referral, receiver))
         );
     }
 
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.wrapStEth, (amount, receiver)));
+        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.wrapStEth, (amount, receiver)));
     }
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(ethereumModule1, abi.encodeCall(EthereumModule1.unwrapStEth, (amount, receiver)));
+        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.unwrapStEth, (amount, receiver)));
     }
 
     /* WRAPPED NATIVE ACTIONS */
 
     function _wrapNativeNoFunding(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.wrapNative, (amount, receiver)), 0);
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)), 0);
     }
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.wrapNative, (amount, receiver)), amount);
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)));
     }
 
     function _unwrapNative(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(genericModule1, abi.encodeCall(GenericModule1.unwrapNative, (amount, receiver)));
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.unwrapNative, (amount, receiver)));
     }
 }

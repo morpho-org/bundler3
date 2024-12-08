@@ -1,35 +1,103 @@
-# Morpho Blue Bundlers
+# Morpho Bundler v3
 
-[Morpho Blue](https://github.com/morpho-org/morpho-blue) is a new lending primitive that offers better rates, high capital efficiency and extended flexibility to lenders & borrowers. `morpho-blue-bundlers` hosts the logic that builds alongside the core protocol like MetaMorpho and bundlers.
+The [`Bundler`](./src/Bundler.sol) allows accounts to batch-execute a sequence of arbitrary calls atomically.
+It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
 
-![bundler-3](https://github.com/morpho-org/morpho-blue-bundlers/assets/74971347/827630e1-7abc-4f9d-a494-fe3fa7aa7053)
+### Bundler
 
-Each Bundler is a domain-specific abstract layer of contract that implements some functions that can be bundled in a single call by EOAs to a single contract. They all inherit from [`BaseBundler`](./src/BaseBundler.sol) that enables bundling multiple function calls into a single `multicall(bytes[] calldata data)` call to the end bundler contract. Each chain-specific bundler is available under their chain-specific folder (e.g. [`ethereum`](./src/ethereum/)).
+<img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
 
-Some chain-specific domains are also scoped to the chain-specific folder, because they are not expected to be used on any other chain (e.g. DAI and its specific `permit` function is only available on Ethereum - see [`EthereumPermitBundler`](./src/ethereum/EthereumPermitBundler.sol)).
+The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
+A bundle is a sequence of calls where each call is specified by:
 
-User-end bundlers are provided in each chain-specific folder, instantiating all the intermediary domain-specific bundlers and associated parameters (such as chain-specific protocol addresses, e.g. [`EthereumBundlerV2`](./src/ethereum/EthereumBundlerV2.sol)).
+- `to`, an address to call;
+- `data`, some calldata to pass to the call;
+- `value`, an amount of native currency to send with the call;
+- `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
+
+The Bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
+
+- the initial caller is transiently stored as `initiator` during the multicall;
+- the last non-returned called address can re-enter the Bundler using `reenter(Call[] calldata bundle)`.
+
+### Adapters
+
+The Bundler can call either directly protocols, or wrappers of protocols (called "adapters").
+Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
+
+In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
+For instance, an adapter that needs to hold some token approvals should call `token.transferFrom` only with `from` being the initiator.
+
+Since these functions can typically move user funds, only the Bundler should be allowed to call them.
+If an adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Bundler's `reenter(Call[] calldata bundle)` function.
+
+## Adapters List
+
+All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which provides essential features such as accessing the current initiator address.
+
+### [`GeneralAdapter1`](./src/adapters/GeneralAdapter1.sol)
+
+Contains the following actions:
+
+- ERC20 transfers, permit, wrap & unwrap.
+- Native token (e.g. WETH) transfers, wrap & unwrap.
+- ERC4626 mint, deposit, withdraw & redeem.
+- Morpho interactions.
+- Permit2 approvals.
+- URD claim.
+
+### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
+
+Contains the following actions:
+
+- Actions of `GeneralAdapter1`.
+- Morpho token wrapper withdrawal.
+- DAI permit.
+- stETH staking.
+- wstETH wrap & unwrap.
+
+### [`ParaswapAdapter`](./src/adapters/ParaswapAdapter.sol)
+
+Contains the following actions, all using the paraswap aggregator:
+
+- Sell a given amount or the balance.
+- Buy a given amount.
+- Buy a what's needed to fully repay on a given Morpho Market.
+
+### Migration adapters
+
+For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./src/adapters/migration/AaveV3MigrationAdapter.sol), [Compound V2](./src/adapters/migration/CompoundV2MigrationAdapter.sol), [Compound V3](./src/adapters/migration/CompoundV3MigrationAdapter.sol), and [Morpho Aave V3 Optimizer](./src/adapters/migration/AaveV3OptimizerMigrationAdapter.sol).
+
+## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
+
+- Make use of transient storage.
+- Bundler is now a call dispatcher that does not require any approval.
+  Because call-dispatch and approvals are now separated, it is possible to add adapters over time without additional risk to users of existing adapters.
+- All generic features are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
+- All Ethereum related features are in the `EthereumAdapter1` which inherits from `GeneralAdapter1`.
+- The `1` after `Adapter` is not a version number: when new features are development we will deploy additional adapters, for instance `GeneralAdapter2`.
+  Existing adapters will still be used.
+- Many adjustments such as:
+  - A value `amount` is only taken to be the current balance (when it makes sense) if equal to `uint.max`
+  - Slippage checks are done with a price argument instead of a limit amount.
+  - When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
+  - There are receiver arguments in all functions that give tokens to the adapter so the adapter can pass along those tokens.
 
 ## Development
 
-Install dependencies with `yarn`.
-
-Run tests with `yarn test --chain <chainid>` (chainid can be 1 or 8453).
-
-Note that the `EthereumBundlerV2` has been deployed with 80 000 optimizer runs.
-To compile contracts with the same configuration, run `FOUNDRY_PROFILE=ethereumBundlerV2 forge b`.
+Run tests with `forge test --chain <chainid>` (chainid can be 1 or 8453, 1 by default).
 
 ## Audits
 
-All audits are stored in the [audits](./audits/)' folder.
+TBA.
 
 ## License
 
-Bundlers are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+Source files are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
 
 ## Links
 
-- [Deployments](https://docs.morpho.org/bundlers/addresses/#bundlers)
-- [SDK](https://github.com/morpho-org/sdks/tree/main/packages/bundler-sdk-ethers)
+- Deployments: TBA.
+- SDK: TBA.

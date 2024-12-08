@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ERC20Mock} from "../../src/mocks/ERC20Mock.sol";
+import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
 import "./LocalTest.sol";
 
@@ -16,9 +16,9 @@ interface IMetaMorpho {
 abstract contract MetaMorphoLocalTest is LocalTest {
     using MarketParamsLib for MarketParams;
 
-    address internal VAULT_OWNER = makeAddr("VaultOwner");
-    IMetaMorpho vault;
-    MarketParams idleMarketParams;
+    address internal immutable VAULT_OWNER = makeAddr("VaultOwner");
+    IMetaMorpho internal vault;
+    MarketParams internal idleMarketParams;
 
     function setUp() public virtual override {
         super.setUp();

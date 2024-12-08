@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {ERC20Mock} from "../../src/mocks/ERC20Mock.sol";
+import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
 import "./CommonTest.sol";
 
@@ -23,20 +23,23 @@ abstract contract LocalTest is CommonTest {
         super.setUp();
 
         loanToken = new ERC20Mock("loan", "B");
+        vm.label(address(loanToken), "loanToken");
         collateralToken = new ERC20Mock("collateral", "C");
+        vm.label(address(collateralToken), "collateralToken");
 
         marketParams = MarketParams(address(loanToken), address(collateralToken), address(oracle), address(irm), LLTV);
         id = marketParams.id();
 
-        vm.startPrank(OWNER);
-        morpho.enableLltv(LLTV);
-        morpho.createMarket(marketParams);
-        vm.stopPrank();
-
         loanToken.approve(address(morpho), type(uint256).max);
         collateralToken.approve(address(morpho), type(uint256).max);
 
-        vm.prank(SUPPLIER);
+        vm.startPrank(OWNER);
+        morpho.enableLltv(LLTV);
+        morpho.createMarket(marketParams);
+
+        vm.startPrank(SUPPLIER);
         loanToken.approve(address(morpho), type(uint256).max);
+        collateralToken.approve(address(morpho), type(uint256).max);
+        vm.stopPrank();
     }
 }
