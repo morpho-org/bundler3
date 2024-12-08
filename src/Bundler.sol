@@ -68,6 +68,5 @@ contract Bundler is IBundler {
 
             require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
         }
-
     }
 }
