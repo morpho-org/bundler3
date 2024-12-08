@@ -53,11 +53,9 @@ contract Bundler is IBundler {
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
         for (uint256 i; i < bundle.length; ++i) {
-            address to = bundle[i].to;
-
             reenterHash = bundle[i].reenterHash;
 
-            (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
+            (bool success, bytes memory returnData) = bundle[i].to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
 
             require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
