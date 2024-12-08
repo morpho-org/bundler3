@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {IBundler, Call} from "./interfaces/IBundler.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {CURRENT_BUNDLE_HASH_INDEX_SLOT, BUNDLE_HASH_0_SLOT} from "./libraries/ConstantsLib.sol";
+import {BUNDLE_HASH_0_SLOT} from "./libraries/ConstantsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
 
 /// @custom:contact security@morpho.org

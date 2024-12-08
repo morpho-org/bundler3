@@ -6,7 +6,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 import {AdapterMock, Initiator} from "./helpers/mocks/AdapterMock.sol";
 import {IERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {CURRENT_BUNDLE_HASH_INDEX_SLOT, BUNDLE_HASH_0_SLOT} from "../src/libraries/ConstantsLib.sol";
+import {BUNDLE_HASH_0_SLOT} from "../src/libraries/ConstantsLib.sol";
 
 contract Empty {}
 
@@ -36,10 +36,6 @@ contract BundlerLocalTest is LocalTest {
 
     function testMulticallEmpty() public {
         bundler.multicall(bundle);
-    }
-
-    function testCurrentBundleHashIndexSlot() public pure {
-        assertEq(CURRENT_BUNDLE_HASH_INDEX_SLOT, keccak256("Morpho Bundler Current Bundle Hash Index Slot"));
     }
 
     function testBundleHash0Slot() public pure {
