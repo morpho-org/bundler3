@@ -46,6 +46,8 @@ contract Bundler is IBundler {
         require(msg.sender == reenterSender, ErrorsLib.UnauthorizedSender());
 
         require(reenterHash == keccak256(msg.data[4:]), ErrorsLib.IncorrectReenterBundle());
+        // Reenter data is reset to 0 at the end of _multicall to prevent repeat reenters
+        // and avoid misleading stale values.
         _multicall(bundle);
     }
 
