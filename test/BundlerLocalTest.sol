@@ -262,4 +262,18 @@ contract BundlerLocalTest is LocalTest {
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
+
+    function testEmptyBundle() public {
+        Call[] memory calls = new Call[](0);
+        bundler.multicall(calls);
+    }
+
+    function testEmptyReenter() public {
+        Call[] memory calls = new Call[](0);
+
+        bundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), keccak256(abi.encode(calls)))
+        );
+        bundler.multicall(bundle);
+    }
 }
