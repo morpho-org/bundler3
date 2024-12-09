@@ -30,6 +30,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testMulticallEmpty() public {
+        vm.expectRevert(ErrorsLib.EmptyBundle.selector);
         bundler.multicall(bundle);
     }
 
@@ -38,19 +39,6 @@ contract BundlerLocalTest is LocalTest {
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerWithMulticall, ())));
 
         vm.expectRevert(ErrorsLib.AlreadyInitiated.selector);
-        vm.prank(initiator);
-        bundler.multicall(bundle);
-    }
-
-    function testInitiatorReset(address initiator) public {
-        vm.assume(initiator != address(0));
-
-        vm.prank(initiator);
-        bundler.multicall(bundle);
-
-        assertEq(bundler.initiator(), address(0));
-
-        // Test that it's possible to do a second multicall in the same tx.
         vm.prank(initiator);
         bundler.multicall(bundle);
     }
@@ -141,6 +129,9 @@ contract BundlerLocalTest is LocalTest {
 
         vm.prank(initiator);
         bundler.multicall(bundle);
+
+        // Test that the initiator is reset.
+        assertEq(bundler.initiator(), address(0));
     }
 
     function testMulticallShouldPassRevertData(string memory revertReason) public {
@@ -165,18 +156,18 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(initiator != address(0));
         vm.assume(initiator != adapter);
 
-        Call[] memory calls = new Call[](0);
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ())));
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
         _delegatePrank(
             address(bundler),
             abi.encodeCall(
-                FunctionMocker.setReenterHash, keccak256(bytes.concat(bytes20(adapter), keccak256(abi.encode(calls))))
+                FunctionMocker.setReenterHash, keccak256(bytes.concat(bytes20(adapter), keccak256(abi.encode(bundle))))
             )
         );
 
         vm.prank(adapter);
-        bundler.reenter(calls);
+        bundler.reenter(bundle);
     }
 
     function testNotSkipRevert() public {
