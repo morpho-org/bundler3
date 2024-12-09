@@ -3,7 +3,6 @@ pragma solidity >=0.8.0;
 
 /// @notice Struct containing all the data needed to make a call.
 /// @notice If the call will trigger a reenter, the callbackHash should be set to the hash of the reenter bundle data.
-/// risk.
 struct Call {
     address to;
     bytes data;
