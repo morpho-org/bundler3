@@ -44,14 +44,16 @@ contract Bundler is IBundler {
             reenterHash == keccak256(bytes.concat(bytes20(msg.sender), keccak256(msg.data[4:]))),
             ErrorsLib.IncorrectReenterHash()
         );
-        reenterHash = bytes32(0);
         _multicall(bundle);
+        // After _multicall the value of reenterHash is bytes32(0).
     }
 
     /* INTERNAL */
 
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
+        require(bundle.length > 0, ErrorsLib.EmptyBundle());
+
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
             bytes32 callbackHash = bundle[i].callbackHash;
