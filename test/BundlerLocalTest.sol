@@ -263,8 +263,7 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-
-    function testReenterEnter() public {
+    function testReenterEmpty() public {
         Call[] memory calls = new Call[](0);
 
         bundle.push(
