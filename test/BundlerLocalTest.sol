@@ -212,7 +212,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testGoodReenterHash(uint256 size) public {
-        size = bound(size, 0, 100);
+        size = bound(size, 1, 100);
         Call[] memory calls = new Call[](size);
 
         bundle.push(
@@ -241,8 +241,8 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testSequentialReenterFailsByDefault(uint256 size1, uint256 size2) public {
-        size1 = bound(size1, 0, 10);
-        size2 = bound(size2, 0, 10);
+        size1 = bound(size1, 1, 10);
+        size2 = bound(size2, 1, 10);
         Call[] memory calls1 = new Call[](size1);
         Call[] memory calls2 = new Call[](size2);
         bundle.push(
