@@ -147,19 +147,39 @@ abstract contract CommonTest is Test {
 
     /* GENERAL ADAPTER CALL */
     function _call(CoreAdapter to, bytes memory data) internal pure returns (Call memory) {
-        return _call(address(to), data, 0, false);
+        return _call(address(to), data, 0, false, hex"");
     }
 
     function _call(address to, bytes memory data) internal pure returns (Call memory) {
-        return _call(to, data, 0, false);
+        return _call(to, data, 0, false, hex"");
     }
 
     function _call(CoreAdapter to, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        return _call(address(to), data, value, false);
+        return _call(address(to), data, value, false, hex"");
     }
 
     function _call(address to, bytes memory data, uint256 value) internal pure returns (Call memory) {
-        return _call(to, data, value, false);
+        return _call(to, data, value, false, hex"");
+    }
+
+    function _call(CoreAdapter to, bytes memory data, bool skipRevert) internal pure returns (Call memory) {
+        return _call(address(to), data, 0, skipRevert, hex"");
+    }
+
+    function _call(address to, bytes memory data, bool skipRevert) internal pure returns (Call memory) {
+        return _call(to, data, 0, skipRevert, hex"");
+    }
+
+    function _call(CoreAdapter to, bytes memory data, bytes32 callbackHash) internal pure returns (Call memory) {
+        return _call(address(to), data, 0, false, callbackHash);
+    }
+
+    function _call(CoreAdapter to, bytes memory data, uint256 value, bool skipRevert, bytes32 callbackHash)
+        internal
+        pure
+        returns (Call memory)
+    {
+        return _call(address(to), data, value, skipRevert, callbackHash);
     }
 
     function _call(CoreAdapter to, bytes memory data, uint256 value, bool skipRevert)
@@ -167,12 +187,20 @@ abstract contract CommonTest is Test {
         pure
         returns (Call memory)
     {
-        return _call(address(to), data, value, skipRevert);
+        return _call(address(to), data, value, skipRevert, hex"");
     }
 
     function _call(address to, bytes memory data, uint256 value, bool skipRevert) internal pure returns (Call memory) {
+        return _call(to, data, value, skipRevert, hex"");
+    }
+
+    function _call(address to, bytes memory data, uint256 value, bool skipRevert, bytes32 callbackHash)
+        internal
+        pure
+        returns (Call memory)
+    {
         require(to != address(0), "Adapter address is zero");
-        return Call(to, data, value, skipRevert);
+        return Call(to, data, value, skipRevert, callbackHash);
     }
 
     /* CALL WITH VALUE */
@@ -196,7 +224,7 @@ abstract contract CommonTest is Test {
         pure
         returns (Call memory)
     {
-        return _call(adapter, abi.encodeCall(adapter.nativeTransfer, (recipient, amount)), 0);
+        return _call(adapter, abi.encodeCall(adapter.nativeTransfer, (recipient, amount)), uint256(0));
     }
 
     /* ERC20 ACTIONS */
@@ -344,7 +372,8 @@ abstract contract CommonTest is Test {
             generalAdapter1,
             abi.encodeCall(
                 GeneralAdapter1.morphoSupply, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
-            )
+            ),
+            data.length == 0 ? bytes32(0) : keccak256(data)
         );
     }
 
@@ -396,7 +425,8 @@ abstract contract CommonTest is Test {
             generalAdapter1,
             abi.encodeCall(
                 GeneralAdapter1.morphoRepay, (marketParams, assets, shares, maxSharePriceE27, onBehalf, data)
-            )
+            ),
+            data.length == 0 ? bytes32(0) : keccak256(data)
         );
     }
 
@@ -408,7 +438,8 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         return _call(
             generalAdapter1,
-            abi.encodeCall(GeneralAdapter1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data))
+            abi.encodeCall(GeneralAdapter1.morphoSupplyCollateral, (marketParams, assets, onBehalf, data)),
+            data.length == 0 ? bytes32(0) : keccak256(data)
         );
     }
 
@@ -423,7 +454,11 @@ abstract contract CommonTest is Test {
     }
 
     function _morphoFlashLoan(address token, uint256 amount, bytes memory data) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)));
+        return _call(
+            generalAdapter1,
+            abi.encodeCall(GeneralAdapter1.morphoFlashLoan, (token, amount, data)),
+            data.length == 0 ? bytes32(0) : keccak256(data)
+        );
     }
 
     /* PARASWAP ADAPTER ACTIONS */

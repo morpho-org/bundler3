@@ -12,6 +12,16 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted from an unauthorized sender.
     error UnauthorizedSender();
 
+    /// @dev Thrown when a reenter is attempted but the concatenation of the sender and bundle does not hash to the
+    /// pre-recorded `reenterHash`.
+    error IncorrectReenterHash();
+
+    /// @dev Thrown when a multicall is attempted with an empty bundle.
+    error EmptyBundle();
+
+    /// @dev Thrown when a reenter was expected but did not happen.
+    error MissingExpectedReenter();
+
     /// @dev Thrown when a call is attempted with a zero address as input.
     error ZeroAddress();
 

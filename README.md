@@ -16,11 +16,13 @@ A bundle is a sequence of calls where each call is specified by:
 - `data`, some calldata to pass to the call;
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
+- `callbackHash`, hash of the argument to the expected `reenter` (0 if no reentrance).
+
 
 The Bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
 
 - the initial caller is transiently stored as `initiator` during the multicall;
-- the last non-returned called address can re-enter the Bundler using `reenter(Call[] calldata bundle)`.
+- the last non-returned called address can re-enter the Bundler using `reenter(Call[] calldata bundle)`, but the argument to the `reenter` call is specified in the bundle.
 
 ### Adapters
 
