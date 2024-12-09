@@ -44,7 +44,6 @@ contract Bundler is IBundler {
             reenterHash == keccak256(bytes.concat(bytes20(msg.sender), keccak256(msg.data[4:]))),
             ErrorsLib.IncorrectReenterHash()
         );
-        reenterHash = bytes32(0);
         _multicall(bundle);
     }
 
