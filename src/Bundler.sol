@@ -45,6 +45,7 @@ contract Bundler is IBundler {
             ErrorsLib.IncorrectReenterHash()
         );
         _multicall(bundle);
+        // After _multicall the value of reenterHash is bytes32(0).
     }
 
     /* INTERNAL */
