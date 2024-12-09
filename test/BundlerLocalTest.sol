@@ -34,6 +34,17 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
+    function testEmptyReenter() public {
+        Call[] memory calls = new Call[](0);
+
+        bundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), keccak256(abi.encode(calls)))
+        );
+
+        vm.expectRevert(ErrorsLib.EmptyBundle.selector);
+        bundler.multicall(bundle);
+    }
+
     function testAlreadyInitiated(address initiator) public {
         vm.assume(initiator != address(0));
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundlerWithMulticall, ())));
@@ -251,20 +262,6 @@ contract BundlerLocalTest is LocalTest {
     function testMissedReenterFailsByDefault(bytes32 _hash) public {
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), 0, false, _hash));
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
-        bundler.multicall(bundle);
-    }
-
-    function testEmptyBundle() public {
-        Call[] memory calls = new Call[](0);
-        bundler.multicall(calls);
-    }
-
-    function testEmptyReenter() public {
-        Call[] memory calls = new Call[](0);
-
-        bundle.push(
-            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), keccak256(abi.encode(calls)))
-        );
         bundler.multicall(bundle);
     }
 }
