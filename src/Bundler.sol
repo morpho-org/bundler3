@@ -45,7 +45,6 @@ contract Bundler is IBundler {
             ErrorsLib.IncorrectReenterHash()
         );
         reenterHash = bytes32(0);
-        // Before _multicall the value of reenterHash is bytes32(0).
         _multicall(bundle);
     }
 
@@ -53,6 +52,7 @@ contract Bundler is IBundler {
 
     /// @notice Executes a sequence of calls.
     function _multicall(Call[] calldata bundle) internal {
+        // Before _multicall the value of reenterHash is bytes32(0).
         for (uint256 i; i < bundle.length; ++i) {
             address to = bundle[i].to;
             bytes32 callbackHash = bundle[i].callbackHash;
