@@ -265,7 +265,7 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testMissedReenterFollowedByReenterFails(bytes32 _hash) public {
+    function testMissedReenterFollowedByActionWithReenterFails(bytes32 _hash) public {
         vm.assume(_hash != bytes32(0));
         callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), bytes32(0)));
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
@@ -276,6 +276,17 @@ contract BundlerLocalTest is LocalTest {
                 keccak256(abi.encode(callbackBundle))
             )
         );
+
+        vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMissedReenterFollowedByActionWithoutReenterFails(bytes32 _hash) public {
+        vm.assume(_hash != bytes32(0));
+
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), bytes32(0)));
+
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
