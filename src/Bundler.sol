@@ -63,7 +63,7 @@ contract Bundler is IBundler {
             (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
             if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
 
-            require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
+            require(callbackHash == bytes32(0) || reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
         }
     }
 }
