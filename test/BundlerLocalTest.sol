@@ -30,18 +30,6 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testMulticallEmpty() public {
-        vm.expectRevert(ErrorsLib.EmptyBundle.selector);
-        bundler.multicall(bundle);
-    }
-
-    function testReenterEmpty() public {
-        Call[] memory calls = new Call[](0);
-
-        bundle.push(
-            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), keccak256(abi.encode(calls)))
-        );
-
-        vm.expectRevert(ErrorsLib.EmptyBundle.selector);
         bundler.multicall(bundle);
     }
 
@@ -167,18 +155,18 @@ contract BundlerLocalTest is LocalTest {
         vm.assume(initiator != address(0));
         vm.assume(initiator != adapter);
 
-        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ())));
+        Call[] memory calls = new Call[](0);
 
         _delegatePrank(address(bundler), abi.encodeCall(FunctionMocker.setInitiator, (initiator)));
         _delegatePrank(
             address(bundler),
             abi.encodeCall(
-                FunctionMocker.setReenterHash, keccak256(bytes.concat(bytes20(adapter), keccak256(abi.encode(bundle))))
+                FunctionMocker.setReenterHash, keccak256(bytes.concat(bytes20(adapter), keccak256(abi.encode(calls))))
             )
         );
 
         vm.prank(adapter);
-        bundler.reenter(bundle);
+        bundler.reenter(calls);
     }
 
     function testNotSkipRevert() public {
@@ -214,7 +202,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testGoodReenterHash(uint256 size) public {
-        size = bound(size, 1, 100);
+        size = bound(size, 0, 100);
         Call[] memory calls = new Call[](size);
 
         bundle.push(
@@ -243,8 +231,8 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testSequentialReenterFailsByDefault(uint256 size1, uint256 size2) public {
-        size1 = bound(size1, 1, 10);
-        size2 = bound(size2, 1, 10);
+        size1 = bound(size1, 0, 10);
+        size2 = bound(size2, 0, 10);
         Call[] memory calls1 = new Call[](size1);
         Call[] memory calls2 = new Call[](size2);
         bundle.push(
@@ -262,6 +250,15 @@ contract BundlerLocalTest is LocalTest {
     function testMissedReenterFailsByDefault(bytes32 _hash) public {
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), 0, false, _hash));
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testReenterEmpty() public {
+        Call[] memory calls = new Call[](0);
+
+        bundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler, (calls)), keccak256(abi.encode(calls)))
+        );
         bundler.multicall(bundle);
     }
 }

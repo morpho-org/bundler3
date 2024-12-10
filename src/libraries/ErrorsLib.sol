@@ -16,9 +16,6 @@ library ErrorsLib {
     /// pre-recorded `reenterHash`.
     error IncorrectReenterHash();
 
-    /// @dev Thrown when a multicall is attempted with an empty bundle.
-    error EmptyBundle();
-
     /// @dev Thrown when a reenter was expected but did not happen.
     error MissingExpectedReenter();
 
