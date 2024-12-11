@@ -307,7 +307,7 @@ contract GeneralAdapter1 is CoreAdapter {
         }
 
         if (shares == type(uint256).max) {
-            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), initiator());
+            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), onBehalf);
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
