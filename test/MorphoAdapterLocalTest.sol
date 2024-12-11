@@ -561,6 +561,7 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
     }
 
     function testRepayMaxShares(uint256 privateKey, uint256 amount, address onBehalf) public {
+        vm.assume(onBehalf != address(0));
         address user;
         privateKey = _boundPrivateKey(privateKey);
         user = vm.addr(privateKey);
