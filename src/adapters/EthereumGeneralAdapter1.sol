@@ -71,8 +71,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
-        require(receiver != address(0), ErrorsLib.ZeroAddress());
-
+        // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
