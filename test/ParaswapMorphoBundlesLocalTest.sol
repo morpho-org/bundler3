@@ -413,7 +413,6 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // If the destination market has ~no extra collateral, and the user will not end up extremely close to destination
     // market LLTV, this is the recommended method.
     // Limitation 1: fails if the borrow asset overestimate makes the user cross LLTV.
-    // revert if too close to LLTV, or if there is not enough liquidity.
     // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
     function _createFullCollateralSwapBundleUsingRepayCallback(
         address user,
