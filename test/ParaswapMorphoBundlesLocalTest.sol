@@ -355,7 +355,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // Steps: supply more destination collateral than necessary, borrow more from destination market than necessary,
     // repay all source market debt, repay residual loan asset to destination market, withdraw all source collateral,
     // sell all source collateral for destination collateral, supply all destination collateral, withdraw initially
-    // supplied/ amount of destination collateral
+    // supplied amount of destination collateral
     // Limitation 1: fails if Morpho does not hold the destination collateral overestimated amount.
     // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
     function _createFullCollateralSwapBundleUsingSupplyCollateralCallback(
