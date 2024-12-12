@@ -354,7 +354,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // This is the recommended method unless the destination market has ~no extra collateral.
     // Steps: supply more destination collateral than necessary, borrow more from destination market than necessary,
     // repay all source market debt, repay residual loan asset to destination market, withdraw all source collateral,
-    // sell all source collateral for destination collateral, supply all destination collateral, withdraw initially supplied/ amount of destination collateral
+    // sell all source collateral for destination collateral, supply all destination collateral, withdraw initially
+    // supplied/ amount of destination collateral
     // Limitation 1: fails if Morpho does not hold the destination collateral overestimated amount.
     // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
     function _createFullCollateralSwapBundleUsingSupplyCollateralCallback(
@@ -561,7 +562,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsLoan2, borrowAmount * 2, SUPPLIER);
         // Morpho must have extra collateral for the callback to work
-        _supplyCollateral(marketParams, collateralAmount * 1/100, SUPPLIER);
+        _supplyCollateral(marketParams, collateralAmount * 1 / 100, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
         deal(address(loanToken), USER, 0);
@@ -582,20 +583,25 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     }
 
     // Method: supply collateral first.
-    // Steps: supply more collateral than necessary to destination market, borrow more destination loan assets than necessary, buy exact source debt, repay source debt, repay leftover borrow, withdraw collateral from source market, supply collateral to source market, withdraw overestimated collateral from destination market.
+    // Steps: supply more collateral than necessary to destination market, borrow more destination loan assets than
+    // necessary, buy exact source debt, repay source debt, repay leftover borrow, withdraw collateral from source
+    // market, supply collateral to source market, withdraw overestimated collateral from destination market.
     // Limitation 1: fails if Morpho does not hold the destination collateral overestimated amount.
     // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
-    // Note: starting with a `morphoRepay` and continuing in the callback does not work well because the exact debt amount becomes unknowable onchain. So at the 'buy exact debt' step, the user would have to overestimate the buy amount, then sell the excess source loan asset previously after the callback has ended.
+    // Note: starting with a `morphoRepay` and continuing in the callback does not work well because the exact debt
+    // amount becomes unknowable onchain. So at the 'buy exact debt' step, the user would have to overestimate the buy
+    // amount, then sell the excess source loan asset previously after the callback has ended.
     // Note: starting with a collateral flashloan works but this method is simpler.
     function _createFullDebtSwapBundle(address user, MarketParams memory sourceParams, MarketParams memory destParams)
         internal
     {
-        uint256 collateralOverestimate = morpho.collateral(sourceParams.id(), user) * 101/100;
+        uint256 collateralOverestimate = morpho.collateral(sourceParams.id(), user) * 101 / 100;
         uint256 toRepay = morpho.expectedBorrowAssets(sourceParams, user);
         uint256 destBorrowAssetsOverestimate = toRepay * 101 / 100; // price is 1
 
         callbackBundle.push(_morphoBorrow(destParams, destBorrowAssetsOverestimate, 0, 0, address(paraswapAdapter)));
-        // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams. Price is 1 in this example.
+        // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams. Price is 1 in this
+        // example.
         callbackBundle.push(
             _buyMorphoDebt(destParams.loanToken, toRepay, toRepay, sourceParams, user, address(generalAdapter1))
         );
@@ -648,7 +654,10 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // token (overestimated to repay overestimation of current source debt), buy source loan token with dest loan token,
     // repay source debt, repay dest debt, withdraw source collat
     // Limitation: same as full collateral swap bundle that uses flashloan
-    // Alternative: supply more destination collateral than necessary, borrow more from destination than necessary, buy exact source debt, repay exact source debt, repay leftover destination debt, withdraw all source collateral, sell all source collateral for destination collateral, supply all destination collateral, withdraw initially supplied amount of destination collateral.
+    // Alternative: supply more destination collateral than necessary, borrow more from destination than necessary, buy
+    // exact source debt, repay exact source debt, repay leftover destination debt, withdraw all source collateral, sell
+    // all source collateral for destination collateral, supply all destination collateral, withdraw initially supplied
+    // amount of destination collateral.
     function _createFullDebtAndCollateralSwapBundle(
         address user,
         MarketParams memory sourceParams,
