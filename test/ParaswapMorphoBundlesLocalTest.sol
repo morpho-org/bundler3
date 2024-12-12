@@ -351,13 +351,12 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     }
 
     // Method: supply collateral first.
-    // This is the recommended method unless the destination market has ~no existing borrowers (and thus no collateral).
+    // This is the recommended method unless the destination market has ~no extra collateral.
     // Steps: supply more destination collateral than necessary, borrow more from destination market than necessary,
     // repay all source market debt, repay residual loan asset to destination market, withdraw all source collateral,
     // sell all source collateral for destination collateral, supply all destination collateral, withdraw supplied
     // amount of destination collateral
-    // Limitation 1: fails if the destination market does not hold the difference in destination collateral between the
-    // initially supplied amount and the bought amount.
+    // Limitation 1: fails if Morpho does not hold the destination collateral overestimated amount.
     // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
     function _createFullCollateralSwapBundleUsingSupplyCollateralCallback(
         address user,
@@ -409,10 +408,10 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
 
     // Method: repay first.
     // Steps: repay all source market debt, withdraw all source collateral, sell all source collateral for destination
-    // If the destination market has ~no existing borrowers, and the user will end up extremely close to destination
-    // market LLTV, this is the recommended method.
     // collateral, supply all destination collateral, borrow more than necessary from destination market, leave repay
     // callback, repay all residual assets on destination market
+    // If the destination market has ~no extra collateral, and the user will not end up extremely close to destination
+    // market LLTV, this is the recommended method.
     // Limitation 1: fails if the borrow asset overestimate makes the user cross LLTV.
     // revert if too close to LLTV, or if there is not enough liquidity.
     // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
@@ -466,7 +465,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     }
 
     // Method: flashloan.
-    // If the user will end extremely close to destination market LLTV, this is the recommended method.
+    // This is not a recommended method, but we leave it here for reference.
     // Steps: flashloan more destination collateral than necessary, supply all destination collateral, borrow more than
     // necessary from destination market, repay entire debt source market, repay residual balance on destination market,
     // withdraw all source collateral, sell all source collateral for destination collateral, supply all destination
