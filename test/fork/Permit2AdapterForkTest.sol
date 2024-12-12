@@ -189,10 +189,18 @@ contract Permit2AdapterForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testTransferFrom2ZeroAmount() public {
+    function testTransferFrom2ZeroExactAmount() public {
         bundle.push(_transferFrom2(DAI, 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testTransferFrom2ZeroBalanceAmount() public {
+        Permit2Lib.PERMIT2.approve(DAI, address(generalAdapter1), type(uint160).max, type(uint48).max);
+
+        bundle.push(_transferFrom2(DAI, type(uint256).max));
+
         bundler.multicall(bundle);
     }
 
