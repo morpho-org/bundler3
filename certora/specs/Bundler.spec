@@ -21,13 +21,13 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
     }
 }
 
-// Check that reentering is possible if and only if `multicall` is called.
+// Check that reentering is possible only if `multicall` has been called.
 rule reenterAfterMulticall(method f, env e, calldataarg data) {
 
     // Set up the initial state.
     require !multicallCalled;
     require !reenterCalled;
-    // Safe require since it's transiently sotred so it's nullified after a transfer call.
+    // Safe require since it's transiently sotred so it's nullified after a reentrant call.
     require reenterHash() == to_bytes32(0);
 
     // Capture the first method call which is not performed with a CALL opcode.
@@ -39,11 +39,11 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 
     f@withrevert(e,data);
 
-    // Avoid failing vacuity checks, either the proposition is true or the execution reverts.
+    // Either the property holds or the execution reverts.
     assert !lastReverted => (reenterCalled => multicallCalled);
 }
 
-// Check that initiator is reset after a multicall.
+// Check that non zero initiator will trigger a revert upon a multicall.
 rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     address initiatorBefore = initiator();
 
@@ -52,7 +52,7 @@ rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     assert initiatorBefore != 0 => lastReverted;
 }
 
-// Check that the reenterHash is non zero before reentering a multicall.
+// Check that a null reenterHash will trigger a revert upon reentering the bundler.
 rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
     bytes32 reenterHashBefore = reenterHash();
 
@@ -60,7 +60,7 @@ rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
 
     assert reenterHashBefore == to_bytes32(0) => lastReverted;
 }
-
+// Check that transient storage is nullified after a multicall.
 rule initiatorZeroAfterMulticall(env e, Bundler.Call[] bundle) {
     // Safe require as implementation would revert, see rule zeroInitiatorRevertsMulticall.
     require initiator() == 0;

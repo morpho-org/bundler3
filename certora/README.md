@@ -22,7 +22,7 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 
 ## Overview
 
-The Bundler contract enables EOA to call different endopoint contracts onchain as well as grouping several calls in a single bundle.
+The Bundler contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
 These calls may themselves reenter the bundler.
 
 ### Bundler
@@ -35,7 +35,7 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 The [`certora/specs`](specs) folder contains the following files:
 
-- [`Bundler.spec`](specs/ExternalCalls.spec) checks that Bundler entry points will behave as expected.
+- [`Bundler.spec`](specs/ExternalCalls.spec) checks that Bundler entry points behave as expected.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file for both the Ethereum and the Optimism version.
 
