@@ -21,3 +21,7 @@ data/
 broadcast/
 
 *.log
+
+# Certora
+.certora_internal
+munged/
