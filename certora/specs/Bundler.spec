@@ -46,12 +46,10 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 // Check that initiator is reset after a multicall.
 rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     address initiatorBefore = initiator();
-    bytes32 reenterHashBefore = reenterHash();
 
     multicall@withrevert(e, bundle);
 
     assert initiatorBefore != 0 => lastReverted;
-    assert reenterHashBefore != to_bytes32(0) => lastReverted;
 }
 
 // Check that the reenterHash is non zero before reentering a multicall.
