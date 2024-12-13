@@ -38,19 +38,11 @@ contract TransferAdapterLocalTest is LocalTest {
         generalAdapter1.erc20TransferFrom(address(loanToken), RECEIVER, amount);
     }
 
-    function testTransferFromZeroExactAmount() public {
+    function testTransferFromZeroAmount() public {
         bundle.push(_erc20TransferFrom(address(loanToken), 0));
 
         vm.prank(USER);
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
-    }
-
-    function testTransferFromZeroBalanceAmount() public {
-        loanToken.approve(address(generalAdapter1), type(uint256).max);
-        bundle.push(_erc20TransferFrom(address(loanToken), type(uint256).max));
-
-        vm.prank(USER);
         bundler.multicall(bundle);
     }
 }
