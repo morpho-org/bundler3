@@ -14,9 +14,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
     /* IMMUTABLES */
 
-    /// @dev The address of the DAI token.
-    address public immutable DAI;
-
     /// @dev The address of the stETH token.
     address public immutable ST_ETH;
 
@@ -34,7 +31,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param bundler The address of the bundler.
     /// @param morpho The address of Morpho.
     /// @param weth The address of the WETH token.
-    /// @param dai The address of the DAI token.
     /// @param wStEth The address of the wstETH token.
     /// @param morphoToken The address of the MORPHO token.
     /// @param morphoWrapper The address of the MORPHO token wrapper.
@@ -42,17 +38,14 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         address bundler,
         address morpho,
         address weth,
-        address dai,
         address wStEth,
         address morphoToken,
         address morphoWrapper
     ) GeneralAdapter1(bundler, morpho, weth) {
-        require(dai != address(0), ErrorsLib.ZeroAddress());
         require(wStEth != address(0), ErrorsLib.ZeroAddress());
         require(morphoToken != address(0), ErrorsLib.ZeroAddress());
         require(morphoWrapper != address(0), ErrorsLib.ZeroAddress());
 
-        DAI = dai;
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
         MORPHO_TOKEN = morphoToken;
