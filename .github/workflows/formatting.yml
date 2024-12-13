@@ -26,4 +26,4 @@ jobs:
       - name: Run Certora Config Linter
         run: |
           cd certora/confs
-          for x in $(ls); do cat $x | jq > /tmp/test.json; cat /tmp/test.json > $x ; done
+          for x in $(ls); do cat $x | jq > /tmp/test.json; diff /tmp/test.json $x ; done
