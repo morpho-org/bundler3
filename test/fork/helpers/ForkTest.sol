@@ -19,6 +19,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     // used directly.
     bytes4 constant permitSingleSelector = 0x2b67b570;
     bytes4 constant permitBatchSelector = 0x2a2d80d1;
+    using stdStorage for StdStorage;
 
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);
@@ -92,6 +93,20 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         }
 
         return super.deal(asset, recipient, amount);
+    }
+
+    function dealStEthShares(address stEth, address recipient, uint shares) internal {
+        uint prevBal = IStEth(stEth).sharesOf(recipient);
+        stdstore.target(stEth).sig("sharesOf(address)").with_key(recipient).checked_write(shares);
+
+        uint totSup = IStEth(stEth).getTotalShares();
+        if (shares < prevBal) {
+            totSup -= (prevBal - shares);
+        } else {
+            totSup += (shares - prevBal);
+        }
+
+        stdstore.target(stEth).sig("getTotalShares()").checked_write(totSup);
     }
 
     modifier onlyEthereum() {
@@ -190,11 +205,26 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         );
     }
 
+    /* STETH ACTIONS */
+
+    function _transferStEthShares(address receiver, uint shares) internal view returns (Call memory) {
+        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.transferStEthShares, (receiver, shares)));
+    }
+
+    function _transferFromStEthShares(address receiver, uint shares) internal view returns (Call memory) {
+        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.transferFromStEthShares, (receiver, shares)));
+    }
+
     /* wstETH ACTIONS */
 
     function _wrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
         return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.wrapStEth, (amount, receiver)));
     }
+
+    function _wrapStEthShares(uint256 shares, address receiver) internal view returns (Call memory) {
+        return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.wrapStEthShares, (shares, receiver)));
+    }
+
 
     function _unwrapStEth(uint256 amount, address receiver) internal view returns (Call memory) {
         return _call(ethereumGeneralAdapter1, abi.encodeCall(EthereumGeneralAdapter1.unwrapStEth, (amount, receiver)));

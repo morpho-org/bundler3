@@ -6,11 +6,13 @@ import {IStEth} from "../interfaces/IStEth.sol";
 
 import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, UtilsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
+import {MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Adapter contract specific to Ethereum n°1.
 contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     using MathRayLib for uint256;
+    using MathLib for uint256;
 
     /* IMMUTABLES */
 
@@ -102,14 +104,65 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         if (receiver != address(this)) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, amount);
     }
 
+    /// @notice Transfer stETH, denominated in shares.
+    /// @notice Avoids rounding issues by denominating in shares instead of stETH.
+    /// @param receiver The address that will receive the stETH shares.
+    /// @param shares The amount of stETH shares to transfer.
+    function transferStEthShares(address receiver, uint shares) external onlyBundler {
+        // Checking receiver != 0 in case a Lido upgrade stops checking.
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+        require(receiver != address(this), ErrorsLib.AdapterAddress());
+
+        if (shares == type(uint256).max) shares = IStEth(ST_ETH).sharesOf(address(this));
+        require(shares != 0, ErrorsLib.ZeroAmount());
+        IStEth(ST_ETH).transferShares(receiver, shares);
+    }
+
+    /// @notice Transfers stETH from the initiator, denominated in shares.
+    /// @notice Avoids rounding issues by denominating in shares instead of stETH.
+    /// @dev Initiator must have given sufficient allowance to the Adapter to spend their stETH.
+    /// @notice The amount must be strictly positive.
+    /// @param receiver The address that will receive the stETH.
+    /// @param shares The amount of stETH shares to transfer. Pass `type(uint).max` to transfer the initiator's stETH shares balance.
+    function transferFromStEthShares(address receiver, uint shares) external onlyBundler {
+        // Checking receiver != 0 in case a Lido upgrade stops checking.
+        require(receiver != address(0), ErrorsLib.ZeroAddress());
+
+        address initiator = initiator();
+        if (shares == type(uint256).max) shares = IStEth(ST_ETH).sharesOf(initiator);
+        require(shares != 0, ErrorsLib.ZeroAmount());
+        IStEth(ST_ETH).transferSharesFrom(initiator, receiver, shares);
+    }
+
     /// @notice Wraps stETH to wStETH.
     /// @dev stETH must have been previously sent to the adapter.
+    /// @dev Wrapped amount may be rounded down to match an integer shares amount.
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the adapter's balance.
     /// @param receiver The account receiving the wStETH tokens.
     function wrapStEth(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = IERC20(ST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
+
+        uint shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
+        uint roundedAmount = IStEth(ST_ETH).getPooledEthByShares(shares);
+
+        uint256 received = IWstEth(WST_ETH).wrap(amount);
+        if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
+    }
+
+    /// @notice Wraps shares-denominated stETH to wStETH.
+    /// @notice Avoids rounding issues by denominating in shares instead of stETH.
+    /// @dev stETH must have been previously sent to the adapter.
+    /// @param shares The amount of stEth shares to wrap. Pass `type(uint).max` to wrap the adapter's stETH share balance.
+    /// @param receiver The account receiving the wStETH tokens.
+    function wrapStEthShares(uint256 shares, address receiver) external onlyBundler {
+        if (shares == type(uint256).max) shares = IStEth(ST_ETH).sharesOf(address(this));
+
+        require(shares != 0, ErrorsLib.ZeroAmount());
+
+        // Round up the amount so it gets converted back to `shares`. Works as long as total ether is greater than total shares.
+        uint amount = shares.mulDivUp(IStEth(ST_ETH).getTotalPooledEther(), IStEth(ST_ETH).getTotalShares());
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
