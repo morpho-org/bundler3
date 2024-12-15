@@ -9,7 +9,7 @@ library BytesLib {
     /// @notice Reads 32 bytes at offset `offset` of memory bytes `data`.
     function get(bytes memory data, uint256 offset) internal pure returns (uint256 currentValue) {
         require(offset <= data.length - 32, ErrorsLib.InvalidOffset());
-        assembly {
+        assembly ("memory-safe") {
             currentValue := mload(add(32, add(data, offset)))
         }
     }
