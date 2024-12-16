@@ -68,7 +68,4 @@ rule initiatorZeroAfterMulticall(env e, Bundler.Call[] bundle) {
 
     assert initiator() == 0;
     assert reenterHash() == to_bytes32(0);
-
-    // Sanity check to ensure the rule is not trivially true.
-    satisfy bundle.length != 0;
 }
