@@ -200,25 +200,25 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertApproxEqAbs(IERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
     }
 
-    function testTransferStEthSharesReceiverZero(uint256 shares) public {
+    function testTransferStEthSharesReceiverZero(uint256 shares) public onlyEthereum {
         bundle.push(_transferStEthShares(address(0), shares));
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferStEthSharesReceiverAdapter(uint256 shares) public {
+    function testTransferStEthSharesReceiverAdapter(uint256 shares) public onlyEthereum {
         bundle.push(_transferStEthShares(address(ethereumGeneralAdapter1), shares));
         vm.expectRevert(ErrorsLib.AdapterAddress.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferStEthSharesZero(address receiver) public {
+    function testTransferStEthSharesZero(address receiver) public onlyEthereum {
         bundle.push(_transferStEthShares(receiver, 0));
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferStEthSharesExact(address receiver, uint256 shares) public {
+    function testTransferStEthSharesExact(address receiver, uint256 shares) public onlyEthereum {
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(ethereumGeneralAdapter1), shares);
         bundle.push(_transferStEthShares(receiver, shares));
@@ -226,7 +226,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
     }
 
-    function testTransferStEthSharesBalance(address receiver, uint256 shares) public {
+    function testTransferStEthSharesBalance(address receiver, uint256 shares) public onlyEthereum {
         vm.assume(receiver != address(0));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(ethereumGeneralAdapter1), shares);
@@ -236,20 +236,20 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
     }
 
-    function testTransferFromStEthSharesReceiverZero(uint256 shares) public {
+    function testTransferFromStEthSharesReceiverZero(uint256 shares) public onlyEthereum {
         bundle.push(_transferFromStEthShares(address(0), shares));
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferFromStEthSharesZero(address receiver) public {
+    function testTransferFromStEthSharesZero(address receiver) public onlyEthereum {
         vm.assume(receiver != address(0));
         bundle.push(_transferFromStEthShares(receiver, 0));
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferFromStEthSharesExact(address receiver, uint256 shares) public {
+    function testTransferFromStEthSharesExact(address receiver, uint256 shares) public onlyEthereum {
         vm.assume(receiver != address(0));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(this), shares);
@@ -261,7 +261,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
     }
 
-    function testTransferFromStEthSharesBalance(address receiver, uint256 shares) public {
+    function testTransferFromStEthSharesBalance(address receiver, uint256 shares) public onlyEthereum {
         vm.assume(receiver != address(0));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(this), shares);
