@@ -37,6 +37,6 @@ The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/ExternalCalls.spec) checks that Bundler entry points behave as expected.
 
-The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file for both the Ethereum and the Optimism version.
+The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
 The [`certora/Makefile`](Makefile) is used to track and perform the required modifications on source files.
