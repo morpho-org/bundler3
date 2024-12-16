@@ -11,7 +11,7 @@ struct Call {
     bytes32 callbackHash;
 }
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 interface IBundler {
     function multicall(Call[] calldata) external payable;
     function reenter(Call[] calldata) external;

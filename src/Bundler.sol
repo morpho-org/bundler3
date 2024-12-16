@@ -6,7 +6,7 @@ import {IBundler, Call} from "./interfaces/IBundler.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
 /// @notice Can be reentered by the last unreturned callee with known data.

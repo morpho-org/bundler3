@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Utils library.
 library UtilsLib {
     /// @dev Gives the max approval to `spender` to spend the given token.
