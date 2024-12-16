@@ -213,27 +213,37 @@ contract EthereumStEthAdapterForkTest is ForkTest {
     }
 
     function testTransferStEthSharesZero(address receiver) public onlyEthereum {
+        vm.assume(receiver != address(0));
+        vm.assume(receiver != address(ethereumGeneralAdapter1));
         bundle.push(_transferStEthShares(receiver, 0));
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
     function testTransferStEthSharesExact(address receiver, uint256 shares) public onlyEthereum {
+        vm.assume(receiver != address(0));
+        vm.assume(receiver != address(ethereumGeneralAdapter1));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(ethereumGeneralAdapter1), shares);
         bundle.push(_transferStEthShares(receiver, shares));
+        uint before = IStEth(ST_ETH).sharesOf(receiver);
         bundler.multicall(bundle);
-        assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
+        assertEq(IStEth(ST_ETH).sharesOf(receiver)-before, shares);
     }
 
+    function testX() public {
+        testTransferStEthSharesBalance(0x0000000000000000000000000000000000000001, 7610);
+    }
     function testTransferStEthSharesBalance(address receiver, uint256 shares) public onlyEthereum {
         vm.assume(receiver != address(0));
+        vm.assume(receiver != address(ethereumGeneralAdapter1));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(ethereumGeneralAdapter1), shares);
 
+        uint before = IStEth(ST_ETH).sharesOf(receiver);
         bundle.push(_transferStEthShares(receiver, type(uint256).max));
         bundler.multicall(bundle);
-        assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
+        assertEq(IStEth(ST_ETH).sharesOf(receiver)-before, shares);
     }
 
     function testTransferFromStEthSharesReceiverZero(uint256 shares) public onlyEthereum {
@@ -255,10 +265,11 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         dealStEthShares(ST_ETH, address(this), shares);
 
         IERC20(ST_ETH).approve(address(ethereumGeneralAdapter1), type(uint256).max);
+        uint before = IStEth(ST_ETH).sharesOf(receiver);
         bundle.push(_transferFromStEthShares(receiver, shares));
         bundler.multicall(bundle);
 
-        assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
+        assertEq(IStEth(ST_ETH).sharesOf(receiver)-before, shares);
     }
 
     function testTransferFromStEthSharesBalance(address receiver, uint256 shares) public onlyEthereum {
@@ -267,9 +278,10 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         dealStEthShares(ST_ETH, address(this), shares);
 
         IERC20(ST_ETH).approve(address(ethereumGeneralAdapter1), type(uint256).max);
+        uint before = IStEth(ST_ETH).sharesOf(receiver);
         bundle.push(_transferFromStEthShares(receiver, type(uint256).max));
         bundler.multicall(bundle);
 
-        assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
+        assertEq(IStEth(ST_ETH).sharesOf(receiver)-before, shares);
     }
 }

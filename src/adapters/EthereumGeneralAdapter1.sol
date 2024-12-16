@@ -146,7 +146,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
-        uint256 roundedAmount = IStEth(ST_ETH).getPooledEthByShares(shares);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
