@@ -138,6 +138,13 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /* INTERNAL FUNCTIONS */
 
     /// @notice Executes the swap specified by `callData` with `augustus`.
+    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param callData Swap data to call `augustus`. Contains routing information.
+    /// @param srcToken Token to sell.
+    /// @param destToken Token to buy.
+    /// @param maxSrcAmount Maximum amount of `srcToken` to sell.
+    /// @param minDestAmount Minimum amount of `destToken` to buy.
+    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
     function swap(
         address augustus,
         bytes memory callData,
