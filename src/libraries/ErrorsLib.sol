@@ -59,8 +59,8 @@ library ErrorsLib {
 
     /* PARASWAP ADAPTER */
 
-    /// @dev Thrown when contract used to trade is not in the paraswap registry.
-    error AugustusNotInRegistry();
+    /// @dev Thrown when the contract used to trade is not deemed valid by Paraswap's Augustus registry.
+    error InvalidAugustus();
 
     /// @dev Thrown when a data offset is invalid.
     error InvalidOffset();
