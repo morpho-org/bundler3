@@ -127,10 +127,19 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
         deal(ST_ETH, user, rawAmount);
 
-        uint shares = IStEth(ST_ETH).sharesOf(user);
-        uint amount = IStEth(ST_ETH).getPooledEthByShares(shares);
+        uint256 shares = IStEth(ST_ETH).sharesOf(user);
+        uint256 amount = IStEth(ST_ETH).getPooledEthByShares(shares);
 
-        bundle.push(_permit(IERC20Permit(ST_ETH), privateKey, address(ethereumGeneralAdapter1), type(uint).max, type(uint).max, false));
+        bundle.push(
+            _permit(
+                IERC20Permit(ST_ETH),
+                privateKey,
+                address(ethereumGeneralAdapter1),
+                type(uint256).max,
+                type(uint256).max,
+                false
+            )
+        );
         bundle.push(_transferFromStEthShares(address(ethereumGeneralAdapter1), shares));
         // 1 wstETH = 1 stETH share
         bundle.push(_wrapStEthShares(shares, RECEIVER));
@@ -145,9 +154,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertEq(IERC20(WST_ETH).balanceOf(RECEIVER), shares, "wstEth.balanceOf(RECEIVER)");
 
         assertEq(
-            IERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)),
-            0,
-            "wstEth.balanceOf(ethereumGeneralAdapter1)"
+            IERC20(ST_ETH).balanceOf(address(ethereumGeneralAdapter1)), 0, "wstEth.balanceOf(ethereumGeneralAdapter1)"
         );
         assertEq(IERC20(ST_ETH).balanceOf(user), 0, "wstEth.balanceOf(user)");
         assertEq(IERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
@@ -193,74 +200,74 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         assertApproxEqAbs(IERC20(ST_ETH).balanceOf(RECEIVER), expectedUnwrappedAmount, 3, "stEth.balanceOf(RECEIVER)");
     }
 
-    function testTransferStEthSharesReceiverZero(uint shares) public {
-        bundle.push(_transferStEthShares(address(0),shares));
+    function testTransferStEthSharesReceiverZero(uint256 shares) public {
+        bundle.push(_transferStEthShares(address(0), shares));
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferStEthSharesReceiverAdapter(uint shares) public {
-        bundle.push(_transferStEthShares(address(ethereumGeneralAdapter1),shares));
+    function testTransferStEthSharesReceiverAdapter(uint256 shares) public {
+        bundle.push(_transferStEthShares(address(ethereumGeneralAdapter1), shares));
         vm.expectRevert(ErrorsLib.AdapterAddress.selector);
         bundler.multicall(bundle);
     }
 
     function testTransferStEthSharesZero(address receiver) public {
-        bundle.push(_transferStEthShares(receiver,0));
+        bundle.push(_transferStEthShares(receiver, 0));
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferStEthSharesExact(address receiver, uint shares) public {
+    function testTransferStEthSharesExact(address receiver, uint256 shares) public {
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(ethereumGeneralAdapter1), shares);
-        bundle.push(_transferStEthShares(receiver,shares));
+        bundle.push(_transferStEthShares(receiver, shares));
         bundler.multicall(bundle);
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
     }
 
-    function testTransferStEthSharesBalance(address receiver, uint shares) public {
+    function testTransferStEthSharesBalance(address receiver, uint256 shares) public {
         vm.assume(receiver != address(0));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(ethereumGeneralAdapter1), shares);
 
-        bundle.push(_transferStEthShares(receiver,type(uint).max));
+        bundle.push(_transferStEthShares(receiver, type(uint256).max));
         bundler.multicall(bundle);
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
     }
 
-    function testTransferFromStEthSharesReceiverZero( uint shares) public {
-        bundle.push(_transferFromStEthShares(address(0),shares));
+    function testTransferFromStEthSharesReceiverZero(uint256 shares) public {
+        bundle.push(_transferFromStEthShares(address(0), shares));
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         bundler.multicall(bundle);
     }
 
     function testTransferFromStEthSharesZero(address receiver) public {
         vm.assume(receiver != address(0));
-        bundle.push(_transferFromStEthShares(receiver,0));
+        bundle.push(_transferFromStEthShares(receiver, 0));
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferFromStEthSharesExact(address receiver, uint shares) public {
+    function testTransferFromStEthSharesExact(address receiver, uint256 shares) public {
         vm.assume(receiver != address(0));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(this), shares);
 
-        IERC20(ST_ETH).approve(address(ethereumGeneralAdapter1), type(uint).max);
-        bundle.push(_transferFromStEthShares(receiver,shares));
+        IERC20(ST_ETH).approve(address(ethereumGeneralAdapter1), type(uint256).max);
+        bundle.push(_transferFromStEthShares(receiver, shares));
         bundler.multicall(bundle);
 
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);
     }
 
-    function testTransferFromStEthSharesBalance(address receiver, uint shares) public {
+    function testTransferFromStEthSharesBalance(address receiver, uint256 shares) public {
         vm.assume(receiver != address(0));
         shares = bound(shares, MIN_AMOUNT, MAX_AMOUNT);
         dealStEthShares(ST_ETH, address(this), shares);
 
-        IERC20(ST_ETH).approve(address(ethereumGeneralAdapter1), type(uint).max);
-        bundle.push(_transferFromStEthShares(receiver,type(uint).max));
+        IERC20(ST_ETH).approve(address(ethereumGeneralAdapter1), type(uint256).max);
+        bundle.push(_transferFromStEthShares(receiver, type(uint256).max));
         bundler.multicall(bundle);
 
         assertEq(IStEth(ST_ETH).sharesOf(receiver), shares);

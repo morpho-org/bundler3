@@ -108,7 +108,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @notice Avoids rounding issues by denominating in shares instead of stETH.
     /// @param receiver The address that will receive the stETH shares.
     /// @param shares The amount of stETH shares to transfer.
-    function transferStEthShares(address receiver, uint shares) external onlyBundler {
+    function transferStEthShares(address receiver, uint256 shares) external onlyBundler {
         // Checking receiver != 0 in case a Lido upgrade stops checking.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
@@ -123,8 +123,9 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @dev Initiator must have given sufficient allowance to the Adapter to spend their stETH.
     /// @notice The amount must be strictly positive.
     /// @param receiver The address that will receive the stETH.
-    /// @param shares The amount of stETH shares to transfer. Pass `type(uint).max` to transfer the initiator's stETH shares balance.
-    function transferFromStEthShares(address receiver, uint shares) external onlyBundler {
+    /// @param shares The amount of stETH shares to transfer. Pass `type(uint).max` to transfer the initiator's stETH
+    /// shares balance.
+    function transferFromStEthShares(address receiver, uint256 shares) external onlyBundler {
         // Checking receiver != 0 in case a Lido upgrade stops checking.
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
@@ -144,8 +145,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        uint shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
-        uint roundedAmount = IStEth(ST_ETH).getPooledEthByShares(shares);
+        uint256 shares = IStEth(ST_ETH).getSharesByPooledEth(amount);
+        uint256 roundedAmount = IStEth(ST_ETH).getPooledEthByShares(shares);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
@@ -154,15 +155,17 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @notice Wraps shares-denominated stETH to wStETH.
     /// @notice Avoids rounding issues by denominating in shares instead of stETH.
     /// @dev stETH must have been previously sent to the adapter.
-    /// @param shares The amount of stEth shares to wrap. Pass `type(uint).max` to wrap the adapter's stETH share balance.
+    /// @param shares The amount of stEth shares to wrap. Pass `type(uint).max` to wrap the adapter's stETH share
+    /// balance.
     /// @param receiver The account receiving the wStETH tokens.
     function wrapStEthShares(uint256 shares, address receiver) external onlyBundler {
         if (shares == type(uint256).max) shares = IStEth(ST_ETH).sharesOf(address(this));
 
         require(shares != 0, ErrorsLib.ZeroAmount());
 
-        // Round up the amount so it gets converted back to `shares`. Works as long as total ether is greater than total shares.
-        uint amount = shares.mulDivUp(IStEth(ST_ETH).getTotalPooledEther(), IStEth(ST_ETH).getTotalShares());
+        // Round up the amount so it gets converted back to `shares`. Works as long as total ether is greater than total
+        // shares.
+        uint256 amount = shares.mulDivUp(IStEth(ST_ETH).getTotalPooledEther(), IStEth(ST_ETH).getTotalShares());
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
