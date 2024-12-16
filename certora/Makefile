@@ -6,7 +6,7 @@ munged: ../munged
 	@patch -p0 -d ../munged < applyMunging.patch
 
 record:
-	diff -ruN ../src ../munged |  sed 's,\.\./src/\|\.\./munged/,,g' | sed 's,\(\(\-\-\-\|+++\) [^[:space:]]*\).*,\1,' > applyMunging.patch
+	diff -ruN ../src ../munged | sed 's+ \.\./src/+ +g' | sed 's+ \.\./munged/+ +g' > applyMunging.patch
 
 clean:
 	rm -rf ../munged
