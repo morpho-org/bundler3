@@ -7,7 +7,7 @@ methods {
     function reenterHash() external returns bytes32 envfree;
 }
 
-// True when `mutlicall` has been called.
+// True when `multicall` has been called.
 persistent ghost bool multicallCalled;
 
 // True when `reenter` has been called.
@@ -27,7 +27,7 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
     // Set up the initial state.
     require !multicallCalled;
     require !reenterCalled;
-    // Safe require since it's transiently sotred so it's nullified after a reentrant call.
+    // Safe require since it's transiently stored so it's nullified after a reentrant call.
     require reenterHash() == to_bytes32(0);
 
     // Capture the first method call which is not performed with a CALL opcode.

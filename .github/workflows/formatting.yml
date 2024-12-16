@@ -24,6 +24,4 @@ jobs:
       - name: Run Linter
         run: find ./ -type f -name '*.sol' -exec perl -pi -e 's/transient //g' {} + && forge fmt --check
       - name: Run Certora Config Linter
-        run: |
-          cd certora/confs
-          for x in $(ls); do cat $x | jq > /tmp/test.json; diff /tmp/test.json $x ; done
+        run: for file in certora/confs/*.conf; do diff <(jq < "$file") "$file"; done

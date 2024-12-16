@@ -18,5 +18,5 @@ runs:
           forge-${{ github.base_ref }}
           forge-
 
-    - name: Run jq
+    - name: Install jq
       uses: sergeysova/jq-action@v2
