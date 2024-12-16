@@ -146,7 +146,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         uint256 maxSrcAmount,
         uint256 minDestAmount,
         address receiver
-    ) internal {
+    ) internal onlyBundler {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(minDestAmount != 0, ErrorsLib.ZeroAmount());
