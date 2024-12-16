@@ -82,7 +82,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param receiver The account receiving the stETH tokens.
     function stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver)
         external
-        payable
         onlyBundler
     {
         if (amount == type(uint256).max) amount = address(this).balance;
