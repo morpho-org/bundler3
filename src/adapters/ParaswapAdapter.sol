@@ -43,7 +43,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`limitAmount`)
     /// and quoted buy amount (`quotedAmount`).
     /// @dev The quoted buy amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent. Any leftover `srcToken` should be skimmed separately.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `srcToken` should be skimmed
+    /// separately.
     function sell(
         address augustus,
         bytes memory callData,
@@ -113,7 +114,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
-    /// @param receiver Address to which bought assets will be sent. Any leftover `src` tokens should be skimmed separately.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `src` tokens should be skimmed
+    /// separately.
     function buyMorphoDebt(
         address augustus,
         bytes memory callData,
