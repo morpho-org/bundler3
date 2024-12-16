@@ -394,7 +394,6 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /// @notice Transfers ERC20 tokens from the initiator.
     /// @notice Initiator must have given sufficient allowance to the Adapter to spend their tokens.
-    /// @notice The amount must be strictly positive.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
