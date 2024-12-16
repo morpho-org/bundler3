@@ -35,8 +35,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /* SWAP ACTIONS */
 
     /// @notice Sells an exact amount. Can check for a minimum purchased amount.
-    /// @notice The `augustus` parameter exists to accomodate future Paraswap updates but compatibility is not
-    /// guaranteed.
+    /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -72,8 +71,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     }
 
     /// @notice Buys an exact amount. Can check for a maximum sold amount.
-    /// @notice The `augustus` parameter exists to accomodate future Paraswap updates but compatibility is not
-    /// guaranteed.
+    /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @dev `callData` can change if `marketParams.loanToken == destToken`.
@@ -110,6 +108,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     }
 
     /// @notice Buys an amount corresponding to a user's Morpho debt.
+    /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @param srcToken Token to sell.
