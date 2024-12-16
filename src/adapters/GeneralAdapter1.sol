@@ -197,7 +197,7 @@ contract GeneralAdapter1 is CoreAdapter {
         morphoCallback(data);
     }
 
-    /// @notice Receive flashloan callback from morpho.
+    /// @notice Receive flashloan callback from the Morpho contract.
     /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoFlashLoan(uint256, bytes calldata data) external {
         morphoCallback(data);
