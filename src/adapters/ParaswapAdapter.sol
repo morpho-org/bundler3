@@ -115,7 +115,6 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
     /// @param receiver Address to which bought assets will be sent. Any leftover `src` tokens should be skimmed
     /// separately.
-    , as well as any leftover `srcToken`.
     function buyMorphoDebt(
         address augustus,
         bytes memory callData,
@@ -146,7 +145,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param destToken Token to buy.
     /// @param maxSrcAmount Maximum amount of `srcToken` to sell.
     /// @param minDestAmount Minimum amount of `destToken` to buy.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `src` tokens should be skimmed
+    /// separately.
     function swap(
         address augustus,
         bytes memory callData,
