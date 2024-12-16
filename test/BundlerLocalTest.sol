@@ -260,6 +260,7 @@ contract BundlerLocalTest is LocalTest {
     }
 
     function testMissedReenterFails(bytes32 _hash) public {
+        vm.assum(_hash != bytes32(0));
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), 0, false, _hash));
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
