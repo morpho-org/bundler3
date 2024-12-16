@@ -191,7 +191,7 @@ contract GeneralAdapter1 is CoreAdapter {
         morphoCallback(data);
     }
 
-    /// @notice Receive repay callback from morpho.
+    /// @notice Receive repay callback from the Morpho contract.
     /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoRepay(uint256, bytes calldata data) external {
         morphoCallback(data);
