@@ -43,6 +43,32 @@ contract ParaswapAdapterLocalTest is LocalTest {
         new ParaswapAdapter(address(0), rdmAddress, rdmAddress);
     }
 
+    function testBuyUnauthorized(address sender) public {
+        vm.assume(sender != address(bundler));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.prank(sender);
+        paraswapAdapter.buy(address(augustus), new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+    }
+
+    function testBuyMorphoDebtUnauthorized(address sender) public {
+        vm.assume(sender != address(bundler));
+
+        _supply(marketParams, 1e18, address(this));
+        _supplyCollateral(marketParams, 1e18, address(this));
+        _borrow(marketParams, 0.1e18, address(this));
+
+        vm.prank(sender);
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        paraswapAdapter.buyMorphoDebt(address(augustus), _swapCalldata(0,1,1,1), address(0),  marketParams, Offsets(0, 32, 64), address(this),address(0));
+    }
+
+    function testSellUnauthorized(address sender) public {
+        vm.assume(sender != address(bundler));
+        vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
+        vm.prank(sender);
+        paraswapAdapter.sell(address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
+    }
+
     function testAugustusInRegistrySellCheck(address _augustus) public {
         augustusRegistryMock.setValid(_augustus, false);
 
@@ -75,6 +101,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
     function testSellReceiverZero() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        vm.prank(address(bundler));
         paraswapAdapter.sell(
             address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0)
         );
@@ -82,6 +109,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
     function testBuyReceiverZero() public {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
+        vm.prank(address(bundler));
         paraswapAdapter.buy(
             address(augustus),
             bytes.concat(bytes32(uint256(1))),
