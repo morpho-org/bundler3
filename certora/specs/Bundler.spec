@@ -39,7 +39,7 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 
     f@withrevert(e,data);
 
-    // Either the property holds or the execution reverts.
+    // Avoid failing vacuity checks, either the proposition is true or the execution reverts.
     assert !lastReverted => (reenterCalled => multicallCalled);
 }
 
@@ -62,9 +62,6 @@ rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
 }
 // Check that transient storage is nullified after a multicall.
 rule initiatorZeroAfterMulticall(env e, Bundler.Call[] bundle) {
-    // Safe require as implementation would revert, see rule zeroInitiatorRevertsMulticall.
-    require initiator() == 0;
-
     require reenterHash() == to_bytes32(0);
 
     multicall(e, bundle);
