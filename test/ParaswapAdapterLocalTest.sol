@@ -59,14 +59,24 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
         vm.prank(sender);
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        paraswapAdapter.buyMorphoDebt(address(augustus), _swapCalldata(0,1,1,1), address(0),  marketParams, Offsets(0, 32, 64), address(this),address(0));
+        paraswapAdapter.buyMorphoDebt(
+            address(augustus),
+            _swapCalldata(0, 1, 1, 1),
+            address(0),
+            marketParams,
+            Offsets(0, 32, 64),
+            address(this),
+            address(0)
+        );
     }
 
     function testSellUnauthorized(address sender) public {
         vm.assume(sender != address(bundler));
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(sender);
-        paraswapAdapter.sell(address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
+        paraswapAdapter.sell(
+            address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0)
+        );
     }
 
     function testAugustusInRegistrySellCheck(address _augustus) public {
