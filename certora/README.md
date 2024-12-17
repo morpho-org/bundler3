@@ -25,9 +25,15 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 The Bundler contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
 These calls may themselves reenter the bundler.
 
-### Bundler
+### Bundler safety
 
 This is checked in [`Bundler.spec`](specs/Bundler.spec).
+
+## Only Bundler calls adapters
+
+This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
+
+The `Protected.spec` file checks that all bundler functions, except noted exceptions, respect the requirements of the `protected` modifier when an initiator has been set.
 
 ## Verification architecture
 
@@ -35,7 +41,8 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 The [`certora/specs`](specs) folder contains the following files:
 
-- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected.
+- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
