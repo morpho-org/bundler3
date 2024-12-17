@@ -40,6 +40,8 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
         UtilsLib.forceApproveMaxTo(underlying, address(AAVE_V3_OPTIMIZER));
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, onBehalf);
+
+        UtilsLib.forceApproveZeroTo(underlying, address(AAVE_V3_OPTIMIZER));
     }
 
     /// @notice Withdraws on the AaveV3 Optimizer.

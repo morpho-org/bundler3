@@ -44,6 +44,8 @@ contract AaveV2MigrationAdapter is CoreAdapter {
         UtilsLib.forceApproveMaxTo(token, address(AAVE_V2_POOL));
 
         AAVE_V2_POOL.repay(token, amount, interestRateMode, onBehalf);
+
+        UtilsLib.forceApproveZeroTo(token, address(AAVE_V2_POOL));
     }
 
     /// @notice Withdraws on AaveV2.

@@ -110,6 +110,11 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         );
         assertApproxEqAbs(IERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
         assertEq(IERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
+        assertEq(
+            IERC20(ST_ETH).allowance(address(ethereumGeneralAdapter1), WST_ETH),
+            0,
+            "stEth.allowance(ethereumGeneralAdapter1, wstEth)"
+        );
     }
 
     function testUnwrapZeroAmount(address receiver) public onlyEthereum {

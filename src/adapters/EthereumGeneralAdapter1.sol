@@ -57,9 +57,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         WST_ETH = wStEth;
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
-
-        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
-        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
@@ -77,7 +74,11 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
+
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
+
+        UtilsLib.forceApproveZeroTo(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* LIDO ACTIONS */
@@ -112,7 +113,12 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
+
         uint256 received = IWstEth(WST_ETH).wrap(amount);
+
+        UtilsLib.forceApproveZeroTo(ST_ETH, WST_ETH);
+
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
     }
 

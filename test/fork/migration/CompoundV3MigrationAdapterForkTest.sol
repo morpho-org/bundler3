@@ -147,6 +147,12 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         } else {
             assertEq(ICompoundV3(C_WETH_V3).borrowBalanceOf(USER), 0);
         }
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(C_WETH_V3)),
+            0,
+            "loanToken.allowance(migrationAdapter, C_WETH_V3)"
+        );
     }
 
     function testCompoundV3WithdrawNotMax(uint256 supplied, uint256 withdrawFactor) public {

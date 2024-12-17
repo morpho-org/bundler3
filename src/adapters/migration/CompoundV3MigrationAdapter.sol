@@ -37,6 +37,8 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
         ICompoundV3(instance).supplyTo(onBehalf, asset, amount);
+
+        UtilsLib.forceApproveZeroTo(asset, instance);
     }
 
     /// @notice Withdraws from a CompoundV3 instance.

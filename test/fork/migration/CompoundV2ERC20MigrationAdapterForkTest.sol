@@ -122,6 +122,12 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         vm.stopPrank();
 
         _assertBorrowerPosition(collateral, borrowed, user, address(generalAdapter1));
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(C_USDC_V2)),
+            0,
+            "loanToken.allowance(migrationAdapter, C_USDC_V2)"
+        );
     }
 
     function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {

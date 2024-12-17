@@ -50,6 +50,8 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
         UtilsLib.forceApproveMaxTo(underlying, cToken);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
+
+        UtilsLib.forceApproveZeroTo(underlying, cToken);
     }
 
     /// @notice Repays an ETH debt on CompoundV2.

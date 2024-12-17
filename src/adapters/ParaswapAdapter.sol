@@ -151,13 +151,15 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(minDestAmount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(srcToken, augustus);
-
         uint256 srcInitial = IERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = IERC20(destToken).balanceOf(address(this));
 
+        UtilsLib.forceApproveMaxTo(srcToken, augustus);
+
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) UtilsLib.lowLevelRevert(returnData);
+
+        UtilsLib.forceApproveZeroTo(srcToken, augustus);
 
         uint256 srcFinal = IERC20(srcToken).balanceOf(address(this));
         uint256 destFinal = IERC20(destToken).balanceOf(address(this));

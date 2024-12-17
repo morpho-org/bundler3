@@ -67,6 +67,8 @@ contract GeneralAdapter1 is CoreAdapter {
         UtilsLib.forceApproveMaxTo(underlying, wrapper);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
+
+        UtilsLib.forceApproveZeroTo(underlying, wrapper);
     }
 
     /// @notice Unwraps wrapped token to underlying token.
@@ -102,9 +104,13 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        UtilsLib.forceApproveMaxTo(IERC4626(vault).asset(), vault);
+        address underlyingToken = IERC4626(vault).asset();
+        UtilsLib.forceApproveMaxTo(underlyingToken, vault);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
+
+        UtilsLib.forceApproveZeroTo(underlyingToken, vault);
+
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
@@ -130,6 +136,8 @@ contract GeneralAdapter1 is CoreAdapter {
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
+
+        UtilsLib.forceApproveZeroTo(underlyingToken, vault);
     }
 
     /// @notice Withdraws underlying token from an ERC4626 vault.
@@ -227,6 +235,8 @@ contract GeneralAdapter1 is CoreAdapter {
         UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
+
+        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
 
         require(suppliedAssets.rDivUp(suppliedShares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }

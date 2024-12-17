@@ -104,6 +104,12 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
 
         debt = IAaveV3Optimizer(AAVE_V3_OPTIMIZER).borrowBalance(marketParams.loanToken, USER);
         assertEq(debt, 0);
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(AAVE_V3_OPTIMIZER)),
+            0,
+            "loanToken.allowance(migrationAdapter, AaveV3Optimizer)"
+        );
     }
 
     function testMigrateBorrowerWithOptimizerPermit() public onlyEthereum {

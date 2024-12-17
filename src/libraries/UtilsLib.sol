@@ -11,6 +11,11 @@ library UtilsLib {
         SafeERC20.forceApprove(IERC20(token), spender, type(uint256).max);
     }
 
+    /// @dev Removes approval to `spender` to spend the given token.
+    function forceApproveZeroTo(address token, address spender) internal {
+        SafeERC20.forceApprove(IERC20(token), spender, 0);
+    }
+
     /// @dev Bubbles up the revert reason / custom error encoded in `returnData`.
     /// @dev Assumes `returnData` is the return data of any kind of failing CALL to a contract.
     function lowLevelRevert(bytes memory returnData) internal pure {

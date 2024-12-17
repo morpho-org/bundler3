@@ -159,6 +159,12 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         bundler.multicall(bundle);
 
         _assertBorrowerPosition(sDaiAmount, borrowed, user, address(generalAdapter1));
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(AAVE_V2_POOL)),
+            0,
+            "loanToken.allowance(migrationAdapter, AaveV2Pool)"
+        );
     }
 
     function testMigrateStEthPositionWithPermit2() public onlyEthereum {
