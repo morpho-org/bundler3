@@ -1,6 +1,6 @@
 diff -ruN Bundler.sol Bundler.sol
---- Bundler.sol	2024-12-13 15:48:42.000000000 +0100
-+++ Bundler.sol	2024-12-13 15:47:09.000000000 +0100
+--- Bundler.sol
++++ Bundler.sol
 @@ -15,10 +15,38 @@
      /* TRANSIENT STORAGE */
  
