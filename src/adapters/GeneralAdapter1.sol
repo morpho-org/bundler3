@@ -179,7 +179,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* MORPHO CALLBACKS */
 
-    /// @notice Receive supply callback from the Morpho contract.
+    /// @notice Receives supply callback from the Morpho contract.
     /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoSupply(uint256, bytes calldata data) external {
         morphoCallback(data);
