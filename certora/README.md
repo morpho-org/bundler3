@@ -41,7 +41,7 @@ This is checked in [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
-- [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that adapter calls to Morpho entry use zero inputs consistently;
+- [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that adapter calls to Morpho entry use zero inputs consistently.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
