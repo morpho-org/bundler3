@@ -138,7 +138,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /* INTERNAL FUNCTIONS */
 
     /// @notice Executes the swap specified by `callData` with `augustus`.
-    /// @dev Even if this adapter holds no approval, swaps are restricted to the bundler here as in all adapters in order to simplify the security model.
+    /// @dev Even if this adapter holds no approval, swaps are restricted to the bundler here as in all adapters in
+    /// order to simplify the security model.
     function swap(
         address augustus,
         bytes memory callData,
