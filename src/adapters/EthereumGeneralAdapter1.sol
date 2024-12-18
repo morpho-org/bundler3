@@ -74,7 +74,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
+        SafeERC20.forceApprove(IERC20(MORPHO_TOKEN), MORPHO_WRAPPER, type(uint256).max);
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
@@ -111,7 +111,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
+        SafeERC20.forceApprove(IERC20(ST_ETH), WST_ETH, type(uint256).max);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
 

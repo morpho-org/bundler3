@@ -2,7 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV2} from "../../interfaces/IAaveV2.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, UtilsLib, SafeERC20} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V2 to Morpho easily.
@@ -41,11 +41,11 @@ contract AaveV2MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(token, address(AAVE_V2_POOL));
+        SafeERC20.forceApprove(IERC20(token), address(AAVE_V2_POOL), type(uint256).max);
 
         AAVE_V2_POOL.repay(token, amount, interestRateMode, onBehalf);
 
-        UtilsLib.forceApproveZeroTo(token, address(AAVE_V2_POOL));
+        SafeERC20.forceApprove(IERC20(token), address(AAVE_V2_POOL), 0);
     }
 
     /// @notice Withdraws on AaveV2.

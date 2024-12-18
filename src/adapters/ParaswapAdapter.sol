@@ -154,12 +154,12 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         uint256 srcInitial = IERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = IERC20(destToken).balanceOf(address(this));
 
-        UtilsLib.forceApproveMaxTo(srcToken, augustus);
+        SafeERC20.forceApprove(IERC20(srcToken), augustus, type(uint256).max);
 
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) UtilsLib.lowLevelRevert(returnData);
 
-        UtilsLib.forceApproveZeroTo(srcToken, augustus);
+        SafeERC20.forceApprove(IERC20(srcToken), augustus, 0);
 
         uint256 srcFinal = IERC20(srcToken).balanceOf(address(this));
         uint256 destFinal = IERC20(destToken).balanceOf(address(this));

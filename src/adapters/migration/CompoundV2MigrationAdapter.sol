@@ -47,11 +47,11 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(underlying, cToken);
+        SafeERC20.forceApprove(IERC20(underlying), cToken, type(uint256).max);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
 
-        UtilsLib.forceApproveZeroTo(underlying, cToken);
+        SafeERC20.forceApprove(IERC20(underlying), cToken, 0);
     }
 
     /// @notice Repays an ETH debt on CompoundV2.
