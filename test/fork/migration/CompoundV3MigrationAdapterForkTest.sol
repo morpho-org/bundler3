@@ -149,9 +149,9 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         }
 
         assertEq(
-            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(C_WETH_V3)),
+            IERC20(WETH).allowance(address(migrationAdapter), address(C_WETH_V3)),
             0,
-            "loanToken.allowance(migrationAdapter, C_WETH_V3)"
+            "WETH.allowance(migrationAdapter, C_WETH_V3)"
         );
     }
 
