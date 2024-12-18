@@ -130,6 +130,38 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         );
     }
 
+    function testCompoundV2RepayOnBehalf() public onlyEthereum {
+        uint256 collateral = 10 ether;
+        uint256 borrowed = 1e6;
+
+        _provideLiquidity(borrowed);
+
+        deal(marketParams.collateralToken, USER, collateral);
+
+        vm.startPrank(USER);
+        IERC20(marketParams.collateralToken).forceApprove(C_DAI_V2, collateral);
+        require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
+        require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
+        require(ICToken(C_USDC_V2).borrow(borrowed) == 0, "borrow error");
+        vm.stopPrank();
+
+        bundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max, USER));
+
+        deal(USDC, address(migrationAdapter), borrowed);
+
+        require(ICToken(C_USDC_V2).borrowBalanceCurrent(USER) == borrowed, "borrow balance current");
+
+        bundler.multicall(bundle);
+
+        require(ICToken(C_USDC_V2).borrowBalanceCurrent(USER) == 0, "borrow balance current");
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(C_USDC_V2)),
+            0,
+            "loanToken.allowance(migrationAdapter, C_USDC_V2)"
+        );
+    }
+
     function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);
