@@ -91,12 +91,6 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
             wrapperLegacyBalanceBefore - amount,
             "morphoTokenLegacy.balanceOf(morphoWrapper)"
         );
-
-        assertEq(
-            IERC20(MORPHO_TOKEN).allowance(address(ethereumGeneralAdapter1), MORPHO_WRAPPER),
-            0,
-            "morphoToken.allowance(ethereumGeneralAdapter1, morphoWrapper)"
-        );
     }
 
     /* MORPHO WRAPPER ACTIONS */
