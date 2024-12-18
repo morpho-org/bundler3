@@ -236,8 +236,6 @@ contract GeneralAdapter1 is CoreAdapter {
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
-        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
-
         require(suppliedAssets.rDivUp(suppliedShares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
