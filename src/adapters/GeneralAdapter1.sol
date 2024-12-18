@@ -59,16 +59,16 @@ contract GeneralAdapter1 is CoreAdapter {
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address underlying = address(ERC20Wrapper(wrapper).underlying());
-        if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
+        IERC20 underlying = ERC20Wrapper(wrapper).underlying();
+        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        SafeERC20.forceApprove(IERC20(underlying), wrapper, type(uint256).max);
+        SafeERC20.forceApprove(underlying, wrapper, type(uint256).max);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
 
-        SafeERC20.forceApprove(IERC20(underlying), wrapper, 0);
+        SafeERC20.forceApprove(underlying, wrapper, 0);
     }
 
     /// @notice Unwraps wrapped token to underlying token.
@@ -104,12 +104,12 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        address underlyingToken = IERC4626(vault).asset();
-        SafeERC20.forceApprove(IERC20(underlyingToken), vault, type(uint256).max);
+        IERC20 underlyingToken = IERC20(IERC4626(vault).asset());
+        SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
 
-        SafeERC20.forceApprove(IERC20(underlyingToken), vault, 0);
+        SafeERC20.forceApprove(underlyingToken, vault, 0);
 
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
@@ -127,17 +127,17 @@ contract GeneralAdapter1 is CoreAdapter {
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address underlyingToken = IERC4626(vault).asset();
-        if (assets == type(uint256).max) assets = IERC20(underlyingToken).balanceOf(address(this));
+        IERC20 underlyingToken = IERC20(IERC4626(vault).asset());
+        if (assets == type(uint256).max) assets = underlyingToken.balanceOf(address(this));
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        SafeERC20.forceApprove(IERC20(underlyingToken), vault, type(uint256).max);
+        SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
-        SafeERC20.forceApprove(IERC20(underlyingToken), vault, 0);
+        SafeERC20.forceApprove(underlyingToken, vault, 0);
     }
 
     /// @notice Withdraws underlying token from an ERC4626 vault.
