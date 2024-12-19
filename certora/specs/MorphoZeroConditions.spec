@@ -29,7 +29,7 @@ ghost bool zeroConditionHolds {
     init_state axiom zeroConditionHolds == false;
 }
 
-// Check the equivalence on input's zero conditions between the adapter's moprhoSupply and the Morpho.supply entrypoints.
+// Check the equivalence on input's zero conditions between the adapter's morphoSupply and the Morpho.supply entrypoints.
 rule morphoSupplyExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -43,7 +43,7 @@ rule morphoSupplyExactlyOneZero(
     assert zeroConditionHolds <=> exactlyOneZero(assets, shares);
 }
 
-// Check the equivalence on input's zero conditions between the adapter's moprhoSupplyCollateral and the Morpho.supplyCollateral entrypoints.
+// Check the equivalence on input's zero conditions between the adapter's morphoSupplyCollateral and the Morpho.supplyCollateral entrypoints.
 rule morphoSupplyCollateralAssetsNonZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -55,7 +55,7 @@ rule morphoSupplyCollateralAssetsNonZero(
     assert zeroConditionHolds <=> assets != 0;
 }
 
-// Check the equivalence on input's zero conditions between the adapter's moprhoBorrow and the Morpho.borrow entrypoints.
+// Check the equivalence on input's zero conditions between the adapter's morphoBorrow and the Morpho.borrow entrypoints.
 rule morphoBorrowExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -68,7 +68,7 @@ rule morphoBorrowExactlyOneZero(
     assert zeroConditionHolds <=> exactlyOneZero(assets, shares);
 }
 
-// Check the equivalence on input's zero conditions between the adapter's moprhoRepay and the Morpho.repay entrypoints.
+// Check the equivalence on input's zero conditions between the adapter's morphoRepay and the Morpho.repay entrypoints.
 rule morphoRepayExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
