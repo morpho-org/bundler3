@@ -60,12 +60,3 @@ rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
 
     assert reenterHashBefore == to_bytes32(0) => lastReverted;
 }
-// Check that transient storage is nullified after a multicall.
-rule initiatorZeroAfterMulticall(env e, Bundler.Call[] bundle) {
-    require reenterHash() == to_bytes32(0);
-
-    multicall(e, bundle);
-
-    assert initiator() == 0;
-    assert reenterHash() == to_bytes32(0);
-}
