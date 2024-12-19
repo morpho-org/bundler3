@@ -27,7 +27,7 @@ These calls may themselves reenter the bundler.
 
 ### Bundler
 
-This is checked in [`Bundler.spec`](specs/Bundler.spec).
+This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
 
 ## Verification architecture
 
@@ -35,7 +35,8 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 The [`certora/specs`](specs) folder contains the following files:
 
-- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected.
+- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensure that the transient memory is nullified on each entry points, this is checked with a separate configuration as it requires to disable sanity checks.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
