@@ -2,7 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV2} from "../../interfaces/IAaveV2.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib, SafeERC20} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V2 to Morpho easily.

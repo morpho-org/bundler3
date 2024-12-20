@@ -7,7 +7,7 @@ import {ICToken} from "../../interfaces/ICToken.sol";
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
 import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib, Address} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho easily.

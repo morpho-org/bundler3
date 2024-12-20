@@ -6,7 +6,7 @@ import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTra
 import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib, Address} from "./CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "./CoreAdapter.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";

@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib, SafeERC20} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho easily.
