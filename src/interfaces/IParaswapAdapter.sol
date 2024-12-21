@@ -14,7 +14,7 @@ struct Offsets {
     uint256 quotedAmount;
 }
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Interface of Paraswap Adapter.
 interface IParaswapAdapter {
     function sell(

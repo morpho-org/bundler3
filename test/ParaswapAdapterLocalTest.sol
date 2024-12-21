@@ -84,7 +84,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
         vm.prank(address(bundler));
 
-        vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
+        vm.expectRevert(ErrorsLib.InvalidAugustus.selector);
         paraswapAdapter.sell(_augustus, new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
     }
 
@@ -93,7 +93,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
         vm.prank(address(bundler));
 
-        vm.expectRevert(ErrorsLib.AugustusNotInRegistry.selector);
+        vm.expectRevert(ErrorsLib.InvalidAugustus.selector);
         paraswapAdapter.buy(_augustus, new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
     }
 

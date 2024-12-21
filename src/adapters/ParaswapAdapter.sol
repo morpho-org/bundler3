@@ -8,7 +8,7 @@ import {BytesLib} from "../libraries/BytesLib.sol";
 import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {IMorpho, MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Adapter for trading with Paraswap.
 contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     using Math for uint256;
@@ -35,6 +35,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /* SWAP ACTIONS */
 
     /// @notice Sells an exact amount. Can check for a minimum purchased amount.
+    /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -43,7 +44,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`limitAmount`)
     /// and quoted buy amount (`quotedAmount`).
     /// @dev The quoted buy amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `srcToken` should be skimmed
+    /// separately.
     function sell(
         address augustus,
         bytes memory callData,
@@ -70,6 +72,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     }
 
     /// @notice Buys an exact amount. Can check for a maximum sold amount.
+    /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @param srcToken Token to sell.
@@ -105,10 +108,11 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     }
 
     /// @notice Buys an amount corresponding to a user's Morpho debt.
+    /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @param srcToken Token to sell.
-    /// @param marketParams Market parameters of the market with Morpho debt.
+    /// @param marketParams Market parameters of the market with Morpho debt. The user must have nonzero debt.
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
@@ -124,6 +128,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         address receiver
     ) external {
         uint256 debtAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, onBehalf);
+        require(debtAmount != 0, ErrorsLib.ZeroAmount());
         buy({
             augustus: augustus,
             callData: callData,
@@ -157,7 +162,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         uint256 minDestAmount,
         address receiver
     ) internal onlyBundler {
-        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.AugustusNotInRegistry());
+        require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.InvalidAugustus());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(minDestAmount != 0, ErrorsLib.ZeroAmount());
 
