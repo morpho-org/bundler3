@@ -5,6 +5,7 @@ import {CompoundV3Authorization} from "../../helpers/SigUtils.sol";
 
 import "../../../src/adapters/migration/CompoundV3MigrationAdapter.sol";
 
+import {ErrorsLib} from "../../../src/libraries/ErrorsLib.sol";
 import "./helpers/MigrationForkTest.sol";
 
 contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
