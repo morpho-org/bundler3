@@ -86,6 +86,12 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
 
         (, debt,,,,) = IAaveV3(AAVE_V3_POOL).getUserAccountData(USER);
         assertEq(debt, 0);
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(AAVE_V3_POOL)),
+            0,
+            "loanToken.allowance(migrationAdapter, AaveV3Pool)"
+        );
     }
 
     function testMigrateBorrowerWithATokenPermit() public {

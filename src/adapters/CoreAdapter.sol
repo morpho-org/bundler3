@@ -7,7 +7,7 @@ import {Address} from "../../lib/openzeppelin-contracts/contracts/utils/Address.
 import {IBundler} from "../interfaces/IBundler.sol";
 import {UtilsLib} from "../libraries/UtilsLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Common contract to all Bundler adapters.
 abstract contract CoreAdapter {
     /* IMMUTABLES */
@@ -42,7 +42,6 @@ abstract contract CoreAdapter {
     /* ACTIONS */
 
     /// @notice Transfers native assets.
-    /// @dev The amount transfered can be zero.
     /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the adapter's balance.
     function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
@@ -57,7 +56,6 @@ abstract contract CoreAdapter {
     }
 
     /// @notice Transfers ERC20 tokens.
-    /// @dev The amount transfered can be zero.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the adapter's balance.

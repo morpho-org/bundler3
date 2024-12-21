@@ -4,9 +4,9 @@ pragma solidity 0.8.28;
 import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho easily.
 contract CompoundV3MigrationAdapter is CoreAdapter {
     /* CONSTRUCTOR */
@@ -33,10 +33,12 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(asset, instance);
+        SafeERC20.forceApprove(IERC20(asset), instance, type(uint256).max);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
         ICompoundV3(instance).supplyTo(onBehalf, asset, amount);
+
+        SafeERC20.forceApprove(IERC20(asset), instance, 0);
     }
 
     /// @notice Withdraws from a CompoundV3 instance.

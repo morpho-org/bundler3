@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Library exposing error messages.
 library ErrorsLib {
     /* STANDARD ADAPTERS */
@@ -59,8 +59,8 @@ library ErrorsLib {
 
     /* PARASWAP ADAPTER */
 
-    /// @dev Thrown when contract used to trade is not in the paraswap registry.
-    error AugustusNotInRegistry();
+    /// @dev Thrown when the contract used to trade is not deemed valid by Paraswap's Augustus registry.
+    error InvalidAugustus();
 
     /// @dev Thrown when a data offset is invalid.
     error InvalidOffset();
