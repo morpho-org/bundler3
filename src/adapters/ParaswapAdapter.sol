@@ -164,7 +164,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
 
         SafeERC20.forceApprove(IERC20(srcToken), augustus, type(uint256).max);
 
-        (bool success, bytes memory returnData) = address(augustus).call(callData);
+        (bool success, bytes memory returnData) = augustus.call(callData);
         if (!success) UtilsLib.lowLevelRevert(returnData);
 
         SafeERC20.forceApprove(IERC20(srcToken), augustus, 0);
