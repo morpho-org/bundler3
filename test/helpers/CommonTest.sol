@@ -53,8 +53,8 @@ abstract contract CommonTest is Test {
     using stdJson for string;
 
     address internal immutable USER = makeAddr("User");
-    address internal immutable SUPPLIER = makeAddr("Owner");
-    address internal immutable OWNER = makeAddr("Supplier");
+    address internal immutable SUPPLIER = makeAddr("Supplier");
+    address internal immutable OWNER = makeAddr("Owner");
     address internal immutable RECEIVER = makeAddr("Receiver");
     address internal immutable LIQUIDATOR = makeAddr("Liquidator");
 
