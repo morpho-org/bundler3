@@ -29,10 +29,8 @@ library ErrorsLib {
     error AdapterAddress();
 
     /// @dev Thrown when a call is attempted with a zero amount as input.
+    // error ZeroShares();
     error ZeroAmount();
-
-    /// @dev Thrown when a call is attempted with a zero shares as input.
-    error ZeroShares();
 
     /// @dev Thrown when the given owner is unexpected.
     error UnexpectedOwner();
@@ -45,6 +43,9 @@ library ErrorsLib {
 
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
+
+    /// @dev Thrown when a set of values is inconsistent.
+    error InconsistentValues();
 
     /* MIGRATION ADAPTERS */
 

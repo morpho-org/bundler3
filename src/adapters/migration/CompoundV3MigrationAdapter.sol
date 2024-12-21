@@ -31,8 +31,6 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
 
         amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(IERC20(asset), instance, type(uint256).max);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
@@ -59,8 +57,6 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
             : ICompoundV3(instance).userCollateral(initiator, asset).balance;
 
         amount = Math.min(amount, balance);
-
-        require(amount != 0, ErrorsLib.ZeroAmount());
 
         ICompoundV3(instance).withdrawFrom(initiator, receiver, asset, amount);
     }

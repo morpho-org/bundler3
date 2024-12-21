@@ -42,7 +42,6 @@ contract TransferAdapterLocalTest is LocalTest {
         bundle.push(_erc20TransferFrom(address(loanToken), 0));
 
         vm.prank(USER);
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 }

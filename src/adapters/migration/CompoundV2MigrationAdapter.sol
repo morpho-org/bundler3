@@ -45,8 +45,6 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(onBehalf));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(IERC20(underlying), cToken, type(uint256).max);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
@@ -64,8 +62,6 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
         if (amount == type(uint256).max) amount = address(this).balance;
         amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(onBehalf));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         ICEth(C_ETH).repayBorrowBehalf{value: amount}(onBehalf);
     }
 
@@ -81,12 +77,10 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         amount = Math.min(amount, ICToken(cToken).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         uint256 received = MathLib.wMulDown(ICToken(cToken).exchangeRateCurrent(), amount);
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (receiver != address(this)) {
+        if (received > 0 && receiver != address(this)) {
             SafeERC20.safeTransfer(IERC20(ICToken(cToken).underlying()), receiver, received);
         }
     }
@@ -99,11 +93,9 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
     function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundler {
         amount = Math.min(amount, ICEth(C_ETH).balanceOf(address(this)));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
         require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
 
-        if (receiver != address(this)) Address.sendValue(payable(receiver), received);
+        if (received > 0 && receiver != address(this)) Address.sendValue(payable(receiver), received);
     }
 }

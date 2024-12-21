@@ -35,8 +35,6 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
         // Amount will be capped at `onBehalf`'s debt by the optimizer.
         if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(IERC20(underlying), address(AAVE_V3_OPTIMIZER), type(uint256).max);
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, onBehalf);
@@ -56,8 +54,6 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
         external
         onlyBundler
     {
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         AAVE_V3_OPTIMIZER.withdraw(underlying, amount, initiator(), receiver, maxIterations);
     }
 
@@ -72,8 +68,6 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
         external
         onlyBundler
     {
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         AAVE_V3_OPTIMIZER.withdrawCollateral(underlying, amount, initiator(), receiver);
     }
 }

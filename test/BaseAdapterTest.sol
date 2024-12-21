@@ -52,7 +52,6 @@ contract CoreAdapterLocalTest is LocalTest {
         bundle.push(_erc20Transfer(address(loanToken), RECEIVER, 0, coreAdapter));
 
         vm.prank(USER);
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
@@ -91,7 +90,6 @@ contract CoreAdapterLocalTest is LocalTest {
     function testNativeTransferZeroAmount() public {
         bundle.push(_nativeTransferNoFunding(RECEIVER, 0, coreAdapter));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 }

@@ -60,8 +60,6 @@ contract GeneralAdapter1 is CoreAdapter {
         IERC20 underlying = ERC20Wrapper(wrapper).underlying();
         if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(underlying, wrapper, type(uint256).max);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
@@ -81,8 +79,6 @@ contract GeneralAdapter1 is CoreAdapter {
 
         if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         require(ERC20Wrapper(wrapper).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
 
@@ -91,6 +87,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @notice Mints shares of an ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the adapter.
     /// @dev Assumes the given vault implements EIP-4626.
+    /// @dev The amount of minted shares must be strictly positive.
     /// @param vault The address of the vault.
     /// @param shares The amount of vault shares to mint.
     /// @param maxSharePriceE27 The maximum amount of assets to pay to get 1 share, scaled by 1e27.
@@ -100,7 +97,6 @@ contract GeneralAdapter1 is CoreAdapter {
         onlyBundler
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(shares != 0, ErrorsLib.ZeroShares());
 
         IERC20 underlyingToken = IERC20(IERC4626(vault).asset());
         SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
@@ -115,6 +111,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @notice Deposits underlying token in an ERC4626 vault.
     /// @dev Underlying tokens must have been previously sent to the adapter.
     /// @dev Assumes the given vault implements EIP-4626.
+    /// @dev The amount of minted shares must be strictly positive.
     /// @param vault The address of the vault.
     /// @param assets The amount of underlying token to deposit. Pass `type(uint).max` to deposit the adapter's balance.
     /// @param maxSharePriceE27 The maximum amount of assets to pay to get 1 share, scaled by 1e27.
@@ -128,8 +125,6 @@ contract GeneralAdapter1 is CoreAdapter {
         IERC20 underlyingToken = IERC20(IERC4626(vault).asset());
         if (assets == type(uint256).max) assets = underlyingToken.balanceOf(address(this));
 
-        require(assets != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
@@ -140,6 +135,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /// @notice Withdraws underlying token from an ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
+    /// @dev The amount of burned shares must be strictly positive.
     /// @dev If `owner` is the initiator, they must have previously approved the adapter to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the adapter.
     /// @param vault The address of the vault.
@@ -153,7 +149,6 @@ contract GeneralAdapter1 is CoreAdapter {
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
-        require(assets != 0, ErrorsLib.ZeroAmount());
 
         uint256 shares = IERC4626(vault).withdraw(assets, receiver, owner);
         require(assets.rDivDown(shares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -161,6 +156,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /// @notice Redeems shares of an ERC4626 vault.
     /// @dev Assumes the given `vault` implements EIP-4626.
+    /// @dev The amount of burned shares must be strictly positive.
     /// @dev If `owner` is the initiator, they must have previously approved the adapter to spend their vault shares.
     /// Otherwise, vault shares must have been previously sent to the adapter.
     /// @param vault The address of the vault.
@@ -176,8 +172,6 @@ contract GeneralAdapter1 is CoreAdapter {
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
 
         if (shares == type(uint256).max) shares = IERC4626(vault).balanceOf(owner);
-
-        require(shares != 0, ErrorsLib.ZeroShares());
 
         uint256 assets = IERC4626(vault).redeem(shares, receiver, owner);
         require(assets.rDivDown(shares) >= minSharePriceE27, ErrorsLib.SlippageExceeded());
@@ -235,7 +229,8 @@ contract GeneralAdapter1 is CoreAdapter {
 
         if (assets == type(uint256).max) {
             assets = IERC20(marketParams.loanToken).balanceOf(address(this));
-            require(assets != 0, ErrorsLib.ZeroAmount());
+            // Ensures an invalid (assets,shares) pair remains invalid.
+            require(shares == 0 || assets != 0, ErrorsLib.InconsistentValues());
         }
 
         SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
@@ -262,8 +257,6 @@ contract GeneralAdapter1 is CoreAdapter {
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
         if (assets == type(uint256).max) assets = IERC20(marketParams.collateralToken).balanceOf(address(this));
-
-        require(assets != 0, ErrorsLib.ZeroAmount());
 
         SafeERC20.forceApprove(IERC20(marketParams.collateralToken), address(MORPHO), type(uint256).max);
 
@@ -317,12 +310,14 @@ contract GeneralAdapter1 is CoreAdapter {
 
         if (assets == type(uint256).max) {
             assets = IERC20(marketParams.loanToken).balanceOf(address(this));
-            require(assets != 0, ErrorsLib.ZeroAmount());
+            // Ensures an invalid (assets,shares) pair remains invalid.
+            require(shares == 0 || assets != 0, ErrorsLib.InconsistentValues());
         }
 
         if (shares == type(uint256).max) {
             shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), onBehalf);
-            require(shares != 0, ErrorsLib.ZeroAmount());
+            // Ensures an invalid (assets,shares) pair remains invalid.
+            require(assets == 0 || shares != 0, ErrorsLib.InconsistentValues());
         }
 
         SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
@@ -351,7 +346,8 @@ contract GeneralAdapter1 is CoreAdapter {
     ) external onlyBundler {
         if (shares == type(uint256).max) {
             shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), initiator());
-            require(shares != 0, ErrorsLib.ZeroAmount());
+            // Ensures an invalid (assets,shares) pair remains invalid.
+            require(assets == 0 || shares != 0, ErrorsLib.InconsistentValues());
         }
 
         (uint256 withdrawnAssets, uint256 withdrawnShares) =
@@ -371,7 +367,6 @@ contract GeneralAdapter1 is CoreAdapter {
         onlyBundler
     {
         if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), initiator());
-        require(assets != 0, ErrorsLib.ZeroAmount());
 
         MORPHO.withdrawCollateral(marketParams, assets, initiator(), receiver);
     }
@@ -381,7 +376,6 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
-        require(assets != 0, ErrorsLib.ZeroAmount());
         SafeERC20.forceApprove(IERC20(token), address(MORPHO), type(uint256).max);
 
         MORPHO.flashLoan(token, assets, data);
@@ -399,9 +393,7 @@ contract GeneralAdapter1 is CoreAdapter {
         address initiator = initiator();
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(initiator);
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        Permit2Lib.PERMIT2.transferFrom(initiator, receiver, amount.toUint160(), token);
+        if (amount > 0) Permit2Lib.PERMIT2.transferFrom(initiator, receiver, amount.toUint160(), token);
     }
 
     /* TRANSFER ACTIONS */
@@ -417,9 +409,7 @@ contract GeneralAdapter1 is CoreAdapter {
         address initiator = initiator();
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(initiator);
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        SafeERC20.safeTransferFrom(IERC20(token), initiator, receiver, amount);
+        if (amount > 0) SafeERC20.safeTransferFrom(IERC20(token), initiator, receiver, amount);
     }
 
     /* WRAPPED NATIVE TOKEN ACTIONS */
@@ -431,10 +421,8 @@ contract GeneralAdapter1 is CoreAdapter {
     function wrapNative(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = address(this).balance;
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         WRAPPED_NATIVE.deposit{value: amount}();
-        if (receiver != address(this)) SafeERC20.safeTransfer(IERC20(address(WRAPPED_NATIVE)), receiver, amount);
+        if (amount > 0 && receiver != address(this)) SafeERC20.safeTransfer(IERC20(address(WRAPPED_NATIVE)), receiver, amount);
     }
 
     /// @notice Unwraps wNative tokens to the native token.
@@ -445,10 +433,8 @@ contract GeneralAdapter1 is CoreAdapter {
     function unwrapNative(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = WRAPPED_NATIVE.balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         WRAPPED_NATIVE.withdraw(amount);
-        if (receiver != address(this)) Address.sendValue(payable(receiver), amount);
+        if (amount > 0 && receiver != address(this)) Address.sendValue(payable(receiver), amount);
     }
 
     /* INTERNAL FUNCTIONS */

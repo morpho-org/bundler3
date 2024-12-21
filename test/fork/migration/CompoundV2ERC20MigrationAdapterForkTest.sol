@@ -61,7 +61,6 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
     function testCompoundV2RedeemErc20ZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, 0, address(this)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 

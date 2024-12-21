@@ -15,14 +15,6 @@ contract WNativeAdapterForkTest is ForkTest {
         IERC20(WETH).approve(address(generalAdapter1), type(uint256).max);
     }
 
-    function testWrapZeroAmount(address receiver) public {
-        bundle.push(_wrapNative(0, receiver));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        vm.prank(USER);
-        bundler.multicall(bundle);
-    }
-
     function testWrapNative(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -46,7 +38,6 @@ contract WNativeAdapterForkTest is ForkTest {
     function testUnwrapZeroAmount(address receiver) public {
         bundle.push(_unwrapNative(0, receiver));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
         bundler.multicall(bundle);
     }

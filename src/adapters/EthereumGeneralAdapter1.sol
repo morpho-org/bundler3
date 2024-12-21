@@ -64,8 +64,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(IERC20(MORPHO_TOKEN), MORPHO_WRAPPER, type(uint256).max);
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
@@ -85,12 +83,10 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     {
         if (amount == type(uint256).max) amount = address(this).balance;
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         uint256 sharesReceived = IStEth(ST_ETH).submit{value: amount}(referral);
         require(amount.rDivUp(sharesReceived) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
-        if (receiver != address(this)) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, amount);
+        if (amount > 0 && receiver != address(this)) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, amount);
     }
 
     /// @notice Wraps stETH to wStETH.
@@ -100,13 +96,11 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     function wrapStEth(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = IERC20(ST_ETH).balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(IERC20(ST_ETH), WST_ETH, type(uint256).max);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
 
-        if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
+        if (received > 0 && receiver != address(this)) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
     }
 
     /// @notice Unwraps wStETH to stETH.
@@ -116,9 +110,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     function unwrapStEth(uint256 amount, address receiver) external onlyBundler {
         if (amount == type(uint256).max) amount = IERC20(WST_ETH).balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
-        if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, received);
+        if (received > 0 && receiver != address(this)) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, received);
     }
 }

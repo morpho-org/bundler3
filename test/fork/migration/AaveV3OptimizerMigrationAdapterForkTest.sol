@@ -49,13 +49,6 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         migrationAdapter.aaveV3OptimizerRepay(marketParams.loanToken, amount, address(this));
     }
 
-    function testAaveV3Optimizer3RepayZeroAmount() public onlyEthereum {
-        bundle.push(_aaveV3OptimizerRepay(marketParams.loanToken, 0, address(this)));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
-    }
-
     function testAaveV3OtimizerAuthorizationWithSigRevert(address owner) public onlyEthereum {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);

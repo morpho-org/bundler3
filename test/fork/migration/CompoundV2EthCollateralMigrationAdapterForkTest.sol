@@ -47,7 +47,6 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
     function testCompoundV2RepayErc20ZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RepayErc20(C_DAI_V2, 0, address(this)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 

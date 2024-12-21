@@ -37,7 +37,6 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
     function testMorphoWrapperWithdrawToZeroAmount() public onlyEthereum {
         bundle.push(_morphoWrapperWithdrawTo(RECEIVER, 0));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 

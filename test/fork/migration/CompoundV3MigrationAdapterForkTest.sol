@@ -41,7 +41,6 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
     function testCompoundV3RepayZeroAmount() public {
         bundle.push(_compoundV3Repay(C_WETH_V3, 0, address(this)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 

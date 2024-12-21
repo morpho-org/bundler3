@@ -48,7 +48,6 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
     function testErc20WrapperDepositForZeroAmount() public {
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), 0));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
@@ -92,7 +91,6 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
     function testErc20WrapperWithdrawToZeroAmount() public {
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, 0));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 

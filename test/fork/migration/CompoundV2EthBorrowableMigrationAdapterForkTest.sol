@@ -41,7 +41,6 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
     function testCompoundV2RepayEthZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RepayEth(0, address(this)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
@@ -62,14 +61,12 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
     function testCompoundV2RedeemEthZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RedeemEth(0, address(this)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
     function testCompoundV2RepayCEthZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RepayEth(0, address(this)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 

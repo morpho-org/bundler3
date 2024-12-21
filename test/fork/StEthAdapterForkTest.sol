@@ -19,14 +19,6 @@ contract EthereumStEthAdapterForkTest is ForkTest {
     address internal immutable ST_ETH = getAddress("ST_ETH");
     address internal immutable WST_ETH = getAddress("WST_ETH");
 
-    function testStakeEthZeroAmount(address receiver) public onlyEthereum {
-        bundle.push(_stakeEth(0, type(uint256).max, address(0), receiver));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        vm.prank(USER);
-        bundler.multicall(bundle);
-    }
-
     function testStakeEth(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, 10_000 ether);
 
@@ -67,14 +59,6 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         bundler.multicall{value: amount}(bundle);
     }
 
-    function testWrapZeroAmount(address receiver) public onlyEthereum {
-        bundle.push(_wrapStEth(0, receiver));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        vm.prank(USER);
-        bundler.multicall(bundle);
-    }
-
     function testWrapStEth(uint256 amount) public onlyEthereum {
         uint256 privateKey = _boundPrivateKey(pickUint());
         address user = vm.addr(privateKey);
@@ -110,14 +94,6 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         );
         assertApproxEqAbs(IERC20(ST_ETH).balanceOf(user), 0, 1, "wstEth.balanceOf(user)");
         assertEq(IERC20(ST_ETH).balanceOf(RECEIVER), 0, "wstEth.balanceOf(RECEIVER)");
-    }
-
-    function testUnwrapZeroAmount(address receiver) public onlyEthereum {
-        bundle.push(_unwrapStEth(0, receiver));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        vm.prank(USER);
-        bundler.multicall(bundle);
     }
 
     function testUnwrapWstEth(uint256 amount) public onlyEthereum {

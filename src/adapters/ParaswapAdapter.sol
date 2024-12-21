@@ -112,7 +112,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @param srcToken Token to sell.
-    /// @param marketParams Market parameters of the market with Morpho debt. The user must have nonzero debt.
+    /// @param marketParams Market parameters of the market with Morpho debt.
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
@@ -128,16 +128,17 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         address receiver
     ) external {
         uint256 debtAmount = MorphoBalancesLib.expectedBorrowAssets(MORPHO, marketParams, onBehalf);
-        require(debtAmount != 0, ErrorsLib.ZeroAmount());
-        buy({
-            augustus: augustus,
-            callData: callData,
-            srcToken: srcToken,
-            destToken: marketParams.loanToken,
-            newDestAmount: debtAmount,
-            offsets: offsets,
-            receiver: receiver
-        });
+        if (debtAmount != 0) {
+            buy({
+                augustus: augustus,
+                callData: callData,
+                srcToken: srcToken,
+                destToken: marketParams.loanToken,
+                newDestAmount: debtAmount,
+                offsets: offsets,
+                receiver: receiver
+            });
+        }
     }
 
     /* INTERNAL FUNCTIONS */
@@ -164,7 +165,6 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     ) internal onlyBundler {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.InvalidAugustus());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
-        require(minDestAmount != 0, ErrorsLib.ZeroAmount());
 
         uint256 srcInitial = IERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = IERC20(destToken).balanceOf(address(this));
@@ -185,7 +185,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (receiver != address(this)) {
+        if (destAmount > 0 && receiver != address(this)) {
             SafeERC20.safeTransfer(IERC20(destToken), receiver, destAmount);
         }
     }

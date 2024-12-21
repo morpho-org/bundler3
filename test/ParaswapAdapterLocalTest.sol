@@ -98,13 +98,11 @@ contract ParaswapAdapterLocalTest is LocalTest {
     }
 
     function testMinDestAmountZeroBuy() public {
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundle.push(_buy(address(collateralToken), address(loanToken), 1, 0, 0, address(this)));
         bundler.multicall(bundle);
     }
 
     function testMinDestAmountZeroSell() public {
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundle.push(_sell(address(collateralToken), address(loanToken), 1, 0, true, address(this)));
         bundler.multicall(bundle);
     }

@@ -121,28 +121,32 @@ contract ERC4626AdapterLocalTest is LocalTest {
     function testErc4626MintZero() public {
         bundle.push(_erc4626Mint(address(vault), 0, type(uint256).max, RECEIVER));
 
-        vm.expectRevert(ErrorsLib.ZeroShares.selector);
+        // underflow in rDivUp
+        vm.expectRevert(stdError.arithmeticError);
         bundler.multicall(bundle);
     }
 
     function testErc4626DepositZero() public {
         bundle.push(_erc4626Deposit(address(vault), 0, type(uint256).max, RECEIVER));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        // underflow in rDivUp
+        vm.expectRevert(stdError.arithmeticError);
         bundler.multicall(bundle);
     }
 
     function testErc4626WithdrawZero() public {
         bundle.push(_erc4626Withdraw(address(vault), 0, 0, RECEIVER, address(generalAdapter1)));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        // division by zero in rDivDown
+        vm.expectRevert(stdError.divisionError);
         bundler.multicall(bundle);
     }
 
     function testErc4626RedeemZero() public {
         bundle.push(_erc4626Redeem(address(vault), 0, 0, RECEIVER, address(generalAdapter1)));
 
-        vm.expectRevert(ErrorsLib.ZeroShares.selector);
+        // division by zero in rDivDown
+        vm.expectRevert(stdError.divisionError);
         bundler.multicall(bundle);
     }
 

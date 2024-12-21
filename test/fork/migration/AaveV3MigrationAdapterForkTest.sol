@@ -61,13 +61,6 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
         migrationAdapter.aaveV3Withdraw(marketParams.loanToken, amount, address(this));
     }
 
-    function testAaveV3RepayZeroAmount() public {
-        bundle.push(_aaveV3Repay(marketParams.loanToken, 0, address(this)));
-
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
-    }
-
     function testAaveV3RepayOnBehalf() public {
         deal(marketParams.collateralToken, USER, collateralSupplied);
 

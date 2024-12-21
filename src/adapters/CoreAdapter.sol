@@ -50,8 +50,6 @@ abstract contract CoreAdapter {
 
         if (amount == type(uint256).max) amount = address(this).balance;
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         Address.sendValue(payable(receiver), amount);
     }
 
@@ -64,8 +62,6 @@ abstract contract CoreAdapter {
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
-
-        require(amount != 0, ErrorsLib.ZeroAmount());
 
         SafeERC20.safeTransfer(IERC20(token), receiver, amount);
     }

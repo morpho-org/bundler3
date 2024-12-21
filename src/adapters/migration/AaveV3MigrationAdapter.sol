@@ -40,8 +40,6 @@ contract AaveV3MigrationAdapter is CoreAdapter {
         // Amount will be capped at `onBehalf`'s debt by Aave.
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         SafeERC20.forceApprove(IERC20(token), address(AAVE_V3_POOL), type(uint256).max);
 
         AAVE_V3_POOL.repay(token, amount, interestRateMode, onBehalf);
@@ -57,8 +55,6 @@ contract AaveV3MigrationAdapter is CoreAdapter {
     /// `type(uint).max` to always withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV3Withdraw(address token, uint256 amount, address receiver) external onlyBundler {
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
         AAVE_V3_POOL.withdraw(token, amount, receiver);
     }
 }
