@@ -422,7 +422,9 @@ contract GeneralAdapter1 is CoreAdapter {
         if (amount == type(uint256).max) amount = address(this).balance;
 
         WRAPPED_NATIVE.deposit{value: amount}();
-        if (amount > 0 && receiver != address(this)) SafeERC20.safeTransfer(IERC20(address(WRAPPED_NATIVE)), receiver, amount);
+        if (amount > 0 && receiver != address(this)) {
+            SafeERC20.safeTransfer(IERC20(address(WRAPPED_NATIVE)), receiver, amount);
+        }
     }
 
     /// @notice Unwraps wNative tokens to the native token.
