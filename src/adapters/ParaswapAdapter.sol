@@ -44,7 +44,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param offsets Offsets in callData of the exact sell amount (`exactAmount`), minimum buy amount (`limitAmount`)
     /// and quoted buy amount (`quotedAmount`).
     /// @dev The quoted buy amount will change only if its offset is not zero.
-    /// @param receiver Address to which bought assets will be sent.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `srcToken` should be skimmed
+    /// separately.
     function sell(
         address augustus,
         bytes memory callData,
