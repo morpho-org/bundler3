@@ -7,7 +7,7 @@ import {ICToken} from "../../interfaces/ICToken.sol";
 import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
 import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
-import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib, Address} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho easily.
@@ -47,9 +47,11 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(underlying, cToken);
+        SafeERC20.forceApprove(IERC20(underlying), cToken, type(uint256).max);
 
         require(ICToken(cToken).repayBorrowBehalf(onBehalf, amount) == 0, ErrorsLib.RepayError());
+
+        SafeERC20.forceApprove(IERC20(underlying), cToken, 0);
     }
 
     /// @notice Repays an ETH debt on CompoundV2.

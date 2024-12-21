@@ -2,7 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV3Optimizer} from "../../interfaces/IAaveV3Optimizer.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho easily.
@@ -37,9 +37,11 @@ contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(underlying, address(AAVE_V3_OPTIMIZER));
+        SafeERC20.forceApprove(IERC20(underlying), address(AAVE_V3_OPTIMIZER), type(uint256).max);
 
         AAVE_V3_OPTIMIZER.repay(underlying, amount, onBehalf);
+
+        SafeERC20.forceApprove(IERC20(underlying), address(AAVE_V3_OPTIMIZER), 0);
     }
 
     /// @notice Withdraws on the AaveV3 Optimizer.

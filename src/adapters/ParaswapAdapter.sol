@@ -72,7 +72,6 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @notice Buys an exact amount. Can check for a maximum sold amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
-    /// @dev `callData` can change if `marketParams.loanToken == destToken`.
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
     /// @param newDestAmount Adjusted amount to buy. Will be used to update callData before sent to Augustus contract.
@@ -113,7 +112,8 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @param offsets Offsets in callData of the exact buy amount (`exactAmount`), maximum sell amount (`limitAmount`)
     /// and quoted sell amount (`quotedAmount`).
     /// @param onBehalf The amount bought will be exactly `onBehalf`'s debt.
-    /// @param receiver Address to which bought assets will be sent, as well as any leftover `srcToken`.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `src` tokens should be skimmed
+    /// separately.
     function buyMorphoDebt(
         address augustus,
         bytes memory callData,
@@ -137,7 +137,15 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
 
     /* INTERNAL FUNCTIONS */
 
-    /// @notice Executes the swap specified by `callData` with `augustus`.
+    /// @dev Executes the swap specified by `callData` with `augustus`.
+    /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
+    /// @param callData Swap data to call `augustus`. Contains routing information.
+    /// @param srcToken Token to sell.
+    /// @param destToken Token to buy.
+    /// @param maxSrcAmount Maximum amount of `srcToken` to sell.
+    /// @param minDestAmount Minimum amount of `destToken` to buy.
+    /// @param receiver Address to which bought assets will be sent. Any leftover `src` tokens should be skimmed
+    /// separately.
     function swap(
         address augustus,
         bytes memory callData,
@@ -151,13 +159,15 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(minDestAmount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(srcToken, augustus);
-
         uint256 srcInitial = IERC20(srcToken).balanceOf(address(this));
         uint256 destInitial = IERC20(destToken).balanceOf(address(this));
 
+        SafeERC20.forceApprove(IERC20(srcToken), augustus, type(uint256).max);
+
         (bool success, bytes memory returnData) = address(augustus).call(callData);
         if (!success) UtilsLib.lowLevelRevert(returnData);
+
+        SafeERC20.forceApprove(IERC20(srcToken), augustus, 0);
 
         uint256 srcFinal = IERC20(srcToken).balanceOf(address(this));
         uint256 destFinal = IERC20(destToken).balanceOf(address(this));
@@ -168,7 +178,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (destAmount > 0 && receiver != address(this)) {
+        if (receiver != address(this)) {
             SafeERC20.safeTransfer(IERC20(destToken), receiver, destAmount);
         }
     }

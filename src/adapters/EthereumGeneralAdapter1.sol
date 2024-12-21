@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, UtilsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:contact security@morpho.org
@@ -13,9 +13,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     using MathRayLib for uint256;
 
     /* IMMUTABLES */
-
-    /// @dev The address of the DAI token.
-    address public immutable DAI;
 
     /// @dev The address of the stETH token.
     address public immutable ST_ETH;
@@ -34,7 +31,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param bundler The address of the bundler.
     /// @param morpho The address of Morpho.
     /// @param weth The address of the WETH token.
-    /// @param dai The address of the DAI token.
     /// @param wStEth The address of the wstETH token.
     /// @param morphoToken The address of the MORPHO token.
     /// @param morphoWrapper The address of the MORPHO token wrapper.
@@ -42,24 +38,18 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         address bundler,
         address morpho,
         address weth,
-        address dai,
         address wStEth,
         address morphoToken,
         address morphoWrapper
     ) GeneralAdapter1(bundler, morpho, weth) {
-        require(dai != address(0), ErrorsLib.ZeroAddress());
         require(wStEth != address(0), ErrorsLib.ZeroAddress());
         require(morphoToken != address(0), ErrorsLib.ZeroAddress());
         require(morphoWrapper != address(0), ErrorsLib.ZeroAddress());
 
-        DAI = dai;
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
-
-        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
-        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
@@ -71,11 +61,12 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
-        require(receiver != address(0), ErrorsLib.ZeroAddress());
-
+        // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeERC20.forceApprove(IERC20(MORPHO_TOKEN), MORPHO_WRAPPER, type(uint256).max);
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
@@ -90,7 +81,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param receiver The account receiving the stETH tokens.
     function stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver)
         external
-        payable
         onlyBundler
     {
         if (amount == type(uint256).max) amount = address(this).balance;
@@ -112,7 +102,10 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        SafeERC20.forceApprove(IERC20(ST_ETH), WST_ETH, type(uint256).max);
+
         uint256 received = IWstEth(WST_ETH).wrap(amount);
+
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
     }
 
