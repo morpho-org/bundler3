@@ -242,7 +242,7 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testSequentialReenterFailsByDefault(uint256 size1, uint256 size2) public {
+    function testSequentialReenterFails(uint256 size1, uint256 size2) public {
         size1 = bound(size1, 1, 10);
         size2 = bound(size2, 1, 10);
         Call[] memory calls1 = new Call[](size1);
@@ -259,8 +259,35 @@ contract BundlerLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testMissedReenterFailsByDefault(bytes32 _hash) public {
+    function testMissedReenterFails(bytes32 _hash) public {
+        vm.assume(_hash != bytes32(0));
         bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), 0, false, _hash));
+        vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMissedReenterFollowedByActionWithReenterFails(bytes32 _hash) public {
+        vm.assume(_hash != bytes32(0));
+        callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), bytes32(0)));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
+        bundle.push(
+            _call(
+                adapterMock,
+                abi.encodeCall(AdapterMock.callbackBundler, (callbackBundle)),
+                keccak256(abi.encode(callbackBundle))
+            )
+        );
+
+        vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testMissedReenterFollowedByActionWithoutReenterFails(bytes32 _hash) public {
+        vm.assume(_hash != bytes32(0));
+
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), _hash));
+        bundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.emitInitiator, ()), bytes32(0)));
+
         vm.expectRevert(ErrorsLib.MissingExpectedReenter.selector);
         bundler.multicall(bundle);
     }
