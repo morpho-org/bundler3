@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
-import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
+import {UtilsLib as MorphoUtilsLib} from "../../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
 /// @custom:security-contact security@morpho.org
@@ -29,7 +29,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
 
         if (amount == type(uint256).max) amount = IERC20(asset).balanceOf(address(this));
 
-        amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
+        amount = MorphoUtilsLib.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
@@ -58,7 +58,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
             ? ICompoundV3(instance).balanceOf(initiator)
             : ICompoundV3(instance).userCollateral(initiator, asset).balance;
 
-        amount = Math.min(amount, balance);
+        amount = MorphoUtilsLib.min(amount, balance);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
