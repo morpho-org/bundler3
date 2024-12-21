@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, UtilsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:contact security@morpho.org
@@ -50,9 +50,6 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         WST_ETH = wStEth;
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
-
-        UtilsLib.forceApproveMaxTo(ST_ETH, WST_ETH);
-        UtilsLib.forceApproveMaxTo(MORPHO_TOKEN, MORPHO_WRAPPER);
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
@@ -68,6 +65,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeERC20.forceApprove(IERC20(MORPHO_TOKEN), MORPHO_WRAPPER, type(uint256).max);
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
@@ -103,7 +102,10 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        SafeERC20.forceApprove(IERC20(ST_ETH), WST_ETH, type(uint256).max);
+
         uint256 received = IWstEth(WST_ETH).wrap(amount);
+
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(WST_ETH), receiver, received);
     }
 

@@ -116,6 +116,12 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
             assertEq(morpho.supplyShares(id, USER), 0, "supplyShares(USER)");
             assertEq(morpho.borrowShares(id, USER), 0, "borrowShares(USER)");
         }
+
+        assertEq(
+            loanToken.allowance(address(generalAdapter1), address(morpho)),
+            type(uint256).max,
+            "loanToken.allowance(generalAdapter1, morpho)"
+        );
     }
 
     function testSupply(uint256 amount, address onBehalf) public {
