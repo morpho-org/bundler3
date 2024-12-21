@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "./ErrorsLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Library exposing bytes manipulation.
 library BytesLib {
     /// @notice Reads 32 bytes at offset `offset` of memory bytes `data`.

@@ -7,7 +7,7 @@ import {Address} from "../../lib/openzeppelin-contracts/contracts/utils/Address.
 import {IBundler} from "../interfaces/IBundler.sol";
 import {UtilsLib} from "../libraries/UtilsLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Common contract to all Bundler adapters.
 abstract contract CoreAdapter {
     /* IMMUTABLES */

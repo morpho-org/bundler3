@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Library exposing error messages.
 library ErrorsLib {
     /* STANDARD ADAPTERS */

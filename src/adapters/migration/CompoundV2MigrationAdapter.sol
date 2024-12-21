@@ -9,7 +9,7 @@ import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "../CoreAdapter.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V2 to Morpho easily.
 contract CompoundV2MigrationAdapter is CoreAdapter {
     /* IMMUTABLES */

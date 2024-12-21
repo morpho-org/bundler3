@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {IAaveV3Optimizer} from "../../interfaces/IAaveV3Optimizer.sol";
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Contract allowing to migrate a position from AaveV3 Optimizer to Morpho easily.
 contract AaveV3OptimizerMigrationAdapter is CoreAdapter {
     /* IMMUTABLES */

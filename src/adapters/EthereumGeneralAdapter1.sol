@@ -7,7 +7,7 @@ import {IStEth} from "../interfaces/IStEth.sol";
 import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Adapter contract specific to Ethereum n°1.
 contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     using MathRayLib for uint256;

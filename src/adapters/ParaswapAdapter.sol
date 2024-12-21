@@ -8,7 +8,7 @@ import {BytesLib} from "../libraries/BytesLib.sol";
 import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {IMorpho, MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Adapter for trading with Paraswap.
 contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     using Math for uint256;

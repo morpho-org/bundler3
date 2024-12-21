@@ -13,7 +13,7 @@ import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/M
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Chain agnostic adapter contract n°1.
 contract GeneralAdapter1 is CoreAdapter {
     using SafeCast160 for uint256;
