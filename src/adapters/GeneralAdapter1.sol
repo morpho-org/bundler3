@@ -133,9 +133,10 @@ contract GeneralAdapter1 is CoreAdapter {
         SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
-        require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
 
         SafeERC20.forceApprove(underlyingToken, vault, 0);
+
+        require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
     /// @notice Withdraws underlying token from an ERC4626 vault.
