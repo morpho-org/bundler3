@@ -229,7 +229,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         if (assets == type(uint256).max) {
             assets = IERC20(marketParams.loanToken).balanceOf(address(this));
-            // Ensures an invalid (assets,shares) pair remains invalid.
+            // Ensures an inconsistent (assets,shares) pair remains inconsistent.
             require(shares == 0 || assets != 0, ErrorsLib.InconsistentValues());
         }
 
@@ -310,13 +310,13 @@ contract GeneralAdapter1 is CoreAdapter {
 
         if (assets == type(uint256).max) {
             assets = IERC20(marketParams.loanToken).balanceOf(address(this));
-            // Ensures an invalid (assets,shares) pair remains invalid.
+            // Ensures an inconsistent (assets,shares) pair remains inconsistent.
             require(shares == 0 || assets != 0, ErrorsLib.InconsistentValues());
         }
 
         if (shares == type(uint256).max) {
             shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), onBehalf);
-            // Ensures an invalid (assets,shares) pair remains invalid.
+            // Ensures an inconsistent (assets,shares) pair remains inconsistent.
             require(assets == 0 || shares != 0, ErrorsLib.InconsistentValues());
         }
 
@@ -346,7 +346,7 @@ contract GeneralAdapter1 is CoreAdapter {
     ) external onlyBundler {
         if (shares == type(uint256).max) {
             shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), initiator());
-            // Ensures an invalid (assets,shares) pair remains invalid.
+            // Ensures an inconsistent (assets,shares) pair remains inconsistent.
             require(assets == 0 || shares != 0, ErrorsLib.InconsistentValues());
         }
 
