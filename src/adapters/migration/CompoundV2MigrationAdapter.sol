@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {ICEth} from "../../interfaces/ICEth.sol";
 import {ICToken} from "../../interfaces/ICToken.sol";
 
-import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
+import {UtilsLib as MorphoUtilsLib} from "../../../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {MathLib} from "../../../lib/morpho-blue/src/libraries/MathLib.sol";
 
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "../CoreAdapter.sol";
@@ -43,7 +43,7 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
 
         if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
 
-        amount = Math.min(amount, ICToken(cToken).borrowBalanceCurrent(onBehalf));
+        amount = MorphoUtilsLib.min(amount, ICToken(cToken).borrowBalanceCurrent(onBehalf));
 
         SafeERC20.forceApprove(IERC20(underlying), cToken, type(uint256).max);
 
@@ -60,7 +60,7 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function compoundV2RepayEth(uint256 amount, address onBehalf) external onlyBundler {
         if (amount == type(uint256).max) amount = address(this).balance;
-        amount = Math.min(amount, ICEth(C_ETH).borrowBalanceCurrent(onBehalf));
+        amount = MorphoUtilsLib.min(amount, ICEth(C_ETH).borrowBalanceCurrent(onBehalf));
 
         ICEth(C_ETH).repayBorrowBehalf{value: amount}(onBehalf);
     }
@@ -75,7 +75,7 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
     function compoundV2RedeemErc20(address cToken, uint256 amount, address receiver) external onlyBundler {
         require(cToken != C_ETH, ErrorsLib.CTokenIsCETH());
 
-        amount = Math.min(amount, ICToken(cToken).balanceOf(address(this)));
+        amount = MorphoUtilsLib.min(amount, ICToken(cToken).balanceOf(address(this)));
 
         uint256 received = MathLib.wMulDown(ICToken(cToken).exchangeRateCurrent(), amount);
         require(ICToken(cToken).redeem(amount) == 0, ErrorsLib.RedeemError());
@@ -91,7 +91,7 @@ contract CompoundV2MigrationAdapter is CoreAdapter {
     /// capped at the adapter's max redeemable amount. Pass `type(uint).max` to redeem the adapter's balance.
     /// @param receiver The account receiving the redeemed ETH.
     function compoundV2RedeemEth(uint256 amount, address receiver) external onlyBundler {
-        amount = Math.min(amount, ICEth(C_ETH).balanceOf(address(this)));
+        amount = MorphoUtilsLib.min(amount, ICEth(C_ETH).balanceOf(address(this)));
 
         uint256 received = MathLib.wMulDown(ICEth(C_ETH).exchangeRateCurrent(), amount);
         require(ICEth(C_ETH).redeem(amount) == 0, ErrorsLib.RedeemError());
