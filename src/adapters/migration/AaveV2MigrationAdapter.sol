@@ -2,7 +2,7 @@
 pragma solidity 0.8.28;
 
 import {IAaveV2} from "../../interfaces/IAaveV2.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
 /// @custom:contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Aave V2 to Morpho easily.
@@ -41,16 +41,18 @@ contract AaveV2MigrationAdapter is CoreAdapter {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(token, address(AAVE_V2_POOL));
+        SafeERC20.forceApprove(IERC20(token), address(AAVE_V2_POOL), type(uint256).max);
 
         AAVE_V2_POOL.repay(token, amount, interestRateMode, onBehalf);
+
+        SafeERC20.forceApprove(IERC20(token), address(AAVE_V2_POOL), 0);
     }
 
     /// @notice Withdraws on AaveV2.
     /// @dev aTokens must have been previously sent to the adapter.
     /// @param token The address of the token to withdraw.
     /// @param amount The amount of `token` to withdraw. Unlike with `morphoWithdraw`, the amount is capped at the
-    /// initiator's max withdrawable amount. Pass
+    /// adapter's max withdrawable amount. Pass
     /// `type(uint).max` to always withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV2Withdraw(address token, uint256 amount, address receiver) external onlyBundler {

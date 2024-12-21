@@ -394,6 +394,9 @@ contract ParaswapAdapterLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapAdapter)), 0, "paraswap adapter collateral");
         assertEq(loanToken.balanceOf(address(paraswapAdapter)), 0, "paraswap adapter loan token");
+        assertEq(
+            collateralToken.allowance(address(paraswapAdapter), address(augustus)), 0, "paraswap adapter allowance"
+        );
     }
 
     function testBuyNoAdjustment(uint256 amount, uint256 extra, address receiver) public {
@@ -412,6 +415,9 @@ contract ParaswapAdapterLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
         assertEq(collateralToken.balanceOf(address(paraswapAdapter)), 0, "paraswap adapter collateral");
         assertEq(loanToken.balanceOf(address(paraswapAdapter)), 0, "paraswap adapter loan token");
+        assertEq(
+            collateralToken.allowance(address(paraswapAdapter), address(augustus)), 0, "paraswap adapter allowance"
+        );
     }
 
     function testSellWithAdjustment(uint256 srcAmount, uint256 percent, address receiver) public {
