@@ -179,18 +179,26 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* MORPHO CALLBACKS */
 
+    /// @notice Receives supply callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoSupply(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
 
+    /// @notice Receives supply collateral callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoSupplyCollateral(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
 
+    /// @notice Receives repay callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoRepay(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
 
+    /// @notice Receives flashloan callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoFlashLoan(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
