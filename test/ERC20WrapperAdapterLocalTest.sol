@@ -38,6 +38,11 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
 
         assertEq(loanToken.balanceOf(address(generalAdapter1)), 0, "loan.balanceOf(generalAdapter1)");
         assertEq(loanWrapper.balanceOf(receiver), amount, "loanWrapper.balanceOf(receiver)");
+        assertEq(
+            loanToken.allowance(address(generalAdapter1), address(loanWrapper)),
+            0,
+            "loanToken.allowance(generalAdapter1, loanWrapper)"
+        );
     }
 
     function testErc20WrapperDepositForZeroAmount() public {
