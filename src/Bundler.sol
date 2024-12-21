@@ -15,10 +15,10 @@ contract Bundler is IBundler {
     /* TRANSIENT STORAGE */
 
     /// @notice The initiator of the multicall transaction.
-    address public initiator;
+    address public transient initiator;
 
     /// @notice Hash of the concatenation of the sender and calldata of the next call to `reenter`.
-    bytes32 public reenterHash;
+    bytes32 public transient reenterHash;
 
     /* EXTERNAL */
 
