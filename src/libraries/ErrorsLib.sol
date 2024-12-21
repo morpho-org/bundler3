@@ -28,10 +28,6 @@ library ErrorsLib {
     /// @dev Thrown when a call is attempted with the adapter address as input.
     error AdapterAddress();
 
-    /// @dev Thrown when a call is attempted with a zero amount as input.
-    // error ZeroShares();
-    error ZeroAmount();
-
     /// @dev Thrown when the given owner is unexpected.
     error UnexpectedOwner();
 
