@@ -72,7 +72,6 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @notice Buys an exact amount. Can check for a maximum sold amount.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
-    /// @dev `callData` can change if `marketParams.loanToken == destToken`.
     /// @param srcToken Token to sell.
     /// @param destToken Token to buy.
     /// @param newDestAmount Adjusted amount to buy. Will be used to update callData before sent to Augustus contract.
@@ -179,7 +178,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         require(srcAmount <= maxSrcAmount, ErrorsLib.SellAmountTooHigh());
         require(destAmount >= minDestAmount, ErrorsLib.BuyAmountTooLow());
 
-        if (destAmount > 0 && receiver != address(this)) {
+        if (receiver != address(this)) {
             SafeERC20.safeTransfer(IERC20(destToken), receiver, destAmount);
         }
     }

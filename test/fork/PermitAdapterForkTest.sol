@@ -64,7 +64,6 @@ contract PermitAdapterForkTest is ForkTest {
     {
         address user = vm.addr(privateKey);
         uint256 nonce = IDaiPermit(DAI).nonces(user);
-        require(DAI == ethereumGeneralAdapter1.DAI(), "not the same DAI");
 
         uint8 v;
         bytes32 r;

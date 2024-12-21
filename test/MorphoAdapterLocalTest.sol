@@ -321,7 +321,7 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
     }
 
     function testWithdrawCollateralZero() public {
-        bundle.push(_morphoWithdrawCollateral(marketParams, type(uint256).max, RECEIVER));
+        bundle.push(_morphoWithdrawCollateral(marketParams, 0, RECEIVER));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
@@ -566,11 +566,13 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
         _testRepayWithdrawCollateral(user, collateralAmount);
     }
 
-    function testRepayMaxShares(uint256 privateKey, uint256 amount) public {
+    function testRepayMaxShares(uint256 privateKey, uint256 amount, address onBehalf) public {
+        vm.assume(onBehalf != address(0));
         address user;
         privateKey = _boundPrivateKey(privateKey);
         user = vm.addr(privateKey);
         approveERC20ToMorphoAndAdapter(user);
+        approveERC20ToMorphoAndAdapter(onBehalf);
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -579,19 +581,21 @@ contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
 
         uint256 collateralAmount = amount.wDivUp(LLTV);
 
-        deal(address(collateralToken), user, collateralAmount);
-        vm.startPrank(user);
-        morpho.supplyCollateral(marketParams, collateralAmount, user, hex"");
-        morpho.borrow(marketParams, amount, 0, user, user);
-        IERC20(marketParams.loanToken).transfer(address(generalAdapter1), amount);
+        deal(address(collateralToken), onBehalf, collateralAmount);
+        vm.startPrank(onBehalf);
+        morpho.supplyCollateral(marketParams, collateralAmount, onBehalf, hex"");
+        morpho.borrow(marketParams, amount, 0, onBehalf, address(generalAdapter1));
         vm.stopPrank();
 
-        bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, user, hex""));
+        bundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, onBehalf, hex""));
+
+        assertGt(MorphoLib.borrowShares(morpho, marketParams.id(), onBehalf), 0, "before: borrowShares(onBehalf)");
 
         vm.prank(user);
         bundler.multicall(bundle);
 
-        assertEq(loanToken.balanceOf(user), 0, "loan.balanceOf(user)");
+        assertEq(loanToken.balanceOf(user), 0, "after: loan.balanceOf(user)");
+        assertEq(MorphoLib.borrowShares(morpho, marketParams.id(), onBehalf), 0, "after: borrowShares(onBehalf)");
         assertEq(loanToken.balanceOf(address(generalAdapter1)), 0, "loan.balanceOf(address(generalAdapter1)");
         assertEq(loanToken.balanceOf(address(morpho)), amount, "loan.balanceOf(address(morpho))");
     }

@@ -52,7 +52,7 @@ contract AaveV2MigrationAdapter is CoreAdapter {
     /// @dev aTokens must have been previously sent to the adapter.
     /// @param token The address of the token to withdraw.
     /// @param amount The amount of `token` to withdraw. Unlike with `morphoWithdraw`, the amount is capped at the
-    /// initiator's max withdrawable amount. Pass
+    /// adapter's max withdrawable amount. Pass
     /// `type(uint).max` to always withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
     function aaveV2Withdraw(address token, uint256 amount, address receiver) external onlyBundler {
