@@ -43,31 +43,31 @@ abstract contract CoreAdapter {
 
     /// @notice Transfers native assets.
     /// @param receiver The address that will receive the native tokens.
-    /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the adapter's balance.
+    /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the adapter's balance
+    /// (this allows 0 value transfers).
     function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
         if (amount == type(uint256).max) amount = address(this).balance;
+        else require(amount != 0, ErrorsLib.ZeroAmount());
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        Address.sendValue(payable(receiver), amount);
+        if (amount > 0) Address.sendValue(payable(receiver), amount);
     }
 
     /// @notice Transfers ERC20 tokens.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
-    /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the adapter's balance.
+    /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the adapter's balance (this
+    /// allows 0 value transfers).
     function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
+        else require(amount != 0, ErrorsLib.ZeroAmount());
 
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        SafeERC20.safeTransfer(IERC20(token), receiver, amount);
+        if (amount > 0) SafeERC20.safeTransfer(IERC20(token), receiver, amount);
     }
 
     /* INTERNAL */
