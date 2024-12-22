@@ -118,8 +118,6 @@ contract BundlerLocalTest is LocalTest {
         bytes32 reenterHash3 =
             keccak256(bytes.concat(bytes20(address(adapterMock3)), keccak256(abi.encode(callbackBundle2))));
 
-        console.log("ok");
-
         assertEq(entries[0].data, abi.encode(reenterHash1));
         assertEq(entries[1].data, abi.encode(reenterHash2));
         assertEq(entries[2].data, abi.encode(bytes32(0)));
