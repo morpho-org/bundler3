@@ -33,6 +33,10 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
 
+### Reenter can be only called safely
+
+This is checked in [`ReenterCaller.spec`](specs/ReenterCaller.spec).
+
 ## Verification architecture
 
 ### Folders and file structure
@@ -40,7 +44,8 @@ This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
-- [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract.
+- [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract;
+- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that the Bundler can only be rentered by authorized adapters.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
