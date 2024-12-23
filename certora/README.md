@@ -29,7 +29,7 @@ These calls may themselves reenter the bundler.
 
 This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
-## Only Bundler calls adapters
+### Only Bundler calls adapters
 
 This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
 
