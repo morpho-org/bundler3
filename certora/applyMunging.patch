@@ -1,13 +1,12 @@
 diff -ruN Bundler.sol Bundler.sol
 --- Bundler.sol
 +++ Bundler.sol
-@@ -15,10 +15,38 @@
+@@ -15,10 +15,37 @@
      /* TRANSIENT STORAGE */
  
      /// @notice The initiator of the multicall transaction.
 -    address public transient initiator;
 +    //address public transient initiator;
-+
 +    function setInitiator(address _initiator) internal {
 +        assembly ("memory-safe") {
 +            // keccak256("Morpho Bundler Initiator Slot")
@@ -22,7 +21,7 @@ diff -ruN Bundler.sol Bundler.sol
 +        }
 +    }
  
-     /// @notice Hash of the concatenation of the sender and calldata of the next call to `reenter`.
+     /// @notice Hash of the concatenation of the sender and the hash of the calldata of the next call to `reenter`.
 -    bytes32 public transient reenterHash;
 +    //bytes32 public transient reenterHash;
 +
@@ -42,7 +41,7 @@ diff -ruN Bundler.sol Bundler.sol
  
      /* EXTERNAL */
  
-@@ -26,13 +54,13 @@
+@@ -26,13 +53,13 @@
      /// @dev Locks the initiator so that the sender can be identified by other contracts.
      /// @param bundle The ordered array of calldata to execute.
      function multicall(Call[] calldata bundle) external payable {
@@ -59,7 +58,7 @@ diff -ruN Bundler.sol Bundler.sol
      }
  
      /// @notice Executes a sequence of calls.
-@@ -41,7 +69,7 @@
+@@ -41,7 +68,7 @@
      /// @param bundle The ordered array of calldata to execute.
      function reenter(Call[] calldata bundle) external {
          require(
@@ -68,7 +67,7 @@ diff -ruN Bundler.sol Bundler.sol
              ErrorsLib.IncorrectReenterHash()
          );
          _multicall(bundle);
-@@ -57,13 +85,13 @@
+@@ -57,13 +84,13 @@
          for (uint256 i; i < bundle.length; ++i) {
              address to = bundle[i].to;
              bytes32 callbackHash = bundle[i].callbackHash;
