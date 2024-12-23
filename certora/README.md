@@ -33,7 +33,6 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
 
-The `Protected.spec` file checks that all bundler functions, except noted exceptions, respect the requirements of the `protected` modifier when an initiator has been set.
 
 ## Verification architecture
 
