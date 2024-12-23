@@ -33,7 +33,6 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
 
-
 ## Verification architecture
 
 ### Folders and file structure
