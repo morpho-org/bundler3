@@ -3,10 +3,10 @@ pragma solidity 0.8.28;
 
 import {ICompoundV3} from "../../interfaces/ICompoundV3.sol";
 
-import {Math} from "../../../lib/morpho-utils/src/math/Math.sol";
-import {CoreAdapter, ErrorsLib, IERC20, UtilsLib} from "../CoreAdapter.sol";
+import {UtilsLib as MorphoUtilsLib} from "../../../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Contract allowing to migrate a position from Compound V3 to Morpho easily.
 contract CompoundV3MigrationAdapter is CoreAdapter {
     /* CONSTRUCTOR */
@@ -29,14 +29,16 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
 
         if (amount == type(uint256).max) amount = IERC20(asset).balanceOf(address(this));
 
-        amount = Math.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
+        amount = MorphoUtilsLib.min(amount, ICompoundV3(instance).borrowBalanceOf(onBehalf));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(asset, instance);
+        SafeERC20.forceApprove(IERC20(asset), instance, type(uint256).max);
 
         // Compound V3 uses signed accounting: supplying to a negative balance actually repays the borrow position.
         ICompoundV3(instance).supplyTo(onBehalf, asset, amount);
+
+        SafeERC20.forceApprove(IERC20(asset), instance, 0);
     }
 
     /// @notice Withdraws from a CompoundV3 instance.
@@ -56,7 +58,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
             ? ICompoundV3(instance).balanceOf(initiator)
             : ICompoundV3(instance).userCollateral(initiator, asset).balance;
 
-        amount = Math.min(amount, balance);
+        amount = MorphoUtilsLib.min(amount, balance);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
