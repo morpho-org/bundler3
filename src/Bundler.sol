@@ -6,7 +6,7 @@ import {IBundler, Call} from "./interfaces/IBundler.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Enables batching multiple calls in a single one.
 /// @notice Transiently stores the initiator of the multicall.
 /// @notice Can be reentered by the last unreturned callee with known data.
@@ -17,7 +17,7 @@ contract Bundler is IBundler {
     /// @notice The initiator of the multicall transaction.
     address public transient initiator;
 
-    /// @notice Hash of the concatenation of the sender and calldata of the next call to `reenter`.
+    /// @notice Hash of the concatenation of the sender and the hash of the calldata of the next call to `reenter`.
     bytes32 public transient reenterHash;
 
     /* EXTERNAL */
