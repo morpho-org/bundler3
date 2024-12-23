@@ -33,7 +33,6 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
                 address(bundler),
                 address(morpho),
                 getAddress("WETH"),
-                getAddress("DAI"),
                 getAddress("WST_ETH"),
                 getAddress("MORPHO_TOKEN"),
                 getAddress("MORPHO_WRAPPER")

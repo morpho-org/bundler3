@@ -48,11 +48,18 @@ contract CoreAdapterLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testTransferZeroAmount() public {
+    function testTransferZeroExactAmount() public {
         bundle.push(_erc20Transfer(address(loanToken), RECEIVER, 0, coreAdapter));
 
         vm.prank(USER);
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testTransferZeroBalanceAmount() public {
+        bundle.push(_erc20Transfer(address(loanToken), RECEIVER, type(uint256).max, coreAdapter));
+
+        vm.prank(USER);
         bundler.multicall(bundle);
     }
 
@@ -88,10 +95,16 @@ contract CoreAdapterLocalTest is LocalTest {
         bundler.multicall(bundle);
     }
 
-    function testNativeTransferZeroAmount() public {
+    function testNativeTransferZeroExactAmount() public {
         bundle.push(_nativeTransferNoFunding(RECEIVER, 0, coreAdapter));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        bundler.multicall(bundle);
+    }
+
+    function testNativeTransferZeroBalanceAmount() public {
+        bundle.push(_nativeTransferNoFunding(RECEIVER, type(uint256).max, coreAdapter));
+
         bundler.multicall(bundle);
     }
 }
