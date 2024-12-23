@@ -56,7 +56,6 @@ Contains the following actions:
 
 - Actions of `GeneralAdapter1`.
 - Morpho token wrapper withdrawal.
-- DAI permit.
 - stETH staking.
 - wstETH wrap & unwrap.
 
