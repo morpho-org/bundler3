@@ -5,6 +5,6 @@ methods {
     function reenterHash() external returns bytes32 envfree;
 }
 
-//Check that transient storage is nullified on each entrypoint.
+// Check that the transient storage is nullified after `multicall` (`reenter` can only be called inside of the execution of a `multicall`).
 invariant transientStorageNullified()
     initiator() == 0 && reenterHash() == to_bytes32(0);
