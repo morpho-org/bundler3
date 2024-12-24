@@ -4,8 +4,8 @@ using Bundler as Bundler;
 using ParaswapAdapter as ParaswapAdapter;
 
 // True when the function Bundler.reenter has been called.
-ghost bool reenterCalled {
-    axiom reenterCalled == false;
+persistent ghost bool reenterCalled {
+    init_state axiom reenterCalled == false;
 }
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
@@ -27,6 +27,7 @@ definition isAuthorizedToReenter(uint32 selector) returns bool =
 
 // Check that Bundler.reenter can be called only by authorized adapters.
 rule reenterSafe(method f, env e, calldataarg data) {
+    require !reenterCalled;
     f(e, data);
     assert reenterCalled =>  isAuthorizedToReenter(f.selector);
 }
