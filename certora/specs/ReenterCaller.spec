@@ -27,6 +27,7 @@ definition isAuthorizedToReenter(uint32 selector) returns bool =
 
 // Check that Bundler.reenter can be called only by authorized adapters.
 rule reenterSafe(method f, env e, calldataarg data) {
+    // Avoid failing vacuity checks, as it requires to explicitely show that reenterCalled holds.
     require !reenterCalled;
     f(e, data);
     assert reenterCalled =>  isAuthorizedToReenter(f.selector);
