@@ -5,7 +5,7 @@ using ParaswapAdapter as ParaswapAdapter;
 
 // True when the function Bundler.reenter has been called.
 ghost bool reenterCalled {
-    init_state axiom reenterCalled == false;
+    axiom reenterCalled == false;
 }
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
