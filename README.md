@@ -47,6 +47,7 @@ Contains the following actions:
 - Native token (e.g. WETH) transfers, wrap & unwrap.
 - ERC4626 mint, deposit, withdraw & redeem.
 - Morpho interactions.
+- TransferFrom using Permit2.
 
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
