@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-via-ir:
     name: Compilation (via IR)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -40,7 +40,7 @@ jobs:
     needs: build-via-ir
 
     name: Tests on chainid = ${{ matrix.chain }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
