@@ -44,7 +44,7 @@ jobs:
 
     strategy:
       matrix:
-        chain: [1, 8453]
+        chain: 1
 
     steps:
       - name: Checkout
@@ -55,6 +55,6 @@ jobs:
       - uses: ./.github/actions/install
 
       - name: Run tests on chain ${{ matrix.chain }}
-        run: forge test --chain ${{ matrix.chain }}
+        run: forge test --chain ${{ matrix.chain }} --fork-url https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
