@@ -44,7 +44,7 @@ jobs:
 
     strategy:
       matrix:
-        chain: 1
+        chain: [1]
 
     steps:
       - name: Checkout
