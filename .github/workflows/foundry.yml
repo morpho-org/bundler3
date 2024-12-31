@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-via-ir:
     name: Compilation (via IR)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -40,7 +40,7 @@ jobs:
     needs: build-via-ir
 
     name: Tests on chainid = ${{ matrix.chain }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -55,6 +55,6 @@ jobs:
       - uses: ./.github/actions/install
 
       - name: Run tests on chain ${{ matrix.chain }}
-        run: forge test --chain ${{ matrix.chain }} --fork-url "https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_KEY"
+        run: make
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
