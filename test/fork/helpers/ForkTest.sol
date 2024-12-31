@@ -23,8 +23,9 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     function setUp() public virtual override {
         string memory rpc = vm.rpcUrl(config.network);
 
-        if (config.blockNumber == 0) vm.createSelectFork(rpc);
-        else vm.createSelectFork(rpc, config.blockNumber);
+        vm.createSelectFork(rpc);
+        // if (config.blockNumber == 0) vm.createSelectFork(rpc);
+        // else vm.createSelectFork(rpc, config.blockNumber);
 
         super.setUp();
 
