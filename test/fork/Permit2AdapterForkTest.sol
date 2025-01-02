@@ -31,7 +31,7 @@ contract Permit2AdapterForkTest is ForkTest {
         MarketParams memory marketParams = _randomMarketParams(seed);
 
         bundle.push(_approve2(privateKey, marketParams.loanToken, amount, 0, false));
-        bundle.push(_transferFrom2(marketParams.loanToken, amount));
+        bundle.push(_permit2TransferFrom(marketParams.loanToken, amount));
         bundle.push(_morphoSupply(marketParams, amount, 0, type(uint256).max, onBehalf, hex""));
 
         uint256 collateralBalanceBefore = IERC20(marketParams.collateralToken).balanceOf(onBehalf);
@@ -189,15 +189,15 @@ contract Permit2AdapterForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testTransferFrom2ZeroAmount() public {
-        bundle.push(_transferFrom2(DAI, 0));
+    function testPermit2TransferFromZeroAmount() public {
+        bundle.push(_permit2TransferFrom(DAI, 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         bundler.multicall(bundle);
     }
 
-    function testTransferFrom2Unauthorized() public {
+    function testPermit2TransferFromUnauthorized() public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        generalAdapter1.transferFrom2(address(0), address(0), 0);
+        generalAdapter1.permit2TransferFrom(address(0), address(0), 0);
     }
 }
