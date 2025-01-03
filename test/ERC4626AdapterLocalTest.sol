@@ -180,6 +180,12 @@ contract ERC4626AdapterLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(address(generalAdapter1)), 0, "loan.balanceOf(generalAdapter1)");
         assertEq(vault.balanceOf(address(generalAdapter1)), 0, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
+
+        assertEq(
+            loanToken.allowance(address(generalAdapter1), address(vault)),
+            0,
+            "loanToken.allowance(generalAdapter1, vault)"
+        );
     }
 
     function testErc4626DepositSlippageExceeded(uint256 assets) public {
@@ -216,6 +222,11 @@ contract ERC4626AdapterLocalTest is LocalTest {
         assertEq(loanToken.balanceOf(address(generalAdapter1)), 0, "loan.balanceOf(generalAdapter1)");
         assertEq(vault.balanceOf(address(generalAdapter1)), 0, "vault.balanceOf(USER)");
         assertEq(vault.balanceOf(USER), shares, "vault.balanceOf(USER)");
+        assertEq(
+            loanToken.allowance(address(generalAdapter1), address(vault)),
+            0,
+            "loanToken.allowance(generalAdapter1, vault)"
+        );
     }
 
     function testErc4626WithdrawSlippageExceeded(uint256 deposited, uint256 assets) public {

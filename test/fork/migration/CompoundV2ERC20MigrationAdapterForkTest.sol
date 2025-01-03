@@ -111,7 +111,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, borrowed / 2, user));
         callbackBundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
-        callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationAdapter), cTokenBalance));
+        callbackBundle.push(_permit2TransferFrom(C_DAI_V2, address(migrationAdapter), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(generalAdapter1)));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
@@ -122,6 +122,44 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         vm.stopPrank();
 
         _assertBorrowerPosition(collateral, borrowed, user, address(generalAdapter1));
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(C_USDC_V2)),
+            0,
+            "loanToken.allowance(migrationAdapter, C_USDC_V2)"
+        );
+    }
+
+    function testCompoundV2RepayOnBehalf() public onlyEthereum {
+        uint256 collateral = 10 ether;
+        uint256 borrowed = 1e6;
+
+        _provideLiquidity(borrowed);
+
+        deal(marketParams.collateralToken, USER, collateral);
+
+        vm.startPrank(USER);
+        IERC20(marketParams.collateralToken).forceApprove(C_DAI_V2, collateral);
+        require(ICToken(C_DAI_V2).mint(collateral) == 0, "mint error");
+        require(IComptroller(COMPTROLLER).enterMarkets(enteredMarkets)[0] == 0, "enter market error");
+        require(ICToken(C_USDC_V2).borrow(borrowed) == 0, "borrow error");
+        vm.stopPrank();
+
+        bundle.push(_compoundV2RepayErc20(C_USDC_V2, type(uint256).max, USER));
+
+        deal(USDC, address(migrationAdapter), borrowed);
+
+        require(ICToken(C_USDC_V2).borrowBalanceCurrent(USER) == borrowed, "borrow balance current");
+
+        bundler.multicall(bundle);
+
+        require(ICToken(C_USDC_V2).borrowBalanceCurrent(USER) == 0, "borrow balance current");
+
+        assertEq(
+            IERC20(marketParams.loanToken).allowance(address(migrationAdapter), address(C_USDC_V2)),
+            0,
+            "loanToken.allowance(migrationAdapter, C_USDC_V2)"
+        );
     }
 
     function testMigrateSupplierWithPermit2(uint256 supplied) public onlyEthereum {
@@ -143,7 +181,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         IERC20(C_USDC_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
-        bundle.push(_transferFrom2(C_USDC_V2, address(migrationAdapter), cTokenBalance));
+        bundle.push(_permit2TransferFrom(C_USDC_V2, address(migrationAdapter), cTokenBalance));
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(generalAdapter1)));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
@@ -172,7 +210,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         IERC20(C_USDC_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_USDC_V2, uint160(cTokenBalance), 0, false));
-        bundle.push(_transferFrom2(C_USDC_V2, address(migrationAdapter), cTokenBalance));
+        bundle.push(_permit2TransferFrom(C_USDC_V2, address(migrationAdapter), cTokenBalance));
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, cTokenBalance, address(generalAdapter1)));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 

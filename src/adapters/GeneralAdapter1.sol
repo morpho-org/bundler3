@@ -2,11 +2,9 @@
 pragma solidity 0.8.28;
 
 import {IWNative} from "../interfaces/IWNative.sol";
-import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
-import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {MarketParams, Signature, Authorization, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, UtilsLib, Address} from "./CoreAdapter.sol";
+import {MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "./CoreAdapter.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
@@ -15,7 +13,7 @@ import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/M
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
 
-/// @custom:contact security@morpho.org
+/// @custom:security-contact security@morpho.org
 /// @notice Chain agnostic adapter contract n°1.
 contract GeneralAdapter1 is CoreAdapter {
     using SafeCast160 for uint256;
@@ -59,14 +57,16 @@ contract GeneralAdapter1 is CoreAdapter {
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address underlying = address(ERC20Wrapper(wrapper).underlying());
-        if (amount == type(uint256).max) amount = IERC20(underlying).balanceOf(address(this));
+        IERC20 underlying = ERC20Wrapper(wrapper).underlying();
+        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(underlying, wrapper);
+        SafeERC20.forceApprove(underlying, wrapper, type(uint256).max);
 
         require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
+
+        SafeERC20.forceApprove(underlying, wrapper, 0);
     }
 
     /// @notice Unwraps wrapped token to underlying token.
@@ -102,9 +102,13 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
 
-        UtilsLib.forceApproveMaxTo(IERC4626(vault).asset(), vault);
+        IERC20 underlyingToken = IERC20(IERC4626(vault).asset());
+        SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
 
         uint256 assets = IERC4626(vault).mint(shares, receiver);
+
+        SafeERC20.forceApprove(underlyingToken, vault, 0);
+
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
@@ -121,14 +125,17 @@ contract GeneralAdapter1 is CoreAdapter {
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address underlyingToken = IERC4626(vault).asset();
-        if (assets == type(uint256).max) assets = IERC20(underlyingToken).balanceOf(address(this));
+        IERC20 underlyingToken = IERC20(IERC4626(vault).asset());
+        if (assets == type(uint256).max) assets = underlyingToken.balanceOf(address(this));
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(underlyingToken, vault);
+        SafeERC20.forceApprove(underlyingToken, vault, type(uint256).max);
 
         uint256 shares = IERC4626(vault).deposit(assets, receiver);
+
+        SafeERC20.forceApprove(underlyingToken, vault, 0);
+
         require(assets.rDivUp(shares) <= maxSharePriceE27, ErrorsLib.SlippageExceeded());
     }
 
@@ -179,18 +186,26 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* MORPHO CALLBACKS */
 
+    /// @notice Receives supply callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoSupply(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
 
+    /// @notice Receives supply collateral callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoSupplyCollateral(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
 
+    /// @notice Receives repay callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoRepay(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
 
+    /// @notice Receives flashloan callback from the Morpho contract.
+    /// @param data Bytes containing an abi-encoded Call[].
     function onMorphoFlashLoan(uint256, bytes calldata data) external {
         morphoCallback(data);
     }
@@ -224,7 +239,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
-        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
+        SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
 
@@ -251,7 +266,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
-        UtilsLib.forceApproveMaxTo(marketParams.collateralToken, address(MORPHO));
+        SafeERC20.forceApprove(IERC20(marketParams.collateralToken), address(MORPHO), type(uint256).max);
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
     }
@@ -307,11 +322,11 @@ contract GeneralAdapter1 is CoreAdapter {
         }
 
         if (shares == type(uint256).max) {
-            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), initiator());
+            shares = MorphoLib.borrowShares(MORPHO, marketParams.id(), onBehalf);
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
-        UtilsLib.forceApproveMaxTo(marketParams.loanToken, address(MORPHO));
+        SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
 
@@ -368,7 +383,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
         require(assets != 0, ErrorsLib.ZeroAmount());
-        UtilsLib.forceApproveMaxTo(token, address(MORPHO));
+        SafeERC20.forceApprove(IERC20(token), address(MORPHO), type(uint256).max);
 
         MORPHO.flashLoan(token, assets, data);
     }
@@ -379,7 +394,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
-    function transferFrom2(address token, address receiver, uint256 amount) external onlyBundler {
+    function permit2TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address initiator = initiator();
@@ -394,7 +409,6 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /// @notice Transfers ERC20 tokens from the initiator.
     /// @notice Initiator must have given sufficient allowance to the Adapter to spend their tokens.
-    /// @notice The amount must be strictly positive.
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
