@@ -203,7 +203,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     /* WRAPPED NATIVE ACTIONS */
 
     function _wrapNativeNoFunding(uint256 amount, address receiver) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)), 0);
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.wrapNative, (amount, receiver)), uint256(0));
     }
 
     function _wrapNative(uint256 amount, address receiver) internal view returns (Call memory) {

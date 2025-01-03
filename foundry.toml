@@ -1,6 +1,5 @@
 [profile.default]
 names = true
-sizes = true
 evm_version = "cancun"
 fs_permissions = [
     { access = "read", path = "./out/"},
@@ -10,6 +9,7 @@ libs = ["lib"]
 via-ir = true
 optimizer_runs = 999999
 ignored_error_codes = ["transient-storage"]
+ignored_warnings_from = ["test"]
 
 [profile.default.fuzz]
 runs = 64
@@ -21,9 +21,5 @@ tenderly = "https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}"
 
 [profile.default.fmt]
 wrap_comments = true
-
-[profile.build]
-test = "/dev/null"
-script = "/dev/null"
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/crates/config

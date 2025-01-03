@@ -1,6 +1,6 @@
 # Morpho Bundler v3
 
-The [`Bundler`](./src/Bundler.sol) allows EOAs to batch-execute a sequence of arbitrary calls atomically.
+The [`Bundler`](./src/Bundler.sol) allows accounts to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
@@ -11,25 +11,29 @@ It carries specific features to be able to perform actions that require authoriz
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
+
 - `to`, an address to call;
 - `data`, some calldata to pass to the call;
 - `value`, an amount of native currency to send with the call;
 - `skipRevert`, a boolean indicating whether the multicall should revert if the call failed.
+- `callbackHash`, hash of the argument to the expected `reenter` (0 if no reentrance).
 
-The bundler transiently stores the initial caller (`initiator`) during the multicall (see in the Adapters subsection for the use).
 
-The last non-returned called address can re-enter the bundler using `reenter(Call[] calldata bundle)` (same).
+The Bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
+
+- the initial caller is transiently stored as `initiator` during the multicall;
+- the last non-returned called address can re-enter the Bundler using `reenter(Call[] calldata bundle)`, but the argument to the `reenter` call is specified in the bundle.
 
 ### Adapters
 
-The bundler can call either directly protocols, or wrappers of protocols (called "adapters").
+The Bundler can call either directly protocols, or wrappers of protocols (called "adapters").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
 In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
-For instance, a adapter that needs to hold some token approvals should only allow to call `transferFrom` with from=initiator.
+For instance, an adapter that needs to hold some token approvals should call `token.transferFrom` only with `from` being the initiator.
 
-Since these functions can typically move user funds, only the bundler should be allowed to call them.
-If a adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the bundler's `reenter(Call[] calldata bundle)` function.
+Since these functions can typically move user funds, only the Bundler should be allowed to call them.
+If an adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Bundler's `reenter(Call[] calldata bundle)` function.
 
 ## Adapters List
 
@@ -38,9 +42,10 @@ All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which
 ### [`GeneralAdapter1`](./src/adapters/GeneralAdapter1.sol)
 
 Contains the following actions:
+
 - ERC20 transfers, permit, wrap & unwrap.
-- Native token (e.g. WETH) wrap & unwrap.
-- ERC4626 mint,deposit, withdraw & redeem.
+- Native token (e.g. WETH) transfers, wrap & unwrap.
+- ERC4626 mint, deposit, withdraw & redeem.
 - Morpho interactions.
 - Permit2 approvals.
 - URD claim.
@@ -48,15 +53,17 @@ Contains the following actions:
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
 Contains the following actions:
+
 - Actions of `GeneralAdapter1`.
 - Morpho token wrapper withdrawal.
-- Dai permit.
-- StEth staking.
-- WStEth wrap & unwrap.
+- DAI permit.
+- stETH staking.
+- wstETH wrap & unwrap.
 
 ### [`ParaswapAdapter`](./src/adapters/ParaswapAdapter.sol)
 
 Contains the following actions, all using the paraswap aggregator:
+
 - Sell a given amount or the balance.
 - Buy a given amount.
 - Buy a what's needed to fully repay on a given Morpho Market.
@@ -90,7 +97,7 @@ TBA.
 
 ## License
 
-Bundlers are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+Source files are licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
 
 ## Links
 
