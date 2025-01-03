@@ -235,14 +235,6 @@ abstract contract CommonTest is Test {
         return _call(adapter, abi.encodeCall(adapter.erc20Transfer, (token, recipient, amount)));
     }
 
-    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, CoreAdapter adapter)
-        internal
-        pure
-        returns (Call memory)
-    {
-        return _call(adapter, abi.encodeCall(adapter.erc20Transfer, (token, recipient, amount)), 0, true);
-    }
-
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
         return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20TransferFrom, (token, recipient, amount)));
     }
