@@ -386,9 +386,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
         deal(address(collateralToken), address(paraswapAdapter), amount + extra);
         bundle.push(_sell(address(collateralToken), address(loanToken), amount, amount, false, receiver));
-        bundle.push(
-            _erc20TransferSkipRevert(address(collateralToken), address(this), type(uint256).max, paraswapAdapter)
-        );
+        bundle.push(_erc20Transfer(address(collateralToken), address(this), type(uint256).max, paraswapAdapter));
         bundler.multicall(bundle);
         assertEq(collateralToken.balanceOf(address(this)), extra, "receiver collateral");
         assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
@@ -407,9 +405,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
 
         deal(address(collateralToken), address(paraswapAdapter), amount + extra);
         bundle.push(_buy(address(collateralToken), address(loanToken), amount, amount, 0, receiver));
-        bundle.push(
-            _erc20TransferSkipRevert(address(collateralToken), address(this), type(uint256).max, paraswapAdapter)
-        );
+        bundle.push(_erc20Transfer(address(collateralToken), address(this), type(uint256).max, paraswapAdapter));
         bundler.multicall(bundle);
         assertEq(collateralToken.balanceOf(address(this)), extra, "receiver collateral");
         assertEq(loanToken.balanceOf(receiver), amount, "receiver loan token");
