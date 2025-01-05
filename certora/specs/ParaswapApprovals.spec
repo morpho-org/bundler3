@@ -5,14 +5,13 @@ using ERC20NoRevert as ERC20NoRevert;
 using ERC20USDT as ERC20USDT;
 
 methods{
-    function _.approve(address,uint256) external => DISPATCHER(true);
-    // unresolved external in currentContract._ =>
-    //     DISPATCH [ ERC20Mock.approve(address, uint256),
-    //                ERC20NoRevert.approve(address, uint256),
-    //                ERC20USDT.approve(address, uint256),
-    //                ERC20Mock.balanceOf(address),
-    //                ERC20NoRevert.balanceOf(address),
-    //                ERC20USDT.balanceOf(address) ];
+    unresolved external in currentContract._ =>
+        DISPATCH [ ERC20Mock.approve(address, uint256),
+                   ERC20NoRevert.approve(address, uint256),
+                   ERC20USDT.approve(address, uint256),
+                   ERC20Mock.balanceOf(address),
+                   ERC20NoRevert.balanceOf(address),
+                   ERC20USDT.balanceOf(address) ] default HAVOC_ECF;
 }
 
 // Check that the augustus's allowance is set to zero for the adapter.
