@@ -29,13 +29,28 @@ These calls may themselves reenter the bundler.
 
 This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
+### Approvals
+
+This is checked in the hereby listed files:
+- [`GeneralAdapter1Approvals.spec`](specs/GeneralAdapter1Approvals.spec);
+- [`ParaswapApprovals.spec`](specs/ParaswapApprovals.spec);
+- [`AaveV2Approvals.spec`](specs/AaveV2Approvals.spec);
+- [`AaveV3Approvals.spec`](specs/AaveV3Approvals.spec);
+- [`AaveV3OptimizerApprovals.spec`](specs/AaveV3OptimizerApprovals.spec);
+- [`CompoundV2Approvals.spec`](specs/CompoundV2Approvals.spec);
+- [`CompoundV3Approvals.spec`](specs/CompoundV3Approvals.spec).
+
+Note: the file [`EthereumGeneralAdapter1.sol`](../src/adapters/EthereumGeneralAdapter1.sol) is not checked since only trusted contracts are being approved in this adapter.
+
 ## Verification architecture
 
 ### Folders and file structure
 
-The [`certora/specs`](specs) folder contains the following files:
+The [`certora/specs`](specs) folder contains these files:
 
-- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected.
+- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`GeneralAdapter1Approvals.spec`](specs/GeneralAdapter1Approvals.spec), [`ParaswapApprovals.spec`](specs/ParaswapApprovals.spec),[`AaveV2Approvals.spec`](specs/AaveV2Approvals.spec), [`AaveV3Approvals.spec`](specs/AaveV3Approvals.spec),[`AaveV3OptimizerApprovals.spec`](specs/AaveV3OptimizerApprovals.spec), [`CompoundV2Approvals.spec`](specs/CompoundV2Approvals.spec), [`CompoundV3Approvals.spec`](specs/CompoundV3Approvals.spec)
+ check that allowances to untrusted contracts are reset to zero in adapters.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 

@@ -17,6 +17,13 @@ jobs:
       matrix:
         conf:
           - Bundler
+          - GeneralAdapter1Approvals
+          - ParaswapApprovals
+          - AaveV2Approvals
+          - AaveV3Approvals
+          - AaveV3OptimizerApprovals
+          - CompoundV2Approvals
+          - CompoundV3Approvals
 
     steps:
       - uses: actions/checkout@v4
