@@ -2,6 +2,8 @@
 
 using GeneralAdapter1 as GeneralAdapter1;
 
+definition exactlyOneZero(uint256 assets, uint256 shares) returns bool = (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
+
 // Check that if morphoSupply call didn't revert then, Morpho's conditions on input are verified.
 rule morphoSupplyExactlyOneZero(
     env e,
