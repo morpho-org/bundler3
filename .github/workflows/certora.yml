@@ -29,7 +29,7 @@ jobs:
           python-version: ">=3.11"
 
       - name: Install certora
-        run: pip install certora-cli
+        run: pip install certora-cli-beta
 
       - name: Install solc (0.8.28)
         run: |
