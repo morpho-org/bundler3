@@ -168,12 +168,16 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         );
     }
 
-    function _transferFrom2(address asset, uint256 amount) internal view returns (Call memory) {
-        return _transferFrom2(asset, address(generalAdapter1), amount);
+    function _permit2TransferFrom(address asset, uint256 amount) internal view returns (Call memory) {
+        return _permit2TransferFrom(asset, address(generalAdapter1), amount);
     }
 
-    function _transferFrom2(address asset, address receiver, uint256 amount) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.transferFrom2, (asset, receiver, amount)));
+    function _permit2TransferFrom(address asset, address receiver, uint256 amount)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.permit2TransferFrom, (asset, receiver, amount)));
     }
 
     /* STAKE ACTIONS */

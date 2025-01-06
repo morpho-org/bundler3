@@ -44,7 +44,7 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 }
 
 // Check that non zero initiator will trigger a revert upon a multicall.
-rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
+rule nonZeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     address initiatorBefore = initiator();
 
     multicall@withrevert(e, bundle);
@@ -53,7 +53,7 @@ rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
 }
 
 // Check that a null reenterHash will trigger a revert upon reentering the bundler.
-rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
+rule zeroReenterHashRevertsReenter(env e, Bundler.Call[] bundle) {
     bytes32 reenterHashBefore = reenterHash();
 
     reenter@withrevert(e, bundle);
