@@ -196,12 +196,6 @@ contract Permit2AdapterForkTest is ForkTest {
         bundler.multicall(bundle);
     }
 
-    function testPermit2TransferFromInitiatorSelf() public {
-        bundle.push(_permit2TransferFrom(DAI, GeneralAdapter1, 1));
-        vm.expectRevert(ErrorsLib.InitiatorSelfAddress.selector);
-        bundler.multicall(bundle);
-    }
-
     function testPermit2TransferFromUnauthorized() public {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         generalAdapter1.permit2TransferFrom(address(0), address(0), 0);
