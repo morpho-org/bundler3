@@ -197,7 +197,7 @@ contract Permit2AdapterForkTest is ForkTest {
     }
 
     function testPermit2TransferFromSelfInitiator() public {
-        vm.assume(bundler.initiator() != address(0));
+        vm.assume(address(this) != address(0));
 
         bundle.push(_permit2TransferFromInitiator(DAI, 1));
 
