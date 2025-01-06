@@ -2,7 +2,7 @@
 
 using GeneralAdapter1 as GeneralAdapter1;
 
-// Check the equivalence on input's zero conditions between the adapter's morphoSupply and the Morpho.supply entrypoints.
+// Check that if morphoSupply call didn't revert then, Morpho's conditions on input are verified.
 rule morphoSupplyExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -16,7 +16,7 @@ rule morphoSupplyExactlyOneZero(
     assert !lastReverted => exactlyOneZero(assets, shares);
 }
 
-// Check the equivalence on input's zero conditions between the adapter's morphoSupplyCollateral and the Morpho.supplyCollateral entrypoints.
+// Check that if morphoSupplyCollateral call didn't revert then, Morpho's conditions on input are verified.
 rule morphoSupplyCollateralAssetsNonZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -28,7 +28,7 @@ rule morphoSupplyCollateralAssetsNonZero(
     assert !lastReverted => assets != 0;
 }
 
-// Check the equivalence on input's zero conditions between the adapter's morphoBorrow and the Morpho.borrow entrypoints.
+// Check that if morphoBorrow call didn't revert then, Morpho's conditions on input are verified.
 rule morphoBorrowExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -41,7 +41,7 @@ rule morphoBorrowExactlyOneZero(
     assert !lastReverted => exactlyOneZero(assets, shares);
 }
 
-// Check the equivalence on input's zero conditions between the adapter's morphoRepay and the Morpho.repay entrypoints.
+// Check that if morphoRepay call didn't revert then, Morpho's conditions on input are verified.
 rule morphoRepayExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -55,7 +55,7 @@ rule morphoRepayExactlyOneZero(
     assert !lastReverted => exactlyOneZero(assets, shares);
 }
 
-// Check the equivalence on input's zero conditions between the adapter's morphoWithdraw and the Moprho.withdraw entrypoints.
+// Check that if morphoWithdraw call didn't revert then, Morpho's conditions on input are verified.
 rule morphoWithdrawExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -68,7 +68,7 @@ rule morphoWithdrawExactlyOneZero(
     assert !lastReverted => exactlyOneZero(assets, shares);
 }
 
-// Check the equivalence on input's zero conditions between the adapter's morphoWithdrawCollateral and the Moprho.withdrawCollateral entrypoints.
+// Check that if morphoWithdrawCollateral call didn't revert then, Morpho's conditions on input are verified.
 rule morphoWithdrawCollateralAssetsNonZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -79,7 +79,7 @@ rule morphoWithdrawCollateralAssetsNonZero(
     assert !lastReverted => assets != 0;
 }
 
-// Check the equivalence on input's zero conditions between the adapter's morphoFlashLoan and the Moprho.flashLoan entrypoints.
+// Check that if morphoFlashLoan call didn't revert then, Morpho's conditions on input are verified.
 rule morphoFlashLoanAssetsNonZero(env e, address token, uint256 assets, bytes data) {
     morphoFlashLoan@withrevert(e, token, assets, data);
     assert !lastReverted => assets != 0;
