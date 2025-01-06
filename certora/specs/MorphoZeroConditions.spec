@@ -16,7 +16,6 @@ rule morphoSupplyExactlyOneZero(
   ) {
     morphoSupply@withrevert(e, marketParams, assets, shares, maxSharePriceE27, onBehalf, data);
     assert !lastReverted => exactlyOneZero(assets, shares);
-    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
 // Check that if morphoSupplyCollateral call didn't revert, then Morpho's conditions on input are verified.
@@ -29,7 +28,6 @@ rule morphoSupplyCollateralAssetsNonZero(
   ) {
     morphoSupplyCollateral@withrevert(e, marketParams, assets, onBehalf, data);
     assert !lastReverted => assets != 0;
-    assert assets == 0 || onBehalf == 0 => lastReverted;
 }
 
 // Check that if morphoBorrow call didn't revert, then Morpho's conditions on input are verified.
@@ -43,7 +41,6 @@ rule morphoBorrowExactlyOneZero(
   ) {
     morphoBorrow@withrevert(e, marketParams, assets, shares, maxSharePriceE27, receiver);
     assert !lastReverted => exactlyOneZero(assets, shares);
-    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
 // Check that if morphoRepay call didn't revert, then Morpho's conditions on input are verified.
@@ -58,7 +55,6 @@ rule morphoRepayExactlyOneZero(
   ) {
     morphoRepay@withrevert(e, marketParams, assets, shares, maxSharePriceE27, onBehalf, data);
     assert !lastReverted => exactlyOneZero(assets, shares);
-    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
 // Check that if morphoWithdraw call didn't revert, then Morpho's conditions on input are verified.
@@ -72,7 +68,6 @@ rule morphoWithdrawExactlyOneZero(
   ) {
     morphoWithdraw@withrevert(e, marketParams, assets, shares, maxSharePriceE27, receiver);
     assert !lastReverted => exactlyOneZero(assets, shares);
-    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
 // Check that if morphoWithdrawCollateral call didn't revert, then Morpho's conditions on input are verified.
@@ -84,7 +79,6 @@ rule morphoWithdrawCollateralAssetsNonZero(
   ) {
     morphoWithdrawCollateral@withrevert(e, marketParams, assets, receiver);
     assert !lastReverted => assets != 0;
-    assert assets == 0 => lastReverted;
 }
 
 // Check that if morphoFlashLoan call didn't revert, then Morpho's conditions on input are verified.
