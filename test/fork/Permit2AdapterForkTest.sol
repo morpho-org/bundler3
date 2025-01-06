@@ -197,10 +197,12 @@ contract Permit2AdapterForkTest is ForkTest {
     }
 
     function testPermit2TransferFromSelfInitiator() public {
-        vm.assume(address(this) != address(0));
+        uint256 privateKey = _boundPrivateKey(pickUint());
+        address user = vm.addr(privateKey);
 
         bundle.push(_permit2TransferFromInitiator(DAI, 1));
 
+        vm.prank(user);
         vm.expectRevert(ErrorsLib.InitiatorSelfAddress.selector);
         bundler.multicall(bundle);
     }
