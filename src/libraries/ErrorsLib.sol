@@ -46,6 +46,9 @@ library ErrorsLib {
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
 
+    /// @dev Thrown when a call transfers tokens from the initiator to the initiator.
+    error InitiatorSelfAddress();
+
     /* MIGRATION ADAPTERS */
 
     /// @dev Thrown when repaying a CompoundV2 debt returns an error code.

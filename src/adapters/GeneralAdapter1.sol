@@ -398,6 +398,7 @@ contract GeneralAdapter1 is CoreAdapter {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address initiator = initiator();
+        require(initiator != receiver, ErrorsLib.InitiatorSelfAddress());
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
