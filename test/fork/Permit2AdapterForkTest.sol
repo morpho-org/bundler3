@@ -199,7 +199,7 @@ contract Permit2AdapterForkTest is ForkTest {
     function testPermit2TransferFromSelfInitiator() public {
         bundle.push(_permit2TransferFromInitiator(DAI, 1));
 
-        vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        vm.expectRevert(ErrorsLib.InitiatorSelfAddress.selector);
         bundler.multicall(bundle);
     }
 
