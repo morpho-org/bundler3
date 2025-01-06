@@ -202,6 +202,7 @@ contract Permit2AdapterForkTest is ForkTest {
 
         bundle.push(_permit2TransferFromInitiator(DAI, 1));
 
+        vm.assume(user != address(0));
         vm.prank(user);
         vm.expectRevert(ErrorsLib.InitiatorSelfAddress.selector);
         bundler.multicall(bundle);
