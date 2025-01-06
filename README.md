@@ -91,7 +91,7 @@ Run tests with `forge test --chain <chainid>` (chainid can be 1 or 8453, 1 by de
 
 ## Audits
 
-TBA.
+All audits are stored in the [audits](./audits/) folder.
 
 ## License
 
