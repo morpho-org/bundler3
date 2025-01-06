@@ -168,10 +168,6 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         );
     }
 
-    function _permit2TransferFromInitiator(address asset, uint256 amount) internal view returns (Call memory) {
-        return _permit2TransferFrom(asset, bundler.initiator(), amount);
-    }
-
     function _permit2TransferFrom(address asset, uint256 amount) internal view returns (Call memory) {
         return _permit2TransferFrom(asset, address(generalAdapter1), amount);
     }
