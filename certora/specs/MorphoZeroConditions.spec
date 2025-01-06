@@ -4,7 +4,7 @@ using GeneralAdapter1 as GeneralAdapter1;
 
 definition exactlyOneZero(uint256 assets, uint256 shares) returns bool = (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
 
-// Check that if morphoSupply call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoSupply call didn't revert, then Morpho's conditions on input are verified.
 rule morphoSupplyExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -16,9 +16,10 @@ rule morphoSupplyExactlyOneZero(
   ) {
     morphoSupply@withrevert(e, marketParams, assets, shares, maxSharePriceE27, onBehalf, data);
     assert !lastReverted => exactlyOneZero(assets, shares);
+    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
-// Check that if morphoSupplyCollateral call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoSupplyCollateral call didn't revert, then Morpho's conditions on input are verified.
 rule morphoSupplyCollateralAssetsNonZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -28,9 +29,10 @@ rule morphoSupplyCollateralAssetsNonZero(
   ) {
     morphoSupplyCollateral@withrevert(e, marketParams, assets, onBehalf, data);
     assert !lastReverted => assets != 0;
+    assert assets == 0 || onBehalf == 0 => lastReverted;
 }
 
-// Check that if morphoBorrow call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoBorrow call didn't revert, then Morpho's conditions on input are verified.
 rule morphoBorrowExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -41,9 +43,10 @@ rule morphoBorrowExactlyOneZero(
   ) {
     morphoBorrow@withrevert(e, marketParams, assets, shares, maxSharePriceE27, receiver);
     assert !lastReverted => exactlyOneZero(assets, shares);
+    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
-// Check that if morphoRepay call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoRepay call didn't revert, then Morpho's conditions on input are verified.
 rule morphoRepayExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -55,9 +58,10 @@ rule morphoRepayExactlyOneZero(
   ) {
     morphoRepay@withrevert(e, marketParams, assets, shares, maxSharePriceE27, onBehalf, data);
     assert !lastReverted => exactlyOneZero(assets, shares);
+    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
-// Check that if morphoWithdraw call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoWithdraw call didn't revert, then Morpho's conditions on input are verified.
 rule morphoWithdrawExactlyOneZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -68,9 +72,10 @@ rule morphoWithdrawExactlyOneZero(
   ) {
     morphoWithdraw@withrevert(e, marketParams, assets, shares, maxSharePriceE27, receiver);
     assert !lastReverted => exactlyOneZero(assets, shares);
+    assert !exactlyOneZero(assets, shares) => lastReverted;
 }
 
-// Check that if morphoWithdrawCollateral call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoWithdrawCollateral call didn't revert, then Morpho's conditions on input are verified.
 rule morphoWithdrawCollateralAssetsNonZero(
     env e,
     GeneralAdapter1.MarketParams marketParams,
@@ -79,9 +84,10 @@ rule morphoWithdrawCollateralAssetsNonZero(
   ) {
     morphoWithdrawCollateral@withrevert(e, marketParams, assets, receiver);
     assert !lastReverted => assets != 0;
+    assert assets == 0 => lastReverted;
 }
 
-// Check that if morphoFlashLoan call didn't revert then, Morpho's conditions on input are verified.
+// Check that if morphoFlashLoan call didn't revert, then Morpho's conditions on input are verified.
 rule morphoFlashLoanAssetsNonZero(env e, address token, uint256 assets, bytes data) {
     morphoFlashLoan@withrevert(e, token, assets, data);
     assert !lastReverted => assets != 0;
