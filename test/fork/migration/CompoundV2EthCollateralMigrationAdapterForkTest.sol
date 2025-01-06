@@ -145,7 +145,7 @@ contract CompoundV2EthCollateralMigrationAdapterForkTest is MigrationForkTest {
         callbackBundle.push(_compoundV2RepayErc20(C_DAI_V2, borrowed / 2, user));
         callbackBundle.push(_compoundV2RepayErc20(C_DAI_V2, type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
-        callbackBundle.push(_transferFrom2(C_ETH_V2, address(migrationAdapter), cTokenBalance));
+        callbackBundle.push(_permit2TransferFrom(C_ETH_V2, address(migrationAdapter), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemEth(cTokenBalance, address(generalAdapter1)));
         callbackBundle.push(_wrapNativeNoFunding(collateral, address(generalAdapter1)));
 

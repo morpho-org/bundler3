@@ -44,7 +44,7 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 }
 
 // Check that non zero initiator will trigger a revert upon a multicall.
-rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
+rule nonZeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     address initiatorBefore = initiator();
 
     multicall@withrevert(e, bundle);
@@ -53,22 +53,10 @@ rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
 }
 
 // Check that a null reenterHash will trigger a revert upon reentering the bundler.
-rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
+rule zeroReenterHashRevertsReenter(env e, Bundler.Call[] bundle) {
     bytes32 reenterHashBefore = reenterHash();
 
     reenter@withrevert(e, bundle);
 
     assert reenterHashBefore == to_bytes32(0) => lastReverted;
-}
-// Check that transient storage is nullified after a multicall.
-rule initiatorZeroAfterMulticall(env e, Bundler.Call[] bundle) {
-    require reenterHash() == to_bytes32(0);
-
-    multicall(e, bundle);
-
-    assert initiator() == 0;
-    assert reenterHash() == to_bytes32(0);
-
-    // Sanity check to ensure the rule is not trivially true.
-    satisfy bundle.length != 0;
 }

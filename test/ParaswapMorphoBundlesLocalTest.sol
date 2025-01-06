@@ -78,6 +78,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         vm.startPrank(SUPPLIER);
         loanToken2.approve(address(morpho), type(uint256).max);
         loanToken.approve(address(morpho), type(uint256).max);
+        collateralToken2.approve(address(morpho), type(uint256).max);
 
         vm.startPrank(USER);
         morpho.setAuthorization(address(generalAdapter1), true);
@@ -199,9 +200,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         address destToken,
         address receiver
     ) internal {
-        uint256 sharesToWithdraw = morpho.supplyShares(marketParams.id(), user);
         uint256 currentAssets = morpho.expectedSupplyAssets(marketParams, user);
-        bundle.push(_morphoWithdraw(marketParams, 0, sharesToWithdraw, 0, address(paraswapAdapter)));
+        bundle.push(_morphoWithdraw(marketParams, 0, type(uint256).max, 0, address(paraswapAdapter)));
         // Sell amount will be adjusted inside the paraswap adapter to the current balance
         bundle.push(_sell(marketParams.loanToken, destToken, currentAssets, currentAssets, true, receiver));
     }
@@ -268,7 +268,6 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsCollateral2, borrowAmount, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
@@ -323,19 +322,20 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         );
     }
 
-    function testFullCollateralSwap(uint256 borrowAmount) public {
+    function testFullCollateralSwapUsingSupplyCollateralCallback(uint256 borrowAmount) public {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsCollateral2, borrowAmount * 2, SUPPLIER);
+        // Morpho must have extra destination collateral for the callback to work
+        _supplyCollateral(marketParamsCollateral2, collateralAmount * 1 / 100, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
 
         deal(address(loanToken), USER, 0);
 
-        _createFullCollateralSwapBundle(USER, marketParams, marketParamsCollateral2);
+        _createFullCollateralSwapBundleUsingSupplyCollateralCallback(USER, marketParams, marketParamsCollateral2);
 
         skip(2 days);
 
@@ -350,41 +350,149 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         assertEq(morpho.expectedBorrowAssets(marketParamsCollateral2, USER), expectedDebt);
     }
 
-    // Method: flashloan, sell exact collateral, supply collateral, borrow more than necessary from destMarket, repay
-    // all shares on sourceMarket, repay remainnig balance on destMarket, withdraw collateral
-    // Limitation: fails if Morpho does not hold 2 * collateral to swap
-    // Alternative: repay, withdrawCollateral, swap, supplyCollateral,
-    // borrowAmountFromMarketShares(market2,market1,shares+N)
-    // Limitations: N required (repay lowers share price) & must be determined, last borrow can revert because +N made
-    // user liquidatable
-    function _createFullCollateralSwapBundle(
+    // Method: supply collateral first.
+    // This is the recommended method unless the destination market has ~no extra collateral.
+    // Steps: supply more destination collateral than necessary, borrow more from destination market than necessary,
+    // repay all source market debt, repay residual loan asset to destination market, withdraw all source collateral,
+    // sell all source collateral for destination collateral, supply all destination collateral, withdraw initially
+    // supplied amount of destination collateral
+    // Limitation 1: fails if Morpho does not hold the destination collateral overestimated amount.
+    // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
+    function _createFullCollateralSwapBundleUsingSupplyCollateralCallback(
         address user,
         MarketParams memory sourceParams,
         MarketParams memory destParams
     ) internal {
-        uint256 sourceBorrowShares = morpho.borrowShares(marketParams.id(), USER);
-        uint256 sourceBorrowAssetsOverestimate = morpho.expectedBorrowAssets(marketParams, USER) * 101 / 100;
-        uint256 sourceCollateral = morpho.collateral(marketParams.id(), USER);
+        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+        uint256 destCollateralOverestimate = morpho.collateral(sourceParams.id(), USER) * 101 / 100;
 
+        callbackBundle.push(_morphoBorrow(destParams, borrowAssetsOverestimate, 0, 0, address(generalAdapter1)));
+        callbackBundle.push(_morphoRepay(sourceParams, 0, type(uint256).max, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, type(uint256).max, address(paraswapAdapter)));
         callbackBundle.push(
-            _erc20Transfer(sourceParams.collateralToken, address(paraswapAdapter), sourceCollateral, generalAdapter1)
+            _sell(sourceParams.collateralToken, destParams.collateralToken, 1, 1, true, address(generalAdapter1))
         );
+        // Must supply bought collateral to then be able to withdraw the exact initially supplied amount.
+        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoWithdrawCollateral(destParams, destCollateralOverestimate, address(generalAdapter1)));
+
+        bundle.push(_morphoSupplyCollateral(destParams, destCollateralOverestimate, user, abi.encode(callbackBundle)));
+    }
+
+    function testFullCollateralSwapUsingRepayCallback(uint256 borrowAmount) public {
+        borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 collateralAmount = borrowAmount * 2;
+
+        _supply(marketParams, borrowAmount, SUPPLIER);
+        _supply(marketParamsCollateral2, borrowAmount * 2, SUPPLIER);
+        _supplyCollateral(marketParams, collateralAmount, USER);
+        _borrow(marketParams, borrowAmount, address(USER));
+
+        deal(address(loanToken), USER, 0);
+
+        _createFullCollateralSwapBundleUsingRepayCallback(USER, marketParams, marketParamsCollateral2);
+
+        skip(2 days);
+
+        uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
+
+        vm.prank(USER);
+        bundler.multicall(bundle);
+
+        assertEq(morpho.collateral(marketParams.id(), USER), 0);
+        assertEq(morpho.collateral(marketParamsCollateral2.id(), USER), collateralAmount);
+        assertEq(morpho.expectedBorrowAssets(marketParams, USER), 0);
+        assertEq(morpho.expectedBorrowAssets(marketParamsCollateral2, USER), expectedDebt);
+    }
+
+    // Method: repay first.
+    // Steps: repay all source market debt, withdraw all source collateral, sell all source collateral for destination
+    // collateral, supply all destination collateral, borrow more than necessary from destination market, leave repay
+    // callback, repay all residual assets on destination market
+    // If the destination market has ~no extra collateral, and the user will not end up extremely close to destination
+    // market LLTV, this is the recommended method.
+    // Limitation 1: fails if the borrow asset overestimate makes the user cross LLTV.
+    // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
+    function _createFullCollateralSwapBundleUsingRepayCallback(
+        address user,
+        MarketParams memory sourceParams,
+        MarketParams memory destParams
+    ) internal {
+        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, type(uint256).max, address(paraswapAdapter)));
         callbackBundle.push(
-            _sell(
-                sourceParams.collateralToken,
-                destParams.collateralToken,
-                sourceCollateral,
-                sourceCollateral,
-                true,
-                address(generalAdapter1)
-            )
+            _sell(sourceParams.collateralToken, destParams.collateralToken, 1, 1, true, address(generalAdapter1))
         );
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoBorrow(destParams, sourceBorrowAssetsOverestimate, 0, 0, address(generalAdapter1)));
-        callbackBundle.push(_morphoRepay(sourceParams, 0, sourceBorrowShares, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoBorrow(destParams, borrowAssetsOverestimate, 0, 0, address(generalAdapter1)));
+
+        bundle.push(
+            _morphoRepay(sourceParams, 0, type(uint256).max, type(uint256).max, user, abi.encode(callbackBundle))
+        );
+
+        bundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
+    }
+
+    function testFullCollateralSwapUsingFlashloan(uint256 borrowAmount) public {
+        borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
+        uint256 collateralAmount = borrowAmount * 2;
+
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParamsCollateral2, collateralAmount * 2, SUPPLIER);
+        _supply(marketParams, borrowAmount, SUPPLIER);
+        _supply(marketParamsCollateral2, borrowAmount * 2, SUPPLIER);
+        _supplyCollateral(marketParams, collateralAmount, USER);
+        _borrow(marketParams, borrowAmount, address(USER));
+
+        deal(address(loanToken), USER, 0);
+
+        _createFullCollateralSwapBundleUsingFlashloan(USER, marketParams, marketParamsCollateral2);
+
+        skip(2 days);
+
+        uint256 expectedDebt = morpho.expectedBorrowAssets(marketParams, USER);
+
+        vm.prank(USER);
+        bundler.multicall(bundle);
+
+        assertEq(morpho.collateral(marketParams.id(), USER), 0);
+        assertEq(morpho.collateral(marketParamsCollateral2.id(), USER), collateralAmount);
+        assertEq(morpho.expectedBorrowAssets(marketParams, USER), 0);
+        assertEq(morpho.expectedBorrowAssets(marketParamsCollateral2, USER), expectedDebt);
+    }
+
+    // Method: flashloan.
+    // This is not a recommended method, but we leave it here for reference.
+    // Steps: flashloan more destination collateral than necessary, supply all destination collateral, borrow more than
+    // necessary from destination market, repay entire debt source market, repay residual balance on destination market,
+    // withdraw all source collateral, sell all source collateral for destination collateral, supply all destination
+    // collateral, withdraw flashloaned amount of destination collateral.
+    // Limitation 1: fails if Morpho does not already hold enough destination collateral.
+    // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
+    function _createFullCollateralSwapBundleUsingFlashloan(
+        address user,
+        MarketParams memory sourceParams,
+        MarketParams memory destParams
+    ) internal {
+        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+        uint256 destCollateralOverestimate = morpho.collateral(sourceParams.id(), USER) * 101 / 100;
+
+        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoBorrow(destParams, borrowAssetsOverestimate, 0, 0, address(generalAdapter1)));
+        callbackBundle.push(_morphoRepay(sourceParams, 0, type(uint256).max, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(generalAdapter1)));
-        bundle.push(_morphoFlashLoan(sourceParams.collateralToken, sourceCollateral, abi.encode(callbackBundle)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, type(uint256).max, address(paraswapAdapter)));
+        callbackBundle.push(
+            _sell(sourceParams.collateralToken, destParams.collateralToken, 1, 1, true, address(generalAdapter1))
+        );
+        // Must supply bought collateral to then be able to withdraw the exact flashloaned amount.
+        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoWithdrawCollateral(destParams, destCollateralOverestimate, address(generalAdapter1)));
+        bundle.push(
+            _morphoFlashLoan(destParams.collateralToken, destCollateralOverestimate, abi.encode(callbackBundle))
+        );
     }
 
     /* DEBT SWAP */
@@ -418,7 +526,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     }
 
     // Method: supply collateral, borrow too much, buy exact, repay debt, repay leftover borrow, withdraw collateral
-    // Issue: wasteful, must borrow too much
+    // Limitation: fails if the borrow asset overestimate is larger than available liquidity.
     function _createPartialDebtSwapBundle(
         address user,
         MarketParams memory sourceParams,
@@ -436,9 +544,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             _buy(destParams.loanToken, sourceParams.loanToken, toSell, toRepay, 0, address(generalAdapter1))
         );
         callbackBundle.push(
-            _erc20TransferSkipRevert(
-                address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
-            )
+            _erc20Transfer(address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter)
         );
         callbackBundle.push(_morphoRepay(sourceParams, type(uint256).max, 0, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
@@ -452,6 +558,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
 
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsLoan2, borrowAmount * 2, SUPPLIER);
+        // Morpho must have extra collateral for the callback to work
+        _supplyCollateral(marketParams, collateralAmount * 1 / 100, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
         deal(address(loanToken), USER, 0);
@@ -471,31 +579,40 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         assertEq(morpho.expectedBorrowAssets(marketParamsLoan2, USER), expectedDebt, "loan 2");
     }
 
-    // Method: supply collateral, borrow too much, buy exact, repay debt, repay leftover borrow, withdraw collateral
+    // Method: supply collateral first.
+    // Steps: supply more collateral than necessary to destination market, borrow more destination loan assets than
+    // necessary, buy exact source debt, repay source debt, repay leftover borrow, withdraw collateral from source
+    // market, supply collateral to source market, withdraw overestimated collateral from destination market.
+    // Limitation 1: fails if Morpho does not hold the destination collateral overestimated amount.
+    // Limitation 2: fails if the borrow asset overestimate is larger than available liquidity.
+    // Note: starting with a `morphoRepay` and continuing in the callback does not work well because the exact debt
+    // amount becomes unknowable onchain. So at the 'buy exact debt' step, the user would have to overestimate the buy
+    // amount, then sell the excess source loan asset previously after the callback has ended.
+    // Note: starting with a collateral flashloan works but this method is simpler.
     function _createFullDebtSwapBundle(address user, MarketParams memory sourceParams, MarketParams memory destParams)
         internal
     {
-        uint256 collateral = morpho.collateral(sourceParams.id(), user);
-        uint256 borrowShares = morpho.borrowShares(sourceParams.id(), user);
-        // will be adjusted
+        uint256 collateralOverestimate = morpho.collateral(sourceParams.id(), user) * 101 / 100;
         uint256 toRepay = morpho.expectedBorrowAssets(sourceParams, user);
-        // overborrow to account for slippage
-        uint256 toBorrow = toRepay * 101 / 100;
+        uint256 destBorrowAssetsOverestimate = toRepay * 101 / 100; // price is 1
 
-        callbackBundle.push(_morphoBorrow(destParams, toBorrow, 0, 0, address(paraswapAdapter)));
-        // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams
+        callbackBundle.push(_morphoBorrow(destParams, destBorrowAssetsOverestimate, 0, 0, address(paraswapAdapter)));
+        // Buy amount will be adjusted inside the paraswap  to the current debt on sourceParams. Price is 1 in this
+        // example.
         callbackBundle.push(
-            _buyMorphoDebt(destParams.loanToken, toBorrow, toRepay, sourceParams, user, address(generalAdapter1))
+            _buyMorphoDebt(destParams.loanToken, toRepay, toRepay, sourceParams, user, address(generalAdapter1))
         );
         callbackBundle.push(
-            _erc20TransferSkipRevert(
-                address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
-            )
+            _erc20Transfer(address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter)
         );
-        callbackBundle.push(_morphoRepay(sourceParams, 0, borrowShares, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoRepay(sourceParams, 0, type(uint256).max, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
-        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, collateral, address(generalAdapter1)));
-        bundle.push(_morphoSupplyCollateral(destParams, collateral, user, abi.encode(callbackBundle)));
+        callbackBundle.push(_morphoWithdrawCollateral(sourceParams, type(uint256).max, address(generalAdapter1)));
+        // Must supply withdrawn collateral to then be able to withdraw the exact initially supplied amount.
+        callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoWithdrawCollateral(destParams, collateralOverestimate, address(generalAdapter1)));
+
+        bundle.push(_morphoSupplyCollateral(destParams, collateralOverestimate, user, abi.encode(callbackBundle)));
     }
 
     /* DEBT&COLLATERAL SWAP */
@@ -504,7 +621,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParams, collateralAmount, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supply(marketParamsAll2, borrowAmount * 2, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
@@ -530,10 +648,11 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     // Flashloan exact source collat amount, sell source collat for dest collat, supply dest collat, borrow dest loan
     // token (overestimated to repay overestimation of current source debt), buy source loan token with dest loan token,
     // repay source debt, repay dest debt, withdraw source collat
-    // Alternative: Flashloan exact source debt amount, repay source debt, withdraw source collat, sell source collat
-    // for dest collat, supply dest collat, borrow dest loan token (overestimated to repay overestimation of initial
-    // source debt), buy source loan token with dest loan token, repay dest debt
-    // Limitation: same as full collateral swap bundle
+    // Limitation: same as full collateral swap bundle that uses flashloan
+    // Alternative: supply more destination collateral than necessary, borrow more from destination than necessary, buy
+    // exact source debt, repay exact source debt, repay leftover destination debt, withdraw all source collateral, sell
+    // all source collateral for destination collateral, supply all destination collateral, withdraw initially supplied
+    // amount of destination collateral.
     function _createFullDebtAndCollateralSwapBundle(
         address user,
         MarketParams memory sourceParams,
@@ -573,15 +692,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             )
         );
         callbackBundle.push(
-            _erc20TransferSkipRevert(
-                address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
-            )
+            _erc20Transfer(address(destParams.loanToken), address(generalAdapter1), type(uint256).max, paraswapAdapter)
         );
         callbackBundle.push(_morphoRepay(sourceParams, 0, sourceBorrowShares, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoRepay(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
         callbackBundle.push(_morphoWithdrawCollateral(sourceParams, sourceCollateral, address(generalAdapter1)));
         callbackBundle.push(
-            _erc20TransferSkipRevert(address(sourceParams.collateralToken), user, type(uint256).max, paraswapAdapter)
+            _erc20Transfer(address(sourceParams.collateralToken), user, type(uint256).max, paraswapAdapter)
         );
         bundle.push(_morphoFlashLoan(sourceParams.collateralToken, sourceCollateral, abi.encode(callbackBundle)));
     }
@@ -592,7 +709,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParams, collateralAmount, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
@@ -614,9 +732,12 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         assertEq(morpho.expectedBorrowAssets(marketParams, USER), expectedDebt - assetsToRepay, "loan");
     }
 
-    // Method: flashloan all current collateral, buy exact debt, repay debt, supply remaining collateral balance,
+    // Method: flashloan.
+    // Steps: flashloan all current collateral, buy exact debt, repay debt, supply remaining collateral balance,
     // withdraw initial collateral
-    // Limitation: fails if Morpho does not hold 2 * all collateral
+    // Limitation: fails if Morpho does not hold the user's collateral amount + the amount of collateral the user will
+    // sell to rebuy his debt.
+    // Note: starting with a supplyCollateral would not change the above limitation.
     function _createPartialRepayWithCollateralBundle(
         address user,
         MarketParams memory marketParams,
@@ -638,7 +759,7 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             )
         );
         callbackBundle.push(
-            _erc20TransferSkipRevert(
+            _erc20Transfer(
                 address(marketParams.collateralToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
@@ -654,7 +775,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         borrowAmount = bound(borrowAmount, MIN_AMOUNT, MAX_AMOUNT);
         uint256 collateralAmount = borrowAmount * 2;
 
-        _supplyCollateral(marketParams, collateralAmount, SUPPLIER); // Need extra collateral for flashloan
+        // Need extra collateral for flashloan
+        _supplyCollateral(marketParams, collateralAmount, SUPPLIER);
         _supply(marketParams, borrowAmount, SUPPLIER);
         _supplyCollateral(marketParams, collateralAmount, USER);
         _borrow(marketParams, borrowAmount, address(USER));
@@ -674,13 +796,15 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         assertEq(morpho.expectedBorrowAssets(marketParams, USER), 0, "loan");
     }
 
-    // Method: flashloan all current collateral, buy exact debt, repay debt, supply remaining collateral balance,
+    // Method: flashloan.
+    // Steps: flashloan all current collateral, buy exact debt, repay debt, supply remaining collateral balance,
     // withdraw initial collateral
-    // Limitation: fails if Morpho does not hold 2 * all collateral
+    // Limitation: fails if Morpho does not hold the user's collateral amount + the amount of collateral the user will
+    // sell to rebuy his debt.
+    // Note: starting with a supplyCollateral would not change the above limitation.
     function _createFullRepayWithCollateralBundle(address user, MarketParams memory marketParams) internal {
         uint256 collateral = morpho.collateral(marketParams.id(), user);
         uint256 assetsToBuy = collateral; // price is 1
-        uint256 borrowShares = morpho.borrowShares(marketParams.id(), USER);
 
         callbackBundle.push(
             _erc20Transfer(marketParams.collateralToken, address(paraswapAdapter), collateral, generalAdapter1)
@@ -692,11 +816,11 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
             )
         );
         callbackBundle.push(
-            _erc20TransferSkipRevert(
+            _erc20Transfer(
                 address(marketParams.collateralToken), address(generalAdapter1), type(uint256).max, paraswapAdapter
             )
         );
-        callbackBundle.push(_morphoRepay(marketParams, 0, borrowShares, type(uint256).max, user, hex""));
+        callbackBundle.push(_morphoRepay(marketParams, 0, type(uint256).max, type(uint256).max, user, hex""));
         // Cannot compute collateral - (remaining collateral), which would be the net amount to withdraw.
         // So do it in 2 steps: supply remaining collateral, then withdraw flashloaned amount.
         callbackBundle.push(_morphoSupplyCollateral(marketParams, type(uint256).max, user, hex""));

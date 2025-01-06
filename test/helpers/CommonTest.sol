@@ -28,8 +28,6 @@ import {IParaswapAdapter, Offsets} from "../../src/interfaces/IParaswapAdapter.s
 import {ParaswapAdapter} from "../../src/adapters/ParaswapAdapter.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {Permit} from "../helpers/SigUtils.sol";
-import {IUniversalRewardsDistributorBase} from
-    "../../lib/universal-rewards-distributor/src/interfaces/IUniversalRewardsDistributor.sol";
 
 import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
@@ -53,8 +51,8 @@ abstract contract CommonTest is Test {
     using stdJson for string;
 
     address internal immutable USER = makeAddr("User");
-    address internal immutable SUPPLIER = makeAddr("Owner");
-    address internal immutable OWNER = makeAddr("Supplier");
+    address internal immutable SUPPLIER = makeAddr("Supplier");
+    address internal immutable OWNER = makeAddr("Owner");
     address internal immutable RECEIVER = makeAddr("Receiver");
     address internal immutable LIQUIDATOR = makeAddr("Liquidator");
 
@@ -237,14 +235,6 @@ abstract contract CommonTest is Test {
         return _call(adapter, abi.encodeCall(adapter.erc20Transfer, (token, recipient, amount)));
     }
 
-    function _erc20TransferSkipRevert(address token, address recipient, uint256 amount, CoreAdapter adapter)
-        internal
-        pure
-        returns (Call memory)
-    {
-        return _call(adapter, abi.encodeCall(adapter.erc20Transfer, (token, recipient, amount)), 0, true);
-    }
-
     function _erc20TransferFrom(address token, address recipient, uint256 amount) internal view returns (Call memory) {
         return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20TransferFrom, (token, recipient, amount)));
     }
@@ -312,24 +302,6 @@ abstract contract CommonTest is Test {
         return _call(
             generalAdapter1,
             abi.encodeCall(GeneralAdapter1.erc4626Redeem, (vault, shares, minSharePriceE27, receiver, owner))
-        );
-    }
-
-    /* URD ACTIONS */
-
-    function _urdClaim(
-        address distributor,
-        address account,
-        address reward,
-        uint256 claimable,
-        bytes32[] memory proof,
-        bool skipRevert
-    ) internal pure returns (Call memory) {
-        return _call(
-            distributor,
-            abi.encodeCall(IUniversalRewardsDistributorBase.claim, (account, reward, claimable, proof)),
-            0,
-            skipRevert
         );
     }
 

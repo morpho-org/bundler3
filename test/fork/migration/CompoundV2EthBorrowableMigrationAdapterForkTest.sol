@@ -151,7 +151,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         callbackBundle.push(_compoundV2RepayEth(borrowed / 2, user));
         callbackBundle.push(_compoundV2RepayEth(type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, C_DAI_V2, uint160(cTokenBalance), 0, false));
-        callbackBundle.push(_transferFrom2(C_DAI_V2, address(migrationAdapter), cTokenBalance));
+        callbackBundle.push(_permit2TransferFrom(C_DAI_V2, address(migrationAdapter), cTokenBalance));
         callbackBundle.push(_compoundV2RedeemErc20(C_DAI_V2, cTokenBalance, address(generalAdapter1)));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
@@ -179,7 +179,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         IERC20(C_ETH_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
-        bundle.push(_transferFrom2(C_ETH_V2, address(migrationAdapter), cTokenBalance));
+        bundle.push(_permit2TransferFrom(C_ETH_V2, address(migrationAdapter), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(generalAdapter1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(generalAdapter1)));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
@@ -207,7 +207,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         IERC20(C_ETH_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
 
         bundle.push(_approve2(privateKey, C_ETH_V2, uint160(cTokenBalance), 0, false));
-        bundle.push(_transferFrom2(C_ETH_V2, address(migrationAdapter), cTokenBalance));
+        bundle.push(_permit2TransferFrom(C_ETH_V2, address(migrationAdapter), cTokenBalance));
         bundle.push(_compoundV2RedeemEth(cTokenBalance, address(generalAdapter1)));
         bundle.push(_wrapNativeNoFunding(supplied, address(generalAdapter1)));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));

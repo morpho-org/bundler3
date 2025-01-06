@@ -35,7 +35,7 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec).
 
 The [`certora/specs`](specs) folder contains the following files:
 
-- [`Bundler.spec`](specs/ExternalCalls.spec) checks that Bundler entry points behave as expected.
+- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
