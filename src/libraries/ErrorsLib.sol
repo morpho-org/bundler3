@@ -47,7 +47,7 @@ library ErrorsLib {
     error WithdrawFailed();
 
     /// @dev Thrown when a call transfers tokens from the initiator to the initiator.
-    error InitiatorSelfAddress();
+    error TransferInitiatorSelf();
 
     /* MIGRATION ADAPTERS */
 
