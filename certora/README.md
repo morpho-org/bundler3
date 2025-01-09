@@ -45,7 +45,7 @@ The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
 - [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract;
-- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that the Bundler can only be rentered by authorized adapters.
+- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that the Bundler can be reentered only by the expected adapter functions.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 

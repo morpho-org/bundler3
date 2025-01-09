@@ -14,7 +14,7 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
     }
 }
 
-// Check wether or not a given selector is authorized to reenter.
+// Asses wether or not a given selector may reenter the bundler.
 definition isAuthorizedToReenter(uint32 selector) returns bool =
     selector == sig:onMorphoSupply(uint256, bytes).selector ||
     selector == sig:onMorphoSupplyCollateral(uint256, bytes).selector ||
