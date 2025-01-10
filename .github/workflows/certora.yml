@@ -18,6 +18,7 @@ jobs:
         conf:
           - Bundler
           - MorphoZeroConditions
+          - TransientStorageInvariant
 
     steps:
       - uses: actions/checkout@v4
