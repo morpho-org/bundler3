@@ -7,7 +7,7 @@ It carries specific features to be able to perform actions that require authoriz
 
 ### Bundler
 
-<img width="677" alt="image" src="https://github.com/user-attachments/assets/95715b07-cb0d-4000-89ac-085dd99c7076" />
+<img width="724" alt="image" src="https://github.com/user-attachments/assets/cc7c304a-9778-441d-b863-c158e5de21ee" />
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
