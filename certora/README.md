@@ -27,7 +27,7 @@ These calls may themselves reenter the bundler.
 
 ### Bundler safety
 
-This is checked in [`Bundler.spec`](specs/Bundler.spec).
+This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
 
 ### Only Bundler calls adapters
 
@@ -40,7 +40,8 @@ This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
-- [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract.
+- [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract;
+- [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
