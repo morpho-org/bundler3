@@ -5,7 +5,6 @@ using Bundler as Bundler;
 
 // Check that Morpho callbacks can be called only by Morpho.
 rule morphoCallbacks(method f, env e, calldataarg data) filtered {
-    // Do not check view functions.
     f -> f.selector == sig:onMorphoSupply(uint256, bytes).selector ||
          f.selector == sig:onMorphoSupplyCollateral(uint256, bytes).selector ||
          f.selector == sig:onMorphoRepay(uint256, bytes).selector ||
