@@ -7,6 +7,7 @@ fs_permissions = [
 ]
 libs = ["lib"]
 via-ir = true
+optimizer = true
 optimizer_runs = 999999
 ignored_error_codes = ["transient-storage"]
 ignored_warnings_from = ["test"]
