@@ -27,7 +27,7 @@ rule morphoSupplyCollateralAssetsNonZero(
     bytes data
   ) {
     morphoSupplyCollateral@withrevert(e, marketParams, assets, onBehalf, data);
-    assert assets == 0 || onBehalf == 0 => lastReverted;
+    assert assets == 0 => lastReverted;
 }
 
 // Check that if morphoBorrow call didn't revert, then Morpho's conditions on input are verified.
