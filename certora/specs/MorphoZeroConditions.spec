@@ -84,5 +84,5 @@ rule morphoWithdrawCollateralAssetsNonZero(
 // Check that if morphoFlashLoan call didn't revert, then Morpho's conditions on input are verified.
 rule morphoFlashLoanAssetsNonZero(env e, address token, uint256 assets, bytes data) {
     morphoFlashLoan@withrevert(e, token, assets, data);
-    assert !lastReverted => assets != 0;
+    assert assets == 0 => lastReverted;
 }
