@@ -11,6 +11,7 @@ It carries specific features to be able to perform actions that require authoriz
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
+<a name="bundle-call-fields"></a>
 
 - `to`, an address to call;
 - `data`, some calldata to pass to the call;
@@ -84,6 +85,8 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
   - Slippage checks are done with a price argument instead of a limit amount.
   - When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
   - There are receiver arguments in all functions that give tokens to the adapter so the adapter can pass along those tokens.
+- The bundler [call fields](#bundle-call-fields) `skipRevert` (to skip failed actions) and `callbackHash` (to commit to callback contents) are new.
+
 
 ## Development
 
