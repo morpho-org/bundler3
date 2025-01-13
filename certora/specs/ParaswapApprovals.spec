@@ -11,7 +11,7 @@ methods{
                    ERC20USDT.approve(address, uint256),
                    ERC20Mock.balanceOf(address),
                    ERC20NoRevert.balanceOf(address),
-                   ERC20USDT.balanceOf(address) ] default NONDET;
+                   ERC20USDT.balanceOf(address) ] default HAVOC_ECF;
 }
 
 // Check that the augustus's allowance is set to zero for the adapter.
