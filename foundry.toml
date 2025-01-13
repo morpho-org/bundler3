@@ -1,6 +1,5 @@
 [profile.default]
 names = true
-evm_version = "cancun"
 fs_permissions = [
     { access = "read", path = "./out/"},
     { access = "read", path = "./config/"}
@@ -12,6 +11,7 @@ optimizer_runs = 999999
 ignored_error_codes = ["transient-storage"]
 ignored_warnings_from = ["test"]
 bytecode_hash = "none"
+evm_version = "cancun"
 
 [profile.default.fuzz]
 runs = 64
