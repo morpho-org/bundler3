@@ -227,7 +227,9 @@ contract Bundler3LocalTest is LocalTest {
 
         bytes32 goodHash = keccak256(bytes.concat(bytes20(address(adapterMock)), abi.encode(calls)));
         vm.assume(badHash != goodHash);
-        callbackBundle.push(_call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler3, (calls)), 0, false, badHash));
+        callbackBundle.push(
+            _call(adapterMock, abi.encodeCall(AdapterMock.callbackBundler3, (calls)), 0, false, badHash)
+        );
         bundle.push(
             _call(
                 adapterMock,
