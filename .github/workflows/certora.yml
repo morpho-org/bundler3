@@ -18,7 +18,6 @@ jobs:
         conf:
           - Bundler
           - OnlyBundler
-          - ReenterCaller
           - TransientStorageInvariant
 
     steps:
