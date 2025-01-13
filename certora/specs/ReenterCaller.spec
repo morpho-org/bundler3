@@ -24,11 +24,12 @@ definition isAuthorizedToReenter(uint32 selector) returns bool =
     selector == sig:ParaswapAdapter.buy(address, bytes, address, address, uint256,  ParaswapAdapter.Offsets, address).selector ||
     selector == sig:ParaswapAdapter.buyMorphoDebt(address, bytes, address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector;
 
-
-// Check that Bundler.reenter can be called only by authorized adapters.
+// Check that, from the adapters in this repository, only a known set of functions can call Bundler.reenter directly.
+// Note that calling Bundler.reenter indirectly (i.e. through a third contract) is prevented by the reenterHash mechanism.
+// Also note that `multicall` can call other adapters than the ones defined in this repository.
 rule reenterSafe(method f, env e, calldataarg data) {
     // Avoid failing vacuity checks, as it requires to explicitely show that reenterCalled holds.
     require !reenterCalled;
     f(e, data);
-    assert reenterCalled =>  isAuthorizedToReenter(f.selector);
+    assert reenterCalled => isAuthorizedToReenter(f.selector);
 }
