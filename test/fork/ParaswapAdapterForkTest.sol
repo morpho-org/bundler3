@@ -117,7 +117,7 @@ contract ParaswapAdapterForkTest is ForkTest {
                 )
             )
         );
-        bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapAdapter));
+        bundle.push(_erc20Transfer(address(USDC), user, type(uint256).max, paraswapAdapter));
 
         vm.startPrank(user);
         IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
@@ -162,7 +162,7 @@ contract ParaswapAdapterForkTest is ForkTest {
                 )
             )
         );
-        bundle.push(_erc20TransferSkipRevert(address(USDC), user, type(uint256).max, paraswapAdapter));
+        bundle.push(_erc20Transfer(address(USDC), user, type(uint256).max, paraswapAdapter));
 
         vm.startPrank(user);
         IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);

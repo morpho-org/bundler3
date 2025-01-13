@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+import "TransientStorageInvariant.spec";
+
 using Bundler as Bundler;
 
 methods {
@@ -27,8 +29,8 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
     // Set up the initial state.
     require !multicallCalled;
     require !reenterCalled;
-    // Safe require since it's transiently stored so it's nullified after a reentrant call.
-    require reenterHash() == to_bytes32(0);
+
+    requireInvariant transientStorageNullified();
 
     // Capture the first method call which is not performed with a CALL opcode.
     if (f.selector == sig:multicall(Bundler.Call[]).selector) {
@@ -44,7 +46,7 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 }
 
 // Check that non zero initiator will trigger a revert upon a multicall.
-rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
+rule nonZeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     address initiatorBefore = initiator();
 
     multicall@withrevert(e, bundle);
@@ -53,7 +55,7 @@ rule zeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
 }
 
 // Check that a null reenterHash will trigger a revert upon reentering the bundler.
-rule zeroReenterHashReverts(env e, Bundler.Call[] bundle) {
+rule zeroReenterHashRevertsReenter(env e, Bundler.Call[] bundle) {
     bytes32 reenterHashBefore = reenterHash();
 
     reenter@withrevert(e, bundle);
