@@ -6,7 +6,7 @@ import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import "./helpers/LocalTest.sol";
 
 contract ConcreteCoreAdapter is CoreAdapter {
-    constructor(address bundler) CoreAdapter(bundler) {}
+    constructor(address bundler3) CoreAdapter(bundler3) {}
 }
 
 contract CoreAdapterLocalTest is LocalTest {
@@ -14,7 +14,7 @@ contract CoreAdapterLocalTest is LocalTest {
 
     function setUp() public override {
         super.setUp();
-        coreAdapter = new ConcreteCoreAdapter(address(bundler));
+        coreAdapter = new ConcreteCoreAdapter(address(bundler3));
     }
 
     function testTransfer(uint256 amount) public {
@@ -24,7 +24,7 @@ contract CoreAdapterLocalTest is LocalTest {
 
         deal(address(loanToken), address(coreAdapter), amount);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(coreAdapter)), 0, "loan.balanceOf(coreAdapter)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
@@ -36,7 +36,7 @@ contract CoreAdapterLocalTest is LocalTest {
         bundle.push(_erc20Transfer(address(loanToken), address(0), amount, coreAdapter));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testTransferAdapterAddress(uint256 amount) public {
@@ -45,7 +45,7 @@ contract CoreAdapterLocalTest is LocalTest {
         bundle.push(_erc20Transfer(address(loanToken), address(coreAdapter), amount, coreAdapter));
 
         vm.expectRevert(ErrorsLib.AdapterAddress.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testTransferZeroExactAmount() public {
@@ -53,14 +53,14 @@ contract CoreAdapterLocalTest is LocalTest {
 
         vm.prank(USER);
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testTransferZeroBalanceAmount() public {
         bundle.push(_erc20Transfer(address(loanToken), RECEIVER, type(uint256).max, coreAdapter));
 
         vm.prank(USER);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testNativeTransfer(uint256 amount) public {
@@ -69,9 +69,9 @@ contract CoreAdapterLocalTest is LocalTest {
         bundle.push(_transferNativeToAdapter(payable(coreAdapter), amount));
         bundle.push(_nativeTransfer(RECEIVER, amount, coreAdapter));
 
-        deal(address(bundler), amount);
+        deal(address(bundler3), amount);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         assertEq(address(coreAdapter).balance, 0, "coreAdapter.balance");
         assertEq(RECEIVER.balance, amount, "RECEIVER.balance");
@@ -83,7 +83,7 @@ contract CoreAdapterLocalTest is LocalTest {
         bundle.push(_nativeTransferNoFunding(address(0), amount, coreAdapter));
 
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testNativeTransferAdapterAddress(uint256 amount) public {
@@ -92,19 +92,19 @@ contract CoreAdapterLocalTest is LocalTest {
         bundle.push(_nativeTransferNoFunding(address(coreAdapter), amount, coreAdapter));
 
         vm.expectRevert(ErrorsLib.AdapterAddress.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testNativeTransferZeroExactAmount() public {
         bundle.push(_nativeTransferNoFunding(RECEIVER, 0, coreAdapter));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testNativeTransferZeroBalanceAmount() public {
         bundle.push(_nativeTransferNoFunding(RECEIVER, type(uint256).max, coreAdapter));
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 }

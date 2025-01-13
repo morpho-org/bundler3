@@ -32,7 +32,7 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GeneralAdapter1} from "../../src/adapters/GeneralAdapter1.sol";
-import {Bundler, Call} from "../../src/Bundler.sol";
+import {Bundler3, Call} from "../../src/Bundler3.sol";
 
 import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
 import {AugustusMock} from "../../src/mocks/AugustusMock.sol";
@@ -60,7 +60,7 @@ abstract contract CommonTest is Test {
     IrmMock internal irm;
     OracleMock internal oracle;
 
-    Bundler internal bundler;
+    Bundler3 internal bundler3;
     GeneralAdapter1 internal generalAdapter1;
 
     ParaswapAdapter paraswapAdapter;
@@ -80,9 +80,9 @@ abstract contract CommonTest is Test {
         augustusRegistryMock = new AugustusRegistryMock();
         functionMocker = new FunctionMocker();
 
-        bundler = new Bundler();
-        generalAdapter1 = new GeneralAdapter1(address(bundler), address(morpho), address(1));
-        paraswapAdapter = new ParaswapAdapter(address(bundler), address(morpho), address(augustusRegistryMock));
+        bundler3 = new Bundler3();
+        generalAdapter1 = new GeneralAdapter1(address(bundler3), address(morpho), address(1));
+        paraswapAdapter = new ParaswapAdapter(address(bundler3), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
 

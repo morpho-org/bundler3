@@ -32,7 +32,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
 
         _initMarket(DAI, USDC);
 
-        migrationAdapter = new CompoundV2MigrationAdapter(address(bundler), C_ETH_V2);
+        migrationAdapter = new CompoundV2MigrationAdapter(address(bundler3), C_ETH_V2);
 
         enteredMarkets.push(C_DAI_V2);
     }
@@ -41,14 +41,14 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_compoundV2RepayErc20(C_ETH_V2, 1, address(this)));
 
         vm.expectRevert(ErrorsLib.CTokenIsCETH.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testCompoundV2RedeemCeth() public onlyEthereum {
         bundle.push(_compoundV2RedeemErc20(C_ETH_V2, 1, address(this)));
 
         vm.expectRevert(ErrorsLib.CTokenIsCETH.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testCompoundV2RedeemErc20Unauthorized(uint256 amount, address receiver) public onlyEthereum {
@@ -62,7 +62,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, 0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testCompoundV2RedeemErc20NotMax(uint256 supplied, uint256 redeemFactor) public onlyEthereum {
@@ -76,7 +76,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
 
         uint256 toRedeem = minted.wMulDown(redeemFactor);
         bundle.push(_compoundV2RedeemErc20(C_USDC_V2, toRedeem, address(this)));
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         if (redeemFactor < 1 ether) {
             assertEq(IERC20(C_USDC_V2).balanceOf(address(migrationAdapter)), minted - toRedeem);
@@ -118,7 +118,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
 
         vm.startPrank(user);
         IERC20(C_DAI_V2).forceApprove(address(Permit2Lib.PERMIT2), cTokenBalance);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         _assertBorrowerPosition(collateral, borrowed, user, address(generalAdapter1));
@@ -151,7 +151,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
 
         require(ICToken(C_USDC_V2).borrowBalanceCurrent(USER) == borrowed, "borrow balance current");
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         require(ICToken(C_USDC_V2).borrowBalanceCurrent(USER) == 0, "borrow balance current");
 
@@ -186,7 +186,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         _assertSupplierPosition(supplied, user, address(generalAdapter1));
     }
@@ -215,7 +215,7 @@ contract CompoundV2ERC20MigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         _assertVaultSupplierPosition(supplied, user, address(generalAdapter1));
     }

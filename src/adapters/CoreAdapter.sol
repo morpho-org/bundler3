@@ -4,32 +4,32 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "../libraries/ErrorsLib.sol";
 import {SafeERC20, IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "../../lib/openzeppelin-contracts/contracts/utils/Address.sol";
-import {IBundler} from "../interfaces/IBundler.sol";
+import {IBundler3} from "../interfaces/IBundler3.sol";
 import {UtilsLib} from "../libraries/UtilsLib.sol";
 
 /// @custom:security-contact security@morpho.org
-/// @notice Common contract to all Bundler adapters.
+/// @notice Common contract to all Bundler3 adapters.
 abstract contract CoreAdapter {
     /* IMMUTABLES */
 
-    /// @notice The address of the Bundler contract.
-    address public immutable BUNDLER;
+    /// @notice The address of the Bundler3 contract.
+    address public immutable BUNDLER3;
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The address of the Bundler contract.
-    constructor(address bundler) {
-        require(bundler != address(0), ErrorsLib.ZeroAddress());
+    /// @param bundler3 The address of the Bundler3 contract.
+    constructor(address bundler3) {
+        require(bundler3 != address(0), ErrorsLib.ZeroAddress());
 
-        BUNDLER = bundler;
+        BUNDLER3 = bundler3;
     }
 
     /* MODIFIERS */
 
     /// @dev Prevents a function from being called outside of a bundle context.
     /// @dev Ensures the value of initiator() is correct.
-    modifier onlyBundler() {
-        require(msg.sender == BUNDLER, ErrorsLib.UnauthorizedSender());
+    modifier onlyBundler3() {
+        require(msg.sender == BUNDLER3, ErrorsLib.UnauthorizedSender());
         _;
     }
 
@@ -45,7 +45,7 @@ abstract contract CoreAdapter {
     /// @param receiver The address that will receive the native tokens.
     /// @param amount The amount of native tokens to transfer. Pass `type(uint).max` to transfer the adapter's balance
     /// (this allows 0 value transfers).
-    function nativeTransfer(address receiver, uint256 amount) external onlyBundler {
+    function nativeTransfer(address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
@@ -60,7 +60,7 @@ abstract contract CoreAdapter {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the adapter's balance (this
     /// allows 0 value transfers).
-    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler {
+    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 
@@ -75,14 +75,14 @@ abstract contract CoreAdapter {
     /// @notice Returns the current initiator stored in the adapter.
     /// @dev The initiator value being non-zero indicates that a bundle is being processed.
     function initiator() internal view returns (address) {
-        return IBundler(BUNDLER).initiator();
+        return IBundler3(BUNDLER3).initiator();
     }
 
-    /// @notice Calls bundler.reenter with an already encoded Call array.
+    /// @notice Calls bundler3.reenter with an already encoded Call array.
     /// @dev Useful to skip an ABI decode-encode step when transmitting callback data.
     /// @param data An abi-encoded Call[].
-    function reenterBundler(bytes calldata data) internal {
-        (bool success, bytes memory returnData) = BUNDLER.call(bytes.concat(IBundler.reenter.selector, data));
+    function reenterBundler3(bytes calldata data) internal {
+        (bool success, bytes memory returnData) = BUNDLER3.call(bytes.concat(IBundler3.reenter.selector, data));
         if (!success) UtilsLib.lowLevelRevert(returnData);
     }
 }

@@ -14,10 +14,10 @@ contract AaveV3MigrationAdapter is CoreAdapter {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address
+    /// @param bundler3 The Bundler3 contract address
     /// @param aaveV3Pool The AaveV3 contract address. Assumes it is non-zero (not expected to be an input at
     /// deployment).
-    constructor(address bundler, address aaveV3Pool) CoreAdapter(bundler) {
+    constructor(address bundler3, address aaveV3Pool) CoreAdapter(bundler3) {
         require(aaveV3Pool != address(0), ErrorsLib.ZeroAddress());
 
         AAVE_V3_POOL = IAaveV3(aaveV3Pool);
@@ -35,7 +35,7 @@ contract AaveV3MigrationAdapter is CoreAdapter {
     /// @param onBehalf The account on behalf of which the debt is repaid.
     function aaveV3Repay(address token, uint256 amount, uint256 interestRateMode, address onBehalf)
         external
-        onlyBundler
+        onlyBundler3
     {
         // Amount will be capped at `onBehalf`'s debt by Aave.
         if (amount == type(uint256).max) amount = IERC20(token).balanceOf(address(this));
@@ -56,7 +56,7 @@ contract AaveV3MigrationAdapter is CoreAdapter {
     /// adapter's max withdrawable amount. Pass
     /// `type(uint).max` to always withdraw all.
     /// @param receiver The account receiving the withdrawn tokens.
-    function aaveV3Withdraw(address token, uint256 amount, address receiver) external onlyBundler {
+    function aaveV3Withdraw(address token, uint256 amount, address receiver) external onlyBundler3 {
         require(amount != 0, ErrorsLib.ZeroAmount());
 
         AAVE_V3_POOL.withdraw(token, amount, receiver);

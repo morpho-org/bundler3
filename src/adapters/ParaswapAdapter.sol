@@ -24,7 +24,10 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
 
     /* CONSTRUCTOR */
 
-    constructor(address bundler, address morpho, address augustusRegistry) CoreAdapter(bundler) {
+    /// @param bundler3 The address of the Bundler3 contract.
+    /// @param morpho The address of the Morpho protocol.
+    /// @param augustusRegistry The address of Paraswap's registry of Augustus contracts.
+    constructor(address bundler3, address morpho, address augustusRegistry) CoreAdapter(bundler3) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(augustusRegistry != address(0), ErrorsLib.ZeroAddress());
 
@@ -143,7 +146,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /* INTERNAL FUNCTIONS */
 
     /// @dev Executes the swap specified by `callData` with `augustus`.
-    /// @dev Even if this adapter holds no approval, swaps are restricted to the bundler here as in all adapters in
+    /// @dev Even if this adapter holds no approval, swaps are restricted to Bundler3 here as in all adapters in
     /// order to simplify the security model.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
@@ -161,7 +164,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
         uint256 maxSrcAmount,
         uint256 minDestAmount,
         address receiver
-    ) internal onlyBundler {
+    ) internal onlyBundler3 {
         require(AUGUSTUS_REGISTRY.isValidAugustus(augustus), ErrorsLib.InvalidAugustus());
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(minDestAmount != 0, ErrorsLib.ZeroAmount());

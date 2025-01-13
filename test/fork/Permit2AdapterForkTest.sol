@@ -43,7 +43,7 @@ contract Permit2AdapterForkTest is ForkTest {
         IERC20(marketParams.loanToken).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
         IERC20(marketParams.collateralToken).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         assertEq(IERC20(marketParams.collateralToken).balanceOf(user), 0, "collateral.balanceOf(user)");
@@ -82,7 +82,7 @@ contract Permit2AdapterForkTest is ForkTest {
         vm.startPrank(user);
         IERC20(marketParams.loanToken).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         (uint160 permit2Allowance,,) =
@@ -124,7 +124,7 @@ contract Permit2AdapterForkTest is ForkTest {
         IERC20(token0).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
         IERC20(token1).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         (uint160 permit2Allowance1,,) = Permit2Lib.PERMIT2.allowance(user, token0, address(generalAdapter1));
@@ -157,7 +157,7 @@ contract Permit2AdapterForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testApprove2BatchInvalidNonce(uint256 amount0, uint256 amount1) public {
@@ -186,14 +186,14 @@ contract Permit2AdapterForkTest is ForkTest {
 
         vm.prank(user);
         vm.expectRevert(InvalidNonce.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testPermit2TransferFromZeroAmount() public {
         bundle.push(_permit2TransferFrom(DAI, 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testPermit2TransferFromUnauthorized() public {

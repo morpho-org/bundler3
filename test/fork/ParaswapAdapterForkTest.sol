@@ -55,7 +55,7 @@ contract ParaswapAdapterForkTest is ForkTest {
 
         vm.startPrank(user);
         IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         assertEq(IERC20(USDC).balanceOf(user), 0, "remaining");
@@ -86,7 +86,7 @@ contract ParaswapAdapterForkTest is ForkTest {
 
         vm.startPrank(user);
         IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         assertEq(IERC20(USDC).balanceOf(user), 0, "sold");
@@ -121,7 +121,7 @@ contract ParaswapAdapterForkTest is ForkTest {
 
         vm.startPrank(user);
         IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         uint256 sold = initialBalance - IERC20(USDC).balanceOf(user);
@@ -166,7 +166,7 @@ contract ParaswapAdapterForkTest is ForkTest {
 
         vm.startPrank(user);
         IERC20(USDC).approve(address(generalAdapter1), type(uint256).max);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         uint256 sold = initialBalance - IERC20(USDC).balanceOf(user);
