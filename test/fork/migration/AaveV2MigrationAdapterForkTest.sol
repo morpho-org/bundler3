@@ -115,7 +115,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV2Repay(marketParams.loanToken, borrowed / 2, user));
         callbackBundle.push(_aaveV2Repay(marketParams.loanToken, type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
-        callbackBundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));
+        callbackBundle.push(_permit2TransferFrom(aToken, address(migrationAdapter), aTokenBalance));
         callbackBundle.push(_aaveV2Withdraw(marketParams.collateralToken, collateralSupplied, address(generalAdapter1)));
 
         bundle.push(_morphoSupplyCollateral(marketParams, collateralSupplied, user, abi.encode(callbackBundle)));
@@ -155,7 +155,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV2Repay(marketParams.loanToken, borrowed / 2, user));
         callbackBundle.push(_aaveV2Repay(marketParams.loanToken, type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
-        callbackBundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));
+        callbackBundle.push(_permit2TransferFrom(aToken, address(migrationAdapter), aTokenBalance));
         callbackBundle.push(_aaveV2Withdraw(DAI, collateralSupplied, address(generalAdapter1)));
         callbackBundle.push(_erc4626Deposit(S_DAI, collateralSupplied, type(uint256).max, address(generalAdapter1)));
 
@@ -201,7 +201,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         callbackBundle.push(_aaveV2Repay(marketParams.loanToken, borrowed / 2, user));
         callbackBundle.push(_aaveV2Repay(marketParams.loanToken, type(uint256).max, user));
         callbackBundle.push(_approve2(privateKey, aToken, type(uint160).max, 0, false));
-        callbackBundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));
+        callbackBundle.push(_permit2TransferFrom(aToken, address(migrationAdapter), aTokenBalance));
         callbackBundle.push(_aaveV2Withdraw(ST_ETH, type(uint256).max, address(ethereumGeneralAdapter1)));
         callbackBundle.push(_wrapStEth(type(uint256).max, address(generalAdapter1)));
 
@@ -232,7 +232,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         bundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
-        bundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));
+        bundle.push(_permit2TransferFrom(aToken, address(migrationAdapter), aTokenBalance));
         bundle.push(_aaveV2Withdraw(marketParams.loanToken, supplied, address(generalAdapter1)));
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
@@ -261,7 +261,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
         IERC20(aToken).forceApprove(address(Permit2Lib.PERMIT2), aTokenBalance);
 
         bundle.push(_approve2(privateKey, aToken, uint160(aTokenBalance), 0, false));
-        bundle.push(_transferFrom2(aToken, address(migrationAdapter), aTokenBalance));
+        bundle.push(_permit2TransferFrom(aToken, address(migrationAdapter), aTokenBalance));
         bundle.push(_aaveV2Withdraw(marketParams.loanToken, supplied, address(generalAdapter1)));
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 

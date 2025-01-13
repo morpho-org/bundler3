@@ -24,6 +24,7 @@ jobs:
           - AaveV3OptimizerApprovals
           - CompoundV2Approvals
           - CompoundV3Approvals
+          - TransientStorageInvariant
 
     steps:
       - uses: actions/checkout@v4
