@@ -1,62 +1,62 @@
-diff -ruN Bundler.sol Bundler.sol
---- Bundler.sol
-+++ Bundler.sol
+diff -ruN Bundler3.sol Bundler3.sol
+--- Bundler3.sol
++++ Bundler3.sol
 @@ -15,10 +15,37 @@
      /* TRANSIENT STORAGE */
- 
+
      /// @notice The initiator of the multicall transaction.
 -    address public transient initiator;
 +    //address public transient initiator;
 +    function setInitiator(address _initiator) internal {
 +        assembly ("memory-safe") {
-+            // keccak256("Morpho Bundler Initiator Slot")
-+            tstore(0x33a59cbcc71c90d612d5afca82f27022cd1319f49b953968504d8209c045bd1f, _initiator)
++            // keccak256("Bundler3 Initiator Slot")
++            tstore(0xd7d251e7c361c14039189f95fe00c18c4a6f62d97ee0d19ed27711cc23c80309, _initiator)
 +        }
 +    }
 +
 +    function initiator() public view returns (address _initiator) {
 +        assembly ("memory-safe") {
-+            // keccak256("Morpho Bundler Initiator Slot")
-+            _initiator := tload(0x33a59cbcc71c90d612d5afca82f27022cd1319f49b953968504d8209c045bd1f)
++            // keccak256("Bundler3 Initiator Slot")
++            _initiator := tload(0xd7d251e7c361c14039189f95fe00c18c4a6f62d97ee0d19ed27711cc23c80309)
 +        }
 +    }
- 
+
      /// @notice Hash of the concatenation of the sender and the hash of the calldata of the next call to `reenter`.
 -    bytes32 public transient reenterHash;
 +    //bytes32 public transient reenterHash;
 +
 +    function setReenterHash(bytes32 _reenterHash) internal {
 +        assembly ("memory-safe") {
-+            // keccak256("Morpho Bundler Reenter Hash Slot")
-+            tstore(0xf76fe07d24a8fe20766ea4a3e6e9805bd23d7cda61e69a0df6c4774484a4adf8, _reenterHash)
++            // keccak256("Bundler3 Reenter Hash Slot")
++            tstore(0x4aceee294ca47ef8bbab20072b9948fa509670620bc2438df44f99e571938b6d, _reenterHash)
 +        }
 +    }
 +
 +    function reenterHash() public view returns (bytes32 _reenterHash) {
 +        assembly ("memory-safe") {
-+            // keccak256("Morpho Bundler Reenter Hash Slot")
-+            _reenterHash := tload(0xf76fe07d24a8fe20766ea4a3e6e9805bd23d7cda61e69a0df6c4774484a4adf8)
++            // keccak256("Bundler3 Reenter Hash Slot")
++            _reenterHash := tload(0x4aceee294ca47ef8bbab20072b9948fa509670620bc2438df44f99e571938b6d)
 +        }
 +    }
- 
+
      /* EXTERNAL */
- 
+
 @@ -26,13 +53,13 @@
      /// @dev Locks the initiator so that the sender can be identified by other contracts.
      /// @param bundle The ordered array of calldata to execute.
      function multicall(Call[] calldata bundle) external payable {
 -        require(initiator == address(0), ErrorsLib.AlreadyInitiated());
 +        require(initiator() == address(0), ErrorsLib.AlreadyInitiated());
- 
+
 -        initiator = msg.sender;
 +        setInitiator(msg.sender);
- 
+
          _multicall(bundle);
- 
+
 -        initiator = address(0);
 +        setInitiator(address(0));
      }
- 
+
      /// @notice Executes a sequence of calls.
 @@ -41,7 +68,7 @@
      /// @param bundle The ordered array of calldata to execute.
@@ -75,10 +75,10 @@ diff -ruN Bundler.sol Bundler.sol
 -            else reenterHash = keccak256(bytes.concat(bytes20(to), callbackHash));
 +            if (callbackHash == bytes32(0)) setReenterHash(bytes32(0));
 +            else setReenterHash(keccak256(bytes.concat(bytes20(to), callbackHash)));
- 
+
              (bool success, bytes memory returnData) = to.call{value: bundle[i].value}(bundle[i].data);
              if (!bundle[i].skipRevert && !success) UtilsLib.lowLevelRevert(returnData);
- 
+
 -            require(reenterHash == bytes32(0), ErrorsLib.MissingExpectedReenter());
 +            require(reenterHash() == bytes32(0), ErrorsLib.MissingExpectedReenter());
          }

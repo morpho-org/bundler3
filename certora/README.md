@@ -1,6 +1,6 @@
-# Bundler V3 formal verification
+# Bundler3 formal verification
 
-This folder contains the [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html) specification and verification setup for the [Bundler](../src/Bunlder.sol) V3.
+This folder contains the [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html) specification and verification setup for [Bundler3](../src/Bundler3.sol).
 
 ## Getting started
 
@@ -22,12 +22,12 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 
 ## Overview
 
-The Bundler contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
-These calls may themselves reenter the bundler.
+The Bundler3 contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
+These calls may themselves reenter Bundler3.
 
-### Bundler
+### Bundler3
 
-This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
+This is checked in [`Bundler3.spec`](specs/Bundler3.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
 
 ## Verification architecture
 
@@ -35,7 +35,7 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageIn
 
 The [`certora/specs`](specs) folder contains the following files:
 
-- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`Bundler3.spec`](specs/Bundler3.spec) checks that Bundler3 entry points behave as expected;
 - [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
