@@ -85,7 +85,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         amount = IERC20(ST_ETH).balanceOf(user);
 
         bundle.push(_approve2(privateKey, ST_ETH, amount, 0, false));
-        bundle.push(_transferFrom2(ST_ETH, address(ethereumGeneralAdapter1), amount));
+        bundle.push(_permit2TransferFrom(ST_ETH, address(ethereumGeneralAdapter1), amount));
         bundle.push(_wrapStEth(amount, RECEIVER));
 
         uint256 wstEthExpectedAmount = IStEth(ST_ETH).getSharesByPooledEth(IERC20(ST_ETH).balanceOf(user));
@@ -126,7 +126,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_approve2(privateKey, WST_ETH, amount, 0, false));
-        bundle.push(_transferFrom2(WST_ETH, address(ethereumGeneralAdapter1), amount));
+        bundle.push(_permit2TransferFrom(WST_ETH, address(ethereumGeneralAdapter1), amount));
         bundle.push(_unwrapStEth(amount, RECEIVER));
 
         deal(WST_ETH, user, amount);

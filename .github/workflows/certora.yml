@@ -19,6 +19,7 @@ jobs:
           - Bundler
           - OnlyBundler
           - ReenterCaller
+          - TransientStorageInvariant
 
     steps:
       - uses: actions/checkout@v4

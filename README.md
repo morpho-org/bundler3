@@ -7,7 +7,7 @@ It carries specific features to be able to perform actions that require authoriz
 
 ### Bundler
 
-<img width="586" alt="bundler structure" src="https://github.com/user-attachments/assets/983b7e48-ba0c-4fda-a31b-e7c9cc212da4">
+<img width="590" alt="image" src="https://github.com/user-attachments/assets/80be768c-49fa-4d17-a7d4-7b03f4f0caa9" />
 
 The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
@@ -43,12 +43,11 @@ All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which
 
 Contains the following actions:
 
-- ERC20 transfers, permit, wrap & unwrap.
+- ERC20 transfers, wrap & unwrap.
 - Native token (e.g. WETH) transfers, wrap & unwrap.
 - ERC4626 mint, deposit, withdraw & redeem.
 - Morpho interactions.
-- Permit2 approvals.
-- URD claim.
+- TransferFrom using Permit2.
 
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
@@ -56,7 +55,6 @@ Contains the following actions:
 
 - Actions of `GeneralAdapter1`.
 - Morpho token wrapper withdrawal.
-- DAI permit.
 - stETH staking.
 - wstETH wrap & unwrap.
 
@@ -93,7 +91,7 @@ Run tests with `forge test --chain <chainid>` (chainid can be 1 or 8453, 1 by de
 
 ## Audits
 
-TBA.
+All audits are stored in the [audits](./audits/) folder.
 
 ## License
 
