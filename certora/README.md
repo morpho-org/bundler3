@@ -45,7 +45,7 @@ The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
 - [`OnlyBundler.spec`](specs/OnlyBundler.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler contract;
-- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that the Bundler can be reentered only by the expected adapter functions.
+- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that the Bundler can be reentered only by the expected adapter functions;
 - [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
