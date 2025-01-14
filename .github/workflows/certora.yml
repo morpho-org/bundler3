@@ -18,6 +18,8 @@ jobs:
         conf:
           - Bundler
           - MorphoZeroConditions
+          - OnlyBundler
+          - ReenterCaller
           - TransientStorageInvariant
 
     steps:
