@@ -19,24 +19,6 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 The Bundler contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
 These calls may themselves reenter the bundler.
 
-### Bundler safety
-
-This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
-
-### Morpho conditions on zero inputs
-
-This is checked in [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec).
-
-### Only Bundler calls adapters
-
-This is checked in [`OnlyBundler.spec`](specs/OnlyBundler.spec).
-
-### Reenter can be only called safely
-
-This is checked in [`ReenterCaller.spec`](specs/ReenterCaller.spec).
-
-## Verification architecture
-
 ### Folders and file structure
 
 The [`certora/specs`](specs) folder contains the following files:
