@@ -22,3 +22,6 @@ broadcast/
 
 *.log
 
+# Certora
+.certora_internal
+
