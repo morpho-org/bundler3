@@ -4,12 +4,6 @@ This folder contains the [CVL](https://docs.certora.com/en/latest/docs/cvl/index
 
 ## Getting started
 
-The verification is performed on modified source files, which can generated with the command:
-
-```
-make -C certora munged
-```
-
 This project depends on several [Solidity](https://soliditylang.org/) versions which are required for running the verification.
 The compiler binaries should be available at the paths:
 
