@@ -83,8 +83,13 @@ rule erc20TransferRevert(env e, address token, address receiver, uint256 amount)
 
 // Check that balances changed upon ERC20 tansfers from the initiator with the adapter.
 rule erc20TransferFromRevert(env e, address token, address receiver, uint256 amount) {
+
+    // Safe require as the initiator can't be the adatper.
+    require Bundler.initiator() != currentContract;
+
     storage storageBefore = lastStorage;
     uint256 balanceSenderBefore = token.balanceOf(e, Bundler.initiator());
+
     erc20TransferFrom@withrevert(e, token, receiver, amount);
 
     // Check case using a standard OpenZeppelin ERC20 implementation.
