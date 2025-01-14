@@ -23,6 +23,11 @@ These calls may themselves reenter the bundler.
 
 This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
 
+### Morpho conditions on zero inputs
+
+This is checked in [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec).
+
+
 ## Verification architecture
 
 ### Folders and file structure
@@ -30,6 +35,7 @@ This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageIn
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that calls to Morpho with zero inputs that revert in Morpho make the adapter revert;
 - [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
