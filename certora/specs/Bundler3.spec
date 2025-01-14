@@ -2,7 +2,7 @@
 
 import "TransientStorageInvariant.spec";
 
-using Bundler as Bundler;
+using Bundler3 as Bundler3;
 
 methods {
     function initiator() external returns address envfree;
@@ -16,9 +16,9 @@ persistent ghost bool multicallCalled;
 persistent ghost bool reenterCalled;
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
-    if (selector == sig:multicall(Bundler.Call[]).selector) {
+    if (selector == sig:multicall(Bundler3.Call[]).selector) {
        multicallCalled = true;
-    } else if (selector == sig:reenter(Bundler.Call[]).selector) {
+    } else if (selector == sig:reenter(Bundler3.Call[]).selector) {
        reenterCalled = true;
     }
 }
@@ -33,9 +33,9 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
     requireInvariant transientStorageNullified();
 
     // Capture the first method call which is not performed with a CALL opcode.
-    if (f.selector == sig:multicall(Bundler.Call[]).selector) {
+    if (f.selector == sig:multicall(Bundler3.Call[]).selector) {
        multicallCalled = true;
-    } else if (f.selector == sig:reenter(Bundler.Call[]).selector) {
+    } else if (f.selector == sig:reenter(Bundler3.Call[]).selector) {
        reenterCalled = true;
     }
 
@@ -46,7 +46,7 @@ rule reenterAfterMulticall(method f, env e, calldataarg data) {
 }
 
 // Check that non zero initiator will trigger a revert upon a multicall.
-rule nonZeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
+rule nonZeroInitiatorRevertsMulticall(env e, Bundler3.Call[] bundle) {
     address initiatorBefore = initiator();
 
     multicall@withrevert(e, bundle);
@@ -54,8 +54,8 @@ rule nonZeroInitiatorRevertsMulticall(env e, Bundler.Call[] bundle) {
     assert initiatorBefore != 0 => lastReverted;
 }
 
-// Check that a null reenterHash will trigger a revert upon reentering the bundler.
-rule zeroReenterHashRevertsReenter(env e, Bundler.Call[] bundle) {
+// Check that a null reenterHash will trigger a revert upon reentering Bundler3.
+rule zeroReenterHashRevertsReenter(env e, Bundler3.Call[] bundle) {
     bytes32 reenterHashBefore = reenterHash();
 
     reenter@withrevert(e, bundle);

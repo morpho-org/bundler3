@@ -28,20 +28,20 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The address of the bundler.
+    /// @param bundler3 The address of the Bundler3 contract.
     /// @param morpho The address of Morpho.
     /// @param weth The address of the WETH token.
     /// @param wStEth The address of the wstETH token.
     /// @param morphoToken The address of the MORPHO token.
     /// @param morphoWrapper The address of the MORPHO token wrapper.
     constructor(
-        address bundler,
+        address bundler3,
         address morpho,
         address weth,
         address wStEth,
         address morphoToken,
         address morphoWrapper
-    ) GeneralAdapter1(bundler, morpho, weth) {
+    ) GeneralAdapter1(bundler3, morpho, weth) {
         require(wStEth != address(0), ErrorsLib.ZeroAddress());
         require(morphoToken != address(0), ErrorsLib.ZeroAddress());
         require(morphoWrapper != address(0), ErrorsLib.ZeroAddress());
@@ -60,7 +60,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// withdrawTo.
     /// @param receiver The address to send the tokens to.
     /// @param amount The amount of tokens to unwrap.
-    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler {
+    function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler3 {
         // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
 
@@ -81,7 +81,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param receiver The account receiving the stETH tokens.
     function stakeEth(uint256 amount, uint256 maxSharePriceE27, address referral, address receiver)
         external
-        onlyBundler
+        onlyBundler3
     {
         if (amount == type(uint256).max) amount = address(this).balance;
 
@@ -97,7 +97,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @dev stETH must have been previously sent to the adapter.
     /// @param amount The amount of stEth to wrap. Pass `type(uint).max` to wrap the adapter's balance.
     /// @param receiver The account receiving the wStETH tokens.
-    function wrapStEth(uint256 amount, address receiver) external onlyBundler {
+    function wrapStEth(uint256 amount, address receiver) external onlyBundler3 {
         if (amount == type(uint256).max) amount = IERC20(ST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -113,7 +113,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @dev wStETH must have been previously sent to the adapter.
     /// @param amount The amount of wStEth to unwrap. Pass `type(uint).max` to unwrap the adapter's balance.
     /// @param receiver The account receiving the stETH tokens.
-    function unwrapStEth(uint256 amount, address receiver) external onlyBundler {
+    function unwrapStEth(uint256 amount, address receiver) external onlyBundler3 {
         if (amount == type(uint256).max) amount = IERC20(WST_ETH).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());

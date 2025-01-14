@@ -16,9 +16,9 @@ jobs:
 
       matrix:
         conf:
-          - Bundler
+          - Bundler3
           - MorphoZeroConditions
-          - OnlyBundler
+          - OnlyBundler3
           - ReenterCaller
           - TransientStorageInvariant
 

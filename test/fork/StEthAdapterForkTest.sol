@@ -24,7 +24,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testStakeEth(uint256 amount) public onlyEthereum {
@@ -38,7 +38,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         deal(USER, amount);
 
         vm.prank(USER);
-        bundler.multicall{value: amount}(bundle);
+        bundler3.multicall{value: amount}(bundle);
 
         assertEq(USER.balance, 0, "USER.balance");
         assertEq(RECEIVER.balance, 0, "RECEIVER.balance");
@@ -64,7 +64,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
         vm.prank(USER);
         vm.expectRevert(ErrorsLib.SlippageExceeded.selector);
-        bundler.multicall{value: amount}(bundle);
+        bundler3.multicall{value: amount}(bundle);
     }
 
     function testWrapZeroAmount(address receiver) public onlyEthereum {
@@ -72,7 +72,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testWrapStEth(uint256 amount) public onlyEthereum {
@@ -93,7 +93,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         vm.startPrank(user);
         IERC20(ST_ETH).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         assertEq(
@@ -117,7 +117,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
         vm.prank(USER);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testUnwrapWstEth(uint256 amount) public onlyEthereum {
@@ -134,7 +134,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         vm.startPrank(user);
         IERC20(WST_ETH).forceApprove(address(Permit2Lib.PERMIT2), type(uint256).max);
 
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         vm.stopPrank();
 
         uint256 expectedUnwrappedAmount = IWstEth(WST_ETH).getStETHByWstETH(amount);

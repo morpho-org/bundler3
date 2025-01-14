@@ -11,8 +11,8 @@ import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "../CoreAdapter.sol";
 contract CompoundV3MigrationAdapter is CoreAdapter {
     /* CONSTRUCTOR */
 
-    /// @param bundler The Bundler contract address.
-    constructor(address bundler) CoreAdapter(bundler) {}
+    /// @param bundler3 The Bundler3 contract address.
+    constructor(address bundler3) CoreAdapter(bundler3) {}
 
     /* ACTIONS */
 
@@ -24,7 +24,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
     /// debt. Pass `type(uint).max` to repay the maximum repayable debt (minimum of the adapter's balance and
     /// `onBehalf`'s debt).
     /// @param onBehalf The account on behalf of which the debt is repaid.
-    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler {
+    function compoundV3Repay(address instance, uint256 amount, address onBehalf) external onlyBundler3 {
         address asset = ICompoundV3(instance).baseToken();
 
         if (amount == type(uint256).max) amount = IERC20(asset).balanceOf(address(this));
@@ -51,7 +51,7 @@ contract CompoundV3MigrationAdapter is CoreAdapter {
     /// @param receiver The account receiving the withdrawn assets.
     function compoundV3WithdrawFrom(address instance, address asset, uint256 amount, address receiver)
         external
-        onlyBundler
+        onlyBundler3
     {
         address initiator = initiator();
         uint256 balance = asset == ICompoundV3(instance).baseToken()
