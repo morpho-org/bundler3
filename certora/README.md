@@ -19,17 +19,14 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 The Bundler3 contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
 These calls may themselves reenter Bundler3.
 
-### Bundler3
-
-This is checked in [`Bundler3.spec`](specs/Bundler3.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
-
-## Verification architecture
-
 ### Folders and file structure
 
 The [`certora/specs`](specs) folder contains the following files:
 
-- [`Bundler3.spec`](specs/Bundler3.spec) checks that Bundler3 entry points behave as expected;
+- [`Bundler3.spec`](specs/Bundler3.spec) checks Bundler3 entry points behave as expected;
+- [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that calls to Morpho with zero inputs that revert in Morpho make the adapter revert;
+- [`OnlyBundler3.spec`](specs/OnlyBundler3.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler3 contract;
+- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that Bundler3 can be reentered only by the expected adapter functions;
 - [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
