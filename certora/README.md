@@ -17,7 +17,7 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 ## Overview
 
 The Bundler3 contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
-These calls may themselves reenter Bundler3.
+These calls may themselves reenter the Bundler3 contract.
 
 ### Folders and file structure
 
