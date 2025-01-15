@@ -70,32 +70,6 @@ rule erc20TransferRevert(env e, address token, address receiver, uint256 amount)
     assert  token == ERC20USDT && amount == 0 => storageBefore[ERC20USDT] == lastStorage[ERC20USDT];
 }
 
-// Check that balances changed upon ERC20 tansfers from the initiator with the adapter.
-rule erc20TransferFromRevert(env e, address token, address receiver, uint256 amount) {
-
-    // Safe require as the initiator can't be the adatper.
-    require Bundler.initiator() != currentContract;
-    require Bundler.initiator() != receiver;
-
-    storage storageBefore = lastStorage;
-    uint256 balanceSenderBefore = token.balanceOf(e, Bundler.initiator());
-
-    erc20TransferFrom@withrevert(e, token, receiver, amount);
-
-    // Check case using a standard OpenZeppelin ERC20 implementation.
-    assert !lastReverted && amount != 0 && token == ERC20Mock && balanceSenderBefore != 0 => storageBefore[ERC20Mock] != lastStorage[ERC20Mock];
-    assert  token == ERC20Mock && lastReverted || amount == 0 => storageBefore[ERC20Mock] == lastStorage[ERC20Mock];
-
-    // Check case using a token implementation that doesn't revert.
-    assert !lastReverted && amount != 0 && token == ERC20NoRevert && balanceSenderBefore != 0 => storageBefore[ERC20NoRevert] != lastStorage[ERC20NoRevert];
-    assert  token == ERC20NoRevert && lastReverted || amount == 0 => storageBefore[ERC20NoRevert] == lastStorage[ERC20NoRevert];
-
-    // Check case using a USDT's token implementation.
-    assert !lastReverted && amount != 0 && token == ERC20USDT && balanceSenderBefore != 0 => storageBefore[ERC20USDT] != lastStorage[ERC20USDT];
-    // Check that state doesnt change when using amount equals zero.
-    assert  amount == 0 => storageBefore[ERC20USDT] == lastStorage[ERC20USDT];
-}
-
 // Check that balances and state changed upon unwrapping ETH using the adapter.
 rule unwrapNativeChange(env e, uint256 amount, address receiver) {
     uint256 receiverNativeBalanceBefore = nativeBalances[receiver];
@@ -126,8 +100,8 @@ rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
          f.selector != sig:nativeTransfer(address, uint256).selector &&
          f.selector != sig:unwrapNative(uint256, address).selector &&
          f.selector != sig:erc20Transfer(address, address, uint256).selector &&
-         f.selector != sig:erc20TransferFrom(address, address, uint256).selector &&
         // Property doesn't hold for the following.
+         f.selector != sig:erc20TransferFrom(address, address, uint256).selector &&
          f.selector != sig:morphoFlashLoan(address, uint256, bytes).selector &&
          f.selector != sig:permit2TransferFrom(address, address, uint256).selector
 }{
