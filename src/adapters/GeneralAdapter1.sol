@@ -239,6 +239,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
@@ -266,6 +267,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(marketParams.collateralToken), address(MORPHO), type(uint256).max);
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
@@ -326,6 +328,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
@@ -383,6 +386,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
     function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler3 {
         require(assets != 0, ErrorsLib.ZeroAmount());
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(token), address(MORPHO), type(uint256).max);
 
         MORPHO.flashLoan(token, assets, data);

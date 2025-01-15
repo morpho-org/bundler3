@@ -66,6 +66,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        // The MORPHO wrapper's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(MORPHO_TOKEN), MORPHO_WRAPPER, type(uint256).max);
 
         require(ERC20Wrapper(MORPHO_WRAPPER).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
@@ -102,6 +103,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        // The wStEth's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(ST_ETH), WST_ETH, type(uint256).max);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
