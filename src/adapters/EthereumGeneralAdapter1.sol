@@ -103,7 +103,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
-        // The staked ETH's allowance is not reset after as it is not upgradable.
+        // The staked ETH's allowance is not reset after as it is trusted.
         SafeERC20.forceApprove(IERC20(ST_ETH), WST_ETH, type(uint256).max);
 
         uint256 received = IWstEth(WST_ETH).wrap(amount);
