@@ -123,11 +123,11 @@ rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
          f.selector != sig:onMorphoRepay(uint256, bytes).selector &&
          f.selector != sig:onMorphoFlashLoan(uint256, bytes).selector &&
          // Property checked in a different way.
+         f.selector != sig:nativeTransfer(address, uint256).selector &&
          f.selector != sig:unwrapNative(uint256, address).selector &&
          f.selector != sig:erc20Transfer(address, address, uint256).selector &&
          f.selector != sig:erc20TransferFrom(address, address, uint256).selector &&
         // Property doesn't hold for the following.
-         f.selector != sig:nativeTransfer(address, uint256).selector &&
          f.selector != sig:morphoFlashLoan(address, uint256, bytes).selector &&
          f.selector != sig:permit2TransferFrom(address, address, uint256).selector
 }{
