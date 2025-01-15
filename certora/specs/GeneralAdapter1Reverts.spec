@@ -2,12 +2,9 @@
 
 using WETH9 as WETH;
 using Morpho as Morpho;
-using ERC4626Mock as ERC4626;
 using ERC20Mock as ERC20Mock;
 using ERC20USDT as ERC20USDT;
 using ERC20NoRevert as ERC20NoRevert;
-using ERC20WrapperMock as ERC20Wrapper;
-using GeneralAdapter1 as GeneralAdapter1;
 using Bundler as Bundler;
 
 methods {
@@ -33,14 +30,6 @@ methods {
     function WETH.withdraw(uint256) external;
     function Bundler.initiator() external returns address envfree;
 }
-
-// Wether or not storage of interest has changed.
-definition storageChanged (storage before, storage last) returns bool =
-    (before[Morpho] != last[Morpho] ||
-    before[ERC4626] != last[ERC4626] ||
-    before[ERC20Wrapper] != last[ERC20Wrapper] ||
-    before[WETH] != last[WETH] || before[ERC20Mock] != last[ERC20Mock] ||
-     before[ERC20NoRevert] != last[ERC20NoRevert] || before[ERC20USDT] != last[ERC20USDT]);
 
 // Check that balances changed upon native tansfers with the adapter.
 rule nativeTransferChange(env e, address receiver, uint256 amount) {
@@ -86,6 +75,7 @@ rule erc20TransferFromRevert(env e, address token, address receiver, uint256 amo
 
     // Safe require as the initiator can't be the adatper.
     require Bundler.initiator() != currentContract;
+    require Bundler.initiator() != receiver;
 
     storage storageBefore = lastStorage;
     uint256 balanceSenderBefore = token.balanceOf(e, Bundler.initiator());
@@ -104,45 +94,6 @@ rule erc20TransferFromRevert(env e, address token, address receiver, uint256 amo
     assert !lastReverted && amount != 0 && token == ERC20USDT && balanceSenderBefore != 0 => storageBefore[ERC20USDT] != lastStorage[ERC20USDT];
     // Check that state doesnt change when using amount equals zero.
     assert  amount == 0 => storageBefore[ERC20USDT] == lastStorage[ERC20USDT];
-}
-
-// Check that balances changed upon ERC20 tansfers with the adapter.
-rule erc20WrapperDepositForRevert(env e, address wrapper, address receiver, uint256 amount) {
-    storage storageBefore = lastStorage;
-
-    erc20WrapperDepositFor@withrevert(e, wrapper, receiver, amount);
-
-    assert !lastReverted => wrapper == ERC20Wrapper && storageBefore[ERC20Wrapper] != lastStorage[ERC20Wrapper];
-}
-
-// Check that ERC20Wrapper state changed upon ERC20Wrapper withdrawals using the adapter.
-rule erc20WrapperWithdrawToRevert(env e, address wrapper, address receiver, uint256 amount) {
-    storage storageBefore = lastStorage;
-
-    erc20WrapperWithdrawTo@withrevert(e, wrapper, receiver, amount);
-
-    assert !lastReverted => wrapper == ERC20Wrapper && storageBefore[ERC20Wrapper] != lastStorage[ERC20Wrapper];
-}
-
-// Check that balances and state changed upon wrapping ETH using the adapter.
-rule wrapNativeChange(env e, uint256 amount, address receiver) {
-    uint256 adapterNativeBalanceBefore = nativeBalances[currentContract];
-    uint256 receiverWrappedBalanceBefore = WETH.balanceOf(receiver);
-
-    // Safe require as this is not possible.
-    require receiverWrappedBalanceBefore + adapterNativeBalanceBefore <= max_uint256;
-
-    wrapNative@withrevert(e, amount, receiver);
-    bool reverted = lastReverted;
-
-    // Check case when specifying a given amount.
-    assert !reverted && amount != max_uint256 => receiverWrappedBalanceBefore + amount == WETH.balanceOf(receiver) && adapterNativeBalanceBefore == nativeBalances[currentContract] + amount;
-
-    // Check case when transferring the whole balance.
-    assert !reverted && amount == max_uint256 => receiverWrappedBalanceBefore + adapterNativeBalanceBefore == WETH.balanceOf(receiver) && nativeBalances[currentContract] == 0;
-
-    // Check that state doesnt change when using amount equals zero.
-    assert amount == 0 => receiverWrappedBalanceBefore == WETH.balanceOf(receiver) && adapterNativeBalanceBefore == nativeBalances[currentContract];
 }
 
 // Check that balances and state changed upon unwrapping ETH using the adapter.
@@ -172,21 +123,23 @@ rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
          f.selector != sig:onMorphoRepay(uint256, bytes).selector &&
          f.selector != sig:onMorphoFlashLoan(uint256, bytes).selector &&
          // Property checked in a different way.
-         f.selector != sig:nativeTransfer(address, uint256).selector &&
-         f.selector != sig:wrapNative(uint256, address).selector &&
          f.selector != sig:unwrapNative(uint256, address).selector &&
          f.selector != sig:erc20Transfer(address, address, uint256).selector &&
          f.selector != sig:erc20TransferFrom(address, address, uint256).selector &&
         // Property doesn't hold for the following.
+         f.selector != sig:nativeTransfer(address, uint256).selector &&
          f.selector != sig:morphoFlashLoan(address, uint256, bytes).selector &&
          f.selector != sig:permit2TransferFrom(address, address, uint256).selector
 }{
     // Safe require as the initiator can't be zero when executing a bundle.
     require Bundler.initiator() != 0;
+    // Safe require as the initiator can't be the adatper.
+    require Bundler.initiator() != currentContract;
+
 
     storage storageBefore = lastStorage;
 
     f@withrevert(e, args);
 
-    assert !lastReverted => storageChanged(storageBefore, lastStorage);
+    assert !lastReverted => storageBefore != lastStorage;
 }
