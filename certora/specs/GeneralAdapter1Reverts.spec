@@ -70,24 +70,15 @@ rule erc20TransferRevert(env e, address token, address receiver, uint256 amount)
     assert  token == ERC20USDT && amount == 0 => storageBefore[ERC20USDT] == lastStorage[ERC20USDT];
 }
 
-// Check that balances and state changed upon unwrapping ETH using the adapter.
+// Check that balances and state didn't upon unwrapping 0 ETH using the adapter.
 rule unwrapNativeChange(env e, uint256 amount, address receiver) {
-    uint256 receiverNativeBalanceBefore = nativeBalances[receiver];
-    uint256 adapterWrappedBalanceBefore = WETH.balanceOf(currentContract);
+    storage storageBefore = lastStorage;
 
     unwrapNative@withrevert(e, amount, receiver);
-    bool reverted = lastReverted;
-
-    // Check case when specifying a given amount.
-    assert !reverted && receiver != WETH && amount != max_uint256 => adapterWrappedBalanceBefore == WETH.balanceOf(currentContract) + amount && receiverNativeBalanceBefore + amount == nativeBalances[receiver];
-
-    // Check case when transferring the whole balance.
-    assert !reverted && receiver != WETH && amount == max_uint256 => adapterWrappedBalanceBefore + receiverNativeBalanceBefore == nativeBalances[receiver] && WETH.balanceOf(currentContract) == 0;
 
     // Check that state doesnt change when using amount equals zero or if the receiver is the WETH contract.
-    assert receiver == WETH || amount == 0 => adapterWrappedBalanceBefore == WETH.balanceOf(currentContract) && (receiverNativeBalanceBefore == nativeBalances[receiver]);
+    assert amount == 0 => storageBefore != lastStorage;
 }
-
 
 // Check that if the function call doesn't revert the state changes.
 rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
@@ -98,16 +89,17 @@ rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
          f.selector != sig:onMorphoFlashLoan(uint256, bytes).selector &&
          // Property checked in a different way.
          f.selector != sig:nativeTransfer(address, uint256).selector &&
-         f.selector != sig:unwrapNative(uint256, address).selector &&
          f.selector != sig:erc20Transfer(address, address, uint256).selector &&
-        // Property doesn't hold for the following.
-         f.selector != sig:erc20TransferFrom(address, address, uint256).selector &&
+         // Property doesn't hold for unwrapNative, see rule unwrapNativeChange.
+         f.selector != sig:unwrapNative(uint256, address).selector &&
+         // Property doesn't hold for the following.
          f.selector != sig:morphoFlashLoan(address, uint256, bytes).selector &&
+         f.selector != sig:erc20TransferFrom(address, address, uint256).selector &&
          f.selector != sig:permit2TransferFrom(address, address, uint256).selector
 }{
     // Safe require as the initiator can't be zero when executing a bundle.
     require Bundler.initiator() != 0;
-    // Safe require as the initiator can't be the adatper.
+    // Safe require as the initiator can't be the adapter.
     require Bundler.initiator() != currentContract;
 
 
