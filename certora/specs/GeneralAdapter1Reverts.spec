@@ -5,7 +5,7 @@ using Morpho as Morpho;
 using ERC20Mock as ERC20Mock;
 using ERC20USDT as ERC20USDT;
 using ERC20NoRevert as ERC20NoRevert;
-using Bundler as Bundler;
+using Bundler3 as Bundler3;
 
 methods {
     function _.balanceOf(address) external => DISPATCHER(true);
@@ -28,7 +28,7 @@ methods {
     function WETH.balanceOf(address) external returns uint256 envfree;
     function WETH.deposit() external;
     function WETH.withdraw(uint256) external;
-    function Bundler.initiator() external returns address envfree;
+    function Bundler3.initiator() external returns address envfree;
 }
 
 // Check that balances changed upon native tansfers with the adapter.
@@ -98,9 +98,9 @@ rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
          f.selector != sig:permit2TransferFrom(address, address, uint256).selector
 }{
     // Safe require as the initiator can't be zero when executing a bundle.
-    require Bundler.initiator() != 0;
+    require Bundler3.initiator() != 0;
     // Safe require as the initiator can't be the adapter.
-    require Bundler.initiator() != currentContract;
+    require Bundler3.initiator() != currentContract;
 
 
     storage storageBefore = lastStorage;
