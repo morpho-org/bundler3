@@ -77,7 +77,7 @@ rule unwrapNativeChange(env e, uint256 amount, address receiver) {
     unwrapNative@withrevert(e, amount, receiver);
 
     // Check that state doesnt change when using amount equals zero or if the receiver is the WETH contract.
-    assert amount == 0 => storageBefore != lastStorage;
+    assert amount == 0 => storageBefore == lastStorage;
 }
 
 // Check that if the function call doesn't revert the state changes.
