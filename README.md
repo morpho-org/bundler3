@@ -1,15 +1,15 @@
-# Morpho Bundler v3
+# Bundler3
 
-The [`Bundler`](./src/Bundler.sol) allows accounts to batch-execute a sequence of arbitrary calls atomically.
+[`Bundler3`](./src/Bundler3.sol) allows accounts to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
 ## Structure
 
-### Bundler
+### Bundler3
 
 <img width="724" alt="image" src="https://github.com/user-attachments/assets/cc7c304a-9778-441d-b863-c158e5de21ee" />
 
-The Bundler's entrypoint is `multicall(Call[] calldata bundle)`.
+Bundler3's entrypoint is `multicall(Call[] calldata bundle)`.
 A bundle is a sequence of calls where each call is specified by:
 <a name="bundle-call-fields"></a>
 
@@ -20,21 +20,21 @@ A bundle is a sequence of calls where each call is specified by:
 - `callbackHash`, hash of the argument to the expected `reenter` (0 if no reentrance).
 
 
-The Bundler also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
+Bundler3 also implements two specific features, their usage is described in the [Adapters subsection](#adapters):
 
 - the initial caller is transiently stored as `initiator` during the multicall;
-- the last non-returned called address can re-enter the Bundler using `reenter(Call[] calldata bundle)`, but the argument to the `reenter` call is specified in the bundle.
+- the last non-returned called address can re-enter Bundler3 using `reenter(Call[] calldata bundle)`, but the argument to the `reenter` call is specified in the bundle.
 
 ### Adapters
 
-The Bundler can call either directly protocols, or wrappers of protocols (called "adapters").
+Bundler3 can call either directly protocols, or wrappers of protocols (called "adapters").
 Wrappers can be useful to perform “atomic checks" (e.g. slippage checks), manage slippage (e.g. in migrations) or perform actions that require authorizations.
 
-In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in the Bundler.
+In order to be safely authorized by users, adapters can restrict some functions calls depending on the value of the bundle's initiator, stored in Bundler3.
 For instance, an adapter that needs to hold some token approvals should call `token.transferFrom` only with `from` being the initiator.
 
-Since these functions can typically move user funds, only the Bundler should be allowed to call them.
-If an adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling the Bundler's `reenter(Call[] calldata bundle)` function.
+Since these functions can typically move user funds, only Bundler3 should be allowed to call them.
+If an adapter gets called back (e.g. during a flashloan) and needs to perform more actions, it can use other adapters by calling Bundler3's `reenter(Call[] calldata bundle)` function.
 
 ## Adapters List
 
@@ -74,7 +74,7 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
 ## Differences with [Bundler v2](https://github.com/morpho-org/morpho-blue-bundlers)
 
 - Make use of transient storage.
-- Bundler is now a call dispatcher that does not require any approval.
+- Bundler3 is now a call dispatcher that does not require any approval.
   Because call-dispatch and approvals are now separated, it is possible to add adapters over time without additional risk to users of existing adapters.
 - All generic features are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
 - All Ethereum related features are in the `EthereumAdapter1` which inherits from `GeneralAdapter1`.
@@ -85,7 +85,7 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
   - Slippage checks are done with a price argument instead of a limit amount.
   - When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
   - There are receiver arguments in all functions that give tokens to the adapter so the adapter can pass along those tokens.
-- The bundler [call fields](#bundle-call-fields) `skipRevert` (to skip failed actions) and `callbackHash` (to commit to callback contents) are new.
+- The [call fields](#bundle-call-fields) `skipRevert` (to skip failed actions) and `callbackHash` (to commit to callback contents) are new.
 
 
 ## Development

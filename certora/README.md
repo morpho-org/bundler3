@@ -1,14 +1,8 @@
-# Bundler V3 formal verification
+# Bundler3 formal verification
 
-This folder contains the [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html) specification and verification setup for the [Bundler](../src/Bunlder.sol) V3.
+This folder contains the [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html) specification and verification setup for [Bundler3](../src/Bundler3.sol).
 
 ## Getting started
-
-The verification is performed on modified source files, which can generated with the command:
-
-```
-make -C certora munged
-```
 
 This project depends on several [Solidity](https://soliditylang.org/) versions which are required for running the verification.
 The compiler binaries should be available at the paths:
@@ -22,35 +16,23 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 
 ## Overview
 
-The Bundler contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
-These calls may themselves reenter the bundler.
-
-### Bundler
-
-This is checked in [`Bundler.spec`](specs/Bundler.spec) and [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec).
+The Bundler3 contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
+These calls may themselves reenter the Bundler3 contract.
 
 ### Approvals
 
-This is checked in the hereby listed files:
-- [`GeneralAdapter1Approvals.spec`](specs/GeneralAdapter1Approvals.spec);
-- [`ParaswapApprovals.spec`](specs/ParaswapApprovals.spec);
-- [`AaveV2Approvals.spec`](specs/AaveV2Approvals.spec);
-- [`AaveV3Approvals.spec`](specs/AaveV3Approvals.spec);
-- [`AaveV3OptimizerApprovals.spec`](specs/AaveV3OptimizerApprovals.spec);
-- [`CompoundV2Approvals.spec`](specs/CompoundV2Approvals.spec);
-- [`CompoundV3Approvals.spec`](specs/CompoundV3Approvals.spec).
-
-Note: the file [`EthereumGeneralAdapter1.sol`](../src/adapters/EthereumGeneralAdapter1.sol) is not checked since only trusted contracts are being approved in this adapter.
-
-## Verification architecture
+The file [`EthereumGeneralAdapter1.sol`](../src/adapters/EthereumGeneralAdapter1.sol) is not checked since only trusted contracts are being approved in this adapter.
 
 ### Folders and file structure
 
 The [`certora/specs`](specs) folder contains these files:
 
-- [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`Bundler3.spec`](specs/Bundler3.spec) checks Bundler3 entry points behave as expected;
 - [`GeneralAdapter1Approvals.spec`](specs/GeneralAdapter1Approvals.spec), [`ParaswapApprovals.spec`](specs/ParaswapApprovals.spec),[`AaveV2Approvals.spec`](specs/AaveV2Approvals.spec), [`AaveV3Approvals.spec`](specs/AaveV3Approvals.spec),[`AaveV3OptimizerApprovals.spec`](specs/AaveV3OptimizerApprovals.spec), [`CompoundV2Approvals.spec`](specs/CompoundV2Approvals.spec), [`CompoundV3Approvals.spec`](specs/CompoundV3Approvals.spec)
  check that allowances to untrusted contracts are reset to zero in adapters;
+- [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that calls to Morpho with zero inputs that revert in Morpho make the adapter revert;
+- [`OnlyBundler3.spec`](specs/OnlyBundler3.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler3 contract;
+- [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that Bundler3 can be reentered only by the expected adapter functions;
 - [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.

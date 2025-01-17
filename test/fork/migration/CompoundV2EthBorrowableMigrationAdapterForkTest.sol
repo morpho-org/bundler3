@@ -33,7 +33,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
 
         _initMarket(DAI, WETH);
 
-        migrationAdapter = new CompoundV2MigrationAdapter(address(bundler), C_ETH_V2);
+        migrationAdapter = new CompoundV2MigrationAdapter(address(bundler3), C_ETH_V2);
 
         enteredMarkets.push(C_DAI_V2);
     }
@@ -42,7 +42,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_compoundV2RepayEth(0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testCompoundV2RepayEthUnauthorized(uint256 amount) public onlyEthereum {
@@ -63,14 +63,14 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_compoundV2RedeemEth(0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testCompoundV2RepayCEthZeroAmount() public onlyEthereum {
         bundle.push(_compoundV2RepayEth(0, address(this)));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
     }
 
     function testCompoundV2RepayEthMax(uint256 borrowed, uint256 repayFactor) public onlyEthereum {
@@ -89,7 +89,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_transferNativeToAdapter(payable(migrationAdapter), toRepay));
         bundle.push(_compoundV2RepayEth(type(uint256).max, address(this)));
 
-        bundler.multicall{value: toRepay}(bundle);
+        bundler3.multicall{value: toRepay}(bundle);
         assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(address(this)), borrowed - toRepay);
     }
 
@@ -112,7 +112,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         Address.sendValue(payable(address(migrationAdapter)), toRepay);
 
         bundle.push(_compoundV2RepayEth(toRepay, USER));
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
         if (repayFactor < 1 ether) {
             assertEq(ICEth(C_ETH_V2).borrowBalanceCurrent(USER), borrowed - toRepay);
         } else {
@@ -157,7 +157,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupplyCollateral(marketParams, collateral, user, abi.encode(callbackBundle)));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         _assertBorrowerPosition(collateral, borrowed, user, address(generalAdapter1));
     }
@@ -185,7 +185,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_morphoSupply(marketParams, supplied, 0, type(uint256).max, user, hex""));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         _assertSupplierPosition(supplied, user, address(generalAdapter1));
     }
@@ -213,7 +213,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
         bundle.push(_erc4626Deposit(address(suppliersVault), supplied, type(uint256).max, user));
 
         vm.prank(user);
-        bundler.multicall(bundle);
+        bundler3.multicall(bundle);
 
         _assertVaultSupplierPosition(supplied, user, address(generalAdapter1));
     }

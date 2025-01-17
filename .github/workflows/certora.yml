@@ -16,14 +16,17 @@ jobs:
 
       matrix:
         conf:
-          - Bundler
-          - GeneralAdapter1Approvals
-          - ParaswapApprovals
           - AaveV2Approvals
           - AaveV3Approvals
           - AaveV3OptimizerApprovals
           - CompoundV2Approvals
           - CompoundV3Approvals
+          - Bundler3
+          - GeneralAdapter1Approvals
+          - MorphoZeroConditions
+          - OnlyBundler3
+          - ParaswapApprovals
+          - ReenterCaller
           - TransientStorageInvariant
 
     steps:
@@ -39,14 +42,17 @@ jobs:
       - name: Install certora
         run: pip install certora-cli
 
+      - name: Install solc (0.8.19)
+        run: |
+          wget https://github.com/ethereum/solidity/releases/download/v0.8.19/solc-static-linux
+          chmod +x solc-static-linux
+          sudo mv solc-static-linux /usr/local/bin/solc-0.8.19
+
       - name: Install solc (0.8.28)
         run: |
           wget https://github.com/ethereum/solidity/releases/download/v0.8.28/solc-static-linux
           chmod +x solc-static-linux
           sudo mv solc-static-linux /usr/local/bin/solc-0.8.28
-
-      - name: Apply munging
-        run: make -C certora munged
 
       - name: Verify ${{ matrix.conf }} specification
         run: certoraRun certora/confs/${{ matrix.conf }}.conf
