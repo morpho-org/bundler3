@@ -11,9 +11,6 @@ methods{
     function _.approve(address, uint256) external => DISPATCHER(true);
     function _.transfer(address, uint256) external => DISPATCHER(true);
     function _.balanceOf(address) external => DISPATCHER(true);
-    function swap(address, bytes, address, address, uint256, uint256, address) internal;
-    // Summarize Paraswap call
-    unresolved external in currentContract._ => DISPATCH [] default HAVOC_ECF;
 }
 
 persistent ghost mapping(uint256 => uint256) data;
