@@ -35,6 +35,7 @@ This is checked in [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Bundler.spec`](specs/Bundler.spec) checks that Bundler entry points behave as expected;
+- [`GeneralAdapter1Reverts.spec`](specs/GeneralAdapter1Reverts.spec) checks that state changes when adapter functions are called, or the execution reverts;
 - [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that calls to Morpho with zero inputs that revert in Morpho make the adapter revert;
 - [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) ensures that the transient storage is nullified on each entry-point call, this is checked with a separate configuration as it requires to disable sanity checks (because `reenter` cannot be an entry-point).
 
