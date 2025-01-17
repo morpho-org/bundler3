@@ -17,6 +17,7 @@ jobs:
       matrix:
         conf:
           - Bundler
+          - GeneralAdapter1Reverts
           - MorphoZeroConditions
           - TransientStorageInvariant
 
@@ -32,6 +33,18 @@ jobs:
 
       - name: Install certora
         run: pip install certora-cli
+
+      - name: Install solc (0.5.15)
+        run: |
+          wget https://github.com/ethereum/solidity/releases/download/v0.5.15/solc-static-linux
+          chmod +x solc-static-linux
+          sudo mv solc-static-linux /usr/local/bin/solc-0.5.15
+
+      - name: Install solc (0.8.17)
+        run: |
+          wget https://github.com/ethereum/solidity/releases/download/v0.8.17/solc-static-linux
+          chmod +x solc-static-linux
+          sudo mv solc-static-linux /usr/local/bin/solc-0.8.17
 
       - name: Install solc (0.8.19)
         run: |
