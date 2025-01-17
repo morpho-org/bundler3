@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.28;
 
-import {IBundler, Call} from "./interfaces/IBundler.sol";
+import {IBundler3, Call} from "./interfaces/IBundler3.sol";
 
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
@@ -11,7 +11,7 @@ import {UtilsLib} from "./libraries/UtilsLib.sol";
 /// @notice Transiently stores the initiator of the multicall.
 /// @notice Can be reentered by the last unreturned callee with known data.
 /// @dev Anybody can do arbitrary calls with this contract, so it should not be approved/authorized anywhere.
-contract Bundler is IBundler {
+contract Bundler3 is IBundler3 {
     /* TRANSIENT STORAGE */
 
     /// @notice The initiator of the multicall transaction.

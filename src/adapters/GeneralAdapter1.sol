@@ -30,10 +30,10 @@ contract GeneralAdapter1 is CoreAdapter {
 
     /* CONSTRUCTOR */
 
-    /// @param bundler The address of the bundler.
+    /// @param bundler3 The address of the Bundler3 contract.
     /// @param morpho The address of the Morpho protocol.
     /// @param wNative The address of the canonical native token wrapper.
-    constructor(address bundler, address morpho, address wNative) CoreAdapter(bundler) {
+    constructor(address bundler3, address morpho, address wNative) CoreAdapter(bundler3) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
         require(wNative != address(0), ErrorsLib.ZeroAddress());
 
@@ -54,7 +54,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The account receiving the wrapped tokens.
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
     /// underlying balance.
-    function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler {
+    function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         IERC20 underlying = ERC20Wrapper(wrapper).underlying();
@@ -76,7 +76,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address receiving the underlying tokens.
     /// @param amount The amount of wrapped tokens to burn. Pass `type(uint).max` to burn the adapter's wrapped token
     /// balance.
-    function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler {
+    function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(address(this));
@@ -97,7 +97,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address to which shares will be minted.
     function erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)
         external
-        onlyBundler
+        onlyBundler3
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(shares != 0, ErrorsLib.ZeroShares());
@@ -121,7 +121,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address to which shares will be minted.
     function erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)
         external
-        onlyBundler
+        onlyBundler3
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
@@ -150,7 +150,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param owner The address on behalf of which the assets are withdrawn. Can only be the adapter or the initiator.
     function erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)
         external
-        onlyBundler
+        onlyBundler3
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
@@ -171,7 +171,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param owner The address on behalf of which the shares are redeemed. Can only be the adapter or the initiator.
     function erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)
         external
-        onlyBundler
+        onlyBundler3
     {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(owner == address(this) || owner == initiator(), ErrorsLib.UnexpectedOwner());
@@ -230,7 +230,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 maxSharePriceE27,
         address onBehalf,
         bytes calldata data
-    ) external onlyBundler {
+    ) external onlyBundler3 {
         // Do not check `onBehalf` against the zero address as it's done in Morpho.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
@@ -239,6 +239,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(assets != 0, ErrorsLib.ZeroAmount());
         }
 
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
 
         (uint256 suppliedAssets, uint256 suppliedShares) = MORPHO.supply(marketParams, assets, shares, onBehalf, data);
@@ -258,7 +259,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 assets,
         address onBehalf,
         bytes calldata data
-    ) external onlyBundler {
+    ) external onlyBundler3 {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
@@ -266,6 +267,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         require(assets != 0, ErrorsLib.ZeroAmount());
 
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(marketParams.collateralToken), address(MORPHO), type(uint256).max);
 
         MORPHO.supplyCollateral(marketParams, assets, onBehalf, data);
@@ -287,7 +289,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 shares,
         uint256 minSharePriceE27,
         address receiver
-    ) external onlyBundler {
+    ) external onlyBundler3 {
         (uint256 borrowedAssets, uint256 borrowedShares) =
             MORPHO.borrow(marketParams, assets, shares, initiator(), receiver);
 
@@ -312,7 +314,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 maxSharePriceE27,
         address onBehalf,
         bytes calldata data
-    ) external onlyBundler {
+    ) external onlyBundler3 {
         // Do not check `onBehalf` against the zero address as it's done at Morpho's level.
         require(onBehalf != address(this), ErrorsLib.AdapterAddress());
 
@@ -326,6 +328,7 @@ contract GeneralAdapter1 is CoreAdapter {
             require(shares != 0, ErrorsLib.ZeroAmount());
         }
 
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(marketParams.loanToken), address(MORPHO), type(uint256).max);
 
         (uint256 repaidAssets, uint256 repaidShares) = MORPHO.repay(marketParams, assets, shares, onBehalf, data);
@@ -349,7 +352,7 @@ contract GeneralAdapter1 is CoreAdapter {
         uint256 shares,
         uint256 minSharePriceE27,
         address receiver
-    ) external onlyBundler {
+    ) external onlyBundler3 {
         if (shares == type(uint256).max) {
             shares = MorphoLib.supplyShares(MORPHO, marketParams.id(), initiator());
             require(shares != 0, ErrorsLib.ZeroAmount());
@@ -369,7 +372,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param receiver The address that will receive the collateral assets.
     function morphoWithdrawCollateral(MarketParams calldata marketParams, uint256 assets, address receiver)
         external
-        onlyBundler
+        onlyBundler3
     {
         if (assets == type(uint256).max) assets = MorphoLib.collateral(MORPHO, marketParams.id(), initiator());
         require(assets != 0, ErrorsLib.ZeroAmount());
@@ -381,8 +384,9 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the token to flash loan.
     /// @param assets The amount of assets to flash loan.
     /// @param data Arbitrary data to pass to the `onMorphoFlashLoan` callback.
-    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler {
+    function morphoFlashLoan(address token, uint256 assets, bytes calldata data) external onlyBundler3 {
         require(assets != 0, ErrorsLib.ZeroAmount());
+        // Morpho's allowance is not reset as it is trusted.
         SafeERC20.forceApprove(IERC20(token), address(MORPHO), type(uint256).max);
 
         MORPHO.flashLoan(token, assets, data);
@@ -394,7 +398,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
-    function permit2TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
+    function permit2TransferFrom(address token, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address initiator = initiator();
@@ -412,7 +416,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param token The address of the ERC20 token to transfer.
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the initiator's balance.
-    function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler {
+    function erc20TransferFrom(address token, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
         address initiator = initiator();
@@ -429,7 +433,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @dev Native tokens must have been previously sent to the adapter.
     /// @param amount The amount of native token to wrap. Pass `type(uint).max` to wrap the adapter's balance.
     /// @param receiver The account receiving the wrapped native tokens.
-    function wrapNative(uint256 amount, address receiver) external onlyBundler {
+    function wrapNative(uint256 amount, address receiver) external onlyBundler3 {
         if (amount == type(uint256).max) amount = address(this).balance;
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -443,7 +447,7 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param amount The amount of wrapped native token to unwrap. Pass `type(uint).max` to unwrap the adapter's
     /// balance.
     /// @param receiver The account receiving the native tokens.
-    function unwrapNative(uint256 amount, address receiver) external onlyBundler {
+    function unwrapNative(uint256 amount, address receiver) external onlyBundler3 {
         if (amount == type(uint256).max) amount = WRAPPED_NATIVE.balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
@@ -459,6 +463,6 @@ contract GeneralAdapter1 is CoreAdapter {
         require(msg.sender == address(MORPHO), ErrorsLib.UnauthorizedSender());
         // No need to approve Morpho to pull tokens because it should already be approved max.
 
-        reenterBundler(data);
+        reenterBundler3(data);
     }
 }
