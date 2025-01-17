@@ -5,13 +5,26 @@ using ERC20NoRevert as ERC20NoRevert;
 using ERC20USDT as ERC20USDT;
 
 methods{
-    unresolved external in currentContract._ =>
-        DISPATCH [ ERC20Mock.approve(address, uint256),
-                   ERC20NoRevert.approve(address, uint256),
-                   ERC20USDT.approve(address, uint256),
-                   ERC20Mock.balanceOf(address),
-                   ERC20NoRevert.balanceOf(address),
-                   ERC20USDT.balanceOf(address) ] default HAVOC_ECF;
+    function _.set(bytes memory, uint256 offset, uint256 value) internal => setData(offset, value) expect uint256;
+    function _.get(bytes memory, uint256 offset) internal => getData(offset) expect uint256;
+    function _.isValidAugustus(address) external => NONDET;
+    function _.approve(address, uint256) external => DISPATCHER(true);
+    function _.transfer(address, uint256) external => DISPATCHER(true);
+    function _.balanceOf(address) external => DISPATCHER(true);
+    function swap(address, bytes, address, address, uint256, uint256, address) internal;
+    // Summarize Paraswap call
+    unresolved external in currentContract._ => DISPATCH [] default HAVOC_ECF;
+}
+
+persistent ghost mapping(uint256 => uint256) data;
+
+function getData(uint256 offset) returns uint256 {
+    return data[offset];
+}
+
+function setData(uint256 offset, uint256 value) returns uint256 {
+    havoc data assuming data@new[offset] == value;
+    return data[offset];
 }
 
 // Check that the augustus's allowance is set to zero for the adapter.
@@ -26,6 +39,7 @@ rule buyAllowanceNull(
     address receiver
 ) {
     require augustus != currentContract;
+    require srcToken != ERC20USDT;
     currentContract.buy(e, augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver);
     assert srcToken.allowance(e, currentContract, augustus) == 0;
 }
