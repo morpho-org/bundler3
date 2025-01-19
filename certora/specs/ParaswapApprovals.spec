@@ -20,7 +20,7 @@ function getData(uint256 offset) returns uint256 {
 }
 
 function setData(uint256 offset, uint256 value) returns uint256 {
-    havoc data assuming data@new[offset] == value;
+    havoc data assuming;
     return data[offset];
 }
 
@@ -36,7 +36,6 @@ rule buyAllowanceNull(
     address receiver
 ) {
     require augustus != currentContract;
-    require srcToken != ERC20USDT;
     currentContract.buy(e, augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver);
     assert srcToken.allowance(e, currentContract, augustus) == 0;
 }
