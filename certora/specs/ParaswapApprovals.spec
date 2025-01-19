@@ -5,7 +5,7 @@ using ERC20NoRevert as ERC20NoRevert;
 using ERC20USDT as ERC20USDT;
 
 methods{
-    function _.set(bytes memory, uint256 offset, uint256 value) internal => setData(offset, value) expect uint256;
+    function _.set(bytes memory, uint256 offset, uint256) internal => setData(offset) expect uint256;
     function _.get(bytes memory, uint256 offset) internal => getData(offset) expect uint256;
     function _.isValidAugustus(address) external => NONDET;
     function _.approve(address, uint256) external => DISPATCHER(true);
@@ -19,8 +19,8 @@ function getData(uint256 offset) returns uint256 {
     return data[offset];
 }
 
-function setData(uint256 offset, uint256 value) returns uint256 {
-    havoc data assuming;
+function setData(uint256 offset) returns uint256 {
+    havoc data;
     return data[offset];
 }
 
