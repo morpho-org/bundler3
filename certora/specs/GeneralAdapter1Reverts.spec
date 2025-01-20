@@ -17,8 +17,7 @@ methods {
     function _.redeem(uint256, address, address) external => DISPATCHER(true);
     function _.approve(address, uint256)  external => DISPATCHER(true);
     function _.balanceOf(address) external => DISPATCHER(true);
-    // function _.transfer(address, uint256) external => DISPATCHER(true);
-    // function _.transferFrom(address, address, uint256) external => DISPATCHER(true);
+    function _.transferFrom(address, address, uint256) external => DISPATCHER(true);
     function AllowanceTransfer.allowance(address, address, address) external returns (uint160, uint48, uint48) envfree;
     function Bundler3.initiator() external returns address envfree;
 }
