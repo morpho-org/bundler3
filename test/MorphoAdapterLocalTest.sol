@@ -7,9 +7,9 @@ import {ErrorsLib as MorphoErrorsLib} from "../lib/morpho-blue/src/libraries/Err
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MathRayLib} from "../src/libraries/MathRayLib.sol";
 
-import "./helpers/MetaMorphoLocalTest.sol";
+import "./helpers/LocalTest.sol";
 
-contract MorphoAdapterLocalTest is MetaMorphoLocalTest {
+contract MorphoAdapterLocalTest is LocalTest {
     using MathLib for uint256;
     using MorphoLib for IMorpho;
     using MorphoBalancesLib for IMorpho;
