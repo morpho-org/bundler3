@@ -32,20 +32,23 @@ rule nativeTransferChange(env e, address receiver, uint256 amount) {
 
     nativeTransfer(e, receiver, amount);
 
-    assert amount == max_uint256 && senderBalanceBefore == 0 => storageBefore == lastStorage;
+    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    assert (amount == max_uint256 && senderBalanceBefore == 0 => storageBefore == lastStorage) &&
+           storageBefore == lastStorage => amount == max_uint256 && senderBalanceBefore == 0;
 }
 
 // Check that the state didn't change upon unwrapping 0 ETH using the adapter.
-rule erc20TransferRevert(env e, address token, address receiver, uint256 amount) {
+rule erc20TransferChange(env e, address token, address receiver, uint256 amount) {
     storage storageBefore = lastStorage;
 
     erc20Transfer(e, token, receiver, amount);
 
-    assert amount == 0 => storageBefore == lastStorage;
+    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    assert (amount == 0 => storageBefore == lastStorage) && (storageBefore == lastStorage => amount == 0);
 }
 
 // Check that state didn't change upon an ERC20 self-transfer using the adapter.
-rule erc20TransferFromRevert(env e, address token, address receiver, uint256 amount) {
+rule erc20TransferFromChange(env e, address token, address receiver, uint256 amount) {
 
     // Safe require as the initiator can't be the adatper.
     require Bundler3.initiator() != currentContract;
@@ -55,7 +58,9 @@ rule erc20TransferFromRevert(env e, address token, address receiver, uint256 amo
 
     erc20TransferFrom(e, token, receiver, amount);
 
-    assert receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 => storageBefore == lastStorage;
+    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    assert (receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256);
 }
 
 // Check that state didn't change upon an ERC20 self-transfer through Permit2 using the adapter.
@@ -72,7 +77,9 @@ rule permit2TransferFromRevert(env e, address token, address receiver, uint256 a
 
     uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), PERMIT2());
 
-    assert receiver == Bundler3.initiator() && amount == max_uint256 && permit2Allowance == max_uint256 && adapterAllowance == max_uint160 => storageBefore == lastStorage;
+    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    assert (receiver == Bundler3.initiator() && amount == max_uint256 && permit2Allowance == max_uint256 && adapterAllowance == max_uint160 => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => receiver == Bundler3.initiator() && amount == max_uint256 && permit2Allowance == max_uint256 && adapterAllowance == max_uint160);
 }
 
 // Check that balances and state didn't change upon unwrapping 0 ETH using the adapter.
@@ -81,7 +88,9 @@ rule unwrapNativeChange(env e, uint256 amount, address receiver) {
 
     unwrapNative(e, amount, receiver);
 
-    assert amount == 0 => storageBefore == lastStorage;
+    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    assert (amount == 0 => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => amount == 0);
 }
 
 // Check that if the function call doesn't revert the state changes.
