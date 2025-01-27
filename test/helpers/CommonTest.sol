@@ -26,6 +26,7 @@ import {IrmMock} from "../../lib/morpho-blue/src/mocks/IrmMock.sol";
 import {OracleMock} from "../../lib/morpho-blue/src/mocks/OracleMock.sol";
 import {IParaswapAdapter, Offsets} from "../../src/interfaces/IParaswapAdapter.sol";
 import {ParaswapAdapter} from "../../src/adapters/ParaswapAdapter.sol";
+import {PermissionedWrapperAdapter} from "../../src/adapters/PermissionedWrapperAdapter.sol";
 import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {Permit} from "../helpers/SigUtils.sol";
 
@@ -65,6 +66,8 @@ abstract contract CommonTest is Test {
 
     ParaswapAdapter paraswapAdapter;
 
+    PermissionedWrapperAdapter internal permissionedWrapperAdapter;
+
     AugustusRegistryMock augustusRegistryMock;
     AugustusMock augustus;
 
@@ -83,6 +86,7 @@ abstract contract CommonTest is Test {
         bundler3 = new Bundler3();
         generalAdapter1 = new GeneralAdapter1(address(bundler3), address(morpho), address(1));
         paraswapAdapter = new ParaswapAdapter(address(bundler3), address(morpho), address(augustusRegistryMock));
+        permissionedWrapperAdapter = new PermissionedWrapperAdapter(address(bundler3));
 
         irm = new IrmMock();
 
@@ -259,6 +263,24 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20WrapperWithdrawTo, (token, receiver, amount)));
+    }
+
+    /* PERMISSIONED ERC20 WRAPPER ACTIONS */
+
+    function _erc20PermissionedWrapperDeposit(address token, uint256 amount)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(permissionedWrapperAdapter, abi.encodeCall(PermissionedWrapperAdapter.erc20PermissionedWrapperDeposit, (token, amount)));
+    }
+
+    function _erc20PermissionedWrapperWithdrawTo(address token, address receiver, uint256 amount)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(permissionedWrapperAdapter, abi.encodeCall(PermissionedWrapperAdapter.erc20PermissionedWrapperWithdrawTo, (token, receiver, amount)));
     }
 
     /* ERC4626 ACTIONS */

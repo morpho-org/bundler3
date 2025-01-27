@@ -4,10 +4,15 @@ pragma solidity ^0.8.0;
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 import {ERC20WrapperMock, ERC20Wrapper} from "./helpers/mocks/ERC20WrapperMock.sol";
+import {ERC20PermissionedWrapperMock} from "./helpers/mocks/ERC20PermissionedWrapperMock.sol";
+import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 
 import "./helpers/LocalTest.sol";
 
 contract ERC20WrapperAdapterLocalTest is LocalTest {
+    using MarketParamsLib for MarketParams;
+    using MorphoLib for IMorpho;
+
     ERC20WrapperMock internal loanWrapper;
 
     function setUp() public override {
@@ -133,5 +138,25 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
 
         vm.expectRevert(ErrorsLib.WithdrawFailed.selector);
         bundler3.multicall(bundle);
+    }
+
+    function testCircumventPermissionIfGeneralAdapterIsWhitelisted() public {
+        uint amount = 1e18;
+        ERC20PermissionedWrapperMock permissionedWrapper = new ERC20PermissionedWrapperMock(loanToken, "Permissioned Wrapped Token", "PWT");
+
+        MarketParams memory permissionedMarketParams = MarketParams(address(permissionedWrapper), address(collateralToken), address(oracle), address(irm), LLTV);
+        morpho.createMarket(permissionedMarketParams);
+
+        permissionedWrapper.updateWhitelist(address(generalAdapter1), true);
+        permissionedWrapper.updateWhitelist(address(morpho), true);
+
+        bundle.push(_erc20WrapperDepositFor(address(permissionedWrapper), address(generalAdapter1), amount));
+        bundle.push(_morphoSupply(permissionedMarketParams, amount, 0, type(uint).max, address(this),hex""));
+
+        deal(address(loanToken), address(generalAdapter1), amount);
+
+        bundler3.multicall(bundle);
+
+        assertGt(morpho.supplyShares(permissionedMarketParams.id(), address(this)), 0, "user should have supply position");
     }
 }

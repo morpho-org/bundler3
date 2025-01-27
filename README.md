@@ -67,6 +67,13 @@ Contains the following actions, all using the paraswap aggregator:
 - Buy a given amount.
 - Buy a what's needed to fully repay on a given Morpho Market.
 
+### [`PermissionedWrapperAdapter`](./src/adapters/PermissionedWrapperAdapter.sol)
+
+Contains the following actions:
+
+- ERC20 wrap, always sends back to initiator.
+- ERC20 unwrap. Same as `GeneralAdapter1`, but this adapter can be safely whitelisted by permissioned token.
+
 ### Migration adapters
 
 For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./src/adapters/migration/AaveV3MigrationAdapter.sol), [Compound V2](./src/adapters/migration/CompoundV2MigrationAdapter.sol), [Compound V3](./src/adapters/migration/CompoundV3MigrationAdapter.sol), and [Morpho Aave V3 Optimizer](./src/adapters/migration/AaveV3OptimizerMigrationAdapter.sol).
