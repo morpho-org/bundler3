@@ -17,6 +17,7 @@ methods {
     function _.redeem(uint256, address, address) external => DISPATCHER(true);
     function _.approve(address, uint256)  external => DISPATCHER(true);
     function _.balanceOf(address) external => DISPATCHER(true);
+    function _.transfer(address, uint256) external => DISPATCHER(true);
     function _.transferFrom(address, address, uint256) external => DISPATCHER(true);
     function AllowanceTransfer.allowance(address, address, address) external returns (uint160, uint48, uint48) envfree;
     function Bundler3.initiator() external returns address envfree;
@@ -39,12 +40,14 @@ rule nativeTransferChange(env e, address receiver, uint256 amount) {
 
 // Check that the state didn't change upon unwrapping 0 ETH using the adapter.
 rule erc20TransferChange(env e, address token, address receiver, uint256 amount) {
+    uint256 senderBalanceBefore = token.balanceOf(e, currentContract);
     storage storageBefore = lastStorage;
 
     erc20Transfer(e, token, receiver, amount);
 
     // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
-    assert (amount == 0 => storageBefore == lastStorage) && (storageBefore == lastStorage => amount == 0);
+    assert (amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256) => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256));
 }
 
 // Check that state didn't change upon an ERC20 self-transfer using the adapter.
@@ -64,13 +67,16 @@ rule erc20TransferFromChange(env e, address token, address receiver, uint256 amo
 }
 
 // Check that state didn't change upon an ERC20 self-transfer through Permit2 using the adapter.
-rule permit2TransferFromRevert(env e, address token, address receiver, uint256 amount) {
+rule permit2TransferFromChange(env e, address token, address receiver, uint256 amount) {
 
     // Safe require as the initiator can't be the adatper.
     require Bundler3.initiator() != currentContract;
+    // Safe require as the initiator can't be Permit2.
+    require Bundler3.initiator() != AllowanceTransfer;
 
     storage storageBefore = lastStorage;
     uint160 adapterAllowance;
+    uint256 senderBalanceBefore = token.balanceOf(e, Bundler3.initiator());
     (adapterAllowance, _, _)= AllowanceTransfer.allowance(receiver, token, currentContract);
 
     permit2TransferFrom(e, token, receiver, amount);
@@ -78,19 +84,20 @@ rule permit2TransferFromRevert(env e, address token, address receiver, uint256 a
     uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), PERMIT2());
 
     // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
-    assert (receiver == Bundler3.initiator() && amount == max_uint256 && permit2Allowance == max_uint256 && adapterAllowance == max_uint160 => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => receiver == Bundler3.initiator() && amount == max_uint256 && permit2Allowance == max_uint256 && adapterAllowance == max_uint160);
+    assert ((amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)) => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => (amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)));
 }
 
 // Check that balances and state didn't change upon unwrapping 0 ETH using the adapter.
 rule unwrapNativeChange(env e, uint256 amount, address receiver) {
+    uint256 holderBalanceBefore = WETH.balanceOf(e, currentContract);
     storage storageBefore = lastStorage;
 
     unwrapNative(e, amount, receiver);
 
     // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
-    assert (amount == 0 => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => amount == 0);
+    assert ((amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH) => storageBefore == lastStorage) &&
+        (storageBefore == lastStorage => (amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH));
 }
 
 // Check that if the function call doesn't revert the state changes.
