@@ -16,7 +16,7 @@ contract PermissionedWrapperAdapter is CoreAdapter {
     /* ERC20 PERMISSIONED WRAPPER ACTIONS */
 
     // Enables the wrapping of ERC20 tokens to their permissioned counterparts.
-    // Users can then access thus access permissioned markets on Morpho.
+    // Users can then access permissioned markets on Morpho.
     // Permissioned tokens can be built using: https://github.com/morpho-org/erc20-permissioned
 
     /// @notice Wraps underlying tokens to wrapped token and send them to the initiator.
