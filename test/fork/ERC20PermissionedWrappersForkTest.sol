@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ErrorsLib} from "../../src/libraries/ErrorsLib.sol";
 
-// import {ERC20WrapperMock, ERC20Wrapper} from "../helpers/mocks/ERC20WrapperMock.sol";
+import {ERC20Wrapper} from "../helpers/mocks/ERC20WrapperMock.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -13,30 +13,47 @@ error NonWhitelistedToAddress(address to);
 
 interface IWrappedBackedToken {
     function whitelistControllerAggregator() external view returns (address);
-    function underlying() external view returns (address);
 }
 
 interface IWhitelistControllerAggregator {
     function isWhitelisted(address) external view returns (bool, address);
 }
 
+/* VER_USDC INTERFACES */
+
+error NoPermission(address account);
+
+interface IPermissionedERC20Wrapper {
+    function memberlist() external view returns (address);
+}
+
+interface IMemberList {
+    function isMember(address) external view returns (bool);
+}
+
 /* TEST */
 
 contract Erc20PermissionedWrappersForkTest is ForkTest {
     address internal immutable WBIB01 = getAddress("WBIB01");
+    address internal immutable VER_USDC = getAddress("VER_USDC");
 
     function setUp() public override {
         super.setUp();
-        if (block.chainid != 1) return;
 
-        _whitelistForWbib01(address(generalAdapter1));
+        if (block.chainid == 1) {
+            _whitelistForWbib01(address(generalAdapter1));
+        } else if (block.chainid == 8453) {
+            console.log("VEr", VER_USDC);
+            console.log("VEr", VER_USDC.code.length);
+            _whitelistForVerUsdc(address(generalAdapter1));
+        }
     }
 
     function testWbib01NotUsableWithoutPermission(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(IWrappedBackedToken(WBIB01).underlying(), address(generalAdapter1), amount);
+        deal(address(ERC20Wrapper(WBIB01).underlying()), address(generalAdapter1), amount);
 
         bundle.push(_erc20WrapperDepositFor(address(WBIB01), amount));
 
@@ -54,7 +71,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         vm.prank(initiator);
         IERC20(WBIB01).approve(address(generalAdapter1), amount);
 
-        deal(IWrappedBackedToken(WBIB01).underlying(), address(generalAdapter1), amount, true);
+        deal(address(ERC20Wrapper(WBIB01).underlying()), address(generalAdapter1), amount, true);
 
         bundle.push(_erc20WrapperDepositFor(address(WBIB01), amount));
         bundle.push(_erc20TransferFrom(address(WBIB01), address(generalAdapter1), amount));
@@ -63,6 +80,40 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         bundler3.multicall(bundle);
 
         vm.assertGt(IERC20(WBIB01).balanceOf(address(generalAdapter1)), 0);
+    }
+
+    function testVerUsdcNotUsableWithoutPermission(uint256 amount, address initiator) public onlyBase {
+        vm.assume(initiator != address(0));
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        deal(address(ERC20Wrapper(VER_USDC).underlying()), address(generalAdapter1), amount);
+
+        bundle.push(_erc20WrapperDepositFor(address(VER_USDC), amount));
+
+        // vm.expectRevert(abi.encodeWithSelector(NoPermission.selector, initiator));
+        vm.expectRevert("PermissionedERC20Wrapper/no-attestation-found");
+        vm.prank(initiator);
+        bundler3.multicall(bundle);
+    }
+
+    function testVerUsdcUsableWithPermission(uint256 amount, address initiator) public onlyBase {
+        vm.assume(initiator != address(0));
+        _whitelistForVerUsdc(initiator);
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        vm.prank(initiator);
+        IERC20(VER_USDC).approve(address(generalAdapter1), amount);
+
+        deal(address(ERC20Wrapper(VER_USDC).underlying()), address(generalAdapter1), amount, true);
+
+        bundle.push(_erc20WrapperDepositFor(address(VER_USDC), amount));
+        bundle.push(_erc20TransferFrom(address(VER_USDC), address(generalAdapter1), amount));
+
+        vm.prank(initiator);
+        bundler3.multicall(bundle);
+
+        vm.assertGt(IERC20(VER_USDC).balanceOf(address(generalAdapter1)), 0);
     }
 
     /* WHITELISTING HELPERS */
@@ -74,5 +125,10 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
             abi.encodeCall(IWhitelistControllerAggregator.isWhitelisted, (account)),
             abi.encode(true, address(0))
         );
+    }
+
+    function _whitelistForVerUsdc(address account) internal {
+        address memberList = IPermissionedERC20Wrapper(VER_USDC).memberlist();
+        vm.mockCall(memberList, abi.encodeCall(IMemberList.isMember, (account)), abi.encode(true));
     }
 }

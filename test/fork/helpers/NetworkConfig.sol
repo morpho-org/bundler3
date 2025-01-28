@@ -60,7 +60,7 @@ abstract contract NetworkConfig is CommonBase {
             /* BASE NETWORK */
         } else if (config.chainid == 8453) {
             config.network = "base";
-            config.blockNumber = 14000000;
+            config.blockNumber = 25641890;
             config.markets.push(ConfigMarket({collateralToken: "WETH", loanToken: "WETH", lltv: 800000000000000000}));
 
             setAddress("DAI", 0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb);
@@ -71,6 +71,7 @@ abstract contract NetworkConfig is CommonBase {
             setAddress("C_WETH_V3", 0x46e6b214b524310239732D51387075E0e70970bf);
             setAddress("AUGUSTUS_V6_2", 0x6A000F20005980200259B80c5102003040001068);
             setAddress("AUGUSTUS_REGISTRY", 0x7E31B336F9E8bA52ba3c4ac861b033Ba90900bb3);
+            setAddress("VER_USDC", 0x59aaF835D34b1E3dF2170e4872B785f11E2a964b);
         }
     }
 
