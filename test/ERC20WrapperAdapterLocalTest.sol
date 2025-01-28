@@ -17,6 +17,7 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
     }
 
     function testErc20WrapperDepositFor(uint256 amount, address initiator) public {
+        vm.assume(initiator != address(0));
         vm.assume(initiator != address(loanWrapper));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
