@@ -47,15 +47,13 @@ contract GeneralAdapter1 is CoreAdapter {
     // their permissioned counterparts and access permissioned markets on Morpho. Permissioned tokens can be built
     // using: https://github.com/morpho-org/erc20-permissioned
 
-    /// @notice Wraps underlying tokens to wrapped token.
+    /// @notice Wraps underlying tokens to wrapped token and send them to the initiator.
     /// @dev Underlying tokens must have been previously sent to the adapter.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
-    /// @param receiver The account receiving the wrapped tokens.
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
     /// underlying balance.
-    function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
-        require(receiver != address(0), ErrorsLib.ZeroAddress());
+    function erc20WrapperDepositFor(address wrapper, uint256 amount) external onlyBundler3 {
 
         IERC20 underlying = ERC20Wrapper(wrapper).underlying();
         if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
@@ -64,7 +62,7 @@ contract GeneralAdapter1 is CoreAdapter {
 
         SafeERC20.forceApprove(underlying, wrapper, type(uint256).max);
 
-        require(ERC20Wrapper(wrapper).depositFor(receiver, amount), ErrorsLib.DepositFailed());
+        require(ERC20Wrapper(wrapper).depositFor(initiator(), amount), ErrorsLib.DepositFailed());
 
         SafeERC20.forceApprove(underlying, wrapper, 0);
     }

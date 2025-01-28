@@ -55,6 +55,7 @@ abstract contract NetworkConfig is CommonBase {
             setAddress("MORPHO_TOKEN", 0x58D97B57BB95320F9a05dC918Aef65434969c2B2);
             setAddress("AUGUSTUS_V6_2", 0x6A000F20005980200259B80c5102003040001068);
             setAddress("AUGUSTUS_REGISTRY", 0xa68bEA62Dc4034A689AA0F58A76681433caCa663);
+            setAddress("WBIB01", 0xcA2A7068e551d5C4482eb34880b194E4b945712F);
 
             /* BASE NETWORK */
         } else if (config.chainid == 8453) {
