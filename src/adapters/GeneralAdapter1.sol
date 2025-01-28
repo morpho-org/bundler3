@@ -54,7 +54,6 @@ contract GeneralAdapter1 is CoreAdapter {
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
     /// underlying balance.
     function erc20WrapperDepositFor(address wrapper, uint256 amount) external onlyBundler3 {
-
         IERC20 underlying = ERC20Wrapper(wrapper).underlying();
         if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
 

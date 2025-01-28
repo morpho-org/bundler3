@@ -9,15 +9,15 @@ import "./helpers/ForkTest.sol";
 
 /* WBIB01 INTERFACES */
 
-error NonWhitelistedToAddress (address to);
+error NonWhitelistedToAddress(address to);
 
 interface IWrappedBackedToken {
     function whitelistControllerAggregator() external view returns (address);
-    function underlying() external view returns(address);
+    function underlying() external view returns (address);
 }
 
 interface IWhitelistControllerAggregator {
-    function isWhitelisted(address) external view returns (bool,address);
+    function isWhitelisted(address) external view returns (bool, address);
 }
 
 /* TEST */
@@ -40,13 +40,12 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
         bundle.push(_erc20WrapperDepositFor(address(WBIB01), amount));
 
-        vm.expectRevert(
-            abi.encodeWithSelector(NonWhitelistedToAddress.selector, initiator));
+        vm.expectRevert(abi.encodeWithSelector(NonWhitelistedToAddress.selector, initiator));
         vm.prank(initiator);
         bundler3.multicall(bundle);
     }
 
-    function testWbibUsableWithPermission(uint amount, address initiator) public onlyEthereum {
+    function testWbibUsableWithPermission(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
         _whitelistForWbib01(initiator);
 
@@ -70,7 +69,10 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function _whitelistForWbib01(address account) internal {
         address controller = IWrappedBackedToken(WBIB01).whitelistControllerAggregator();
-        vm.mockCall(controller, abi.encodeCall(IWhitelistControllerAggregator.isWhitelisted, (account)), abi.encode(true,address(0)));
+        vm.mockCall(
+            controller,
+            abi.encodeCall(IWhitelistControllerAggregator.isWhitelisted, (account)),
+            abi.encode(true, address(0))
+        );
     }
-
 }
