@@ -47,7 +47,7 @@ contract GeneralAdapter1 is CoreAdapter {
     // their permissioned counterparts and access permissioned markets on Morpho. Permissioned tokens can be built
     // using: https://github.com/morpho-org/erc20-permissioned
 
-    /// @notice Wraps underlying tokens to wrapped token and send them to the initiator.
+    /// @notice Wraps underlying tokens to wrapped token and sends them to the initiator.
     /// @dev Underlying tokens must have been previously sent to the adapter.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
