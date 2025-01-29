@@ -23,9 +23,6 @@ methods {
     function Bundler3.initiator() external returns address envfree;
 }
 
-// Permit2Lib.PERMIT2 concrete address
-definition PERMIT2() returns address = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
-
 // Check that the state didn't change upon a native transfer with 0 ETH using the adapter.
 rule nativeTransferChange(env e, address receiver, uint256 amount) {
     storage storageBefore = lastStorage;
@@ -81,7 +78,7 @@ rule permit2TransferFromChange(env e, address token, address receiver, uint256 a
 
     permit2TransferFrom(e, token, receiver, amount);
 
-    uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), PERMIT2());
+    uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), AllowanceTransfer);
 
     // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
     assert ((amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)) => storageBefore == lastStorage) &&
