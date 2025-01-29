@@ -43,8 +43,6 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         if (block.chainid == 1) {
             _whitelistForWbib01(address(generalAdapter1));
         } else if (block.chainid == 8453) {
-            console.log("VEr", VER_USDC);
-            console.log("VEr", VER_USDC.code.length);
             _whitelistForVerUsdc(address(generalAdapter1));
         }
     }
