@@ -88,7 +88,6 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
         bundle.push(_erc20WrapperDepositFor(address(VER_USDC), amount));
 
-        // vm.expectRevert(abi.encodeWithSelector(NoPermission.selector, initiator));
         vm.expectRevert("PermissionedERC20Wrapper/no-attestation-found");
         vm.prank(initiator);
         bundler3.multicall(bundle);
