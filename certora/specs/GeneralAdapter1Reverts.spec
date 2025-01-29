@@ -59,8 +59,9 @@ rule erc20TransferFromChange(env e, address token, address receiver, uint256 amo
     erc20TransferFrom(e, token, receiver, amount);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
-    assert (receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256);
+    bool noChangeExpectedCondition = receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 ;
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that state didn't change upon an ERC20 self-transfer through Permit2 using the adapter.
