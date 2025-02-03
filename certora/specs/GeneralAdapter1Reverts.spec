@@ -6,7 +6,7 @@ using ERC20Mock as ERC20Mock;
 using ERC20USDT as ERC20USDT;
 using ERC20NoRevert as ERC20NoRevert;
 using Bundler3 as Bundler3;
-using AllowanceTransfer as AllowanceTransfer;
+using Permit2 as Permit2;
 
 methods {
     function _.depositFor(address, uint256) external => DISPATCHER(true);
@@ -19,7 +19,7 @@ methods {
     function _.balanceOf(address) external => DISPATCHER(true);
     function _.transfer(address, uint256) external => DISPATCHER(true);
     function _.transferFrom(address, address, uint256) external => DISPATCHER(true);
-    function AllowanceTransfer.allowance(address, address, address) external returns (uint160, uint48, uint48) envfree;
+    function Permit2.allowance(address, address, address) external returns (uint160, uint48, uint48) envfree;
     function Bundler3.initiator() external returns address envfree;
 }
 
@@ -69,16 +69,16 @@ rule permit2TransferFromChange(env e, address token, address receiver, uint256 a
     // Safe require as the initiator can't be the adatper.
     require Bundler3.initiator() != currentContract;
     // Safe require as the initiator can't be Permit2.
-    require Bundler3.initiator() != AllowanceTransfer;
+    require Bundler3.initiator() != Permit2;
 
     storage storageBefore = lastStorage;
     uint160 adapterAllowance;
     uint256 senderBalanceBefore = token.balanceOf(e, Bundler3.initiator());
-    (adapterAllowance, _, _)= AllowanceTransfer.allowance(receiver, token, currentContract);
+    (adapterAllowance, _, _)= Permit2.allowance(receiver, token, currentContract);
 
     permit2TransferFrom(e, token, receiver, amount);
 
-    uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), AllowanceTransfer);
+    uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), Permit2);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
     bool noChangeExpectedCondition = amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256);
