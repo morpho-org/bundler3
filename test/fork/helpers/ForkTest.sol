@@ -98,6 +98,11 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         _;
     }
 
+    modifier onlyBase() {
+        vm.skip(block.chainid != 8453);
+        _;
+    }
+
     function _randomMarketParams(uint256 seed) internal view returns (MarketParams memory) {
         return allMarketParams[seed % allMarketParams.length];
     }
