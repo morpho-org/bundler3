@@ -23,9 +23,6 @@ methods {
     function Bundler3.initiator() external returns address envfree;
 }
 
-// Permit2Lib.PERMIT2 concrete address
-definition PERMIT2() returns address = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
-
 // Check that the state didn't change upon a native transfer with 0 ETH using the adapter.
 rule nativeTransferChange(env e, address receiver, uint256 amount) {
     storage storageBefore = lastStorage;
@@ -33,7 +30,7 @@ rule nativeTransferChange(env e, address receiver, uint256 amount) {
 
     nativeTransfer(e, receiver, amount);
 
-    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    // Equivalence is rewritten to avoid issue with quantifiers and polarity.
     assert (amount == max_uint256 && senderBalanceBefore == 0 => storageBefore == lastStorage) &&
            storageBefore == lastStorage => amount == max_uint256 && senderBalanceBefore == 0;
 }
@@ -45,7 +42,7 @@ rule erc20TransferChange(env e, address token, address receiver, uint256 amount)
 
     erc20Transfer(e, token, receiver, amount);
 
-    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    // Equivalence is rewritten to avoid issue with quantifiers and polarity.
     assert (amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256) => storageBefore == lastStorage) &&
            (storageBefore == lastStorage => amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256));
 }
@@ -61,9 +58,10 @@ rule erc20TransferFromChange(env e, address token, address receiver, uint256 amo
 
     erc20TransferFrom(e, token, receiver, amount);
 
-    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
-    assert (receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256);
+    // Equivalence is rewritten to avoid issue with quantifiers and polarity.
+    bool noChangeExpectedCondition = receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 ;
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) &&
+           (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that state didn't change upon an ERC20 self-transfer through Permit2 using the adapter.
@@ -81,9 +79,9 @@ rule permit2TransferFromChange(env e, address token, address receiver, uint256 a
 
     permit2TransferFrom(e, token, receiver, amount);
 
-    uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), PERMIT2());
+    uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), AllowanceTransfer);
 
-    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    // Equivalence is rewritten to avoid issue with quantifiers and polarity.
     assert ((amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)) => storageBefore == lastStorage) &&
            (storageBefore == lastStorage => (amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)));
 }
@@ -95,7 +93,7 @@ rule unwrapNativeChange(env e, uint256 amount, address receiver) {
 
     unwrapNative(e, amount, receiver);
 
-    // Equivalence is rewrittent to avoid issue with quantifiers and polarity.
+    // Equivalence is rewritten to avoid issue with quantifiers and polarity.
     assert ((amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH) => storageBefore == lastStorage) &&
         (storageBefore == lastStorage => (amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH));
 }
@@ -125,7 +123,6 @@ rule revertOrStateChanged(env e, method f, calldataarg args) filtered {
     require Bundler3.initiator() != 0;
     // Safe require as the initiator can't be the adapter.
     require Bundler3.initiator() != currentContract;
-
 
     storage storageBefore = lastStorage;
 
