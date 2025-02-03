@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-
-pragma solidity >=0.4.22 <0.6;
+pragma solidity ^0.4.18;
 
 contract WETH9 {
     string public name = "Wrapped Ether";
@@ -15,29 +14,29 @@ contract WETH9 {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    function() external payable {
+    function() public payable {
         deposit();
     }
 
     function deposit() public payable {
         balanceOf[msg.sender] += msg.value;
-        emit Deposit(msg.sender, msg.value);
+        Deposit(msg.sender, msg.value);
     }
 
     function withdraw(uint256 wad) public {
         require(balanceOf[msg.sender] >= wad);
         balanceOf[msg.sender] -= wad;
         msg.sender.transfer(wad);
-        emit Withdrawal(msg.sender, wad);
+        Withdrawal(msg.sender, wad);
     }
 
     function totalSupply() public view returns (uint256) {
-        return address(this).balance;
+        return this.balance;
     }
 
     function approve(address guy, uint256 wad) public returns (bool) {
         allowance[msg.sender][guy] = wad;
-        emit Approval(msg.sender, guy, wad);
+        Approval(msg.sender, guy, wad);
         return true;
     }
 
@@ -56,7 +55,7 @@ contract WETH9 {
         balanceOf[src] -= wad;
         balanceOf[dst] += wad;
 
-        emit Transfer(src, dst, wad);
+        Transfer(src, dst, wad);
 
         return true;
     }
