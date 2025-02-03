@@ -35,8 +35,8 @@ rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
 }{
     // Set up inital state.
     require !approveCalled;
-    f@withrevert(e, args);
-    assert !lastReverted => !approveCalled;
+    f(e, args);
+    assert !approveCalled;
 }
 
 // Check that the instance's allowance is set to zero for the adapter.
