@@ -22,7 +22,7 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
 rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
     // Do not check view functions or the `receive` function, which is safe as it is empty.
     f -> !f.isView && !f.isFallback &&
-         f.selector != sig:erc20WrapperDepositFor(address, address, uint256).selector &&
+         f.selector != sig:erc20WrapperDepositFor(address, uint256).selector &&
          f.selector != sig:erc4626Mint(address, uint256, uint256,  address).selector &&
          f.selector != sig:erc4626Deposit(address, uint256, uint256, address).selector &&
          f.selector != sig:morphoSupply(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
@@ -41,8 +41,8 @@ rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
 }
 
 // Check that the wrapper's allowance is set to zero for the adapter.
-rule erc20WrapperDepositForAllowanceNull(env e, address wrapper, address receiver, uint256 amount) {
-    erc20WrapperDepositFor(e, wrapper, receiver, amount);
+rule erc20WrapperDepositForAllowanceNull(env e, address wrapper, uint256 amount) {
+    erc20WrapperDepositFor(e, wrapper, amount);
     assert wrapper.underlying(e).allowance(e, currentContract, wrapper) == 0;
 }
 
