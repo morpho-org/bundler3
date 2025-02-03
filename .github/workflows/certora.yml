@@ -36,11 +36,11 @@ jobs:
       - name: Install certora
         run: pip install certora-cli
 
-      - name: Install solc (0.5.15)
+      - name: Install solc (0.4.19)
         run: |
-          wget https://github.com/ethereum/solidity/releases/download/v0.5.15/solc-static-linux
+          wget https://github.com/ethereum/solidity/releases/download/v0.4.19/solc-static-linux
           chmod +x solc-static-linux
-          sudo mv solc-static-linux /usr/local/bin/solc-0.5.15
+          sudo mv solc-static-linux /usr/local/bin/solc-0.4.19
 
       - name: Install solc (0.8.17)
         run: |
