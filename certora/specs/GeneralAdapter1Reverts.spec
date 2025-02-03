@@ -31,8 +31,8 @@ rule nativeTransferChange(env e, address receiver, uint256 amount) {
     nativeTransfer(e, receiver, amount);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
-    assert (amount == max_uint256 && senderBalanceBefore == 0 => storageBefore == lastStorage) &&
-           storageBefore == lastStorage => amount == max_uint256 && senderBalanceBefore == 0;
+    bool noChangeExpectedCondition = amount == max_uint256 && senderBalanceBefore == 0;
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that the state didn't change upon unwrapping 0 ETH using the adapter.
@@ -43,8 +43,8 @@ rule erc20TransferChange(env e, address token, address receiver, uint256 amount)
     erc20Transfer(e, token, receiver, amount);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
-    assert (amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256) => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256));
+    bool noChangeExpectedCondition = amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256);
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that state didn't change upon an ERC20 self-transfer using the adapter.
@@ -60,8 +60,7 @@ rule erc20TransferFromChange(env e, address token, address receiver, uint256 amo
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
     bool noChangeExpectedCondition = receiver == Bundler3.initiator() && token.allowance(e, Bundler3.initiator(), currentContract) == max_uint256 ;
-    assert (noChangeExpectedCondition => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => noChangeExpectedCondition);
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that state didn't change upon an ERC20 self-transfer through Permit2 using the adapter.
@@ -82,8 +81,8 @@ rule permit2TransferFromChange(env e, address token, address receiver, uint256 a
     uint256 permit2Allowance = token.allowance(e, Bundler3.initiator(), AllowanceTransfer);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
-    assert ((amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)) => storageBefore == lastStorage) &&
-           (storageBefore == lastStorage => (amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256)));
+    bool noChangeExpectedCondition = amount == 0 || (amount == max_uint256 && senderBalanceBefore == 0) || (receiver == Bundler3.initiator() && adapterAllowance == max_uint160 && permit2Allowance == max_uint256);
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that balances and state didn't change upon unwrapping 0 ETH using the adapter.
@@ -94,8 +93,8 @@ rule unwrapNativeChange(env e, uint256 amount, address receiver) {
     unwrapNative(e, amount, receiver);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
-    assert ((amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH) => storageBefore == lastStorage) &&
-        (storageBefore == lastStorage => (amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH));
+    bool noChangeExpectedCondition = amount == 0 || (amount == max_uint256 && holderBalanceBefore == 0) || receiver == WETH;
+    assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
 // Check that if the function call doesn't revert the state changes.
