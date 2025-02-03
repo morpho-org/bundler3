@@ -23,7 +23,30 @@ function setData(uint256 offset) {
     havoc data;
 }
 
-// Check that the augustus's allowance is set to zero for the adapter.
+// True when `approve` has been called.
+persistent ghost bool approveCalled;
+
+hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
+     // Hardcoding the approve(addres, uint256) ABI selector with 0x095ea7b3 avoids an error due to the method not being found.
+    if (selector == 0x095ea7b3) {
+       approveCalled = true;
+    }
+}
+
+rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
+    // Do not check view functions or the `receive` function, which is safe as it is empty.
+    f -> !f.isView && !f.isFallback &&
+        f.selector != sig:buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
+        f.selector != sig:buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
+        f.selector != sig:sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
+}{
+    // Set up inital state.
+    require !approveCalled;
+    f@withrevert(e, args);
+    assert !lastReverted => !approveCalled;
+}
+
+// Check that the augustus's allowance is set to zero for the adapter upon calling buy.
 rule buyAllowanceNull(
     env e,
     address augustus,
@@ -36,5 +59,21 @@ rule buyAllowanceNull(
 ) {
     require augustus != currentContract;
     currentContract.buy(e, augustus, callData, srcToken, destToken, newDestAmount, offsets, receiver);
+    assert srcToken.allowance(e, currentContract, augustus) == 0;
+}
+
+// Check that the augustus's allowance is set to zero for the adapter upon calling sell.
+rule sellAllowanceNull(
+    env e,
+    address augustus,
+    bytes callData,
+    address srcToken,
+    address destToken,
+    bool sellEntireBalance,
+    ParaswapAdapter.Offsets offsets,
+    address receiver
+) {
+    require augustus != currentContract;
+    currentContract.sell(e, augustus, callData, srcToken, destToken, sellEntireBalance, offsets, receiver);
     assert srcToken.allowance(e, currentContract, augustus) == 0;
 }

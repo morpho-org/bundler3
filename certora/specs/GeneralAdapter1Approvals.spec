@@ -9,6 +9,37 @@ methods{
     function _.approve(address, uint256) external => DISPATCHER(true);
 }
 
+// True when `approve` has been called.
+persistent ghost bool approveCalled;
+
+hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
+     // Hardcoding the approve(addres, uint256) ABI selector with 0x095ea7b3 avoids an error due to the method not being found.
+    if (selector == 0x095ea7b3) {
+       approveCalled = true;
+    }
+}
+
+rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
+    // Do not check view functions or the `receive` function, which is safe as it is empty.
+    f -> !f.isView && !f.isFallback &&
+         f.selector != sig:erc20WrapperDepositFor(address, address, uint256).selector &&
+         f.selector != sig:erc4626Mint(address, uint256, uint256,  address).selector &&
+         f.selector != sig:erc4626Deposit(address, uint256, uint256, address).selector &&
+         f.selector != sig:morphoSupply(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
+         f.selector != sig:morphoSupplyCollateral(GeneralAdapter1.MarketParams, uint256, address, bytes).selector &&
+         f.selector != sig:morphoRepay(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
+
+         f.selector != sig:morphoWithdraw(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address).selector &&
+         f.selector != sig:morphoWithdrawCollateral(GeneralAdapter1.MarketParams, uint256, address).selector &&
+
+         f.selector != sig:morphoFlashLoan(address, uint256, bytes).selector
+}{
+    // Set up inital state.
+    require !approveCalled;
+    f(e, args);
+    assert !approveCalled;
+}
+
 // Check that the wrapper's allowance is set to zero for the adapter.
 rule erc20WrapperDepositForAllowanceNull(env e, address wrapper, address receiver, uint256 amount) {
     erc20WrapperDepositFor(e, wrapper, receiver, amount);
