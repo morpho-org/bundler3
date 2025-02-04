@@ -11,7 +11,7 @@ methods {
     function _.approve(address, uint256) external => DISPATCHER(true);
 }
 
-use invariant allowancesNotChanged filtered {
+use invariant allowancesNotDecreased filtered {
     f -> f.selector != sig:erc20WrapperDepositFor(address, uint256).selector &&
          f.selector != sig:erc4626Mint(address, uint256, uint256,  address).selector &&
          f.selector != sig:erc4626Deposit(address, uint256, uint256, address).selector &&

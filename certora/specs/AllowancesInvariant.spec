@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // True when `approve` has been called.
 persistent ghost bool approveCalled {
     init_state axiom approveCalled == false;
@@ -9,5 +11,5 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
     }
 }
 
-invariant allowancesNotChanged()
+invariant allowancesNotDecreased()
     !approveCalled;

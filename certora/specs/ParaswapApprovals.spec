@@ -25,7 +25,7 @@ function setData(uint256 offset) {
     havoc data;
 }
 
-use invariant allowancesNotChanged filtered {
+use invariant allowancesNotDecreased filtered {
     // Do not check view functions or the `receive` function, which is safe as it is empty.
     f -> !f.isView && !f.isFallback &&
         f.selector != sig:buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&

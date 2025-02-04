@@ -7,7 +7,7 @@ methods{
     function _.approve(address, uint256) external => DISPATCHER(true);
 }
 
-use invariant allowancesNotChanged filtered {
+use invariant allowancesNotDecreased filtered {
     f -> f.selector != sig:aaveV2Repay(address, uint256, uint256, address).selector
 }
 

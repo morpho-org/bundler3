@@ -20,7 +20,7 @@ function mockUnderlying() returns address {
     return erc20;
 }
 
-use invariant allowancesNotChanged filtered {
+use invariant allowancesNotDecreased filtered {
     f -> f.selector != sig:compoundV2RepayErc20(address, uint256, address).selector
 }
 

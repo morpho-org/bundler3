@@ -20,7 +20,7 @@ function mockBaseToken() returns address {
     return erc20;
 }
 
-use invariant allowancesNotChanged filtered {
+use invariant allowancesNotDecreased filtered {
     f -> f.selector != sig:compoundV3Repay(address, uint256, address).selector
 }
 
