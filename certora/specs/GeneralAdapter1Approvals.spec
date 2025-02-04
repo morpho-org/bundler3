@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-methods{
+import "AllowancesInvariant.spec";
+
+methods {
     function _.depositFor(address, uint256) external => DISPATCHER(true);
     function _.underlying() external => DISPATCHER(true);
     function _.mint(uint256, address) external  => DISPATCHER(true);
@@ -9,17 +11,7 @@ methods{
     function _.approve(address, uint256) external => DISPATCHER(true);
 }
 
-// True when `approve` has been called.
-persistent ghost bool approveCalled;
-
-hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
-     // Hardcoding the approve(addres, uint256) ABI selector with 0x095ea7b3 avoids an error due to the method not being found.
-    if (selector == 0x095ea7b3) {
-       approveCalled = true;
-    }
-}
-
-rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
+use invariant allowancesNotChanged filtered {
     // Do not check view functions or the `receive` function, which is safe as it is empty.
     f -> !f.isView && !f.isFallback &&
          f.selector != sig:erc20WrapperDepositFor(address, uint256).selector &&
@@ -33,11 +25,6 @@ rule allowancesNotChanged(env e, method f, calldataarg args) filtered {
          f.selector != sig:morphoWithdrawCollateral(GeneralAdapter1.MarketParams, uint256, address).selector &&
 
          f.selector != sig:morphoFlashLoan(address, uint256, bytes).selector
-}{
-    // Set up inital state.
-    require !approveCalled;
-    f(e, args);
-    assert !approveCalled;
 }
 
 // Check that the wrapper's allowance is set to zero for the adapter.
