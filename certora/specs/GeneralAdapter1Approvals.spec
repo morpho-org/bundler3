@@ -12,9 +12,7 @@ methods {
 }
 
 use invariant allowancesNotChanged filtered {
-    // Do not check view functions or the `receive` function, which is safe as it is empty.
-    f -> !f.isView && !f.isFallback &&
-         f.selector != sig:erc20WrapperDepositFor(address, uint256).selector &&
+    f -> f.selector != sig:erc20WrapperDepositFor(address, uint256).selector &&
          f.selector != sig:erc4626Mint(address, uint256, uint256,  address).selector &&
          f.selector != sig:erc4626Deposit(address, uint256, uint256, address).selector &&
          f.selector != sig:morphoSupply(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&

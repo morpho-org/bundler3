@@ -21,9 +21,7 @@ function mockBaseToken() returns address {
 }
 
 use invariant allowancesNotChanged filtered {
-    // Do not check view functions or the `receive` function, which is safe as it is empty.
-    f -> !f.isView && !f.isFallback &&
-         f.selector != sig:compoundV3Repay(address, uint256, address).selector
+    f -> f.selector != sig:compoundV3Repay(address, uint256, address).selector
 }
 
 // Check that the instance's allowance is set to zero for the adapter.

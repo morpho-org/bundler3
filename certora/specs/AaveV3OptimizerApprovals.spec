@@ -8,9 +8,7 @@ methods{
 }
 
 use invariant allowancesNotChanged filtered {
-    // Do not check view functions or the `receive` function, which is safe as it is empty.
-    f -> !f.isView && !f.isFallback &&
-         f.selector != sig:aaveV3OptimizerRepay(address, uint256, address).selector
+    f -> f.selector != sig:aaveV3OptimizerRepay(address, uint256, address).selector
 }
 
 // Check that the optimizer's allowance is set to zero for the adapter.
