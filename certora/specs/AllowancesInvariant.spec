@@ -69,7 +69,7 @@ function summaryApprove(uint256 amount) returns bool {
 }
 
 invariant AllowancesIsolated()
-    !approveCalled || approveCalled && lastApproveNull
+    !approveCalled || (approveCalled && lastApproveNull)
     filtered {
     f -> f.selector != sig:GeneralAdapter1.morphoRepay(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
          f.selector != sig:GeneralAdapter1.morphoSupply(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
