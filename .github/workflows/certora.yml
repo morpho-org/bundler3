@@ -16,17 +16,11 @@ jobs:
 
       matrix:
         conf:
-          - AaveV2Approvals
-          - AaveV3Approvals
-          - AaveV3OptimizerApprovals
-          - CompoundV2Approvals
-          - CompoundV3Approvals
+          - AllowancesInvariant
           - Bundler3
-          - GeneralAdapter1Approvals
           - GeneralAdapter1Reverts
           - MorphoZeroConditions
           - OnlyBundler3
-          - ParaswapApprovals
           - ReenterCaller
           - TransientStorageInvariant
 
