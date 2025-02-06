@@ -40,7 +40,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @notice Sells an exact amount. Can check for a minimum purchased amount.
     /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @notice This function should be used immediately after sending tokens to the adapter, and any tokens remaining
-    /// in the Adapter after a swap should be transferred out immediately.
+    /// in the adapter after a swap should be transferred out immediately.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus` with. Contains routing information.
     /// @param srcToken Token to sell.
@@ -79,7 +79,7 @@ contract ParaswapAdapter is CoreAdapter, IParaswapAdapter {
     /// @notice Buys an exact amount. Can check for a maximum sold amount.
     /// @notice Compatibility with Augustus versions different from 6.2 is not guaranteed.
     /// @notice This function should be used immediately after sending tokens to the adapter, and any tokens remaining
-    /// in the Adapter after a swap should be transferred out immediately.
+    /// in the adapter after a swap should be transferred out immediately.
     /// @param augustus Address of the swapping contract. Must be in Paraswap's Augustus registry.
     /// @param callData Swap data to call `augustus`. Contains routing information.
     /// @param srcToken Token to sell.
