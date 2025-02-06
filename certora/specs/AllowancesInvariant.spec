@@ -22,19 +22,19 @@ persistent ghost bool erc20UnderlyingChanged;
 
 function mockUnderlying() returns address {
     address erc20;
-    if (erc20 != lastErc20) {
+    if (erc20 != lastErc20Underlying) {
         erc20UnderlyingChanged = true;
         lastErc20Underlying = erc20;
     }
     return erc20;
 }
 
-persistent ghost address lastBaseTokenErc20;
+persistent ghost address lastErc20BaseToken;
 persistent ghost bool erc20BaseTokenChanged;
 
 function mockBaseToken() returns address {
     address erc20;
-    if (erc20 != lastErc20) {
+    if (erc20 != lastErc20BaseToken) {
         erc20BaseTokenChanged = true;
         lastErc20BaseToken = erc20;
     }
