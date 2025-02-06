@@ -2,7 +2,7 @@
 
 methods {
     function _.approve(address, uint256 amount)  external => summaryApprove(amount) expect bool;
-    // Aaave dispatch
+    // Aave dispatch
     function _.repay(address, uint256, uint256, address) external => HAVOC_ECF;
     // Compound dispatch
     function _.repayBorrowBehalf(address, uint256) external => HAVOC_ECF;

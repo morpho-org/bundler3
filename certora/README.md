@@ -28,7 +28,7 @@ The file [`EthereumGeneralAdapter1.sol`](../src/adapters/EthereumGeneralAdapter1
 The [`certora/specs`](specs) folder contains these files:
 
 - [`Bundler3.spec`](specs/Bundler3.spec) checks Bundler3 entry points behave as expected;
-- [`AllowancesInvariant.spec`](specs/AllowancesInvariant.spec) check that allowances to untrusted contracts are reset to zero or untouched in adapters;
+- [`AllowancesInvariant.spec`](specs/AllowancesInvariant.spec) check that token allowances are reset;
 - [`GeneralAdapter1Reverts.spec`](specs/GeneralAdapter1Reverts.spec) checks that state changes when adapter functions are called, or the execution reverts;
 - [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that calls to Morpho with zero inputs that revert in Morpho make the adapter revert;
 - [`OnlyBundler3.spec`](specs/OnlyBundler3.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler3 contract;
