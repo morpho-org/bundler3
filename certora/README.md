@@ -19,10 +19,6 @@ Please ensure that `CERTORAKEY` is set up in your environment.
 The Bundler3 contract enables an EOA to call different endpoint contracts onchain as well as grouping several calls in a single bundle.
 These calls may themselves reenter the Bundler3 contract.
 
-### Approvals
-
-The file [`EthereumGeneralAdapter1.sol`](../src/adapters/EthereumGeneralAdapter1.sol) is not checked since only trusted contracts are being approved in this adapter.
-
 ### Folders and file structure
 
 The [`certora/specs`](specs) folder contains these files:
