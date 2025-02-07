@@ -55,8 +55,10 @@ function setData(uint256 offset) {
 }
 
 // Ghost variable to store changed allowances.
+// This models only direct changes in allowances.
+// It implies that unresolved external call are assumed to not change allowances.
 persistent ghost mapping (address => mapping (address => uint256)) changedAllowances {
-    init_state axiom forall address token . forall address spender. changedAllowances[token][spender] == 0 ;
+    init_state axiom forall address token. forall address spender. changedAllowances[token][spender] == 0 ;
 }
 
 definition isKnownImmutable (address spender) returns bool =
@@ -72,6 +74,7 @@ function summaryApprove(address token, address spender, uint256 amount)  returns
     // Safe return value as summaries can't fail.
     return true;
 }
+
 
 invariant AllowancesIsolated()
     forall address token. forall address spender. changedAllowances[token][spender] == 0;
