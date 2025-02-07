@@ -4,7 +4,7 @@ using GeneralAdapter1 as GeneralAdapter1;
 using EthereumGeneralAdapter1 as EthereumGeneralAdapter1;
 
 methods {
-    function _.approve(address spender, uint256 amount)  external => summaryApprove(spender, amount) expect bool;
+    function _.approve(address token, address spender, uint256 amount)  external => summaryApprove(calledContract, spender, amount) expect bool;
     // Aave dispatch
     function _.repay(address, uint256, uint256, address) external => HAVOC_ECF;
     // Compound dispatch
@@ -54,21 +54,10 @@ function setData(uint256 offset) {
     havoc data;
 }
 
-// True when `approve` has been called.
-persistent ghost bool approveCalled {
-    init_state axiom approveCalled == false;
+// Ghost variable to store changed allowances.
+persistent ghost mapping (address => mapping (address => uint256)) changedAllowances {
+    init_state axiom forall address token . forall address spender. changedAllowances[token][spender] == 0 ;
 }
-
-// True when `approve` has been called with zero allowance.
-persistent ghost bool lastApproveNull {
-    init_state axiom lastApproveNull == false;
-}
-
-// True when `approve` has been called with a trusted spender.
-persistent ghost bool trustedSpender {
-    init_state axiom trustedSpender == false;
-}
-
 
 definition isKnownImmutable (address spender) returns bool =
     spender == GeneralAdapter1.MORPHO ||
@@ -76,16 +65,13 @@ definition isKnownImmutable (address spender) returns bool =
     spender == EthereumGeneralAdapter1.MORPHO_WRAPPER ||
     spender == EthereumGeneralAdapter1.WST_ETH;
 
-function summaryApprove(address spender, uint256 amount) returns bool {
+function summaryApprove(address token, address spender, uint256 amount)  returns bool {
     if (!isKnownImmutable(spender)) {
-        approveCalled = true;
-        lastApproveNull = amount == 0;
-    } else {
-        trustedSpender = true;
+        changedAllowances[token][spender] = amount;
     }
-    bool res;
-    return res;
+    // Safe return value as summaries can't fail.
+    return true;
 }
 
 invariant AllowancesIsolated()
-    !approveCalled || lastApproveNull || trustedSpender;
+    forall address token. forall address spender. changedAllowances[token][spender] == 0;
