@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+using GeneralAdapter1 as GeneralAdapter1;
+using EthereumGeneralAdapter1 as EthereumGeneralAdapter1;
+
 methods {
-    function _.approve(address, uint256 amount)  external => summaryApprove(amount) expect bool;
+    function _.approve(address spender, uint256 amount)  external => summaryApprove(spender, amount) expect bool;
     // Aave dispatch
     function _.repay(address, uint256, uint256, address) external => HAVOC_ECF;
     // Compound dispatch
@@ -61,20 +64,28 @@ persistent ghost bool lastApproveNull {
     init_state axiom lastApproveNull == false;
 }
 
-function summaryApprove(uint256 amount) returns bool {
-    approveCalled = true;
-    lastApproveNull = amount == 0;
+// True when `approve` has been called with a trusted spender.
+persistent ghost bool trustedSpender {
+    init_state axiom trustedSpender == false;
+}
+
+
+definition isKnownImmutable (address spender) returns bool =
+    spender == GeneralAdapter1.MORPHO ||
+    spender == EthereumGeneralAdapter1.MORPHO ||
+    spender == EthereumGeneralAdapter1.MORPHO_WRAPPER ||
+    spender == EthereumGeneralAdapter1.WST_ETH;
+
+function summaryApprove(address spender, uint256 amount) returns bool {
+    if (!isKnownImmutable(spender)) {
+        approveCalled = true;
+        lastApproveNull = amount == 0;
+    } else {
+        trustedSpender = true;
+    }
     bool res;
     return res;
 }
 
 invariant AllowancesIsolated()
-    !approveCalled || lastApproveNull
-    filtered {
-    f -> f.selector != sig:GeneralAdapter1.morphoRepay(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
-         f.selector != sig:GeneralAdapter1.morphoSupply(GeneralAdapter1.MarketParams, uint256, uint256, uint256, address, bytes).selector &&
-         f.selector != sig:GeneralAdapter1.morphoFlashLoan(address, uint256, bytes).selector &&
-         f.selector != sig:GeneralAdapter1.morphoSupplyCollateral(GeneralAdapter1.MarketParams, uint256, address, bytes).selector &&
-         f.selector != sig:EthereumGeneralAdapter1.wrapStEth(uint256, address).selector &&
-         f.selector != sig:EthereumGeneralAdapter1.morphoWrapperWithdrawTo(address, uint256).selector
-    }
+    !approveCalled || lastApproveNull || trustedSpender;
