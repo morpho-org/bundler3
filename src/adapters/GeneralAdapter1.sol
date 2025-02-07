@@ -68,18 +68,23 @@ contract GeneralAdapter1 is CoreAdapter {
     }
 
     /// @notice Unwraps wrapped token to underlying token.
-    /// @dev Wrapped tokens must have been previously sent to the adapter.
+    /// @dev Wrapped tokens will be transferred from the initiator to the adapter. For permissioned tokens, this checks
+    /// the whitelisted status of the initiator.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
     /// @param receiver The address receiving the underlying tokens.
-    /// @param amount The amount of wrapped tokens to burn. Pass `type(uint).max` to burn the adapter's wrapped token
+    /// @param amount The amount of wrapped tokens to burn. Pass `type(uint).max` to burn the initiator's wrapped token
     /// balance.
     function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(address(this));
+        address initiator = initiator();
+
+        if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(initiator);
 
         require(amount != 0, ErrorsLib.ZeroAmount());
+
+        SafeERC20.safeTransferFrom(IERC20(wrapper), initiator, address(this), amount);
 
         require(ERC20Wrapper(wrapper).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }

@@ -45,29 +45,37 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         bundler3.multicall(bundle);
     }
 
-    function testErc20WrapperWithdrawTo(uint256 amount) public {
+    function testErc20WrapperWithdrawTo(address initiator, uint256 amount) public {
+        vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(address(loanWrapper), address(generalAdapter1), amount);
+        deal(address(loanWrapper), initiator, amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
+        vm.startPrank(initiator);
+        IERC20(loanWrapper).approve(address(generalAdapter1), amount);
         bundler3.multicall(bundle);
+        vm.stopPrank();
 
         assertEq(loanWrapper.balanceOf(address(generalAdapter1)), 0, "loanWrapper.balanceOf(generalAdapter1)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
     }
 
-    function testErc20WrapperWithdrawToAll(uint256 amount) public {
+    function testErc20WrapperWithdrawToAll(address initiator, uint256 amount) public {
+        vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(address(loanWrapper), address(generalAdapter1), amount);
+        deal(address(loanWrapper), initiator, amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, type(uint256).max));
 
+        vm.startPrank(initiator);
+        IERC20(loanWrapper).approve(address(generalAdapter1), amount);
         bundler3.multicall(bundle);
+        vm.stopPrank();
 
         assertEq(loanWrapper.balanceOf(address(generalAdapter1)), 0, "loanWrapper.balanceOf(generalAdapter1)");
         assertEq(loanToken.balanceOf(RECEIVER), amount, "loan.balanceOf(RECEIVER)");
@@ -117,16 +125,20 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         bundler3.multicall(bundle);
     }
 
-    function testErc20WrapperWithdrawToFailed(uint256 amount) public {
+    function testErc20WrapperWithdrawToFailed(address initiator, uint256 amount) public {
+        vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        deal(address(loanWrapper), address(generalAdapter1), amount);
+        deal(address(loanWrapper), initiator, amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.withdrawTo.selector), abi.encode(false));
 
+        vm.startPrank(initiator);
+        IERC20(loanWrapper).approve(address(generalAdapter1), amount);
         vm.expectRevert(ErrorsLib.WithdrawFailed.selector);
         bundler3.multicall(bundle);
+        vm.stopPrank();
     }
 }
