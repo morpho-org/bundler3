@@ -44,11 +44,17 @@ All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which
 
 Contains the following actions:
 
-- ERC20 transfers, wrap & unwrap.
+- ERC20 transfers.
 - Native token (e.g. WETH) transfers, wrap & unwrap.
 - ERC4626 mint, deposit, withdraw & redeem.
 - Morpho interactions.
 - TransferFrom using Permit2.
+
+### [`ERC20WrapperAdapter`](./src/adapters/ERC20WrapperAdapter.sol)
+
+Contains the following actions:
+
+- ERC20 wrap & unwrap.
 
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
@@ -76,7 +82,7 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
 - Make use of transient storage.
 - Bundler3 is now a call dispatcher that does not require any approval.
   Because call-dispatch and approvals are now separated, it is possible to add adapters over time without additional risk to users of existing adapters.
-- All generic features are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
+- All generic features except ERC20 wrap and unwrap are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
 - All Ethereum related features are in the `EthereumAdapter1` which inherits from `GeneralAdapter1`.
 - The `1` after `Adapter` is not a version number: when new features are development we will deploy additional adapters, for instance `GeneralAdapter2`.
   Existing adapters will still be used.
@@ -85,6 +91,7 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
   - Slippage checks are done with a price argument instead of a limit amount.
   - When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
   - There are receiver arguments in all functions that give tokens to the adapter so the adapter can pass along those tokens.
+  - ERC20 unwrap always transfers from the initiator before unwrapping. This prevents unwrapping by non-whitelisted initiators.
 - The [call fields](#bundle-call-fields) `skipRevert` (to skip failed actions) and `callbackHash` (to commit to callback contents) are new.
 
 

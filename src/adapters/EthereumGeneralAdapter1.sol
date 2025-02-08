@@ -4,7 +4,8 @@ pragma solidity 0.8.28;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {GeneralAdapter1, ErrorsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:security-contact security@morpho.org
