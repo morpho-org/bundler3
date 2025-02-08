@@ -69,8 +69,10 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.prank(initiator);
+        vm.startPrank(initiator);
         IERC20(WBIB01).approve(address(erc20WrapperAdapter), type(uint256).max);
+        IERC20(WBIB01).approve(address(generalAdapter1), type(uint256).max);
+        vm.stopPrank();
 
         IERC20 underlying = ERC20Wrapper(WBIB01).underlying();
         deal(address(underlying), address(erc20WrapperAdapter), amount, true);
@@ -135,8 +137,10 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        vm.prank(initiator);
+        vm.startPrank(initiator);
         IERC20(VER_USDC).approve(address(erc20WrapperAdapter), type(uint256).max);
+        IERC20(VER_USDC).approve(address(generalAdapter1), type(uint256).max);
+        vm.stopPrank();
 
         IERC20 underlying = ERC20Wrapper(VER_USDC).underlying();
         deal(address(underlying), address(erc20WrapperAdapter), amount, true);
@@ -145,7 +149,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         // check that a round-trip is possible
         bundle.push(_erc20TransferFrom(address(VER_USDC), address(erc20WrapperAdapter), amount));
         bundle.push(_erc20Transfer(address(VER_USDC), address(generalAdapter1), amount, erc20WrapperAdapter));
-        bundle.push(_erc20Transfer(address(WBIB01), initiator, amount, generalAdapter1));
+        bundle.push(_erc20Transfer(address(VER_USDC), initiator, amount, generalAdapter1));
         bundle.push(_erc20WrapperWithdrawTo(address(VER_USDC), RECEIVER, amount));
 
         vm.prank(initiator);
