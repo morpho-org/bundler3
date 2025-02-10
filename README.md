@@ -50,12 +50,6 @@ Contains the following actions:
 - Morpho interactions.
 - TransferFrom using Permit2.
 
-### [`ERC20WrapperAdapter`](./src/adapters/ERC20WrapperAdapter.sol)
-
-Contains the following actions:
-
-- ERC20 wrap & unwrap.
-
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
 Contains the following actions:
