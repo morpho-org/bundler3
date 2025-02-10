@@ -22,7 +22,7 @@ contract ParaswapAdapterForkTest is ForkTest {
         // Morpho token wrapper does not exist at this block and EthereumGeneralAdapter needs it.
         vm.mockCall(
             getAddress("MORPHO_WRAPPER"),
-            abi.encodeCall(ERC20Wrapper.underlying,()),
+            abi.encodeCall(ERC20Wrapper.underlying, ()),
             abi.encode(getAddress("MORPHO_TOKEN_LEGACY"))
         );
         super.setUp();
