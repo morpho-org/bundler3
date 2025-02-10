@@ -25,7 +25,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         SemiTransferableToken(MORPHO_TOKEN_LEGACY).setUserRole(MORPHO_WRAPPER, 0, true);
     }
 
-    function testMorphoWrapperDepositFor(uint256 amount, address initiator) public {
+    function testMorphoWrapperDepositFor(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
         vm.assume(initiator != address(MORPHO_TOKEN));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
@@ -46,7 +46,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         );
     }
 
-    function testMorphoWrapperDepositForZeroAmount(address initiator) public {
+    function testMorphoWrapperDepositForZeroAmount(address initiator) public onlyEthereum {
         bundle.push(_morphoWrapperDepositFor(address(MORPHO_TOKEN), 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
@@ -54,7 +54,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         bundler3.multicall(bundle);
     }
 
-    function testMorphoWrapperDepositForUnauthorized(uint256 amount, address initiator) public {
+    function testMorphoWrapperDepositForUnauthorized(uint256 amount, address initiator) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
@@ -62,7 +62,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         ethereumGeneralAdapter1.morphoWrapperDepositFor(address(MORPHO_TOKEN), amount);
     }
 
-    function testMorphoWrapperDepositToFailed(uint256 amount, address initiator) public {
+    function testMorphoWrapperDepositToFailed(uint256 amount, address initiator) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deal(address(MORPHO_TOKEN_LEGACY), address(generalAdapter1), amount);
 
@@ -77,7 +77,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         bundler3.multicall(bundle);
     }
 
-    function testMorphoWrapperWithdrawToAccountZeroAddress(uint256 amount) public onlyEthereum {
+    function testMorphoWrapperWithdrawToAccountZeroAddress(uint256 amount) public onlyEthereum onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_morphoWrapperWithdrawTo(address(0), amount));
