@@ -139,13 +139,14 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         deal(address(loanWrapper), initiator, amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount));
+        bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
 
-        vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false));
+        vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.withdrawTo.selector), abi.encode(false));
+
 
         vm.startPrank(initiator);
         IERC20(loanWrapper).approve(address(erc20WrapperAdapter), amount);
-        vm.expectRevert(ErrorsLib.DepositFailed.selector);
+        vm.expectRevert(ErrorsLib.WithdrawFailed.selector);
         bundler3.multicall(bundle);
         vm.stopPrank();
     }
