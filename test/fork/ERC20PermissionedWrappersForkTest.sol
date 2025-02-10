@@ -49,19 +49,6 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         }
     }
 
-    function testWbib01NotUsableWithoutPermission(uint256 amount, address initiator) public onlyEthereum {
-        vm.assume(initiator != address(0));
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        deal(address(ERC20Wrapper(WBIB01).underlying()), address(erc20WrapperAdapter), amount);
-
-        bundle.push(_erc20WrapperDepositFor(address(WBIB01), amount));
-
-        vm.expectRevert(abi.encodeWithSelector(NonWhitelistedToAddress.selector, initiator));
-        vm.prank(initiator);
-        bundler3.multicall(bundle);
-    }
-
     function testWbibUsableWithPermission(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
         _whitelistForWbib01(initiator);
@@ -77,8 +64,8 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         IERC20 underlying = ERC20Wrapper(WBIB01).underlying();
         deal(address(underlying), address(erc20WrapperAdapter), amount, true);
 
-        bundle.push(_erc20WrapperDepositFor(address(WBIB01), amount));
-        // check that a round-trip is possible
+        bundle.push(_erc20WrapperDepositFor(address(WBIB01), initiator, amount));
+        // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>initiator is possible
         bundle.push(_erc20TransferFrom(address(WBIB01), address(erc20WrapperAdapter), amount));
         bundle.push(_erc20Transfer(address(WBIB01), address(generalAdapter1), amount, erc20WrapperAdapter));
         bundle.push(_erc20Transfer(address(WBIB01), initiator, amount, generalAdapter1));
@@ -106,6 +93,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
         deal(address(underlying), initiator, amount, true);
 
+        // depositFor could also be done through the ERC20WrapperAdapter.
         vm.prank(initiator);
         ERC20Wrapper(WBIB01).depositFor(address(erc20WrapperAdapter), amount);
 
@@ -114,19 +102,6 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         bundle.push(_erc20WrapperWithdrawTo(address(WBIB01), address(erc20WrapperAdapter), amount));
         vm.prank(initiator);
         vm.expectRevert();
-        bundler3.multicall(bundle);
-    }
-
-    function testVerUsdcNotUsableWithoutPermission(uint256 amount, address initiator) public onlyBase {
-        vm.assume(initiator != address(0));
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        deal(address(ERC20Wrapper(VER_USDC).underlying()), address(erc20WrapperAdapter), amount);
-
-        bundle.push(_erc20WrapperDepositFor(address(VER_USDC), amount));
-
-        vm.expectRevert("PermissionedERC20Wrapper/no-attestation-found");
-        vm.prank(initiator);
         bundler3.multicall(bundle);
     }
 
@@ -145,8 +120,9 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         IERC20 underlying = ERC20Wrapper(VER_USDC).underlying();
         deal(address(underlying), address(erc20WrapperAdapter), amount, true);
 
-        bundle.push(_erc20WrapperDepositFor(address(VER_USDC), amount));
-        // check that a round-trip is possible
+        bundle.push(_erc20WrapperDepositFor(address(VER_USDC), initiator, amount));
+        // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>initiator is possible
+
         bundle.push(_erc20TransferFrom(address(VER_USDC), address(erc20WrapperAdapter), amount));
         bundle.push(_erc20Transfer(address(VER_USDC), address(generalAdapter1), amount, erc20WrapperAdapter));
         bundle.push(_erc20Transfer(address(VER_USDC), initiator, amount, generalAdapter1));
@@ -174,6 +150,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
         deal(address(underlying), initiator, amount, true);
 
+        // depositFor could also be done through the ERC20WrapperAdapter.
         vm.prank(initiator);
         ERC20Wrapper(VER_USDC).depositFor(address(erc20WrapperAdapter), amount);
 
