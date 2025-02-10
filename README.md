@@ -76,7 +76,7 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
 - Make use of transient storage.
 - Bundler3 is now a call dispatcher that does not require any approval.
   Because call-dispatch and approvals are now separated, it is possible to add adapters over time without additional risk to users of existing adapters.
-- All generic features except ERC20 wrap and unwrap are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
+- All generic features are now in `GeneralAdapter1`, instead of being in separate files that are then all inherited by a single contract.
 - All Ethereum related features are in the `EthereumAdapter1` which inherits from `GeneralAdapter1`.
 - The `1` after `Adapter` is not a version number: when new features are development we will deploy additional adapters, for instance `GeneralAdapter2`.
   Existing adapters will still be used.
