@@ -9,8 +9,6 @@ using Bundler3 as Bundler3;
 using Permit2 as Permit2;
 
 methods {
-    function _.depositFor(address, uint256) external => DISPATCHER(true);
-    function _.withdrawTo(address, uint256) external => DISPATCHER(true);
     function _.mint(uint256, address) external  => DISPATCHER(true);
     function _.deposit(uint256, address) external => DISPATCHER(true);
     function _.withdraw(uint256, address, address) external => DISPATCHER(true);
