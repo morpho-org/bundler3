@@ -2,6 +2,7 @@
 
 using GeneralAdapter1 as GeneralAdapter1;
 using EthereumGeneralAdapter1 as EthereumGeneralAdapter1;
+using ParaswapAdapter as ParaswapAdapter;
 
 methods {
     function _.approve(address token, address spender, uint256 amount)  external => summaryApprove(calledContract, spender, amount) expect bool;
@@ -18,6 +19,7 @@ methods {
     function _.isValidAugustus(address) external => NONDET;
     function _.transfer(address, uint256) external => DISPATCHER(true);
     function _.balanceOf(address) external => DISPATCHER(true);
+    unresolved external in ParaswapAdapter._ => DISPATCH [ _.approve(address, uint256) ] default ASSERT_FALSE;
 }
 
 persistent ghost address lastErc20Underlying;
@@ -56,7 +58,7 @@ function setData(uint256 offset) {
 
 // Ghost variable to store changed allowances.
 // This models only direct changes in allowances.
-// It implies that unresolved external call are assumed to not change allowances.
+// It implies that unresolved external call are assumed to not change allowances except in the ParaswapAdapter, where unresolved calls are forbidden.
 persistent ghost mapping (address => mapping (address => uint256)) changedAllowances {
     init_state axiom forall address token. forall address spender. changedAllowances[token][spender] == 0 ;
 }
@@ -77,4 +79,10 @@ function summaryApprove(address token, address spender, uint256 amount)  returns
 
 
 invariant AllowancesIsolated()
-    forall address token. forall address spender. changedAllowances[token][spender] == 0;
+    forall address token. forall address spender. changedAllowances[token][spender] == 0
+    filtered {
+      f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
+      f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
+      f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector &&
+      f.selector != sig:ParaswapAdapter.nativeTransfer(address, uint256).selector
+    }
