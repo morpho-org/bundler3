@@ -61,7 +61,7 @@ Contains the following actions:
 Contains the following actions:
 
 - Actions of `GeneralAdapter1`.
-- Morpho token wrapper withdrawal.
+- Morpho token wrapper deposit and withdrawal.
 - stETH staking.
 - wstETH wrap & unwrap.
 
