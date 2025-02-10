@@ -22,7 +22,7 @@ methods {
     function _.transfer(address, uint256) external => DISPATCHER(true);
     function _.balanceOf(address) external => DISPATCHER(true);
     unresolved external in _.nativeTransfer(address, uint256) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.withdraw(address, uint256) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.unwrapNative(uint256,address) => DISPATCH [] default HAVOC_ECF;
     unresolved external in _.compoundV2RedeemEth(uint256, address) => DISPATCH [] default HAVOC_ECF;
     unresolved external in _.onMorphoRepay(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
     unresolved external in _.onMorphoSupply(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
