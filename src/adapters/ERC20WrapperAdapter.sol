@@ -5,6 +5,7 @@ import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "./CoreAdapter.sol";
 
 /// @custom:security-contact security@morpho.org
+/// @notice Temporary solution for permissioned tokens.
 /// @notice Adapter for ERC20Wrapper functions, in particular permissioned wrappers.
 contract ERC20WrapperAdapter is CoreAdapter {
     /* CONSTRUCTOR */

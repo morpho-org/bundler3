@@ -29,6 +29,8 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         super.setUp();
 
         if (isEq(config.network, "ethereum")) {
+            console.log(getAddress("MORPHO_WRAPPER"));
+            console.log(block.number);
             ethereumGeneralAdapter1 = new EthereumGeneralAdapter1(
                 address(bundler3),
                 address(morpho),
