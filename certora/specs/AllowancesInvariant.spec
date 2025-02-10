@@ -13,13 +13,22 @@ methods {
     function _.underlying() external => mockUnderlying() expect address;
     function _.supplyTo(address, address, uint256) external => HAVOC_ECF;
     function _.baseToken() external => mockBaseToken() expect address;
+    function _.compoundV2RedeemEth(uint256,address) external => HAVOC_ECF;
     // Paraswap dispatch
     function _.set(bytes memory, uint256 offset, uint256) internal => setData(offset) expect void;
     function _.get(bytes memory, uint256 offset) internal => getData(offset) expect uint256;
     function _.isValidAugustus(address) external => NONDET;
+    // ERC20
     function _.transfer(address, uint256) external => DISPATCHER(true);
     function _.balanceOf(address) external => DISPATCHER(true);
-    unresolved external in ParaswapAdapter._ => DISPATCH [ _.approve(address, uint256) ] default ASSERT_FALSE;
+    unresolved external in _.nativeTransfer(address, uint256) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.withdraw(address, uint256) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.compoundV2RedeemEth(uint256, address) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.onMorphoRepay(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.onMorphoSupply(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.onMorphoSupplyCollateral(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _.onMorphoFlashLoan(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
+    unresolved external in _._ => DISPATCH [] default ASSERT_FALSE;
 }
 
 persistent ghost address lastErc20Underlying;
@@ -58,7 +67,6 @@ function setData(uint256 offset) {
 
 // Ghost variable to store changed allowances.
 // This models only direct changes in allowances.
-// It implies that unresolved external call are assumed to not change allowances except in the ParaswapAdapter, where unresolved calls are forbidden.
 persistent ghost mapping (address => mapping (address => uint256)) changedAllowances {
     init_state axiom forall address token. forall address spender. changedAllowances[token][spender] == 0 ;
 }
@@ -83,6 +91,5 @@ invariant AllowancesIsolated()
     filtered {
       f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
       f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
-      f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector &&
-      f.selector != sig:ParaswapAdapter.nativeTransfer(address, uint256).selector
+      f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
     }
