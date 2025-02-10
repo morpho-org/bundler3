@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-using ERC20Mock as ERC20Mock;
-using ERC20USDT as ERC20USDT;
-using ERC20NoRevert as ERC20NoRevert;
 using Bundler3 as Bundler3;
 
 methods {
