@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {GeneralAdapter1, ErrorsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {GeneralAdapter1, CoreAdapter, ErrorsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
 import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
@@ -27,9 +27,13 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @notice The address of the wrapper.
     address public immutable MORPHO_WRAPPER;
 
+    /// @notice The address of the BundlerV2, to prevent unauthorized transfers.
+    address public immutable BUNDLER_V2;
+
     /* CONSTRUCTOR */
 
     /// @param bundler3 The address of the Bundler3 contract.
+    /// @param bundlerV2 The address of the BundlerV3 contract.
     /// @param morpho The address of Morpho.
     /// @param weth The address of the WETH token.
     /// @param wStEth The address of the wstETH token.
@@ -37,6 +41,7 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @param morphoWrapper The address of the MORPHO token wrapper.
     constructor(
         address bundler3,
+        address bundlerV2,
         address morpho,
         address weth,
         address wStEth,
@@ -46,11 +51,13 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         require(wStEth != address(0), ErrorsLib.ZeroAddress());
         require(morphoToken != address(0), ErrorsLib.ZeroAddress());
         require(morphoWrapper != address(0), ErrorsLib.ZeroAddress());
+        require(bundlerV2 != address(0), ErrorsLib.ZeroAddress());
 
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
         MORPHO_TOKEN = morphoToken;
         MORPHO_WRAPPER = morphoWrapper;
+        BUNDLER_V2 = bundlerV2;
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
@@ -123,5 +130,13 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         uint256 received = IWstEth(WST_ETH).unwrap(amount);
         if (receiver != address(this) && received > 0) SafeERC20.safeTransfer(IERC20(ST_ETH), receiver, received);
+    }
+
+    /* ERC20 ACTIONS */
+
+    /// @inheritdoc CoreAdapter
+    function erc20Transfer(address token, address receiver, uint256 amount) public override onlyBundler3 {
+        require(receiver != BUNDLER_V2, ErrorsLib.ERC20TransferToBundlerV2());
+        super.erc20Transfer(token, receiver, amount);
     }
 }

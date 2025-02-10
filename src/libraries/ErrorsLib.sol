@@ -46,6 +46,9 @@ library ErrorsLib {
     /// @dev Thrown when a call to withdrawTo fails.
     error WithdrawFailed();
 
+    /// @dev Thrown when attempting an ERC20 transfer to BundlerV2.
+    error ERC20TransferToBundlerV2();
+
     /* MIGRATION ADAPTERS */
 
     /// @dev Thrown when repaying a CompoundV2 debt returns an error code.

@@ -60,7 +60,7 @@ abstract contract CoreAdapter {
     /// @param receiver The address that will receive the tokens.
     /// @param amount The amount of token to transfer. Pass `type(uint).max` to transfer the adapter's balance (this
     /// allows 0 value transfers).
-    function erc20Transfer(address token, address receiver, uint256 amount) external onlyBundler3 {
+    function erc20Transfer(address token, address receiver, uint256 amount) public virtual onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
         require(receiver != address(this), ErrorsLib.AdapterAddress());
 

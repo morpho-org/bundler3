@@ -8,6 +8,7 @@ import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowance
 import {Permit2Lib} from "../../../lib/permit2/src/libraries/Permit2Lib.sol";
 
 import {EthereumGeneralAdapter1, MathRayLib} from "../../../src/adapters/EthereumGeneralAdapter1.sol";
+import {BaseGeneralAdapter1} from "../../../src/adapters/BaseGeneralAdapter1.sol";
 
 import "./NetworkConfig.sol";
 import "../../helpers/CommonTest.sol";
@@ -31,6 +32,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         if (isEq(config.network, "ethereum")) {
             ethereumGeneralAdapter1 = new EthereumGeneralAdapter1(
                 address(bundler3),
+                getAddress("BUNDLER_V2"),
                 address(morpho),
                 getAddress("WETH"),
                 getAddress("WST_ETH"),
@@ -38,8 +40,10 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
                 getAddress("MORPHO_WRAPPER")
             );
             generalAdapter1 = GeneralAdapter1(ethereumGeneralAdapter1);
-        } else {
-            generalAdapter1 = new GeneralAdapter1(address(bundler3), address(morpho), getAddress("WETH"));
+        } else if (isEq(config.network, "base")) {
+            generalAdapter1 = new BaseGeneralAdapter1(
+                address(bundler3), getAddress("BUNDLER_V2"), address(morpho), getAddress("WETH")
+            );
         }
         paraswapAdapter = new ParaswapAdapter(address(bundler3), address(morpho), getAddress("AUGUSTUS_REGISTRY"));
 
