@@ -68,7 +68,9 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
 
         bundle.push(_morphoWrapperDepositFor(address(MORPHO_TOKEN), amount));
 
-        vm.mockCall(address(MORPHO_WRAPPER), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false));
+        vm.mockCall(
+            address(MORPHO_WRAPPER), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false)
+        );
 
         vm.expectRevert(ErrorsLib.DepositFailed.selector);
         vm.prank(initiator);

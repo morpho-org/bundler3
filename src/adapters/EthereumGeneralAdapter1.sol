@@ -63,7 +63,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @dev Legacy Morpho tokens must have been previously sent to the adapter.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param receiver The address to send the tokens to.
-    /// @param amount The amount of tokens to wrap. Pass `type(uint).max` to wrap the adapter's balance of legacy Morpho tokens.
+    /// @param amount The amount of tokens to wrap. Pass `type(uint).max` to wrap the adapter's balance of legacy Morpho
+    /// tokens.
     function morphoWrapperDepositFor(address receiver, uint256 amount) external onlyBundler3 {
         // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN_LEGACY).balanceOf(address(this));
@@ -79,7 +80,8 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
     /// @notice Unwraps Morpho tokens.
     /// @dev Morpho tokens must have been previously sent to the adapter.
     /// @param receiver The address to send the tokens to.
-    /// @param amount The amount of tokens to unwrap. Pass `type(uint).max` to unwrap the adapter's balance of Morpho tokens.
+    /// @param amount The amount of tokens to unwrap. Pass `type(uint).max` to unwrap the adapter's balance of Morpho
+    /// tokens.
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler3 {
         // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
