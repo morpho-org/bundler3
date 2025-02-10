@@ -124,7 +124,6 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         deal(address(loanWrapper), initiator, amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
-
         bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount));
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false));
