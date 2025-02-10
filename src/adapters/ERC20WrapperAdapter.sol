@@ -21,6 +21,7 @@ contract ERC20WrapperAdapter is CoreAdapter {
     /// @dev Underlying tokens must have been previously sent to the adapter.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
+    /// @param receiver The address receiving the underlying tokens.
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
     /// underlying balance.
     function erc20WrapperDepositFor(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
