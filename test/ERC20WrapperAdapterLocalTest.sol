@@ -143,7 +143,6 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.withdrawTo.selector), abi.encode(false));
 
-
         vm.startPrank(initiator);
         IERC20(loanWrapper).approve(address(erc20WrapperAdapter), amount);
         vm.expectRevert(ErrorsLib.WithdrawFailed.selector);
