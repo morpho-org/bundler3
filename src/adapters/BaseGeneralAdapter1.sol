@@ -34,7 +34,7 @@ contract BaseGeneralAdapter1 is GeneralAdapter1 {
 
     /// @inheritdoc CoreAdapter
     function erc20Transfer(address token, address receiver, uint256 amount) public override onlyBundler3 {
-        require(receiver != BUNDLER_V2, ErrorsLib.ERC20TransferToBundlerV2());
+        require(receiver != BUNDLER_V2, ErrorsLib.UnauthorizedReceiver());
         super.erc20Transfer(token, receiver, amount);
     }
 }

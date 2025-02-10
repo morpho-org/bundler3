@@ -84,7 +84,7 @@ abstract contract CommonTest is Test {
 
         bundler3 = new Bundler3();
         generalAdapter1 = new GeneralAdapter1(address(bundler3), address(morpho), address(1));
-        erc20WrapperAdapter = new ERC20WrapperAdapter(address(bundler3));
+        erc20WrapperAdapter = new ERC20WrapperAdapter(address(bundler3), address(generalAdapter1));
         paraswapAdapter = new ParaswapAdapter(address(bundler3), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();

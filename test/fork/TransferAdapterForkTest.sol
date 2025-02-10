@@ -22,7 +22,7 @@ contract TransferAdapterForkTest is ForkTest {
 
         bundle.push(_erc20Transfer(token, getAddress("BUNDLER_V2"), amount, generalAdapter1));
 
-        vm.expectRevert(ErrorsLib.ERC20TransferToBundlerV2.selector);
+        vm.expectRevert(ErrorsLib.UnauthorizedReceiver.selector);
         bundler3.multicall(bundle);
     }
 }

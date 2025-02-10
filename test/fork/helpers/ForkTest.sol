@@ -47,6 +47,9 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         }
         paraswapAdapter = new ParaswapAdapter(address(bundler3), address(morpho), getAddress("AUGUSTUS_REGISTRY"));
 
+        // Must redeploy the ERC20WrapperAdapter to update the generalAdapter1 address.
+        erc20WrapperAdapter = new ERC20WrapperAdapter(address(bundler3), address(generalAdapter1));
+
         for (uint256 i; i < config.markets.length; ++i) {
             ConfigMarket memory configMarket = config.markets[i];
 

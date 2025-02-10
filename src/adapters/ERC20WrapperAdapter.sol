@@ -7,10 +7,16 @@ import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "./CoreAdapter.sol";
 /// @custom:security-contact security@morpho.org
 /// @notice Adapter for ERC20Wrapper functions, in particular permissioned wrappers.
 contract ERC20WrapperAdapter is CoreAdapter {
+    /// @notice The address of GeneralAdapter1, only authorized erc20 transfer target.
+    address public immutable GENERAL_ADAPTER_1;
+
     /* CONSTRUCTOR */
 
     /// @param bundler3 The address of the Bundler3 contract.
-    constructor(address bundler3) CoreAdapter(bundler3) {}
+    constructor(address bundler3, address generalAdapter1) CoreAdapter(bundler3) {
+        require(generalAdapter1 != address(0), ErrorsLib.ZeroAddress());
+        GENERAL_ADAPTER_1 = generalAdapter1;
+    }
 
     /* ERC20 WRAPPER ACTIONS */
 
@@ -58,5 +64,13 @@ contract ERC20WrapperAdapter is CoreAdapter {
         SafeERC20.safeTransferFrom(IERC20(wrapper), initiator, address(this), amount);
 
         require(ERC20Wrapper(wrapper).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
+    }
+
+    /* ERC20 ACTIONS */
+
+    /// @inheritdoc CoreAdapter
+    function erc20Transfer(address token, address receiver, uint256 amount) public override onlyBundler3 {
+        require(receiver == GENERAL_ADAPTER_1, ErrorsLib.UnauthorizedReceiver());
+        super.erc20Transfer(token, receiver, amount);
     }
 }

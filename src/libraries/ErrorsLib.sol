@@ -47,7 +47,7 @@ library ErrorsLib {
     error WithdrawFailed();
 
     /// @dev Thrown when attempting an ERC20 transfer to BundlerV2.
-    error ERC20TransferToBundlerV2();
+    error UnauthorizedReceiver();
 
     /* MIGRATION ADAPTERS */
 

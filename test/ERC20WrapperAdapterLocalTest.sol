@@ -16,6 +16,28 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         loanWrapper = new ERC20WrapperMock(loanToken, "Wrapped Loan Token", "WLT");
     }
 
+    function testERC20WrapperErc20TransferToUnauthorizedAddress(address token, uint256 amount, address receiver)
+        public
+    {
+        vm.assume(receiver != address(generalAdapter1));
+
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        bundle.push(_erc20Transfer(token, receiver, amount, erc20WrapperAdapter));
+
+        vm.expectRevert(ErrorsLib.UnauthorizedReceiver.selector);
+        bundler3.multicall(bundle);
+    }
+
+    function testERC20WrapperErc20TransferToGeneralAdapter1(uint256 amount) public {
+        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
+
+        deal(address(loanWrapper), address(erc20WrapperAdapter), amount);
+        bundle.push(_erc20Transfer(address(loanWrapper), address(generalAdapter1), amount, erc20WrapperAdapter));
+
+        bundler3.multicall(bundle);
+    }
+
     function testErc20WrapperDepositFor(uint256 amount, address initiator) public {
         vm.assume(initiator != address(0));
         vm.assume(initiator != address(loanWrapper));
