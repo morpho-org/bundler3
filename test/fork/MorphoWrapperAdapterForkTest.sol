@@ -77,7 +77,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         bundler3.multicall(bundle);
     }
 
-    function testMorphoWrapperWithdrawToAccountZeroAddress(uint256 amount) public onlyEthereum onlyEthereum {
+    function testMorphoWrapperWithdrawToAccountZeroAddress(uint256 amount) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         bundle.push(_morphoWrapperWithdrawTo(address(0), amount));

@@ -50,6 +50,12 @@ Contains the following actions:
 - Morpho interactions.
 - TransferFrom using Permit2.
 
+### [`ERC20WrapperAdapter`](./src/adapters/ERC20WrapperAdapter.sol)
+
+Contains the following actions:
+
+- ERC20 wrap & unwrap.
+
 ### [`EthereumGeneralAdapter1`](./src/adapters/EthereumGeneralAdapter1.sol)
 
 Contains the following actions:
@@ -85,6 +91,8 @@ For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./
   - Slippage checks are done with a price argument instead of a limit amount.
   - When `shares` represents a supply or borrow position, `shares == uint.max` sets `shares` to the position's total value.
   - There are receiver arguments in all functions that give tokens to the adapter so the adapter can pass along those tokens.
+  - ERC20 unwrap always transfers to and from the initiator before unwrapping.
+    This prevents unwrapping by non-whitelisted initiators.
 - The [call fields](#bundle-call-fields) `skipRevert` (to skip failed actions) and `callbackHash` (to commit to callback contents) are new.
 
 

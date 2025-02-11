@@ -32,6 +32,7 @@ import {Permit} from "../helpers/SigUtils.sol";
 import {CoreAdapter, IERC20, SafeERC20, UtilsLib} from "../../src/adapters/CoreAdapter.sol";
 import {FunctionMocker} from "./FunctionMocker.sol";
 import {GeneralAdapter1} from "../../src/adapters/GeneralAdapter1.sol";
+import {ERC20WrapperAdapter} from "../../src/adapters/ERC20WrapperAdapter.sol";
 import {Bundler3, Call} from "../../src/Bundler3.sol";
 
 import {AugustusRegistryMock} from "../../src/mocks/AugustusRegistryMock.sol";
@@ -62,6 +63,7 @@ abstract contract CommonTest is Test {
 
     Bundler3 internal bundler3;
     GeneralAdapter1 internal generalAdapter1;
+    ERC20WrapperAdapter internal erc20WrapperAdapter;
 
     ParaswapAdapter paraswapAdapter;
 
@@ -82,6 +84,7 @@ abstract contract CommonTest is Test {
 
         bundler3 = new Bundler3();
         generalAdapter1 = new GeneralAdapter1(address(bundler3), address(morpho), address(1));
+        erc20WrapperAdapter = new ERC20WrapperAdapter(address(bundler3));
         paraswapAdapter = new ParaswapAdapter(address(bundler3), address(morpho), address(augustusRegistryMock));
 
         irm = new IrmMock();
@@ -241,6 +244,22 @@ abstract contract CommonTest is Test {
 
     function _erc20TransferFrom(address token, uint256 amount) internal view returns (Call memory) {
         return _erc20TransferFrom(token, address(generalAdapter1), amount);
+    }
+
+    /* ERC20 WRAPPER ACTIONS */
+
+    function _erc20WrapperDepositFor(address token, uint256 amount) internal view returns (Call memory) {
+        return _call(erc20WrapperAdapter, abi.encodeCall(ERC20WrapperAdapter.erc20WrapperDepositFor, (token, amount)));
+    }
+
+    function _erc20WrapperWithdrawTo(address token, address receiver, uint256 amount)
+        internal
+        view
+        returns (Call memory)
+    {
+        return _call(
+            erc20WrapperAdapter, abi.encodeCall(ERC20WrapperAdapter.erc20WrapperWithdrawTo, (token, receiver, amount))
+        );
     }
 
     /* ERC4626 ACTIONS */
