@@ -104,7 +104,7 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         bundler3.multicall(bundle);
     }
 
-    function testErc20WrapperDepositForUnauthorized(uint256 amount) public {
+    function testErc20WrapperDepositForOnlyBundler3(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
