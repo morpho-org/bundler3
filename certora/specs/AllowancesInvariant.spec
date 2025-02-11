@@ -28,22 +28,20 @@ persistent ghost mapping (address => mapping (address => uint256)) changedAllowa
     init_state axiom forall address token. forall address spender. changedAllowances[token][spender] == 0 ;
 }
 
-definition isKnownImmutable(address spender) returns bool =
+function summaryApprove(address token, address spender, uint256 amount)  returns bool {
+    changedAllowances[token][spender] = amount;
+    // Safe return value as summaries can't fail.
+    return true;
+}
+
+definition isTrusted(address spender) returns bool =
     spender == GeneralAdapter1.MORPHO ||
     spender == EthereumGeneralAdapter1.MORPHO ||
     spender == EthereumGeneralAdapter1.MORPHO_WRAPPER ||
     spender == EthereumGeneralAdapter1.WST_ETH;
 
-function summaryApprove(address token, address spender, uint256 amount)  returns bool {
-    if (!isKnownImmutable(spender)) {
-        changedAllowances[token][spender] = amount;
-    }
-    // Safe return value as summaries can't fail.
-    return true;
-}
-
 invariant AllowancesIsolated()
-    forall address token. forall address spender. changedAllowances[token][spender] == 0
+    forall address token. forall address spender. isTrusted(spender) || changedAllowances[token][spender] == 0
     filtered {
       f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
       f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
