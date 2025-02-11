@@ -32,7 +32,7 @@ rule erc20TransferChange(env e, address token, address receiver, uint256 amount)
     erc20Transfer(e, token, receiver, amount);
 
     // Equivalence is rewritten to avoid issue with quantifiers and polarity.
-    bool noChangeExpectedCondition = amount == 0 || (senderBalanceBefore == 0 && amount == max_uint256);
+    bool noChangeExpectedCondition = amount == max_uint256 && senderBalanceBefore == 0;
     assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
