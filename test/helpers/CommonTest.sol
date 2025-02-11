@@ -248,14 +248,8 @@ abstract contract CommonTest is Test {
 
     /* ERC20 WRAPPER ACTIONS */
 
-    function _erc20WrapperDepositFor(address token, address receiver, uint256 amount)
-        internal
-        view
-        returns (Call memory)
-    {
-        return _call(
-            erc20WrapperAdapter, abi.encodeCall(ERC20WrapperAdapter.erc20WrapperDepositFor, (token, receiver, amount))
-        );
+    function _erc20WrapperDepositFor(address token, uint256 amount) internal view returns (Call memory) {
+        return _call(erc20WrapperAdapter, abi.encodeCall(ERC20WrapperAdapter.erc20WrapperDepositFor, (token, amount)));
     }
 
     function _erc20WrapperWithdrawTo(address token, address receiver, uint256 amount)
