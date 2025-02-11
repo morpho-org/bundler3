@@ -111,7 +111,7 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         erc20WrapperAdapter.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
     }
 
-    function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
+    function testErc20WrapperWithdrawToOnlyBundler3(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
