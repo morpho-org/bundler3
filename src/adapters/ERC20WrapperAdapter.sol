@@ -41,6 +41,7 @@ contract ERC20WrapperAdapter is CoreAdapter {
     /// @notice Unwraps wrapped token to underlying token.
     /// @dev To prevent unauthorized unwrapping, wrapped tokens will be transferred to the initiator then back to the
     /// adapter.
+    /// @dev Wrapped tokens must have been previously sent to the adapter.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @param wrapper The address of the ERC20 wrapper contract.
     /// @param receiver The address receiving the underlying tokens.
