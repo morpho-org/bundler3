@@ -36,8 +36,8 @@ definition isTrusted(address spender) returns bool =
     spender == EthereumGeneralAdapter1.MORPHO_WRAPPER ||
     spender == EthereumGeneralAdapter1.WST_ETH;
 
-invariant allowancesAreReset()
-    forall address token. forall address spender. isTrusted(spender) || changedAllowances[token][spender] == 0
+invariant allowancesAreReset(address token, address spender)
+    isTrusted(spender) || changedAllowances[token][spender] == 0
     // The rule is not true for the following functions (because of the unresolved call to augustus).
     filtered {
         f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
