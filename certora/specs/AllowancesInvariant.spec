@@ -5,64 +5,17 @@ using EthereumGeneralAdapter1 as EthereumGeneralAdapter1;
 using ParaswapAdapter as ParaswapAdapter;
 
 methods {
-    function _.approve(address token, address spender, uint256 amount)  external => summaryApprove(calledContract, spender, amount) expect bool;
-    // Aave dispatch
-    function _.repay(address, uint256, uint256, address) external => HAVOC_ECF;
-    // Compound dispatch
-    function _.repayBorrowBehalf(address, uint256) external => HAVOC_ECF;
-    function _.underlying() external => mockUnderlying() expect address;
-    function _.supplyTo(address, address, uint256) external => HAVOC_ECF;
-    function _.baseToken() external => mockBaseToken() expect address;
-    function _.compoundV2RedeemEth(uint256,address) external => HAVOC_ECF;
-    // Paraswap dispatch
-    function _.set(bytes memory, uint256 offset, uint256) internal => setData(offset) expect void;
-    function _.get(bytes memory, uint256 offset) internal => getData(offset) expect uint256;
-    function _.isValidAugustus(address) external => NONDET;
-    // ERC20
-    function _.transfer(address, uint256) external => DISPATCHER(true);
-    function _.balanceOf(address) external => DISPATCHER(true);
-    unresolved external in _.nativeTransfer(address, uint256) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.unwrapNative(uint256,address) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.compoundV2RedeemEth(uint256, address) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.onMorphoRepay(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.onMorphoSupply(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.onMorphoSupplyCollateral(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
-    unresolved external in _.onMorphoFlashLoan(uint256, bytes) => DISPATCH [] default HAVOC_ECF;
+    function _.approve(address token, address spender, uint256 amount) external => summaryApprove(calledContract, spender, amount) expect bool;
+
+    // We need a summary because it does an unresolved call.
+    // Sound because the data is "".
+    function _.sendValue(address recipient, uint256 amount) internal => CONSTANT;
+
+    // We need a summary because it does an unresolved call.
+    // Sound because the selector is "reenter(bytes calldata)".
+    function _.reenterBundler3(bytes calldata data) internal => CONSTANT;
+
     unresolved external in _._ => DISPATCH [] default ASSERT_FALSE;
-}
-
-persistent ghost address lastErc20Underlying;
-persistent ghost bool erc20UnderlyingChanged;
-
-function mockUnderlying() returns address {
-    address erc20;
-    if (erc20 != lastErc20Underlying) {
-        erc20UnderlyingChanged = true;
-        lastErc20Underlying = erc20;
-    }
-    return erc20;
-}
-
-persistent ghost address lastErc20BaseToken;
-persistent ghost bool erc20BaseTokenChanged;
-
-function mockBaseToken() returns address {
-    address erc20;
-    if (erc20 != lastErc20BaseToken) {
-        erc20BaseTokenChanged = true;
-        lastErc20BaseToken = erc20;
-    }
-    return erc20;
-}
-
-persistent ghost mapping(uint256 => uint256) data;
-
-function getData(uint256 offset) returns uint256 {
-    return data[offset];
-}
-
-function setData(uint256 offset) {
-    havoc data;
 }
 
 // Ghost variable to store changed allowances.
@@ -71,25 +24,23 @@ persistent ghost mapping (address => mapping (address => uint256)) changedAllowa
     init_state axiom forall address token. forall address spender. changedAllowances[token][spender] == 0 ;
 }
 
-definition isKnownImmutable (address spender) returns bool =
+function summaryApprove(address token, address spender, uint256 amount)  returns bool {
+    changedAllowances[token][spender] = amount;
+    // Safe return value as summaries can't fail.
+    return true;
+}
+
+definition isTrusted(address spender) returns bool =
     spender == GeneralAdapter1.MORPHO ||
     spender == EthereumGeneralAdapter1.MORPHO ||
     spender == EthereumGeneralAdapter1.MORPHO_WRAPPER ||
     spender == EthereumGeneralAdapter1.WST_ETH;
 
-function summaryApprove(address token, address spender, uint256 amount)  returns bool {
-    if (!isKnownImmutable(spender)) {
-        changedAllowances[token][spender] = amount;
-    }
-    // Safe return value as summaries can't fail.
-    return true;
-}
-
-
-invariant AllowancesIsolated()
-    forall address token. forall address spender. changedAllowances[token][spender] == 0
+invariant allowancesAreReset()
+    forall address token. forall address spender. isTrusted(spender) || changedAllowances[token][spender] == 0
+    // The rule is not true for the following functions (because of the unresolved call to augustus).
     filtered {
-      f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
-      f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
-      f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
+        f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
+        f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
+        f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
     }
