@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IAllowanceTransfer} from "../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
 import {MockERC20} from "../../lib/permit2/test/mocks/MockERC20.sol";
+import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 
 import "./helpers/ForkTest.sol";
 
@@ -18,6 +19,12 @@ contract ParaswapAdapterForkTest is ForkTest {
         config.blockNumber = 20842056;
         // Morpho token does not exist at this block and test setup needs it.
         setAddress("MORPHO_TOKEN", address(new MockERC20("Mock Morpho Token", "MMT", 18)));
+        // Morpho token wrapper does not exist at this block and EthereumGeneralAdapter needs it.
+        vm.mockCall(
+            getAddress("MORPHO_WRAPPER"),
+            abi.encodeCall(ERC20Wrapper.underlying, ()),
+            abi.encode(getAddress("MORPHO_TOKEN_LEGACY"))
+        );
         super.setUp();
     }
 

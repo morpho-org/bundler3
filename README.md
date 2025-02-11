@@ -44,7 +44,7 @@ All adapters inherit from [`CoreAdapter`](./src/adapters/CoreAdapter.sol), which
 
 Contains the following actions:
 
-- ERC20 transfers, wrap & unwrap.
+- ERC20 transfers.
 - Native token (e.g. WETH) transfers, wrap & unwrap.
 - ERC4626 mint, deposit, withdraw & redeem.
 - Morpho interactions.
@@ -55,7 +55,7 @@ Contains the following actions:
 Contains the following actions:
 
 - Actions of `GeneralAdapter1`.
-- Morpho token wrapper withdrawal.
+- Morpho token wrapper deposit and withdrawal.
 - stETH staking.
 - wstETH wrap & unwrap.
 

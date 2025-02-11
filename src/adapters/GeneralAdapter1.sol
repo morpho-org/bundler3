@@ -8,7 +8,6 @@ import {CoreAdapter, ErrorsLib, IERC20, SafeERC20, Address} from "./CoreAdapter.
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 import {SafeCast160} from "../../lib/permit2/src/libraries/SafeCast160.sol";
 import {Permit2Lib} from "../../lib/permit2/src/libraries/Permit2Lib.sol";
-import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {MorphoBalancesLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoBalancesLib.sol";
 import {MarketParamsLib} from "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {MorphoLib} from "../../lib/morpho-blue/src/libraries/periphery/MorphoLib.sol";
@@ -39,49 +38,6 @@ contract GeneralAdapter1 is CoreAdapter {
 
         MORPHO = IMorpho(morpho);
         WRAPPED_NATIVE = IWNative(wNative);
-    }
-
-    /* ERC20 WRAPPER ACTIONS */
-
-    // Enables the wrapping and unwrapping of ERC20 tokens. The largest usecase is to wrap permissionless tokens to
-    // their permissioned counterparts and access permissioned markets on Morpho. Permissioned tokens can be built
-    // using: https://github.com/morpho-org/erc20-permissioned
-
-    /// @notice Wraps underlying tokens to wrapped token and sends them to the initiator.
-    /// @dev Underlying tokens must have been previously sent to the adapter.
-    /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
-    /// @dev The account is hardcoded to the initiator, to prevent unauthorized wrapping.
-    /// @param wrapper The address of the ERC20 wrapper contract.
-    /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
-    /// underlying balance.
-    function erc20WrapperDepositFor(address wrapper, uint256 amount) external onlyBundler3 {
-        IERC20 underlying = ERC20Wrapper(wrapper).underlying();
-        if (amount == type(uint256).max) amount = underlying.balanceOf(address(this));
-
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        SafeERC20.forceApprove(underlying, wrapper, type(uint256).max);
-
-        require(ERC20Wrapper(wrapper).depositFor(initiator(), amount), ErrorsLib.DepositFailed());
-
-        SafeERC20.forceApprove(underlying, wrapper, 0);
-    }
-
-    /// @notice Unwraps wrapped token to underlying token.
-    /// @dev Wrapped tokens must have been previously sent to the adapter.
-    /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
-    /// @param wrapper The address of the ERC20 wrapper contract.
-    /// @param receiver The address receiving the underlying tokens.
-    /// @param amount The amount of wrapped tokens to burn. Pass `type(uint).max` to burn the adapter's wrapped token
-    /// balance.
-    function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
-        require(receiver != address(0), ErrorsLib.ZeroAddress());
-
-        if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(address(this));
-
-        require(amount != 0, ErrorsLib.ZeroAmount());
-
-        require(ERC20Wrapper(wrapper).withdrawTo(receiver, amount), ErrorsLib.WithdrawFailed());
     }
 
     /* ERC4626 ACTIONS */

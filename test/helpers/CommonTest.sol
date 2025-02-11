@@ -243,20 +243,6 @@ abstract contract CommonTest is Test {
         return _erc20TransferFrom(token, address(generalAdapter1), amount);
     }
 
-    /* ERC20 WRAPPER ACTIONS */
-
-    function _erc20WrapperDepositFor(address token, uint256 amount) internal view returns (Call memory) {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20WrapperDepositFor, (token, amount)));
-    }
-
-    function _erc20WrapperWithdrawTo(address token, address receiver, uint256 amount)
-        internal
-        view
-        returns (Call memory)
-    {
-        return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.erc20WrapperWithdrawTo, (token, receiver, amount)));
-    }
-
     /* ERC4626 ACTIONS */
 
     function _erc4626Mint(address vault, uint256 shares, uint256 maxSharePriceE27, address receiver)

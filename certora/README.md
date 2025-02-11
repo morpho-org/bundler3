@@ -21,9 +21,11 @@ These calls may themselves reenter the Bundler3 contract.
 
 ### Folders and file structure
 
-The [`certora/specs`](specs) folder contains the following files:
+The [`certora/specs`](specs) folder contains these files:
 
 - [`Bundler3.spec`](specs/Bundler3.spec) checks Bundler3 entry points behave as expected;
+- [`AllowancesInvariant.spec`](specs/AllowancesInvariant.spec) check that token allowances are reset;
+- [`GeneralAdapter1Reverts.spec`](specs/GeneralAdapter1Reverts.spec) checks that state changes when adapter functions are called, or the execution reverts;
 - [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) checks that calls to Morpho with zero inputs that revert in Morpho make the adapter revert;
 - [`OnlyBundler3.spec`](specs/OnlyBundler3.spec) checks that adapters' methods used during a bundle execution may only be called by the Bundler3 contract;
 - [`ReenterCaller.spec`](specs/ReenterCaller.spec) checks that Bundler3 can be reentered only by the expected adapter functions;

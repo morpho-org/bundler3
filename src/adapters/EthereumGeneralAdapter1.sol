@@ -4,7 +4,8 @@ pragma solidity 0.8.28;
 import {IWstEth} from "../interfaces/IWstEth.sol";
 import {IStEth} from "../interfaces/IStEth.sol";
 
-import {GeneralAdapter1, ErrorsLib, ERC20Wrapper, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {GeneralAdapter1, ErrorsLib, SafeERC20, IERC20} from "./GeneralAdapter1.sol";
+import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 import {MathRayLib} from "../libraries/MathRayLib.sol";
 
 /// @custom:security-contact security@morpho.org
@@ -22,6 +23,9 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
     /// @notice The address of the Morpho token.
     address public immutable MORPHO_TOKEN;
+
+    /// @notice The address of the legacy Morpho token.
+    address public immutable MORPHO_TOKEN_LEGACY;
 
     /// @notice The address of the wrapper.
     address public immutable MORPHO_WRAPPER;
@@ -49,17 +53,34 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
         MORPHO_TOKEN = morphoToken;
+        MORPHO_TOKEN_LEGACY = address(ERC20Wrapper(morphoWrapper).underlying());
         MORPHO_WRAPPER = morphoWrapper;
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
 
-    /// @notice Unwraps Morpho tokens.
-    /// @dev Separated from the erc20WrapperWithdrawTo function because the Morpho wrapper is separated from the
-    /// wrapped token, so it does not have a balanceOf function, and the wrapped token needs to be approved before
-    /// withdrawTo.
+    /// @notice Wraps Morpho tokens.
+    /// @dev Legacy Morpho tokens must have been previously sent to the adapter.
     /// @param receiver The address to send the tokens to.
-    /// @param amount The amount of tokens to unwrap.
+    /// @param amount The amount of tokens to wrap. Pass `type(uint).max` to wrap the adapter's balance of legacy Morpho
+    /// tokens.
+    function morphoWrapperDepositFor(address receiver, uint256 amount) external onlyBundler3 {
+        // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
+        if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN_LEGACY).balanceOf(address(this));
+
+        require(amount != 0, ErrorsLib.ZeroAmount());
+
+        // The MORPHO wrapper's allowance is not reset as it is trusted.
+        SafeERC20.forceApprove(IERC20(MORPHO_TOKEN_LEGACY), MORPHO_WRAPPER, type(uint256).max);
+
+        require(ERC20Wrapper(MORPHO_WRAPPER).depositFor(receiver, amount), ErrorsLib.DepositFailed());
+    }
+
+    /// @notice Unwraps Morpho tokens.
+    /// @dev Morpho tokens must have been previously sent to the adapter.
+    /// @param receiver The address to send the tokens to.
+    /// @param amount The amount of tokens to unwrap. Pass `type(uint).max` to unwrap the adapter's balance of Morpho
+    /// tokens.
     function morphoWrapperWithdrawTo(address receiver, uint256 amount) external onlyBundler3 {
         // Do not check `receiver` against the zero address as it's done at the Morpho Wrapper's level.
         if (amount == type(uint256).max) amount = IERC20(MORPHO_TOKEN).balanceOf(address(this));
