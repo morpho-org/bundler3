@@ -9,17 +9,13 @@ methods {
 
     // We need a summary because it does an unresolved call.
     // Sound because the data is "".
-    function _.sendValue(address recipient, uint256 amount) internal => summaryDoNothing() expect bool;
+    function _.sendValue(address recipient, uint256 amount) internal => CONSTANT;
 
     // We need a summary because it does an unresolved call.
     // Sound because the selector is "reenter(bytes calldata)".
-    function _.reenterBundler3(bytes calldata data) internal => summaryDoNothing() expect bool;
+    function _.reenterBundler3(bytes calldata data) internal => CONSTANT;
 
     unresolved external in _._ => DISPATCH [] default ASSERT_FALSE;
-}
-
-function summaryDoNothing() returns bool {
-    return true;
 }
 
 // Ghost variable to store changed allowances.
