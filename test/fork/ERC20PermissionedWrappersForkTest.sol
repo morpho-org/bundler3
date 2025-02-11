@@ -65,10 +65,10 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         deal(address(underlying), address(erc20WrapperAdapter), amount, true);
 
         bundle.push(_erc20WrapperDepositFor(address(WBIB01), initiator, amount));
-        // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>initiator is possible
+        // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>wrapperAdapter is possible
         bundle.push(_erc20TransferFrom(address(WBIB01), address(erc20WrapperAdapter), amount));
         bundle.push(_erc20Transfer(address(WBIB01), address(generalAdapter1), amount, erc20WrapperAdapter));
-        bundle.push(_erc20Transfer(address(WBIB01), initiator, amount, generalAdapter1));
+        bundle.push(_erc20Transfer(address(WBIB01), address(erc20WrapperAdapter), amount, generalAdapter1));
         bundle.push(_erc20WrapperWithdrawTo(address(WBIB01), RECEIVER, amount));
 
         vm.prank(initiator);
@@ -121,11 +121,10 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         deal(address(underlying), address(erc20WrapperAdapter), amount, true);
 
         bundle.push(_erc20WrapperDepositFor(address(VER_USDC), initiator, amount));
-        // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>initiator is possible
-
+        // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>wrapperAdapter is possible
         bundle.push(_erc20TransferFrom(address(VER_USDC), address(erc20WrapperAdapter), amount));
         bundle.push(_erc20Transfer(address(VER_USDC), address(generalAdapter1), amount, erc20WrapperAdapter));
-        bundle.push(_erc20Transfer(address(VER_USDC), initiator, amount, generalAdapter1));
+        bundle.push(_erc20Transfer(address(WBIB01), address(erc20WrapperAdapter), amount, generalAdapter1));
         bundle.push(_erc20WrapperWithdrawTo(address(VER_USDC), RECEIVER, amount));
 
         vm.prank(initiator);

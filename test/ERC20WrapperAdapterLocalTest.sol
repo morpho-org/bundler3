@@ -56,7 +56,7 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(address(loanWrapper), initiator, amount);
+        deal(address(loanWrapper), address(erc20WrapperAdapter), amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
@@ -74,7 +74,7 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        deal(address(loanWrapper), initiator, amount);
+        deal(address(loanWrapper), address(erc20WrapperAdapter), amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, type(uint256).max));
@@ -136,7 +136,7 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
     function testErc20WrapperWithdrawToFailed(address initiator, uint256 amount) public {
         vm.assume(initiator != address(0));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-        deal(address(loanWrapper), initiator, amount);
+        deal(address(loanWrapper), address(erc20WrapperAdapter), amount);
         deal(address(loanToken), address(loanWrapper), amount);
 
         bundle.push(_erc20WrapperWithdrawTo(address(loanWrapper), RECEIVER, amount));
