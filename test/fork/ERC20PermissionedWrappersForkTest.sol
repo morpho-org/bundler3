@@ -124,7 +124,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         // check that a round-trip initiator=>wrapperAdapter=>generalAdapter=>wrapperAdapter is possible
         bundle.push(_erc20TransferFrom(address(VER_USDC), address(erc20WrapperAdapter), amount));
         bundle.push(_erc20Transfer(address(VER_USDC), address(generalAdapter1), amount, erc20WrapperAdapter));
-        bundle.push(_erc20Transfer(address(WBIB01), address(erc20WrapperAdapter), amount, generalAdapter1));
+        bundle.push(_erc20Transfer(address(VER_USDC), address(erc20WrapperAdapter), amount, generalAdapter1));
         bundle.push(_erc20WrapperWithdrawTo(address(VER_USDC), RECEIVER, amount));
 
         vm.prank(initiator);
