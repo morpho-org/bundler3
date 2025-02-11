@@ -13,7 +13,7 @@ contract ParaswapAdapterForkTest is ForkTest {
     address internal WETH = getAddress("WETH");
 
     function setUp() public override {
-        // block.chainid is only available after super.setUp
+        // block.chainid is only reliable after super.setUp
         if (config.chainid != 1) return;
 
         config.blockNumber = 20842056;
