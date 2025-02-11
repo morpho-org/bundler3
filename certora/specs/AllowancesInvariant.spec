@@ -40,10 +40,11 @@ definition isTrusted(address spender) returns bool =
     spender == EthereumGeneralAdapter1.MORPHO_WRAPPER ||
     spender == EthereumGeneralAdapter1.WST_ETH;
 
-invariant AllowancesIsolated()
+invariant allowancesAreReset()
     forall address token. forall address spender. isTrusted(spender) || changedAllowances[token][spender] == 0
+    // The rule is not true for the following functions (because of the unresolved call to augustus).
     filtered {
-      f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
-      f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
-      f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
+        f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
+        f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
+        f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
     }
