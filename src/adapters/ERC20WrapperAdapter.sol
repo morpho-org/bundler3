@@ -5,7 +5,6 @@ import {ERC20Wrapper} from "../../lib/openzeppelin-contracts/contracts/token/ERC
 import {CoreAdapter, ErrorsLib, IERC20, SafeERC20} from "./CoreAdapter.sol";
 
 /// @custom:security-contact security@morpho.org
-/// @notice Temporary solution for permissioned tokens.
 /// @notice Adapter for ERC20Wrapper functions, in particular permissioned wrappers.
 contract ERC20WrapperAdapter is CoreAdapter {
     /* CONSTRUCTOR */
@@ -50,12 +49,11 @@ contract ERC20WrapperAdapter is CoreAdapter {
     function erc20WrapperWithdrawTo(address wrapper, address receiver, uint256 amount) external onlyBundler3 {
         require(receiver != address(0), ErrorsLib.ZeroAddress());
 
-        address initiator = initiator();
-
         if (amount == type(uint256).max) amount = IERC20(wrapper).balanceOf(address(this));
 
         require(amount != 0, ErrorsLib.ZeroAmount());
 
+        address initiator = initiator();
         SafeERC20.safeTransfer(IERC20(wrapper), initiator, amount);
         SafeERC20.safeTransferFrom(IERC20(wrapper), initiator, address(this), amount);
 
