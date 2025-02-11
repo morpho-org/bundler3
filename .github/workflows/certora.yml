@@ -16,6 +16,7 @@ jobs:
 
       matrix:
         conf:
+          - AllowancesInvariant
           - Bundler3
           - GeneralAdapter1Reverts
           - MorphoZeroConditions
