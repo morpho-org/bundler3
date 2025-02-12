@@ -24,7 +24,7 @@ rule nativeTransferChange(env e, address receiver, uint256 amount) {
     assert (noChangeExpectedCondition => storageBefore == lastStorage) && (storageBefore == lastStorage => noChangeExpectedCondition);
 }
 
-// Check that the state didn't change upon unwrapping 0 ETH using the adapter.
+// Check that the state didn't change upon sending 0 tokens using the adapter.
 rule erc20TransferChange(env e, address token, address receiver, uint256 amount) {
     uint256 senderBalanceBefore = token.balanceOf(e, currentContract);
     storage storageBefore = lastStorage;
