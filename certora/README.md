@@ -24,9 +24,9 @@ These calls may themselves reenter the Bundler3 contract.
 ## Bundler3 safety restrictions
 
 A key feature of the bundler is to restrict reentering in adapter calls.
-That is we check that reentering an adapter is only possible during a multicall execution.
-We also check that adapters' methods used during a bundle execution may only be called by the Bundler3 contract.
-We check that it's only possible to reenter the adapter using a dedicated Bunlder3 function.
+In particular, it is checked that reentering an adapter is only possible during a multicall execution.
+It is also checked that adapters' methods used during a bundle execution may only be called by the Bundler3 contract.
+Additionally, the verification makes sure that it's only possible to reenter the adapter using a dedicated Bundler3 function.
 Bundler3 uses transient storage, it's checked that it's nullified on each entry-point call.
 This is checked with a separate configuration as it requires to disable sanity-checks (because `reenter` cannot be an entry-point _per se_).
 
@@ -36,11 +36,11 @@ Some adapters may call Morpho entry-points, we check that zero inputs that shoul
 
 ## Allowance isolation
 
-Throughout the adapters, ERC20 allowances to the adapter may be increased.
-We check that such allowances are safe in-between adapters entry-points by resetting them to zero after transactions are performed.
-Note that this not verified for the Paraswap adapter.
+During the execution of an adapter, ERC20 allowance of that adapter to another contract may increase.
+It is checked that such allowance is reset to zero at the end of the execution.
+Note that this is not verified for the Paraswap adapter.
 
 ## General adapter reverts
 
-In this adapter, we ensure that the state changes when adapter functions are called, or the execution reverts.
-In some cases this property doesn't hold, in those cases a dedicated rule justify this is included.
+When calling a function of this adapter, it is verified that either the state changes or the execution reverts.
+This property doesn't hold for every function of the adapters, in those cases a dedicated rule justifying this is included.
