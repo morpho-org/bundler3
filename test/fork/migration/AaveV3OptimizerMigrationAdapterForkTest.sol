@@ -31,6 +31,12 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
     AaveV3OptimizerMigrationAdapter internal migrationAdapter;
 
     function setUp() public override {
+        // block.chainid is only reliable after super.setUp
+        if (config.chainid == 1) {
+            config.blockNumber = 21230000;
+        } else if (config.chainid == 8453) {
+            config.blockNumber = 25641890;
+        }
         super.setUp();
 
         if (block.chainid != 1) return;
