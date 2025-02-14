@@ -16,28 +16,20 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         loanWrapper = new ERC20WrapperMock(loanToken, "Wrapped Loan Token", "WLT");
     }
 
-    function testErc20WrapperDepositForZeroAdress(uint256 amount) public {
+    function testErc20WrapperDepositFor(uint256 amount, address initiator) public {
+        vm.assume(initiator != address(0));
+        vm.assume(initiator != address(loanWrapper));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(0), amount));
-
-        vm.expectRevert(ErrorsLib.ZeroAddress.selector);
-        bundler3.multicall(bundle);
-    }
-
-    function testErc20WrapperDepositFor(uint256 amount, address receiver) public {
-        vm.assume(receiver != address(0));
-        vm.assume(receiver != address(loanWrapper));
-        amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
-
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(receiver), amount));
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), amount));
 
         deal(address(loanToken), address(erc20WrapperAdapter), amount);
 
+        vm.prank(initiator);
         bundler3.multicall(bundle);
 
         assertEq(loanToken.balanceOf(address(erc20WrapperAdapter)), 0, "loan.balanceOf(erc20WrapperAdapter)");
-        assertEq(loanWrapper.balanceOf(receiver), amount, "loanWrapper.balanceOf(receiver)");
+        assertEq(loanWrapper.balanceOf(initiator), amount, "loanWrapper.balanceOf(initiator)");
         assertEq(
             loanToken.allowance(address(erc20WrapperAdapter), address(loanWrapper)),
             0,
@@ -45,10 +37,11 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         );
     }
 
-    function testErc20WrapperDepositForZeroAmount() public {
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), 0));
+    function testErc20WrapperDepositForZeroAmount(address initiator) public {
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), 0));
 
         vm.expectRevert(ErrorsLib.ZeroAmount.selector);
+        vm.prank(initiator);
         bundler3.multicall(bundle);
     }
 
@@ -104,14 +97,15 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
         bundler3.multicall(bundle);
     }
 
-    function testErc20WrapperDepositForUnauthorized(uint256 amount) public {
+    function testErc20WrapperDepositForOnlyBundler3(uint256 amount, address initiator) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
-        erc20WrapperAdapter.erc20WrapperDepositFor(address(loanWrapper), address(RECEIVER), amount);
+        vm.prank(initiator);
+        erc20WrapperAdapter.erc20WrapperDepositFor(address(loanWrapper), amount);
     }
 
-    function testErc20WrapperWithdrawToUnauthorized(uint256 amount) public {
+    function testErc20WrapperWithdrawToOnlyBundler3(uint256 amount) public {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
@@ -119,12 +113,10 @@ contract ERC20WrapperAdapterLocalTest is LocalTest {
     }
 
     function testErc20WrapperDepositToFailed(uint256 amount, address initiator) public {
-        vm.assume(initiator != address(0));
-
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deal(address(loanToken), address(erc20WrapperAdapter), amount);
 
-        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), initiator, amount));
+        bundle.push(_erc20WrapperDepositFor(address(loanWrapper), amount));
 
         vm.mockCall(address(loanWrapper), abi.encodeWithSelector(ERC20Wrapper.depositFor.selector), abi.encode(false));
 

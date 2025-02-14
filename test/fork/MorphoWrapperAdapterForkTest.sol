@@ -62,7 +62,7 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         ethereumGeneralAdapter1.morphoWrapperDepositFor(address(MORPHO_TOKEN), amount);
     }
 
-    function testMorphoWrapperDepositToFailed(uint256 amount, address initiator) public onlyEthereum {
+    function testMorphoWrapperDepositForFailed(uint256 amount, address initiator) public onlyEthereum {
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
         deal(address(MORPHO_TOKEN_LEGACY), address(generalAdapter1), amount);
 

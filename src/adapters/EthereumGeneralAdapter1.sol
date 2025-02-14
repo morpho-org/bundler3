@@ -52,9 +52,9 @@ contract EthereumGeneralAdapter1 is GeneralAdapter1 {
 
         ST_ETH = IWstEth(wStEth).stETH();
         WST_ETH = wStEth;
-        MORPHO_WRAPPER = morphoWrapper;
         MORPHO_TOKEN = morphoToken;
         MORPHO_TOKEN_LEGACY = address(ERC20Wrapper(morphoWrapper).underlying());
+        MORPHO_WRAPPER = morphoWrapper;
     }
 
     /* MORPHO TOKEN WRAPPER ACTIONS */
