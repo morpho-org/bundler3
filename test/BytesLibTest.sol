@@ -7,6 +7,7 @@ import {BytesLib} from "../src/libraries/BytesLib.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 contract BytesLibTest is Test {
+    /// forge-config: default.allow_internal_expect_revert = true
     function testGetInvalidOffset(bytes memory data, uint256 offset) public {
         vm.assume(data.length >= 32);
         vm.assume(offset > data.length - 32);
@@ -14,6 +15,7 @@ contract BytesLibTest is Test {
         BytesLib.get(data, offset);
     }
 
+    /// forge-config: default.allow_internal_expect_revert = true
     function testSetInvalidOffset(bytes memory data, uint256 offset) public {
         vm.assume(data.length >= 32);
         vm.assume(offset > data.length - 32);
