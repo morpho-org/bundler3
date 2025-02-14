@@ -44,3 +44,20 @@ Note that this is not verified for the Paraswap adapter.
 
 When calling a function of this adapter, it is verified that either the state changes or the execution reverts.
 This property doesn't hold for every function of the adapters, in those cases a dedicated rule justifying this is included.
+
+
+### Folders and file structure
+
+The [`certora/specs`](specs) folder contains these files:
+
+- [`Bundler3.spec`](specs/Bundler3.spec) describes entry points safety;
+- [`AllowancesInvariant.spec`](specs/AllowancesInvariant.spec) describes allowance isolation;
+- [`GeneralAdapter1Reverts.spec`](specs/GeneralAdapter1Reverts.spec) describes when state should change or execution reverts;
+- [`MorphoZeroConditions.spec`](specs/MorphoZeroConditions.spec) describes how calls to Morpho with zero should behave;
+- [`OnlyBundler3.spec`](specs/OnlyBundler3.spec) describes that adapters' methods may only be called by the Bundler3;
+- [`ReenterCaller.spec`](specs/ReenterCaller.spec) describes Bundler3 reentering properties;
+- [`TransientStorageInvariant.spec`](specs/TransientStorageInvariant.spec) describes the transient storage behavior.
+
+The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
+
+The [`certora/Makefile`](Makefile) is used to track and perform the required modifications on source files.
