@@ -45,7 +45,6 @@ Note that this is not verified for the Paraswap adapter.
 When calling a function of this adapter, it is verified that either the state changes or the execution reverts.
 This property doesn't hold for every function of the adapters, in those cases a dedicated rule justifying this is included.
 
-
 ### Folders and file structure
 
 The [`certora/specs`](specs) folder contains these files:
@@ -60,4 +59,11 @@ The [`certora/specs`](specs) folder contains these files:
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
-The [`certora/Makefile`](Makefile) is used to track and perform the required modifications on source files.
+The Bundler3 interacts with contracts implementing the interfaces of standards such as the ERC20 or ER4626.
+In the specifications these implementations are left abstract.
+During the verification process, they are instantiated with a set of user provided contracts.
+In this project we include some of the common distributions of these standards in the directories:
+
+- [lib/morpho-blue/certora/dispatch](../lib/morpho-blue/certora/dispatch);
+- [test/helpers/mocks](../test/helpers/mocks);
+- [certora/dispatch](dispatch).
