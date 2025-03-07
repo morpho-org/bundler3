@@ -19,7 +19,7 @@ methods {
 
     function _.isValidAugustus(address augustus) external => summaryIsValidAugustus(augustus) expect bool;
 
-    unresolved external in MockAugustus._ => DISPATCH(use_fallback=true) [ ERC20Mock.approve(address,uint256) ] default HAVOC_ALL;
+    unresolved external in MockAugustus._ => DISPATCH(use_fallback=true) [ ERC20Mock.approve(address,uint256) ] default ASSERT_FALSE;
     unresolved external in _._ => DISPATCH(use_fallback=true) [ MockAugustus._ ] default ASSERT_FALSE;
 }
 
