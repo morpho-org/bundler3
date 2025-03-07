@@ -3,6 +3,8 @@
 using GeneralAdapter1 as GeneralAdapter1;
 using EthereumGeneralAdapter1 as EthereumGeneralAdapter1;
 using ParaswapAdapter as ParaswapAdapter;
+using MockAugustus as MockAugustus;
+using ERC20Mock as ERC20Mock;
 
 methods {
     function _.approve(address token, address spender, uint256 amount) external => summaryApprove(calledContract, spender, amount) expect bool;
@@ -15,7 +17,10 @@ methods {
     // Sound because the selector is "reenter(bytes calldata)".
     function _.reenterBundler3(bytes calldata data) internal => CONSTANT;
 
-    unresolved external in _._ => DISPATCH [] default ASSERT_FALSE;
+    function _.isValidAugustus(address augustus) external => summaryIsValidAugustus(augustus) expect bool;
+
+    unresolved external in MockAugustus._ => DISPATCH(use_fallback=true) [ ERC20Mock.approve(address,uint256) ] default HAVOC_ALL;
+    unresolved external in _._ => DISPATCH(use_fallback=true) [ MockAugustus._ ] default ASSERT_FALSE;
 }
 
 // Ghost variable to store changed allowances.
@@ -30,6 +35,11 @@ function summaryApprove(address token, address spender, uint256 amount)  returns
     return true;
 }
 
+function summaryIsValidAugustus(address augustus) returns bool {
+    require augustus == MockAugustus;
+    return true;
+}
+
 definition isTrusted(address spender) returns bool =
     spender == GeneralAdapter1.MORPHO ||
     spender == EthereumGeneralAdapter1.MORPHO ||
@@ -37,10 +47,4 @@ definition isTrusted(address spender) returns bool =
     spender == EthereumGeneralAdapter1.WST_ETH;
 
 invariant allowancesAreReset(address token, address spender)
-    isTrusted(spender) || changedAllowances[token][spender] == 0
-    // The rule is not true for the following functions (because of the unresolved call to augustus).
-    filtered {
-        f -> f.selector != sig:ParaswapAdapter.buy(address, bytes ,address, address, uint256, ParaswapAdapter.Offsets, address).selector &&
-        f.selector != sig:ParaswapAdapter.buyMorphoDebt(address, bytes , address, ParaswapAdapter.MarketParams, ParaswapAdapter.Offsets, address, address).selector &&
-        f.selector != sig:ParaswapAdapter.sell(address, bytes, address, address, bool, ParaswapAdapter.Offsets, address).selector
-    }
+    isTrusted(spender) || changedAllowances[token][spender] == 0;
