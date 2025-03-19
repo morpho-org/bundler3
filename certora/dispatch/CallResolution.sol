@@ -9,7 +9,7 @@ contract CallResolution {
 
     function doUnresolvedCall(bytes calldata data) external returns (bytes memory) {
         // Calls to approve are not allowed, summarization aren not expected to be resolvable.
-        require(bytes4(msg.data[:4]) != IERC20.approve.selector);
+        require(bytes4(data[:4]) != IERC20.approve.selector);
         (bool success, bytes memory x) = address(target).call(data);
         require(success);
         return x;
