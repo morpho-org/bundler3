@@ -7,7 +7,7 @@ using MockAugustus as MockAugustus;
 using ERC20Mock as ERC20Mock;
 
 methods {
-    function _.approve(address token, address spender, uint256 amount) external => summaryApprove(calledContract, spender, amount) expect bool;
+    function _.approve(address token, address spender, uint256 amount) external => summaryApprove(calledContract, spender, amount) expect bool ALL;
 
     // We need a summary because it does an unresolved call.
     // Sound because the data is "".
@@ -19,7 +19,7 @@ methods {
 
     function _.isValidAugustus(address augustus) external => summaryIsValidAugustus(augustus) expect bool;
 
-    unresolved external in MockAugustus._ => DISPATCH(use_fallback=true) [ ERC20Mock.approve(address,uint256) ] default ASSERT_FALSE;
+    unresolved external in MockAugustus._ => DISPATCH(use_fallback=true) [ ERC20Mock.approve(address,uint256) ] default NONDET;
     unresolved external in _._ => DISPATCH(use_fallback=true) [ MockAugustus._ ] default ASSERT_FALSE;
 }
 

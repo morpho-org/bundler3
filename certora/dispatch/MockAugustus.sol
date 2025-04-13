@@ -8,7 +8,7 @@ contract MockAugustus {
     }
 
     fallback(bytes calldata data) external returns (bytes memory) {
-        require(bytes4(msg.data[:4]) != IERC20.approve.selector);
+        require(bytes4(data[:4]) != IERC20.approve.selector);
         (bool success, bytes memory x) = address(target).call(data);
         require(success);
         return x;
