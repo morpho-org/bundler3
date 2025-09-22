@@ -21,7 +21,7 @@ contract ERC20WrapperAdapter is CoreAdapter {
     /// @dev Underlying tokens must have been previously sent to the adapter.
     /// @dev Assumes that `wrapper` implements the `ERC20Wrapper` interface.
     /// @dev The account is hardcoded to the initiator to prevent unauthorized wrapping by mistake.
-    /// @dev Users may still be able to wrap tokens by calling ERC20Wrapper.depositFor directly.
+    /// @dev Wrapped tokens may still be sent to the adapter by calling ERC20Wrapper.depositFor directly.
     /// @param wrapper The address of the ERC20 wrapper contract.
     /// @param amount The amount of underlying tokens to deposit. Pass `type(uint).max` to deposit the adapter's
     /// underlying balance.
