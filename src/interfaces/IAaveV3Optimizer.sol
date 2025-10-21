@@ -36,9 +36,7 @@ interface IAaveV3Optimizer {
         uint256 deadline,
         Signature calldata signature
     ) external returns (uint256 supplied);
-    function supplyCollateral(address underlying, uint256 amount, address onBehalf)
-        external
-        returns (uint256 supplied);
+    function supplyCollateral(address underlying, uint256 amount, address onBehalf) external returns (uint256 supplied);
     function supplyCollateralWithPermit(
         address underlying,
         uint256 amount,

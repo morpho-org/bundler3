@@ -724,9 +724,8 @@ contract MorphoAdapterLocalTest is LocalTest {
         uint256 currentBorrowPower = totalBorrowPower - borrowed;
         if (currentBorrowPower == 0) return;
 
-        uint256 maxShares = MorphoUtilsLib.min(currentBorrowPower, availableLiquidity).toSharesDown(
-            vars.expectedTotalBorrow, vars.expectedBorrowShares
-        );
+        uint256 maxShares = MorphoUtilsLib.min(currentBorrowPower, availableLiquidity)
+            .toSharesDown(vars.expectedTotalBorrow, vars.expectedBorrowShares);
         if (maxShares < MIN_AMOUNT) return;
         shares = bound(shares % maxShares, MIN_AMOUNT, maxShares);
 

@@ -138,11 +138,7 @@ contract ParaswapAdapterForkTest is ForkTest {
 
     function testBuyWithAdjustment(uint256 percent) public onlyEthereum {
         MarketParams memory wethMarketParams = MarketParams({
-            collateralToken: WETH,
-            loanToken: WETH,
-            oracle: address(oracle),
-            irm: address(irm),
-            lltv: 0.8 ether
+            collateralToken: WETH, loanToken: WETH, oracle: address(oracle), irm: address(irm), lltv: 0.8 ether
         });
         morpho.createMarket(wethMarketParams);
         percent = bound(percent, 10, MAX_EXACT_VALUE_CHANGE_PERCENT);

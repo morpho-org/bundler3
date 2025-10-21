@@ -116,10 +116,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
     {
         IAllowanceTransfer.PermitSingle memory permitSingle = IAllowanceTransfer.PermitSingle({
             details: IAllowanceTransfer.PermitDetails({
-                token: asset,
-                amount: uint160(amount),
-                expiration: type(uint48).max,
-                nonce: uint48(nonce)
+                token: asset, amount: uint160(amount), expiration: type(uint48).max, nonce: uint48(nonce)
             }),
             spender: address(generalAdapter1),
             sigDeadline: SIGNATURE_DEADLINE
@@ -148,17 +145,12 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
 
         for (uint256 i; i < assets.length; i++) {
             details[i] = IAllowanceTransfer.PermitDetails({
-                token: assets[i],
-                amount: uint160(amounts[i]),
-                expiration: type(uint48).max,
-                nonce: uint48(nonces[i])
+                token: assets[i], amount: uint160(amounts[i]), expiration: type(uint48).max, nonce: uint48(nonces[i])
             });
         }
 
         IAllowanceTransfer.PermitBatch memory permitBatch = IAllowanceTransfer.PermitBatch({
-            details: details,
-            spender: address(generalAdapter1),
-            sigDeadline: SIGNATURE_DEADLINE
+            details: details, spender: address(generalAdapter1), sigDeadline: SIGNATURE_DEADLINE
         });
 
         bytes32 digest = SigUtils.toTypedDataHash(Permit2Lib.PERMIT2.DOMAIN_SEPARATOR(), permitBatch);
@@ -177,11 +169,7 @@ abstract contract ForkTest is CommonTest, NetworkConfig {
         return _permit2TransferFrom(asset, address(generalAdapter1), amount);
     }
 
-    function _permit2TransferFrom(address asset, address receiver, uint256 amount)
-        internal
-        view
-        returns (Call memory)
-    {
+    function _permit2TransferFrom(address asset, address receiver, uint256 amount) internal view returns (Call memory) {
         return _call(generalAdapter1, abi.encodeCall(GeneralAdapter1.permit2TransferFrom, (asset, receiver, amount)));
     }
 
