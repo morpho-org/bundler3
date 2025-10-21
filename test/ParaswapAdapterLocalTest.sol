@@ -47,7 +47,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         vm.assume(sender != address(bundler3));
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(sender);
-        paraswapAdapter.buy(address(augustus), new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+        paraswapAdapter.buy(address(augustus), new bytes(32), address(0), address(0), 0, Offsets({exactAmount: 0, limitAmount: 0, quotedAmount: 0}), address(0));
     }
 
     function testBuyMorphoDebtUnauthorized(address sender) public {
@@ -64,7 +64,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
             _swapCalldata(0, 1, 1, 1),
             address(0),
             marketParams,
-            Offsets(0, 32, 64),
+            Offsets({exactAmount: 0, limitAmount: 32, quotedAmount: 64}),
             address(this),
             address(0)
         );
@@ -75,7 +75,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         vm.expectRevert(ErrorsLib.UnauthorizedSender.selector);
         vm.prank(sender);
         paraswapAdapter.sell(
-            address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0)
+            address(augustus), new bytes(32), address(0), address(0), false, Offsets({exactAmount: 0, limitAmount: 0, quotedAmount: 0}), address(0)
         );
     }
 
@@ -85,7 +85,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         vm.prank(address(bundler3));
 
         vm.expectRevert(ErrorsLib.InvalidAugustus.selector);
-        paraswapAdapter.sell(_augustus, new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0));
+        paraswapAdapter.sell(_augustus, new bytes(32), address(0), address(0), false, Offsets({exactAmount: 0, limitAmount: 0, quotedAmount: 0}), address(0));
     }
 
     function testAugustusInRegistryBuyCheck(address _augustus) public {
@@ -94,7 +94,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         vm.prank(address(bundler3));
 
         vm.expectRevert(ErrorsLib.InvalidAugustus.selector);
-        paraswapAdapter.buy(_augustus, new bytes(32), address(0), address(0), 0, Offsets(0, 0, 0), address(0));
+        paraswapAdapter.buy(_augustus, new bytes(32), address(0), address(0), 0, Offsets({exactAmount: 0, limitAmount: 0, quotedAmount: 0}), address(0));
     }
 
     function testMinDestAmountZeroBuy() public {
@@ -113,7 +113,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
         vm.expectRevert(ErrorsLib.ZeroAddress.selector);
         vm.prank(address(bundler3));
         paraswapAdapter.sell(
-            address(augustus), new bytes(32), address(0), address(0), false, Offsets(0, 0, 0), address(0)
+            address(augustus), new bytes(32), address(0), address(0), false, Offsets({exactAmount: 0, limitAmount: 0, quotedAmount: 0}), address(0)
         );
     }
 
@@ -126,7 +126,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
             address(0),
             address(0),
             1,
-            Offsets(0, 0, 0),
+            Offsets({exactAmount: 0, limitAmount: 0, quotedAmount: 0}),
             address(0)
         );
     }
@@ -197,7 +197,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
                     address(collateralToken),
                     address(loanToken),
                     true,
-                    Offsets(offset, offset + 32, quotedOffset),
+                    Offsets({exactAmount: offset, limitAmount: offset + 32, quotedAmount: quotedOffset}),
                     address(1)
                 )
             )
@@ -271,7 +271,7 @@ contract ParaswapAdapterLocalTest is LocalTest {
                     address(collateralToken),
                     address(loanToken),
                     adjustedExact,
-                    Offsets(offset, offset + 32, quotedOffset),
+                    Offsets({exactAmount: offset, limitAmount: offset + 32, quotedAmount: quotedOffset}),
                     address(1)
                 )
             )
