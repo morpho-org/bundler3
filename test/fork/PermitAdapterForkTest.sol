@@ -69,7 +69,8 @@ contract PermitAdapterForkTest is ForkTest {
         bytes32 r;
         bytes32 s;
         {
-            DaiPermit memory permit = DaiPermit({holder: user, spender: spender, nonce: nonce, expiry: expiry, allowed: allowed});
+            DaiPermit memory permit =
+                DaiPermit({holder: user, spender: spender, nonce: nonce, expiry: expiry, allowed: allowed});
 
             bytes32 digest = SigUtils.toTypedDataHash(DAI_DOMAIN_SEPARATOR, permit);
 

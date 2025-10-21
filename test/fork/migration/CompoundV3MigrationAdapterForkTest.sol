@@ -52,7 +52,10 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
         vm.assume(owner != user);
 
         bytes32 digest = SigUtils.toTypedDataHash(
-            C_WETH_V3, CompoundV3Authorization({owner: owner, manager: address(migrationAdapter), isAllowed: true, nonce: 0, expiry: SIGNATURE_DEADLINE})
+            C_WETH_V3,
+            CompoundV3Authorization({
+                owner: owner, manager: address(migrationAdapter), isAllowed: true, nonce: 0, expiry: SIGNATURE_DEADLINE
+            })
         );
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
@@ -247,7 +250,10 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
     ) internal view returns (Call memory) {
         address owner = vm.addr(privateKey);
         bytes32 digest = SigUtils.toTypedDataHash(
-            instance, CompoundV3Authorization({owner: owner, manager: manager, isAllowed: isAllowed, nonce: nonce, expiry: SIGNATURE_DEADLINE})
+            instance,
+            CompoundV3Authorization({
+                owner: owner, manager: manager, isAllowed: isAllowed, nonce: nonce, expiry: SIGNATURE_DEADLINE
+            })
         );
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);

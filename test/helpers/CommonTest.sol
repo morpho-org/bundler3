@@ -524,7 +524,8 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         address user = vm.addr(privateKey);
 
-        Permit memory permit = Permit({owner: user, spender: spender, value: amount, nonce: token.nonces(user), deadline: deadline});
+        Permit memory permit =
+            Permit({owner: user, spender: spender, value: amount, nonce: token.nonces(user), deadline: deadline});
 
         bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);

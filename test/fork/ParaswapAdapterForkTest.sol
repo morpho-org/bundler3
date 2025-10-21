@@ -85,7 +85,11 @@ contract ParaswapAdapterForkTest is ForkTest {
                     USDC,
                     WETH,
                     true,
-                    Offsets({exactAmount: srcAmountOffset, limitAmount: minDestAmountOffset, quotedAmount: quotedDestAmountOffset}),
+                    Offsets({
+                        exactAmount: srcAmountOffset,
+                        limitAmount: minDestAmountOffset,
+                        quotedAmount: quotedDestAmountOffset
+                    }),
                     user
                 )
             )
@@ -120,7 +124,13 @@ contract ParaswapAdapterForkTest is ForkTest {
             _call(
                 paraswapAdapter,
                 _paraswapBuy(
-                    AUGUSTUS_V6_2, buyCalldata, USDC, WETH, 0, Offsets({exactAmount: destAmountOffset, limitAmount: maxSrcAmountOffset, quotedAmount: 0}), user
+                    AUGUSTUS_V6_2,
+                    buyCalldata,
+                    USDC,
+                    WETH,
+                    0,
+                    Offsets({exactAmount: destAmountOffset, limitAmount: maxSrcAmountOffset, quotedAmount: 0}),
+                    user
                 )
             )
         );
@@ -160,7 +170,11 @@ contract ParaswapAdapterForkTest is ForkTest {
                     USDC,
                     WETH,
                     newDestAmount,
-                    Offsets({exactAmount: destAmountOffset, limitAmount: maxSrcAmountOffset, quotedAmount: quotedSrcAmountOffset}),
+                    Offsets({
+                        exactAmount: destAmountOffset,
+                        limitAmount: maxSrcAmountOffset,
+                        quotedAmount: quotedSrcAmountOffset
+                    }),
                     user
                 )
             )

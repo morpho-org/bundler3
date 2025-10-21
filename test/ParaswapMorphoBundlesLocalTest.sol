@@ -44,8 +44,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
 
         // Market with new loan token
 
-        marketParamsLoan2 =
-            MarketParams({loanToken: address(loanToken2), collateralToken: address(collateralToken), oracle: address(oracle), irm: address(irm), lltv: LLTV});
+        marketParamsLoan2 = MarketParams({
+            loanToken: address(loanToken2),
+            collateralToken: address(collateralToken),
+            oracle: address(oracle),
+            irm: address(irm),
+            lltv: LLTV
+        });
         idLoan2 = marketParamsLoan2.id();
 
         vm.prank(OWNER);
@@ -57,8 +62,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         vm.label(address(collateralToken2), "collateralToken2");
 
         // Market with new collateral token
-        marketParamsCollateral2 =
-            MarketParams({loanToken: address(loanToken), collateralToken: address(collateralToken2), oracle: address(oracle), irm: address(irm), lltv: LLTV});
+        marketParamsCollateral2 = MarketParams({
+            loanToken: address(loanToken),
+            collateralToken: address(collateralToken2),
+            oracle: address(oracle),
+            irm: address(irm),
+            lltv: LLTV
+        });
         idCollateral2 = marketParamsCollateral2.id();
 
         vm.prank(OWNER);
@@ -66,8 +76,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
 
         // Market with both new loan and collateral token
 
-        marketParamsAll2 =
-            MarketParams({loanToken: address(loanToken2), collateralToken: address(collateralToken2), oracle: address(oracle), irm: address(irm), lltv: LLTV});
+        marketParamsAll2 = MarketParams({
+            loanToken: address(loanToken2),
+            collateralToken: address(collateralToken2),
+            oracle: address(oracle),
+            irm: address(irm),
+            lltv: LLTV
+        });
         idAll2 = marketParamsAll2.id();
 
         vm.prank(OWNER);
