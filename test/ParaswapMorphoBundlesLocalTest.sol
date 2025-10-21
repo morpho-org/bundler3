@@ -436,7 +436,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         MarketParams memory sourceParams,
         MarketParams memory destParams
     ) internal {
-        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+        uint256 borrowAssetsOverestimate =
+            morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
 
         callbackBundle.push(_morphoWithdrawCollateral(sourceParams, type(uint256).max, address(paraswapAdapter)));
         callbackBundle.push(
@@ -493,7 +494,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         MarketParams memory sourceParams,
         MarketParams memory destParams
     ) internal {
-        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+        uint256 borrowAssetsOverestimate =
+            morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
         uint256 destCollateralOverestimate = morpho.collateral(sourceParams.id(), USER) * 101 / 100;
 
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));
