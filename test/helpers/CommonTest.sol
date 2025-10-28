@@ -201,7 +201,7 @@ abstract contract CommonTest is Test {
         returns (Call memory)
     {
         require(to != address(0), "Adapter address is zero");
-        return Call(to, data, value, skipRevert, callbackHash);
+        return Call({to: to, data: data, value: value, skipRevert: skipRevert, callbackHash: callbackHash});
     }
 
     /* CALL WITH VALUE */
@@ -524,7 +524,8 @@ abstract contract CommonTest is Test {
     ) internal view returns (Call memory) {
         address user = vm.addr(privateKey);
 
-        Permit memory permit = Permit(user, spender, amount, token.nonces(user), deadline);
+        Permit memory permit =
+            Permit({owner: user, spender: spender, value: amount, nonce: token.nonces(user), deadline: deadline});
 
         bytes32 digest = SigUtils.toTypedDataHash(token.DOMAIN_SEPARATOR(), permit);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);

@@ -330,7 +330,8 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
         address user = vm.addr(privateKey);
         uint256 nonce = IERC20Permit(aToken).nonces(user);
 
-        Permit memory permit = Permit(user, adapter, amount, nonce, SIGNATURE_DEADLINE);
+        Permit memory permit =
+            Permit({owner: user, spender: adapter, value: amount, nonce: nonce, deadline: SIGNATURE_DEADLINE});
         bytes32 hashed = SigUtils.toTypedDataHash(IERC20Permit(aToken).DOMAIN_SEPARATOR(), permit);
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, hashed);

@@ -64,7 +64,9 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
 
         bytes32 digest = SigUtils.toTypedDataHash(
             IAaveV3Optimizer(AAVE_V3_OPTIMIZER).DOMAIN_SEPARATOR(),
-            AaveV3OptimizerAuthorization(owner, address(this), true, 0, SIGNATURE_DEADLINE)
+            AaveV3OptimizerAuthorization({
+                delegator: owner, manager: address(this), isAllowed: true, nonce: 0, deadline: SIGNATURE_DEADLINE
+            })
         );
 
         Signature memory sig;
@@ -259,7 +261,9 @@ contract AaveV3OptimizerMigrationAdapterForkTest is MigrationForkTest {
         address owner = vm.addr(privateKey);
         bytes32 digest = SigUtils.toTypedDataHash(
             IAaveV3Optimizer(AAVE_V3_OPTIMIZER).DOMAIN_SEPARATOR(),
-            AaveV3OptimizerAuthorization(owner, manager, isAllowed, nonce, SIGNATURE_DEADLINE)
+            AaveV3OptimizerAuthorization({
+                delegator: owner, manager: manager, isAllowed: isAllowed, nonce: nonce, deadline: SIGNATURE_DEADLINE
+            })
         );
 
         Signature memory sig;

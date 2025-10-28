@@ -44,8 +44,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
 
         // Market with new loan token
 
-        marketParamsLoan2 =
-            MarketParams(address(loanToken2), address(collateralToken), address(oracle), address(irm), LLTV);
+        marketParamsLoan2 = MarketParams({
+            loanToken: address(loanToken2),
+            collateralToken: address(collateralToken),
+            oracle: address(oracle),
+            irm: address(irm),
+            lltv: LLTV
+        });
         idLoan2 = marketParamsLoan2.id();
 
         vm.prank(OWNER);
@@ -57,8 +62,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         vm.label(address(collateralToken2), "collateralToken2");
 
         // Market with new collateral token
-        marketParamsCollateral2 =
-            MarketParams(address(loanToken), address(collateralToken2), address(oracle), address(irm), LLTV);
+        marketParamsCollateral2 = MarketParams({
+            loanToken: address(loanToken),
+            collateralToken: address(collateralToken2),
+            oracle: address(oracle),
+            irm: address(irm),
+            lltv: LLTV
+        });
         idCollateral2 = marketParamsCollateral2.id();
 
         vm.prank(OWNER);
@@ -66,8 +76,13 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
 
         // Market with both new loan and collateral token
 
-        marketParamsAll2 =
-            MarketParams(address(loanToken2), address(collateralToken2), address(oracle), address(irm), LLTV);
+        marketParamsAll2 = MarketParams({
+            loanToken: address(loanToken2),
+            collateralToken: address(collateralToken2),
+            oracle: address(oracle),
+            irm: address(irm),
+            lltv: LLTV
+        });
         idAll2 = marketParamsAll2.id();
 
         vm.prank(OWNER);
@@ -255,9 +270,11 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     }
 
     // Method: withdraw all, sell all, supply all
-    function _createFullSupplySwapBundle(address user, MarketParams memory sourceParams, MarketParams memory destParams)
-        internal
-    {
+    function _createFullSupplySwapBundle(
+        address user,
+        MarketParams memory sourceParams,
+        MarketParams memory destParams
+    ) internal {
         _createFullWithdrawAndSwapBundle(user, sourceParams, destParams.loanToken, address(generalAdapter1));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
     }
@@ -419,7 +436,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         MarketParams memory sourceParams,
         MarketParams memory destParams
     ) internal {
-        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+        uint256 borrowAssetsOverestimate =
+            morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
 
         callbackBundle.push(_morphoWithdrawCollateral(sourceParams, type(uint256).max, address(paraswapAdapter)));
         callbackBundle.push(
@@ -476,7 +494,8 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
         MarketParams memory sourceParams,
         MarketParams memory destParams
     ) internal {
-        uint256 borrowAssetsOverestimate = morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
+        uint256 borrowAssetsOverestimate =
+            morpho.expectedBorrowAssets(sourceParams, USER) * 101 / 100;
         uint256 destCollateralOverestimate = morpho.collateral(sourceParams.id(), USER) * 101 / 100;
 
         callbackBundle.push(_morphoSupplyCollateral(destParams, type(uint256).max, user, hex""));

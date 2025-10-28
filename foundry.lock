@@ -1,0 +1,14 @@
+{
+  "lib/forge-std": {
+    "rev": "8f24d6b04c92975e0795b5868aa0d783251cdeaa"
+  },
+  "lib/morpho-blue": {
+    "rev": "8fd926254dd21bc6e5bf0ac401202a58f0ffa612"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "49cd64565aafa5b8f6863bf60a30ef015861614c"
+  },
+  "lib/permit2": {
+    "rev": "576f549a7351814f112edcc42f3f8472d1712673"
+  }
+}
