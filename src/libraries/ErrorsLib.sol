@@ -70,4 +70,9 @@ library ErrorsLib {
 
     /// @dev Thrown when a swap has not bought enough destination tokens.
     error BuyAmountTooLow();
+
+    /* BEBOP ADAPTER */
+
+    /// @dev Thrown when a callData's selector is not bebop-compatible.
+    error UnknownSelector();
 }
