@@ -270,11 +270,9 @@ contract ParaswapMorphoBundlesLocalTest is LocalTest {
     }
 
     // Method: withdraw all, sell all, supply all
-    function _createFullSupplySwapBundle(
-        address user,
-        MarketParams memory sourceParams,
-        MarketParams memory destParams
-    ) internal {
+    function _createFullSupplySwapBundle(address user, MarketParams memory sourceParams, MarketParams memory destParams)
+        internal
+    {
         _createFullWithdrawAndSwapBundle(user, sourceParams, destParams.loanToken, address(generalAdapter1));
         bundle.push(_morphoSupply(destParams, type(uint256).max, 0, type(uint256).max, user, hex""));
     }
