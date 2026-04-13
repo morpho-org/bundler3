@@ -3,10 +3,10 @@ pragma solidity >=0.8.0;
 
 /// @notice Struct containing all the data needed to make a call.
 /// @notice The call target is `to`, the calldata is `data` with value `value`.
-/// @notice If `skipRevert` is true, the fact that the call reverts will not cause the whole bundle to revert. Use with
+/// @notice If skipRevert is true, the fact that the call reverts will not cause the whole bundle to revert. Use with
 /// caution, since all reverts are ignored.
 /// @notice If the call will trigger a reenter, the callbackHash should be set to the hash of the reenter bundle data.
-/// @notice If callbackHash is set and the call reverts, the whole bundle will revert even if `skipReverts` is true.
+/// @notice If callbackHash is set and the call reverts, the whole bundle will revert even if skipRevert is true.
 struct Call {
     address to;
     bytes data;
