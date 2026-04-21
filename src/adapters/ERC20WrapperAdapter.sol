@@ -16,6 +16,8 @@ contract ERC20WrapperAdapter is CoreAdapter {
 
     // Enables the wrapping and unwrapping of ERC20 tokens. The largest usecase is to wrap permissionless tokens to
     // their permissioned counterparts and access permissioned markets on Morpho.
+    // If the token itself does not check the permissions of msg.sender in depositFor,
+    // wrapped tokens may be sent to the adapter by calling ERC20Wrapper.depositFor directly.
 
     /// @notice Wraps underlying tokens to wrapped token and sends them to the initiator.
     /// @dev Underlying tokens must have been previously sent to the adapter.
