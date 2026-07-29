@@ -73,6 +73,12 @@ Contains the following actions, all using the paraswap aggregator:
 - Buy a given amount.
 - Buy a what's needed to fully repay on a given Morpho Market.
 
+### [`PublicAllocatorAdapter`](./src/adapters/PublicAllocatorAdapter.sol)
+
+Contains the following actions, all using the vault-v2 Blue public allocator:
+
+- Allocate a vault's idle liquidity to a Morpho market, then reallocate liquidity across markets in a single call.
+
 ### Migration adapters
 
 For [Aave V2](./src/adapters/migration/AaveV2MigrationAdapter.sol), [Aave V3](./src/adapters/migration/AaveV3MigrationAdapter.sol), [Compound V2](./src/adapters/migration/CompoundV2MigrationAdapter.sol), [Compound V3](./src/adapters/migration/CompoundV3MigrationAdapter.sol), and [Morpho Aave V3 Optimizer](./src/adapters/migration/AaveV3OptimizerMigrationAdapter.sol).
