@@ -17,6 +17,3 @@ runs:
         restore-keys: |
           forge-${{ github.base_ref }}
           forge-
-
-    - name: Install jq
-      uses: sergeysova/jq-action@a3f0d4ff59cc1dddf023fc0b325dd75b10deec58 # v2
