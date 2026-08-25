@@ -5,7 +5,7 @@ runs:
 
   steps:
     - name: Install Foundry
-      uses: foundry-rs/foundry-toolchain@v1
+      uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
 
     - name: Restore forge compilation cache
       uses: actions/cache/restore@v4
