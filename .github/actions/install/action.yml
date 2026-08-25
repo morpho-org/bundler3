@@ -5,10 +5,10 @@ runs:
 
   steps:
     - name: Install Foundry
-      uses: foundry-rs/foundry-toolchain@v1
+      uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1.9.1
 
     - name: Restore forge compilation cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
           cache
@@ -17,6 +17,3 @@ runs:
         restore-keys: |
           forge-${{ github.base_ref }}
           forge-
-
-    - name: Install jq
-      uses: sergeysova/jq-action@v2
