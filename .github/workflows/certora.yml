@@ -16,6 +16,7 @@ jobs:
 
       matrix:
         conf:
+          - CallResolution
           - AllowancesInvariant
           - Bundler3
           - GeneralAdapter1Reverts
