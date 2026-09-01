@@ -34,8 +34,7 @@ contract AaveV3MigrationAdapterForkTest is MigrationForkTest {
         if (block.chainid == 1) {
             _initMarket(WST_ETH, WETH);
             collateralSupplied = 10_000 ether;
-        }
-        if (block.chainid == 8453) {
+        } else if (block.chainid == 8453) {
             _initMarket(CB_ETH, WETH);
             // To avoid getting above the Aave supply cap.
             collateralSupplied = 2 ether;

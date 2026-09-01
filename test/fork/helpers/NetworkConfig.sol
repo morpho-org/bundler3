@@ -29,7 +29,6 @@ abstract contract NetworkConfig is CommonBase {
 
         if (config.chainid == 1) {
             config.network = "ethereum";
-            config.blockNumber = 21230000;
             config.markets.push(ConfigMarket({collateralToken: "WETH", loanToken: "DAI", lltv: 800000000000000000}));
 
             setAddress("DAI", 0x6B175474E89094C44Da98b954EedeAC495271d0F);
@@ -60,7 +59,6 @@ abstract contract NetworkConfig is CommonBase {
             /* BASE NETWORK */
         } else if (config.chainid == 8453) {
             config.network = "base";
-            config.blockNumber = 25641890;
             config.markets.push(ConfigMarket({collateralToken: "WETH", loanToken: "WETH", lltv: 800000000000000000}));
 
             setAddress("DAI", 0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb);
