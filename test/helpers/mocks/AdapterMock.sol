@@ -2,14 +2,13 @@
 pragma solidity ^0.8.0;
 
 import {CoreAdapter} from "../../../src/adapters/CoreAdapter.sol";
-import {CommonBase} from "../../../lib/forge-std/src/Base.sol";
 import {IBundler3, Call} from "../../../src/interfaces/IBundler3.sol";
 
 event Initiator(address);
 
 event ReenterHash(bytes32);
 
-contract AdapterMock is CoreAdapter, CommonBase {
+contract AdapterMock is CoreAdapter {
     constructor(address bundler3) CoreAdapter(bundler3) {}
 
     function isProtected() external payable onlyBundler3 {
