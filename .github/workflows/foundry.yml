@@ -55,6 +55,30 @@ jobs:
       - uses: ./.github/actions/install
 
       - name: Run tests on chain ${{ matrix.chain }}
-        run: forge test --chain ${{ matrix.chain }}
+        run: |
+          encode() { sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk 'NR > 1 { printf "%%0A" } { printf "%s", $0 }'; }
+
+          printf '::notice title=forge-version::%s\n' "$(forge --version | encode)"
+
+          set -o pipefail
+          status=0
+          forge test --chain ${{ matrix.chain }} 2>&1 | tee "$RUNNER_TEMP/forge-test.log" || status=$?
+
+          if [ "$status" -ne 0 ]; then
+            log="$RUNNER_TEMP/forge-test.clean.log"
+            sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test.log" > "$log"
+
+            grep '^\[FAIL' "$log" | awk '!seen[$0]++' | head -n 28 | while IFS= read -r line; do
+              printf '::error title=forge-test::%s\n' "$(printf '%s\n' "$line" | encode)"
+            done || true
+
+            summary=$(sed -n '/^Failing tests:/,$p' "$log" | encode)
+            if [ -n "$summary" ]; then
+              printf '::error title=forge-test::%s\n' "$summary"
+            fi
+          fi
+
+          exit $status
         env:
           ALCHEMY_KEY: ${{ secrets.PROTOCOL_ALCHEMY_KEY }}
+          NO_COLOR: 1
