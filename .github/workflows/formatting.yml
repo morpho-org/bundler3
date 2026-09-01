@@ -22,6 +22,6 @@ jobs:
       - uses: ./.github/actions/install
 
       - name: Run Linter
-        run: find ./ -type f -name '*.sol' -exec perl -pi -e 's/transient //g' {} + && forge fmt --check
+        run: forge fmt --check
       - name: Run Certora Config Linter
         run: for file in certora/confs/*.conf; do diff <(grep -v "//" "$file" | jq) <(grep -v "//" "$file"); done
