@@ -76,6 +76,22 @@ jobs:
             if [ -n "$summary" ]; then
               printf '::error title=forge-test::%s\n' "$summary"
             fi
+
+            probe_status=0
+            forge test --chain ${{ matrix.chain }} --no-isolate 2>&1 | tee "$RUNNER_TEMP/forge-test-no-isolate.log" || probe_status=$?
+
+            if [ "$probe_status" -eq 0 ]; then
+              printf '::notice title=no-isolate-probe::%s\n' 'passed (exit 0)'
+            else
+              printf '::notice title=no-isolate-probe::%s\n' "failed (exit $probe_status)"
+
+              probe_log="$RUNNER_TEMP/forge-test-no-isolate.clean.log"
+              sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test-no-isolate.log" > "$probe_log"
+
+              grep '^\[FAIL' "$probe_log" | awk '!seen[$0]++' | head -n 8 | while IFS= read -r line; do
+                printf '::error title=no-isolate-fail::%s\n' "$(printf '%s\n' "$line" | encode)"
+              done || true
+            fi
           fi
 
           exit $status
