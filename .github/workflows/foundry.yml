@@ -57,8 +57,61 @@ jobs:
       - name: Run tests on chain ${{ matrix.chain }}
         run: |
           encode() { sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk 'NR > 1 { printf "%%0A" } { printf "%s", $0 }'; }
+          strip_ansi() { sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//'; }
 
           printf '::notice title=forge-version::%s\n' "$(forge --version | encode)"
+
+          # Dump the config forge actually resolves, so we can tell whether foundry.toml is honoured.
+          cfg_json="$RUNNER_TEMP/forge-config.json"
+          cfg_txt="$RUNNER_TEMP/forge-config.txt"
+          forge config > "$cfg_txt" 2>&1 || true
+          # `profile` is `#[serde(skip)]` in foundry's Config, so read it from the `[profile.<name>]`
+          # header of the plain output instead.
+          profile=$(sed -n 's/^\[profile\.\([^]]*\)\]$/\1/p' "$cfg_txt" | head -n 1)
+          if forge config --json > "$cfg_json" 2>/dev/null && jq -e . "$cfg_json" > /dev/null 2>&1; then
+            cfg_values=$(jq -r '"isolate=\(.isolate) dynamic_test_linking=\(.dynamic_test_linking)"' "$cfg_json")
+          else
+            cfg_values=$(grep -E '^(isolate|dynamic_test_linking)[[:space:]]*=' "$cfg_txt" | tr '\n' ' ') || true
+          fi
+          printf '::notice title=forge-config::%s\n' \
+            "profile=${profile:-unknown} FOUNDRY_PROFILE=${FOUNDRY_PROFILE:-unset} ${cfg_values:-unavailable}"
+
+          # GitHub truncates each annotation message at ~4096 bytes, so the totals line at the very
+          # end of a long "Failing tests:" block gets cut off. Emit it separately as well.
+          emit_total() { # <title> <clean-log>
+            total=$(grep -m1 '^Encountered a total of' "$2" | encode) || true
+            if [ -n "$total" ]; then
+              printf '::notice title=%s::%s\n' "$1" "$total"
+            fi
+          }
+
+          # Probes run only when the normal run failed. Everything they emit is a notice: GitHub keeps
+          # only ~10 annotations per type, so notices can never evict the errors from the real run.
+          run_probe() { # <title> <forge test flags...>
+            name=$1
+            shift
+            plog="$RUNNER_TEMP/forge-test-$name.log"
+            pstatus=0
+            forge test --chain ${{ matrix.chain }} "$@" 2>&1 | tee "$plog" || pstatus=$?
+
+            if [ "$pstatus" -eq 0 ]; then
+              printf '::notice title=%s::%s\n' "$name" "passed (exit 0) with $*"
+            else
+              printf '::notice title=%s::%s\n' "$name" "failed (exit $pstatus) with $*"
+            fi
+
+            pclean="$RUNNER_TEMP/forge-test-$name.clean.log"
+            strip_ansi < "$plog" > "$pclean"
+            emit_total "$name-total" "$pclean"
+
+            psummary=$(sed -n '/^Failing tests:/,$p' "$pclean" | encode)
+            if [ -n "$psummary" ]; then
+              printf '::notice title=%s-summary::%s\n' "$name" "$psummary"
+            else
+              # No "Failing tests:" block: a rejected flag or a compile error. Show the tail instead.
+              printf '::notice title=%s-tail::%s\n' "$name" "$(tail -n 20 "$pclean" | encode)"
+            fi
+          }
 
           set -o pipefail
           status=0
@@ -66,7 +119,7 @@ jobs:
 
           if [ "$status" -ne 0 ]; then
             log="$RUNNER_TEMP/forge-test.clean.log"
-            sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test.log" > "$log"
+            strip_ansi < "$RUNNER_TEMP/forge-test.log" > "$log"
 
             # GitHub keeps only ~10 failure annotations per step and silently drops the rest, so emit
             # the "Failing tests:" summary first: it is the single most informative annotation.
@@ -74,36 +127,16 @@ jobs:
             if [ -n "$summary" ]; then
               printf '::error title=forge-test-summary::%s\n' "$summary"
             fi
+            emit_total forge-test-total "$log"
 
             grep '^\[FAIL' "$log" | awk '!seen[$0]++' | head -n 4 | while IFS= read -r line; do
               printf '::error title=forge-test::%s\n' "$(printf '%s\n' "$line" | encode)"
             done || true
 
-            # Probe: re-run with both new forge 1.8 defaults off (isolate mode and dynamic test
-            # linking) to tell a real regression apart from a forge behaviour change.
-            probe_status=0
-            FOUNDRY_DYNAMIC_TEST_LINKING=false \
-              forge test --chain ${{ matrix.chain }} --no-isolate --no-dynamic-test-linking 2>&1 \
-              | tee "$RUNNER_TEMP/forge-test-probe.log" || probe_status=$?
-
-            probe_flags='--no-isolate --no-dynamic-test-linking'
-
-            if [ "$probe_status" -eq 0 ]; then
-              printf '::notice title=probe::%s\n' "passed (exit 0) with $probe_flags"
-            else
-              printf '::notice title=probe::%s\n' "failed (exit $probe_status) with $probe_flags"
-
-              probe_log="$RUNNER_TEMP/forge-test-probe.clean.log"
-              sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test-probe.log" > "$probe_log"
-
-              # Notices have their own annotation budget, so the probe can never evict the errors above.
-              probe_summary=$(sed -n '/^Failing tests:/,$p' "$probe_log" | encode)
-              if [ -n "$probe_summary" ]; then
-                printf '::notice title=probe-summary::%s\n' "$probe_summary"
-              else
-                printf '::notice title=probe-tail::%s\n' "$(tail -n 20 "$probe_log" | encode)"
-              fi
-            fi
+            # Re-run with each new forge 1.8 default turned off, one at a time, to tell which of the
+            # two (isolate mode, dynamic test linking) a failure actually depends on.
+            run_probe probe-a --no-isolate
+            run_probe probe-b --no-dynamic-test-linking
           fi
 
           exit $status
