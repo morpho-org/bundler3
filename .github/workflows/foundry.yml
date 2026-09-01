@@ -68,29 +68,41 @@ jobs:
             log="$RUNNER_TEMP/forge-test.clean.log"
             sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test.log" > "$log"
 
-            grep '^\[FAIL' "$log" | awk '!seen[$0]++' | head -n 28 | while IFS= read -r line; do
+            # GitHub keeps only ~10 failure annotations per step and silently drops the rest, so emit
+            # the "Failing tests:" summary first: it is the single most informative annotation.
+            summary=$(sed -n '/^Failing tests:/,$p' "$log" | encode)
+            if [ -n "$summary" ]; then
+              printf '::error title=forge-test-summary::%s\n' "$summary"
+            fi
+
+            grep '^\[FAIL' "$log" | awk '!seen[$0]++' | head -n 4 | while IFS= read -r line; do
               printf '::error title=forge-test::%s\n' "$(printf '%s\n' "$line" | encode)"
             done || true
 
-            summary=$(sed -n '/^Failing tests:/,$p' "$log" | encode)
-            if [ -n "$summary" ]; then
-              printf '::error title=forge-test::%s\n' "$summary"
-            fi
-
+            # Probe: re-run with both new forge 1.8 defaults off (isolate mode and dynamic test
+            # linking) to tell a real regression apart from a forge behaviour change.
             probe_status=0
-            forge test --chain ${{ matrix.chain }} --no-isolate 2>&1 | tee "$RUNNER_TEMP/forge-test-no-isolate.log" || probe_status=$?
+            FOUNDRY_DYNAMIC_TEST_LINKING=false \
+              forge test --chain ${{ matrix.chain }} --no-isolate --no-dynamic-test-linking 2>&1 \
+              | tee "$RUNNER_TEMP/forge-test-probe.log" || probe_status=$?
+
+            probe_flags='--no-isolate --no-dynamic-test-linking'
 
             if [ "$probe_status" -eq 0 ]; then
-              printf '::notice title=no-isolate-probe::%s\n' 'passed (exit 0)'
+              printf '::notice title=probe::%s\n' "passed (exit 0) with $probe_flags"
             else
-              printf '::notice title=no-isolate-probe::%s\n' "failed (exit $probe_status)"
+              printf '::notice title=probe::%s\n' "failed (exit $probe_status) with $probe_flags"
 
-              probe_log="$RUNNER_TEMP/forge-test-no-isolate.clean.log"
-              sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test-no-isolate.log" > "$probe_log"
+              probe_log="$RUNNER_TEMP/forge-test-probe.clean.log"
+              sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' -e 's/\r$//' "$RUNNER_TEMP/forge-test-probe.log" > "$probe_log"
 
-              grep '^\[FAIL' "$probe_log" | awk '!seen[$0]++' | head -n 8 | while IFS= read -r line; do
-                printf '::error title=no-isolate-fail::%s\n' "$(printf '%s\n' "$line" | encode)"
-              done || true
+              # Notices have their own annotation budget, so the probe can never evict the errors above.
+              probe_summary=$(sed -n '/^Failing tests:/,$p' "$probe_log" | encode)
+              if [ -n "$probe_summary" ]; then
+                printf '::notice title=probe-summary::%s\n' "$probe_summary"
+              else
+                printf '::notice title=probe-tail::%s\n' "$(tail -n 20 "$probe_log" | encode)"
+              fi
             fi
           fi
 
