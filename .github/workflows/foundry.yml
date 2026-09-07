@@ -28,6 +28,9 @@ jobs:
         # skip import files, because we don't care if contracts are too big
         run: forge build --sizes --skip Import
 
+      - name: Check foundry.lock matches submodule pins
+        run: forge build --locked
+
       - name: Save forge compilation cache
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
