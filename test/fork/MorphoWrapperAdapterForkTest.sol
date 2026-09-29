@@ -34,12 +34,17 @@ contract MorphoWrapperAdapterForkTest is ForkTest {
         bundle.push(_morphoWrapperDepositFor(initiator, amount));
 
         deal(address(MORPHO_TOKEN_LEGACY), address(generalAdapter1), amount);
+        uint256 initiatorBalanceBefore = IERC20(MORPHO_TOKEN).balanceOf(initiator);
 
         vm.prank(initiator);
         bundler3.multicall(bundle);
 
         assertEq(IERC20(MORPHO_TOKEN_LEGACY).balanceOf(address(generalAdapter1)), 0, "loan.balanceOf(generalAdapter1)");
-        assertEq(IERC20(MORPHO_TOKEN).balanceOf(initiator), amount, "MORPHO_TOKEN.balanceOf(initiator)");
+        assertEq(
+            IERC20(MORPHO_TOKEN).balanceOf(initiator),
+            initiatorBalanceBefore + amount,
+            "MORPHO_TOKEN.balanceOf(initiator)"
+        );
         assertEq(
             IERC20(MORPHO_TOKEN_LEGACY).allowance(address(generalAdapter1), address(MORPHO_TOKEN)),
             0,
