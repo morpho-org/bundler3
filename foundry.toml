@@ -5,8 +5,6 @@ fs_permissions = [
     { access = "read", path = "./config/" },
 ]
 libs = ["lib"]
-ignored_error_codes = ["transient-storage"]
-ignored_error_codes_from = [["test", ["code-size", "init-code-size"]]]
 via_ir = true
 isolate = false
 optimizer = true
