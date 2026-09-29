@@ -10,7 +10,7 @@ import "../../src/adapters/EthereumGeneralAdapter1.sol";
 
 import "./helpers/ForkTest.sol";
 
-bytes32 constant BEACON_BALANCE_POSITION = 0xa66d35f054e68143c18f32c990ed5cb972bb68a68f500cd2dd3a16bbf3686483; // keccak256("lido.Lido.beaconBalance");
+bytes32 constant CL_BALANCES_POSITION = 0x096e465397f38e659238ccd5d5a2c434ced54a63fd8d694045bfb058ab9d8112; // keccak256("lido.Lido.clValidatorsBalanceAndClPendingBalance")
 
 contract EthereumStEthAdapterForkTest is ForkTest {
     using SafeERC20 for IERC20;
@@ -18,11 +18,6 @@ contract EthereumStEthAdapterForkTest is ForkTest {
 
     address internal immutable ST_ETH = getAddress("ST_ETH");
     address internal immutable WST_ETH = getAddress("WST_ETH");
-
-    function setUp() public override {
-        if (config.chainid == 1) config.blockNumber = 21230000;
-        super.setUp();
-    }
 
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_stakeEth(0, type(uint256).max, address(0), receiver));
@@ -63,7 +58,7 @@ contract EthereumStEthAdapterForkTest is ForkTest {
         bundle.push(_transferNativeToAdapter(payable(generalAdapter1), amount));
         bundle.push(_stakeEth(amount, amount.rDivDown(shares - 2), address(0), address(ethereumGeneralAdapter1)));
 
-        vm.store(ST_ETH, BEACON_BALANCE_POSITION, bytes32(uint256(vm.load(ST_ETH, BEACON_BALANCE_POSITION)) * 2));
+        vm.store(ST_ETH, CL_BALANCES_POSITION, bytes32(uint256(vm.load(ST_ETH, CL_BALANCES_POSITION)) * 2));
 
         deal(USER, amount);
 
