@@ -19,6 +19,11 @@ contract EthereumStEthAdapterForkTest is ForkTest {
     address internal immutable ST_ETH = getAddress("ST_ETH");
     address internal immutable WST_ETH = getAddress("WST_ETH");
 
+    function setUp() public override {
+        if (config.chainid == 1) config.blockNumber = 21230000;
+        super.setUp();
+    }
+
     function testStakeEthZeroAmount(address receiver) public onlyEthereum {
         bundle.push(_stakeEth(0, type(uint256).max, address(0), receiver));
 

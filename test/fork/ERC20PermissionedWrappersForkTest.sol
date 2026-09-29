@@ -51,6 +51,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function testWbib01NotUsableWithoutPermission(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
+        vm.assume(initiator != WBIB01 && initiator != address(ERC20Wrapper(WBIB01).underlying()));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         deal(address(ERC20Wrapper(WBIB01).underlying()), address(erc20WrapperAdapter), amount);
@@ -64,6 +65,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function testWbibUsableWithPermission(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
+        vm.assume(initiator != WBIB01 && initiator != address(ERC20Wrapper(WBIB01).underlying()));
         _whitelistForWbib01(initiator);
         _whitelistForWbib01(RECEIVER);
 
@@ -94,6 +96,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function testWbib01BypassFailsWithdrawWithoutPermission(uint256 amount, address initiator) public onlyEthereum {
         vm.assume(initiator != address(0));
+        vm.assume(initiator != WBIB01 && initiator != address(ERC20Wrapper(WBIB01).underlying()));
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
@@ -119,6 +122,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function testVerUsdcNotUsableWithoutPermission(uint256 amount, address initiator) public onlyBase {
         vm.assume(initiator != address(0));
+        vm.assume(initiator != VER_USDC && initiator != address(ERC20Wrapper(VER_USDC).underlying()));
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 
         deal(address(ERC20Wrapper(VER_USDC).underlying()), address(erc20WrapperAdapter), amount);
@@ -132,6 +136,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function testVerUsdcUsableWithPermission(uint256 amount, address initiator) public onlyBase {
         vm.assume(initiator != address(0));
+        vm.assume(initiator != VER_USDC && initiator != address(ERC20Wrapper(VER_USDC).underlying()));
         _whitelistForVerUsdc(initiator);
         _whitelistForVerUsdc(RECEIVER);
 
@@ -162,6 +167,7 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
 
     function testVerUsdcBypassFailsWithdrawWithoutPermission(uint256 amount, address initiator) public onlyBase {
         vm.assume(initiator != address(0));
+        vm.assume(initiator != VER_USDC && initiator != address(ERC20Wrapper(VER_USDC).underlying()));
 
         amount = bound(amount, MIN_AMOUNT, MAX_AMOUNT);
 

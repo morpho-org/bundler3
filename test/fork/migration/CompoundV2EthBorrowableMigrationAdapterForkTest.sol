@@ -27,6 +27,7 @@ contract CompoundV2EthBorrowableMigrationAdapterForkTest is MigrationForkTest {
     receive() external payable {}
 
     function setUp() public override {
+        if (config.chainid == 1) config.blockNumber = 21230000;
         super.setUp();
 
         if (block.chainid != 1) return;
