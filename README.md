@@ -1,5 +1,8 @@
 # Bundler3
 
+> [!WARNING]
+> Bundler3 has been replaced by https://github.com/morpho-org/bundles
+
 [`Bundler3`](./src/Bundler3.sol) allows accounts to batch-execute a sequence of arbitrary calls atomically.
 It carries specific features to be able to perform actions that require authorizations, and handle callbacks.
 
