@@ -30,6 +30,7 @@ contract AaveV2MigrationAdapterForkTest is MigrationForkTest {
     AaveV2MigrationAdapter internal migrationAdapter;
 
     function setUp() public override {
+        if (config.chainid == 1) config.blockNumber = 21230000;
         super.setUp();
 
         if (block.chainid != 1) return;
