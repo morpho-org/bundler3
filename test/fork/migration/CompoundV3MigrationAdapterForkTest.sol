@@ -25,6 +25,7 @@ contract CompoundV3MigrationAdapterForkTest is MigrationForkTest {
 
     function setUp() public override {
         if (config.chainid == 1) config.blockNumber = 21230000;
+        if (config.chainid == 8453) config.blockNumber = 25641890;
         super.setUp();
 
         _initMarket(CB_ETH, WETH);
