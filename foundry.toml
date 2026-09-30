@@ -11,6 +11,10 @@ optimizer = true
 optimizer_runs = 999999
 bytecode_hash = "none"
 evm_version = "cancun"
+compilation_restrictions = [
+    { paths = "src/{adapters,interfaces,libraries,mocks}/**", version = ">=0.8.28" },
+    { paths = "test/**", version = ">=0.8.28" },
+]
 
 [profile.default.fuzz]
 runs = 64
