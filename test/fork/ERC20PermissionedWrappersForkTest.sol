@@ -141,8 +141,6 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
     function testVerUsdcUsableWithPermission(uint256 amount, address initiator) public onlyBase {
         vm.assume(initiator != address(0));
         vm.assume(initiator != VER_USDC && initiator != address(ERC20Wrapper(VER_USDC).underlying()));
-        vm.assume(initiator != IPermissionedERC20Wrapper(VER_USDC).MORPHO());
-        vm.assume(initiator != IPermissionedERC20Wrapper(VER_USDC).BUNDLER());
         _whitelistForVerUsdc(initiator);
         _whitelistForVerUsdc(RECEIVER);
 
@@ -163,12 +161,18 @@ contract Erc20PermissionedWrappersForkTest is ForkTest {
         bundle.push(_erc20Transfer(address(VER_USDC), address(erc20WrapperAdapter), amount, generalAdapter1));
         bundle.push(_erc20WrapperWithdrawTo(address(VER_USDC), RECEIVER, amount));
 
+        uint256 initialReceiverBalance = underlying.balanceOf(RECEIVER);
+        uint256 initialAdapterBalance = IERC20(VER_USDC).balanceOf(address(erc20WrapperAdapter));
+        uint256 initialInitiatorBalance = IERC20(VER_USDC).balanceOf(initiator);
+
         vm.prank(initiator);
         bundler3.multicall(bundle);
 
-        vm.assertEq(underlying.balanceOf(RECEIVER), amount, "RECEIVER");
-        vm.assertEq(IERC20(VER_USDC).balanceOf(address(erc20WrapperAdapter)), 0, "erc20WrapperAdapter");
-        vm.assertEq(IERC20(VER_USDC).balanceOf(initiator), 0, "initiator");
+        vm.assertEq(underlying.balanceOf(RECEIVER), initialReceiverBalance + amount, "RECEIVER");
+        vm.assertEq(
+            IERC20(VER_USDC).balanceOf(address(erc20WrapperAdapter)), initialAdapterBalance, "erc20WrapperAdapter"
+        );
+        vm.assertEq(IERC20(VER_USDC).balanceOf(initiator), initialInitiatorBalance, "initiator");
     }
 
     function testVerUsdcBypassFailsWithdrawWithoutPermission(uint256 amount, address initiator) public onlyBase {
